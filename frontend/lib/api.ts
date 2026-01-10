@@ -124,7 +124,68 @@ export async function fetchPlaylistById(playlistId: string): Promise<PlaylistDet
   }
 }
 
+
+export interface User {
+  spotifyUserId: string;
+  displayName: string;
+  isTrusted: boolean;
+}
+
+
+export interface PlaylistOwner {
+  id: string;
+  displayName: string;
+}
+
+export interface PlaylistSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  images: PlaylistImage[];
+  owner: PlaylistOwner;
+  totalTracks: number;
+  public: boolean;
+  externalUrl: string;
+}
+
+export interface PlaylistsResponse {
+  items: PlaylistSummary[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface Artist {
+  id: string;
+  name: string;
+}
+
+export interface Album {
+  id: string;
+  name: string;
+  images: PlaylistImage[];
+}
+
+export interface Track {
+  id: string;
+  name: string;
+  artists: Artist[];
+  album: Album;
+  durationMs: number;
+  externalUrl: string;
+  previewUrl: string | null;
+  isPlayable: boolean;
+}
+
+export interface PlaylistTrack {
+  track: Track;
+  addedAt: string;
+}
+
+
 // Game types
+export const ROUND_DURATIONS = [0.1, 0.5, 1, 2, 4, 8];
+
 export interface TrackOption {
   id: string;
   name: string;
@@ -132,76 +193,121 @@ export interface TrackOption {
 }
 
 export interface GuessHistory {
-  trackId: string;
-  trackName: string;
-  artistName: string;
+  trackId: string | null;
+  trackName: string | null;
+  artistName: string | null;
   result: "correct" | "artist" | "wrong" | "skip";
 }
 
 export interface GameState {
   sessionId: string;
-  status: "in_progress" | "won" | "lost";
   currentRound: number;
-  previewUrl: string;
-  options: TrackOption[];
-  guessHistory: GuessHistory[];
-  correctTrack?: { id: string; name: string; artist: string };
-  alreadyPlayed?: boolean;
+  snippetDuration: number;
+  status: "playing" | "won" | "lost";
+  guesses: GuessHistory[];
+  previewUrl: string | null;
+  trackOptions: TrackOption[];
+  answer: TrackOption | null;
 }
 
 export interface GuessResult {
   result: "correct" | "artist" | "wrong" | "skip";
-  gameState: GameState;
+  gameOver: boolean;
+  status: "playing" | "won" | "lost";
+  currentRound: number;
+  snippetDuration: number;
 }
 
-export async function startGame(playlistId: string): Promise<GameState> {
-  const res = await fetch(`${API_BASE}/game/start`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ playlistId }),
-  });
-  if (!res.ok) {
-    throw new Error("Failed to start game");
+export interface DailyState extends GameState {
+  date: string;
+  playlistName: string;
+  alreadyPlayed: boolean;
+  previousResult: {
+    guesses: GuessHistory[];
+    score: number;
+    wonAt: number | null;
+  } | null;
+}
+
+// Game API functions
+export async function startGame(playlistId: string): Promise<GameState | null> {
+  try {
+    const res = await fetch(`${API_BASE}/game/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ playlistId }),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
   }
-  return res.json();
 }
 
-export async function submitGuess(sessionId: string, trackId: string | null): Promise<GuessResult> {
-  const res = await fetch(`${API_BASE}/game/${sessionId}/guess`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ trackId }),
-  });
-  if (!res.ok) {
-    throw new Error("Failed to submit guess");
+export async function getGameState(sessionId: string): Promise<GameState | null> {
+  try {
+    const res = await fetch(`${API_BASE}/game/${sessionId}`, {
+      credentials: "include",
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
   }
-  return res.json();
 }
 
-export async function getDailyPuzzle(): Promise<GameState> {
-  const res = await fetch(`${API_BASE}/game/daily/today`, {
-    credentials: "include",
-  });
-  if (!res.ok) {
-    if (res.status === 403) {
-      throw new Error("403: Not authorized for daily challenge");
+export async function submitGuess(
+  sessionId: string,
+  trackId: string | null,
+  skip = false
+): Promise<GuessResult | null> {
+  try {
+    const res = await fetch(`${API_BASE}/game/${sessionId}/guess`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ trackId, skip }),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function getDailyPuzzle(): Promise<DailyState | null> {
+  try {
+    const res = await fetch(`${API_BASE}/game/daily/today`, {
+      credentials: "include",
+    });
+    if (!res.ok) {
+      console.error(`Failed to load daily puzzle: ${res.status} ${res.statusText}`);
+      return null;
     }
-    throw new Error("Failed to get daily puzzle");
+    return res.json();
+  } catch (error) {
+    console.error("Error loading daily puzzle:", error);
+    return null;
   }
-  return res.json();
 }
 
-export async function submitDailyGuess(trackId: string | null): Promise<GuessResult> {
-  const res = await fetch(`${API_BASE}/game/daily/guess`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ trackId }),
-  });
-  if (!res.ok) {
-    throw new Error("Failed to submit daily guess");
+export async function submitDailyGuess(
+  trackId: string | null,
+  skip = false
+): Promise<GuessResult | null> {
+  try {
+    const res = await fetch(`${API_BASE}/game/daily/guess`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ trackId, skip }),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
   }
-  return res.json();
 }
+
+

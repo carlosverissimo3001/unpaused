@@ -175,7 +175,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Load playlist by URL */}
             <div className="mb-8 p-4 bg-white/5 rounded-xl border border-white/10">
               <label className="block text-sm font-medium mb-2">Load any playlist by URL</label>
               <div className="flex gap-2">

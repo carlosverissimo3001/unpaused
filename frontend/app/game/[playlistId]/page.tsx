@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { startGame, submitGuess, GameState } from "@/lib/api";
+import { startGame, submitGuess, getGameState, GameState, GuessHistory } from "@/lib/api";
 
 const ROUND_DURATIONS = [0.1, 0.5, 1, 2, 4, 8];
 
@@ -24,7 +24,11 @@ export default function GamePage() {
     async function initGame() {
       try {
         const state = await startGame(playlistId);
-        setGameState(state);
+        if (!state) {
+          setError("Failed to start game");
+        } else {
+          setGameState(state);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to start game");
       } finally {
@@ -55,13 +59,47 @@ export default function GamePage() {
   };
 
   const handleSubmit = async () => {
-    if (!gameState || submitting) return;
+    if (!gameState || submitting || !selectedTrack) return;
 
     setSubmitting(true);
     try {
       const result = await submitGuess(gameState.sessionId, selectedTrack);
-      setGameState(result.gameState);
+      if (!result) {
+        setError("Failed to submit guess");
+        setSubmitting(false);
+        return;
+      }
+
+      // Update game state with the result
+      const selectedOption = gameState.trackOptions.find(opt => opt.id === selectedTrack);
+      const newGuess: GuessHistory = {
+        trackId: selectedTrack,
+        trackName: selectedOption?.name || null,
+        artistName: selectedOption?.artist || null,
+        result: result.result,
+      };
+
+      setGameState((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          currentRound: result.currentRound,
+          snippetDuration: result.snippetDuration,
+          status: result.status,
+          guesses: [...prev.guesses, newGuess],
+          answer: result.gameOver ? prev.answer : null, // Answer will be set when we fetch full state
+        };
+      });
+
       setSelectedTrack(null);
+
+      // If game is over, fetch the full state to get the answer
+      if (result.gameOver) {
+        const updatedState = await getGameState(gameState.sessionId);
+        if (updatedState) {
+          setGameState(updatedState);
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit guess");
     } finally {
@@ -74,9 +112,42 @@ export default function GamePage() {
 
     setSubmitting(true);
     try {
-      const result = await submitGuess(gameState.sessionId, null);
-      setGameState(result.gameState);
+      const result = await submitGuess(gameState.sessionId, null, true);
+      if (!result) {
+        setError("Failed to skip");
+        setSubmitting(false);
+        return;
+      }
+
+      // Update game state with the skip result
+      const newGuess: GuessHistory = {
+        trackId: null,
+        trackName: null,
+        artistName: null,
+        result: "skip",
+      };
+
+      setGameState((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          currentRound: result.currentRound,
+          snippetDuration: result.snippetDuration,
+          status: result.status,
+          guesses: [...prev.guesses, newGuess],
+          answer: result.gameOver ? prev.answer : null,
+        };
+      });
+
       setSelectedTrack(null);
+
+      // If game is over, fetch the full state to get the answer
+      if (result.gameOver) {
+        const updatedState = await getGameState(gameState.sessionId);
+        if (updatedState) {
+          setGameState(updatedState);
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to skip");
     } finally {
@@ -110,7 +181,7 @@ export default function GamePage() {
 
   if (!gameState) return null;
 
-  const isGameOver = gameState.status !== "in_progress";
+  const isGameOver = gameState.status !== "playing";
 
   return (
     <div className="min-h-screen p-8">
@@ -133,9 +204,9 @@ export default function GamePage() {
               key={index}
               className={`flex-1 h-2 rounded-full ${
                 index < gameState.currentRound
-                  ? gameState.guessHistory[index]?.result === "correct"
+                  ? gameState.guesses[index]?.result === "correct"
                     ? "bg-green-500"
-                    : gameState.guessHistory[index]?.result === "artist"
+                    : gameState.guesses[index]?.result === "artist"
                     ? "bg-yellow-500"
                     : "bg-red-500"
                   : index === gameState.currentRound
@@ -167,14 +238,14 @@ export default function GamePage() {
             <h2 className="text-2xl font-bold mb-4">
               {gameState.status === "won" ? "You Won!" : "Game Over"}
             </h2>
-            {gameState.correctTrack && (
+            {gameState.answer && (
               <div className="mb-6">
                 <p className="text-gray-400 mb-2">The song was:</p>
                 <p className="text-xl font-semibold">
-                  {gameState.correctTrack.name}
+                  {gameState.answer.name}
                 </p>
                 <p className="text-gray-400">
-                  by {gameState.correctTrack.artist}
+                  by {gameState.answer.artist}
                 </p>
               </div>
             )}
@@ -198,7 +269,7 @@ export default function GamePage() {
         {/* Track Options */}
         {!isGameOver && (
           <div className="space-y-3 mb-8">
-            {gameState.options.map((option) => (
+            {gameState.trackOptions.map((option) => (
               <button
                 key={option.id}
                 onClick={() => setSelectedTrack(option.id)}
@@ -244,11 +315,11 @@ export default function GamePage() {
         )}
 
         {/* Guess History */}
-        {gameState.guessHistory?.length > 0 && (
+        {gameState.guesses?.length > 0 && (
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Previous Guesses</h3>
             <div className="space-y-2">
-              {gameState.guessHistory.map((guess, index) => (
+              {gameState.guesses.map((guess, index) => (
                 <div
                   key={index}
                   className={`p-3 rounded-lg ${

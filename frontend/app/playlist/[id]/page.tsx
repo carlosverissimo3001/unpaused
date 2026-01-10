@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Globe,
   Lock,
+  Play,
 } from "lucide-react";
 
 export default function PlaylistPage() {
@@ -164,7 +165,13 @@ export default function PlaylistPage() {
                 )}
               </span>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap gap-3">
+            <Button variant="spotify" size="sm" asChild>
+                <Link href={`/game/${playlist.id}`}>
+                  <Play className="w-4 h-4 mr-2" />
+                  Play Game
+                </Link>
+              </Button>
               <Button variant="outline" size="sm" asChild>
                 <a
                   href={playlist.externalUrl}

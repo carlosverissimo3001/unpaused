@@ -1,53 +1,85 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { getDailyPuzzle, submitDailyGuess, GameState } from "@/lib/api";
-
-const ROUND_DURATIONS = [0.1, 0.5, 1, 2, 4, 8];
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  getDailyPuzzle,
+  submitDailyGuess,
+  fetchMe,
+  ROUND_DURATIONS,
+  type DailyState,
+  type TrackOption,
+  type User,
+} from "@/lib/api";
+import {
+  ArrowLeft,
+  Music2,
+  Play,
+  Pause,
+  SkipForward,
+  Check,
+  X,
+  Minus,
+  Search,
+  Calendar,
+  Trophy,
+} from "lucide-react";
 
 export default function DailyPage() {
   const router = useRouter();
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [daily, setDaily] = useState<DailyState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
+
+  // Audio state
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [alreadyPlayed, setAlreadyPlayed] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTrack, setSelectedTrack] = useState<TrackOption | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Check auth and load daily
   useEffect(() => {
-    async function initDaily() {
-      try {
-        const state = await getDailyPuzzle();
-        if (state.alreadyPlayed) {
-          setAlreadyPlayed(true);
-          setGameState(state);
-        } else {
-          setGameState(state);
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error && err.message.includes("403")) {
-          setError("Daily challenge is only available for trusted users");
-        } else {
-          setError(
-            err instanceof Error ? err.message : "Failed to load daily puzzle"
-          );
-        }
-      } finally {
-        setLoading(false);
+    const init = async () => {
+      const u = await fetchMe();
+      if (!u) {
+        router.push("/");
+        return;
       }
-    }
+      setUser(u);
 
-    initDaily();
-  }, []);
+      if (!u.isTrusted) {
+        setError("Daily mode is only available for trusted users");
+        setLoading(false);
+        return;
+      }
 
-  const playSnippet = () => {
-    if (!audioRef.current || !gameState) return;
+      const d = await getDailyPuzzle();
+      if (!d) {
+        setError("Failed to load daily puzzle");
+      } else {
+        setDaily(d);
+      }
+      setLoading(false);
+    };
 
-    const duration = ROUND_DURATIONS[gameState.currentRound] * 1000;
+    init();
+  }, [router]);
+
+  // Audio control
+  const snippetDuration = daily
+    ? ROUND_DURATIONS[Math.min(daily.currentRound, ROUND_DURATIONS.length - 1)]
+    : 0;
+
+  const playSnippet = useCallback(() => {
+    if (!audioRef.current || !daily?.previewUrl) return;
+
     audioRef.current.currentTime = 0;
     audioRef.current.play();
     setIsPlaying(true);
@@ -55,230 +87,355 @@ export default function DailyPage() {
     setTimeout(() => {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+        setIsPlaying(false);
       }
+    }, snippetDuration * 1000);
+  }, [daily?.previewUrl, snippetDuration]);
+
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
       setIsPlaying(false);
-    }, duration);
-  };
-
-  const handleSubmit = async () => {
-    if (!gameState || submitting) return;
-
-    setSubmitting(true);
-    try {
-      const result = await submitDailyGuess(selectedTrack);
-      setGameState(result.gameState);
-      setSelectedTrack(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to submit guess");
-    } finally {
-      setSubmitting(false);
     }
-  };
+  }, []);
 
-  const handleSkip = async () => {
-    if (!gameState || submitting) return;
+  // Update audio progress
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    setSubmitting(true);
-    try {
-      const result = await submitDailyGuess(null);
-      setGameState(result.gameState);
+    const updateProgress = () => {
+      const progress = (audio.currentTime / snippetDuration) * 100;
+      setAudioProgress(Math.min(progress, 100));
+    };
+
+    audio.addEventListener("timeupdate", updateProgress);
+    return () => audio.removeEventListener("timeupdate", updateProgress);
+  }, [snippetDuration]);
+
+  // Filter tracks for search
+  const filteredTracks =
+    daily?.trackOptions.filter(
+      (t) =>
+        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.artist.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
+
+  // Submit guess
+  const handleGuess = async (skip = false) => {
+    if (!daily) return;
+
+    stopAudio();
+    const result = await submitDailyGuess(
+      skip ? null : selectedTrack?.id || null,
+      skip
+    );
+
+    if (result) {
+      setDaily((prev) =>
+        prev
+          ? {
+              ...prev,
+              currentRound: result.currentRound,
+              snippetDuration: result.snippetDuration,
+              status: result.status,
+              guesses: [
+                ...prev.guesses,
+                {
+                  trackId: skip ? null : selectedTrack?.id || null,
+                  trackName: skip ? null : selectedTrack?.name || null,
+                  artistName: skip ? null : selectedTrack?.artist || null,
+                  result: result.result,
+                },
+              ],
+              alreadyPlayed: result.gameOver,
+            }
+          : null
+      );
       setSelectedTrack(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to skip");
-    } finally {
-      setSubmitting(false);
+      setSearchQuery("");
+
+      // Refetch to get answer if game over
+      if (result.gameOver) {
+        const updated = await getDailyPuzzle();
+        if (updated) setDaily(updated);
+      }
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-spotify-green"></div>
-      </div>
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-xl">Loading daily puzzle...</div>
+      </main>
     );
   }
 
-  if (error) {
+  if (error || !daily) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
-          <button
-            onClick={() => router.push("/")}
-            className="text-spotify-green hover:underline"
-          >
-            Go back home
-          </button>
-        </div>
-      </div>
+      <main className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <p className="text-destructive">{error || "Failed to load"}</p>
+        <Button variant="outline" asChild>
+          <Link href="/">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Link>
+        </Button>
+      </main>
     );
   }
 
-  if (!gameState) return null;
-
-  const isGameOver = gameState.status !== "in_progress" || alreadyPlayed;
+  const isGameOver = daily.status !== "playing" || daily.alreadyPlayed;
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Daily Challenge</h1>
-          <p className="text-gray-400">
-            {alreadyPlayed
-              ? "You've already played today!"
-              : `Round ${gameState.currentRound + 1} of ${ROUND_DURATIONS.length}`}
-          </p>
-        </div>
+    <main className="min-h-screen flex flex-col">
+      {/* Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-spotify-green/10 via-transparent to-transparent" />
+      </div>
 
-        {/* Audio Player */}
-        <audio ref={audioRef} src={gameState.previewUrl} preload="auto" />
+      {/* Hidden audio element */}
+      {daily.previewUrl && (
+        <audio ref={audioRef} src={daily.previewUrl} preload="auto" />
+      )}
 
-        {/* Progress Bar */}
-        <div className="flex gap-2 mb-8">
-          {ROUND_DURATIONS.map((duration, index) => (
-            <div
-              key={index}
-              className={`flex-1 h-2 rounded-full ${
-                index < gameState.currentRound
-                  ? gameState.guessHistory[index]?.result === "correct"
-                    ? "bg-green-500"
-                    : gameState.guessHistory[index]?.result === "artist"
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
-                  : index === gameState.currentRound && !alreadyPlayed
-                  ? "bg-spotify-green"
-                  : "bg-white/20"
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Play Button */}
-        {!isGameOver && (
-          <div className="text-center mb-8">
-            <button
-              onClick={playSnippet}
-              disabled={isPlaying}
-              className="bg-spotify-green hover:bg-green-400 disabled:bg-gray-600 text-black font-bold py-4 px-8 rounded-full text-lg transition-all"
-            >
-              {isPlaying
-                ? `Playing ${ROUND_DURATIONS[gameState.currentRound]}s...`
-                : `Play ${ROUND_DURATIONS[gameState.currentRound]}s Snippet`}
-            </button>
+      {/* Header */}
+      <header className="p-6 border-b border-white/5">
+        <div className="max-w-2xl mx-auto flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Link>
+          </Button>
+          <div className="flex items-center gap-2 ml-auto">
+            <Music2 className="w-5 h-5 text-spotify-green" />
+            <span className="font-semibold">Unpaused</span>
           </div>
-        )}
+        </div>
+      </header>
 
-        {/* Game Over State */}
-        {isGameOver && (
-          <div className="text-center mb-8 p-8 bg-white/10 rounded-xl">
-            <h2 className="text-2xl font-bold mb-4">
-              {gameState.status === "won"
-                ? "You Won!"
-                : alreadyPlayed
-                ? "Already Played"
-                : "Game Over"}
-            </h2>
-            {gameState.correctTrack && (
-              <div className="mb-6">
-                <p className="text-gray-400 mb-2">The song was:</p>
-                <p className="text-xl font-semibold">
-                  {gameState.correctTrack.name}
-                </p>
-                <p className="text-gray-400">
-                  by {gameState.correctTrack.artist}
-                </p>
+      {/* Game content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+        <div className="w-full max-w-md space-y-8">
+          {/* Daily header */}
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-spotify-green/20 rounded-full text-spotify-green mb-4">
+              <Calendar className="w-4 h-4" />
+              <span className="font-medium">Daily Challenge</span>
+            </div>
+            <h1 className="text-2xl font-bold">{daily.date}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              From: {daily.playlistName}
+            </p>
+          </div>
+
+          {/* Already played message */}
+          {daily.alreadyPlayed && daily.previousResult && (
+            <div className="bg-white/5 rounded-xl p-6 border border-white/10 text-center">
+              <Trophy className="w-12 h-12 mx-auto mb-4 text-yellow-500" />
+              <h2 className="text-xl font-bold mb-2">
+                {daily.previousResult.wonAt
+                  ? `You got it in ${daily.previousResult.wonAt}!`
+                  : "Better luck tomorrow!"}
+              </h2>
+              <p className="text-muted-foreground">
+                Score: {daily.previousResult.score} / 6
+              </p>
+            </div>
+          )}
+
+          {/* Round indicator */}
+          {!daily.alreadyPlayed && (
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                {isGameOver
+                  ? daily.status === "won"
+                    ? "🎉 You got it!"
+                    : "😢 Better luck tomorrow"
+                  : `Round ${daily.currentRound + 1} of ${ROUND_DURATIONS.length}`}
+              </p>
+              <div className="flex justify-center gap-2">
+                {ROUND_DURATIONS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-8 h-2 rounded-full ${
+                      i < daily.guesses.length
+                        ? daily.guesses[i].result === "correct"
+                          ? "bg-spotify-green"
+                          : daily.guesses[i].result === "artist"
+                          ? "bg-yellow-500"
+                          : "bg-red-500/50"
+                        : i === daily.currentRound && !isGameOver
+                        ? "bg-white/30"
+                        : "bg-white/10"
+                    }`}
+                  />
+                ))}
               </div>
-            )}
-            <p className="text-gray-400 mb-6">Come back tomorrow for a new challenge!</p>
-            <button
-              onClick={() => router.push("/")}
-              className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-full transition-all"
-            >
-              Home
-            </button>
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* Track Options */}
-        {!isGameOver && (
-          <div className="space-y-3 mb-8">
-            {gameState.options.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setSelectedTrack(option.id)}
-                className={`w-full p-4 rounded-lg text-left transition-all ${
-                  selectedTrack === option.id
-                    ? "bg-spotify-green text-black"
-                    : "bg-white/10 hover:bg-white/20"
-                }`}
+          {/* Audio player */}
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+            <div className="text-center mb-4">
+              <p className="text-2xl font-bold">{snippetDuration}s</p>
+              <p className="text-sm text-muted-foreground">snippet duration</p>
+            </div>
+
+            <div className="h-2 bg-white/10 rounded-full mb-4 overflow-hidden">
+              <div
+                className="h-full bg-spotify-green transition-all duration-100"
+                style={{ width: `${isPlaying ? audioProgress : 0}%` }}
+              />
+            </div>
+
+            <div className="flex justify-center">
+              <Button
+                size="lg"
+                variant={isPlaying ? "outline" : "spotify"}
+                onClick={isPlaying ? stopAudio : playSnippet}
+                disabled={!daily.previewUrl}
+                className="rounded-full w-16 h-16"
               >
-                <p className="font-medium">{option.name}</p>
-                <p
-                  className={`text-sm ${
-                    selectedTrack === option.id
-                      ? "text-black/70"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {option.artist}
-                </p>
-              </button>
-            ))}
+                {isPlaying ? (
+                  <Pause className="w-6 h-6" />
+                ) : (
+                  <Play className="w-6 h-6 ml-1" />
+                )}
+              </Button>
+            </div>
           </div>
-        )}
 
-        {/* Action Buttons */}
-        {!isGameOver && (
-          <div className="flex gap-4">
-            <button
-              onClick={handleSkip}
-              disabled={submitting}
-              className="flex-1 bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-white font-bold py-3 px-6 rounded-full transition-all"
-            >
-              Skip
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedTrack || submitting}
-              className="flex-1 bg-spotify-green hover:bg-green-400 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-bold py-3 px-6 rounded-full transition-all"
-            >
-              Submit
-            </button>
-          </div>
-        )}
-
-        {/* Guess History */}
-        {gameState.guessHistory?.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4">Previous Guesses</h3>
+          {/* Guess history */}
+          {daily.guesses.length > 0 && (
             <div className="space-y-2">
-              {gameState.guessHistory.map((guess, index) => (
+              {daily.guesses.map((guess, i) => (
                 <div
-                  key={index}
-                  className={`p-3 rounded-lg ${
+                  key={i}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
                     guess.result === "correct"
-                      ? "bg-green-500/20 border border-green-500/50"
+                      ? "bg-spotify-green/20 border border-spotify-green/30"
                       : guess.result === "artist"
-                      ? "bg-yellow-500/20 border border-yellow-500/50"
+                      ? "bg-yellow-500/20 border border-yellow-500/30"
                       : guess.result === "skip"
-                      ? "bg-gray-500/20 border border-gray-500/50"
-                      : "bg-red-500/20 border border-red-500/50"
+                      ? "bg-white/5 border border-white/10"
+                      : "bg-red-500/20 border border-red-500/30"
                   }`}
                 >
-                  <p className="font-medium">
-                    {guess.result === "skip" ? "Skipped" : guess.trackName}
-                  </p>
-                  {guess.result !== "skip" && (
-                    <p className="text-sm text-gray-400">{guess.artistName}</p>
-                  )}
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    {guess.result === "correct" ? (
+                      <Check className="w-5 h-5 text-spotify-green" />
+                    ) : guess.result === "artist" ? (
+                      <Minus className="w-5 h-5 text-yellow-500" />
+                    ) : guess.result === "skip" ? (
+                      <SkipForward className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <X className="w-5 h-5 text-red-500" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {guess.result === "skip" ? (
+                      <p className="text-sm text-muted-foreground">Skipped</p>
+                    ) : (
+                      <>
+                        <p className="font-medium truncate">
+                          {guess.trackName || "Unknown"}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {guess.artistName || "Unknown"}
+                        </p>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Answer reveal */}
+          {isGameOver && daily.answer && (
+            <div className="bg-spotify-green/20 border border-spotify-green/30 rounded-lg p-4 text-center">
+              <p className="text-sm text-muted-foreground mb-1">
+                The answer was
+              </p>
+              <p className="text-xl font-bold">{daily.answer.name}</p>
+              <p className="text-muted-foreground">{daily.answer.artist}</p>
+            </div>
+          )}
+
+          {/* Guess input */}
+          {!isGameOver && (
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowDropdown(true);
+                    setSelectedTrack(null);
+                  }}
+                  onFocus={() => setShowDropdown(true)}
+                  placeholder="Search for a song..."
+                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/5 border border-white/10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-spotify-green/50"
+                />
+
+                {showDropdown && searchQuery && (
+                  <div className="absolute top-full left-0 right-0 mt-2 max-h-60 overflow-y-auto bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl z-10">
+                    {filteredTracks.length === 0 ? (
+                      <p className="px-4 py-3 text-sm text-muted-foreground">
+                        No matches found
+                      </p>
+                    ) : (
+                      filteredTracks.slice(0, 10).map((track) => (
+                        <button
+                          key={track.id}
+                          onClick={() => {
+                            setSelectedTrack(track);
+                            setSearchQuery(track.name);
+                            setShowDropdown(false);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors"
+                        >
+                          <p className="font-medium truncate">{track.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {track.artist}
+                          </p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  className="flex-1"
+                  onClick={() => handleGuess(false)}
+                  disabled={!selectedTrack}
+                >
+                  Submit Guess
+                </Button>
+                <Button variant="outline" onClick={() => handleGuess(true)}>
+                  <SkipForward className="w-4 h-4 mr-2" />
+                  Skip
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Back button when done */}
+          {isGameOver && (
+            <Button variant="outline" className="w-full" asChild>
+              <Link href="/">Back to Playlists</Link>
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
