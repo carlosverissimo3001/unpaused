@@ -1,0 +1,17 @@
+{
+  "name": "unpaused",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm -r build",
+    "db:generate": "pnpm --filter backend prisma:generate",
+    "db:migrate": "pnpm --filter backend prisma:migrate",
+    "db:studio": "pnpm --filter backend prisma:studio"
+  }
+}
+
+
+
+

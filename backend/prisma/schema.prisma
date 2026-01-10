@@ -1,0 +1,93 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id            String   @id @default(uuid())
+    spotifyUserId String   @unique @map("spotify_user_id")
+    displayName   String   @map("display_name")
+    isTrusted     Boolean  @default(false) @map("is_trusted")
+    createdAt     DateTime @default(now()) @map("created_at")
+    updatedAt     DateTime @updatedAt @map("updated_at")
+
+    gameSessions GameSession[]
+    dailyResults DailyResult[]
+
+    @@map("users")
+}
+
+
+model GameSession {
+    id String @id @default(uuid())
+
+    // Optional, as it can be played by guests too
+    userId String? @map("user_id")
+    user   User?   @relation(fields: [userId], references: [id])
+
+    // Source: either a playlist ID or "daily"
+    playlistId String  @map("playlist_id")
+    isDaily    Boolean @default(false) @map("is_daily")
+
+    // The track to guess (Spotify track ID)
+    trackId    String  @map("track_id")
+    trackName  String  @map("track_name")
+    artistName String  @map("artist_name")
+    previewUrl String? @map("preview_url")
+
+    // Game state
+    currentRound Int    @default(0) @map("current_round")
+    guesses      Json   @default("[]") // Array of { trackId, trackName, artistName, result: "correct"|"artist"|"wrong"|"skip" }
+    status       String @default("playing") // "playing" | "won" | "lost"
+
+    createdAt   DateTime  @default(now()) @map("created_at")
+    completedAt DateTime? @map("completed_at")
+
+    @@map("game_sessions")
+}
+
+// Daily puzzle - one per day for trusted users
+model DailyPuzzle {
+    id   String   @id @default(uuid())
+    date DateTime @unique @db.Date // The day this puzzle is for
+
+    // Source playlist (from trusted user's playlists)
+    playlistId   String @map("playlist_id")
+    playlistName String @map("playlist_name")
+
+    // The track to guess
+    trackId    String  @map("track_id")
+    trackName  String  @map("track_name")
+    artistName String  @map("artist_name")
+    previewUrl String? @map("preview_url")
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    results DailyResult[]
+
+    @@map("daily_puzzles")
+}
+
+// Daily results - one per user per puzzle
+model DailyResult {
+    id String @id @default(uuid())
+
+    puzzleId String      @map("puzzle_id")
+    puzzle   DailyPuzzle @relation(fields: [puzzleId], references: [id])
+
+    userId String @map("user_id")
+    user   User   @relation(fields: [userId], references: [id])
+
+    guesses Json @default("[]") // Same format as GameSession
+    score   Int // 0-6, where 6 = first try, 0 = failed
+    wonAt   Int? @map("won_at") // Round won at (1-6), null if lost
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@unique([puzzleId, userId])
+    @@map("daily_results")
+}
