@@ -1,43 +1,56 @@
-import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { AppModule } from "./app.module";
-import cookieParser from "cookie-parser";
+ 
+ 
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as fs from 'fs';
+import * as path from 'path';
+import cookieParser from 'cookie-parser';
+import { VALIDATION_CONFIG } from './utils/validators/validators';
+import { SESSION_COOKIE_NAME } from './auth/consts';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for frontend
+  app.use(cookieParser());
+
+  const config = new DocumentBuilder()
+    .setTitle('Unpaused Spotify API')
+    .setDescription('The backend for the Spotify guessing game')
+    .setVersion('1.0')
+    .addCookieAuth('unpaused_session', {
+      type: 'apiKey',
+      in: 'cookie',
+      name: SESSION_COOKIE_NAME
+    })
+    .build();
+
+    const document = SwaggerModule.createDocument(app, config, {
+      operationIdFactory: (_controllerKey: string, methodKey: string) => methodKey,
+    });
+
+  fs.writeFileSync(
+    path.join(__dirname, '../..', 'swagger-spec.json'),
+    JSON.stringify(document, null, 2),
+  );
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  // Parse cookies
-  app.use(cookieParser());
+  SwaggerModule.setup('docs', app, document);
 
-  // Global validation pipe for DTOs
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-    })
-  );
+  app.useGlobalPipes(VALIDATION_CONFIG);
+  await app.listen(process.env.PORT ?? 3001);
 
-  // Swagger/OpenAPI setup
-  const config = new DocumentBuilder()
-    .setTitle("Unpaused API")
-    .setDescription("Music discovery app powered by Spotify")
-    .setVersion("1.0")
-    .addCookieAuth("unpaused_session")
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api/docs", app, document);
-
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
-  console.log(`Backend running on http://localhost:${port}`);
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
 }
 
 bootstrap();

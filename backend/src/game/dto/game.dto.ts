@@ -1,5 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsOptional, IsBoolean } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { GameStatus } from "@prisma/client";
+import { IsString, IsOptional, IsBoolean, IsEnum } from "class-validator";
+import { GuessResult } from "../consts";
 
 export const ROUND_DURATIONS = [0.1, 0.5, 1, 2, 4, 8];
 export const MAX_ROUNDS = ROUND_DURATIONS.length;
@@ -11,26 +13,28 @@ export class StartGameDto {
 }
 
 export class GuessDto {
-  @ApiProperty({ example: "7ouMYWpwJ422jRcDASAM9z", required: false })
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   trackId?: string;
 
-  @ApiProperty({ example: true })
+  @ApiProperty()
   @IsBoolean()
   @IsOptional()
-  skip?: boolean;
+  skip: boolean = false;
 }
 
 export class GuessResultDto {
-  @ApiProperty({ enum: ["correct", "artist", "wrong", "skip"] })
-  result: "correct" | "artist" | "wrong" | "skip";
+  @ApiProperty({ enum: GuessResult, description: "The result of the guess" })
+  @IsEnum(GuessResult)
+  result: GuessResult;
 
   @ApiProperty({ example: false })
   gameOver: boolean;
 
-  @ApiProperty({ example: "won", enum: ["playing", "won", "lost"] })
-  status: "playing" | "won" | "lost";
+  @ApiProperty({ example: "won", enum: GameStatus })
+  @IsEnum(GameStatus)
+  status: GameStatus;
 
   @ApiProperty({ example: 2 })
   currentRound: number;
@@ -48,20 +52,26 @@ export class TrackOptionDto {
 
   @ApiProperty({ example: "Bruno Mars" })
   artist: string;
+
+  @ApiProperty({ example: "https://i.scdn.co/image/...", required: false })
+  albumImageUrl?: string;
 }
 
 export class GuessHistoryDto {
-  @ApiProperty({ example: "7ouMYWpwJ422jRcDASAM9z", nullable: true })
-  trackId: string | null;
+  @ApiPropertyOptional({ example: "7ouMYWpwJ422jRcDASAM9z", nullable: true, type: String })
+  trackId?: string;
 
-  @ApiProperty({ example: "Grenade", nullable: true })
-  trackName: string | null;
+  @ApiPropertyOptional({ example: "Grenade", nullable: true, type: String })
+  trackName?: string;
 
-  @ApiProperty({ example: "Bruno Mars", nullable: true })
-  artistName: string | null;
+  @ApiPropertyOptional({ example: "Bruno Mars", nullable: true, type: String })
+  @IsString()
+  @IsOptional()
+  artistName?: string;
 
-  @ApiProperty({ enum: ["correct", "artist", "wrong", "skip"] })
-  result: "correct" | "artist" | "wrong" | "skip";
+  @ApiProperty({ enum: GuessResult, description: "The result of the guess" })
+  @IsEnum(GuessResult)
+  result: GuessResult;
 }
 
 export class GameStateDto {
@@ -74,36 +84,19 @@ export class GameStateDto {
   @ApiProperty({ example: 1.0 })
   snippetDuration: number;
 
-  @ApiProperty({ example: "playing", enum: ["playing", "won", "lost"] })
-  status: "playing" | "won" | "lost";
+  @ApiProperty({ example: "playing", enum: GameStatus })
+  @IsEnum(GameStatus)
+  status: GameStatus;
 
   @ApiProperty({ type: [GuessHistoryDto] })
   guesses: GuessHistoryDto[];
 
-  @ApiProperty({ example: "https://p.scdn.co/mp3-preview/..." })
-  previewUrl: string | null;
+  @ApiPropertyOptional({ description: "The preview URL of the current track" , type: String})
+  previewUrl?: string;
 
   @ApiProperty({ type: [TrackOptionDto] })
   trackOptions: TrackOptionDto[];
 
   @ApiProperty({ type: TrackOptionDto, nullable: true })
   answer: TrackOptionDto | null;
-}
-
-export class DailyStateDto extends GameStateDto {
-  @ApiProperty({ example: "2024-01-15" })
-  date: string;
-
-  @ApiProperty({ example: "Chill Vibes" })
-  playlistName: string;
-
-  @ApiProperty({ example: false })
-  alreadyPlayed: boolean;
-
-  @ApiProperty({ nullable: true })
-  previousResult: {
-    guesses: GuessHistoryDto[];
-    score: number;
-    wonAt: number | null;
-  } | null;
 }

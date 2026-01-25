@@ -5,10 +5,10 @@ import { SessionService } from "./session.service";
 import { v4 as uuidv4 } from "uuid";
 import { LoginStartResult } from "../types";
 import { UserRepository } from "../repositories/user.repository";
-import { addDays } from "date-fns";
 import { AuthMeResponseDto } from "../dto/auth.dto";
-import { MS_IN_SECOND } from "../consts";
+import { MS_IN_HOUR, MS_IN_MINUTE } from "../consts";
 import { UserSessionDto } from "../dto/user-session.dto";
+import { User } from "@prisma/client";
 
 @Injectable()
 export class AuthService {
@@ -47,8 +47,9 @@ export class AuthService {
     const tokens = await this.spotifyService.exchangeCodeForTokens(code, pkceState.codeVerifier);
 
     const profile = await this.spotifyService.getUserProfile(tokens.accessToken);
-    const displayName = profile.display_name || profile.id;
+    const displayName = profile.displayName || profile.id;
 
+    // fyi: Move this to repo later
     const user = await this.prismaService.user.upsert({
       where: { spotifyUserId: profile.id },
       create: {
@@ -99,9 +100,18 @@ export class AuthService {
       throw new UnauthorizedException("Session not found");
     }
 
-    // Check if token is expired or about to expire (5 min buffer)
-    const bufferMs = 5 * 60 * MS_IN_SECOND;
-    if (session.tokens.expiresAt - Date.now() < bufferMs) {
+    const bufferMs = 5 * MS_IN_MINUTE;
+    const timeUntilExpiry = session.tokens.expiresAt - Date.now();
+    
+    if (timeUntilExpiry < bufferMs) {
+      if (!session.tokens.refreshToken || session.tokens.refreshToken.trim() === "") {
+        if (timeUntilExpiry <= 0) {
+          await this.sessionService.deleteSession(sessionId);
+          throw new UnauthorizedException("Session expired and cannot be refreshed");
+        }
+        return session;
+      }
+      
       try {
         const newTokens = await this.spotifyService.refreshAccessToken(session.tokens.refreshToken);
         session.tokens = newTokens;
@@ -117,6 +127,20 @@ export class AuthService {
   }
 
   /**
+   * Get user by session ID
+   * @param sessionId - The session ID
+   * @returns The user
+   */
+  async getUserBySessionId(sessionId: string): Promise<User> {
+    const session = await this.sessionService.getSession(sessionId);
+    const user = await this.prismaService.user.findUnique({ where: { spotifyUserId: session.spotifyUserId } });
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    return user;
+  }
+
+  /**
    * Logout: delete session
    * @param sessionId - The session ID
    */
@@ -125,33 +149,41 @@ export class AuthService {
   }
 
   /**
-   * Dev-only: create a mock session without Spotify OAuth
+   * Dev-only: create a session using a manually provided Spotify token
+   * This validates the token by fetching the user profile from Spotify
+   * @param accessToken - A valid Spotify access token
+   * @param refreshToken - Optional refresh token (token won't auto-refresh without it)
    * @returns The session ID
    */
-  async createDevSession(): Promise<string> {
-    const mockSpotifyId = "dev_user_123";
-    const mockDisplayName = "Dev User";
-
-    const user = await this.userRepository.upsert({
-      spotifyUserId: mockSpotifyId,
-      displayName: mockDisplayName,
-      isTrusted: true,
+  async createSessionFromToken(
+    accessToken: string,
+    refreshToken?: string
+  ): Promise<string> {
+    const profile = await this.spotifyService.getUserProfile(accessToken);
+    
+    // fyi: Move this to repo later
+    const user = await this.prismaService.user.upsert({
+      where: { spotifyUserId: profile.id },
+      create: {
+        spotifyUserId: profile.id,
+        displayName: profile.displayName || profile.id,
+      },
+      update: {
+        displayName: profile.displayName || profile.id,
+      },
     });
-
-    // Mock tokens, doesn't work for real Spotify API calls of course :)
-    const mockTokens = {
-      accessToken: "mock_access_token",
-      refreshToken: "mock_refresh_token",
-      expiresAt: addDays(new Date(), 1).getTime(),
+  
+    const tokens = {
+      accessToken,
+      refreshToken: refreshToken ?? "",
+      expiresAt: Date.now() + MS_IN_HOUR
     };
-
-    const sessionId = await this.sessionService.createSession(
+  
+    return this.sessionService.createSession(
       user.spotifyUserId,
       user.displayName,
       user.isTrusted,
-      mockTokens
+      tokens
     );
-
-    return sessionId;
   }
 }

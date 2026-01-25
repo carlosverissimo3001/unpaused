@@ -8,10 +8,9 @@
     "build": "pnpm -r build",
     "db:generate": "pnpm --filter backend prisma:generate",
     "db:migrate": "pnpm --filter backend prisma:migrate",
-    "db:studio": "pnpm --filter backend prisma:studio"
+    "db:studio": "pnpm --filter backend prisma:studio",
+    "gen:json": "pnpm --filter backend run swagger",
+    "gen:sdk": "pnpm exec openapi-generator-cli generate -i ./swagger-spec.json -g typescript-fetch -o ./frontend/sdk --additional-properties=typescriptThreePlus=true",
+    "build:sdk": "pnpm run gen:json && pnpm run gen:sdk"
   }
 }
-
-
-
-

@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
     provider = "postgresql"
-    url      = env("DATABASE_URL")
 }
 
 model User {
@@ -21,28 +20,31 @@ model User {
     @@map("users")
 }
 
+enum GameStatus {
+    PLAYING
+    WON
+    LOST
+}
+
 
 model GameSession {
     id String @id @default(uuid())
 
-    // Optional, as it can be played by guests too
     userId String? @map("user_id")
     user   User?   @relation(fields: [userId], references: [id])
 
-    // Source: either a playlist ID or "daily"
     playlistId String  @map("playlist_id")
     isDaily    Boolean @default(false) @map("is_daily")
 
-    // The track to guess (Spotify track ID)
-    trackId    String  @map("track_id")
-    trackName  String  @map("track_name")
-    artistName String  @map("artist_name")
-    previewUrl String? @map("preview_url")
+    trackId       String  @map("track_id")
+    trackName     String  @map("track_name")
+    artistName    String  @map("artist_name")
+    albumImageUrl String? @map("album_image_url")
+    previewUrl    String? @map("preview_url")
 
-    // Game state
     currentRound Int    @default(0) @map("current_round")
-    guesses      Json   @default("[]") // Array of { trackId, trackName, artistName, result: "correct"|"artist"|"wrong"|"skip" }
-    status       String @default("playing") // "playing" | "won" | "lost"
+    guesses      Json   @default("[]") 
+    status       GameStatus @default(PLAYING)
 
     createdAt   DateTime  @default(now()) @map("created_at")
     completedAt DateTime? @map("completed_at")
@@ -50,20 +52,18 @@ model GameSession {
     @@map("game_sessions")
 }
 
-// Daily puzzle - one per day for trusted users
 model DailyPuzzle {
     id   String   @id @default(uuid())
-    date DateTime @unique @db.Date // The day this puzzle is for
+    date DateTime @unique @db.Date 
 
-    // Source playlist (from trusted user's playlists)
     playlistId   String @map("playlist_id")
     playlistName String @map("playlist_name")
 
-    // The track to guess
-    trackId    String  @map("track_id")
-    trackName  String  @map("track_name")
-    artistName String  @map("artist_name")
-    previewUrl String? @map("preview_url")
+    trackId       String  @map("track_id")
+    trackName     String  @map("track_name")
+    artistName    String  @map("artist_name")
+    albumImageUrl String? @map("album_image_url")
+    previewUrl    String? @map("preview_url")
 
     createdAt DateTime @default(now()) @map("created_at")
 
@@ -72,7 +72,6 @@ model DailyPuzzle {
     @@map("daily_puzzles")
 }
 
-// Daily results - one per user per puzzle
 model DailyResult {
     id String @id @default(uuid())
 
@@ -82,12 +81,25 @@ model DailyResult {
     userId String @map("user_id")
     user   User   @relation(fields: [userId], references: [id])
 
-    guesses Json @default("[]") // Same format as GameSession
-    score   Int // 0-6, where 6 = first try, 0 = failed
-    wonAt   Int? @map("won_at") // Round won at (1-6), null if lost
+    guesses Json @default("[]")
+    score   Int 
+    wonAt   Int? @map("won_at")
 
     createdAt DateTime @default(now()) @map("created_at")
 
     @@unique([puzzleId, userId])
     @@map("daily_results")
+}
+
+model Track {
+  id            String   @id 
+  name          String
+  artistName    String   @map("artist_name")
+  albumImageUrl String?  @map("album_image_url")
+  previewUrl    String?  @map("preview_url") 
+  
+  lastScrapedAt DateTime @default(now()) @map("last_scraped_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("tracks")
 }

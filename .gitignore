@@ -1,42 +1,63 @@
+# ------------------------------------------------------------------------------
 # Dependencies
+# ------------------------------------------------------------------------------
 node_modules/
 .pnpm-store/
+jspm_packages/
 
-# Build outputs
+# ------------------------------------------------------------------------------
+# Build & Workspace Outputs
+# ------------------------------------------------------------------------------
 dist/
 .next/
 out/
+build/
+*.tsbuildinfo
+.turbo/
 
-# Environment files
+# ------------------------------------------------------------------------------
+# Generated SDK & Documentation
+# ------------------------------------------------------------------------------
+# We ignore the generated SDK code because it's massive and auto-built.
+# We do NOT ignore the swagger-spec.json so we can see API changes in PRs.
+frontend/src/sdk/gen/
+.openapi-generator/
+
+# ------------------------------------------------------------------------------
+# Environment & Secrets
+# ------------------------------------------------------------------------------
 .env
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
 
-# IDE
+# ------------------------------------------------------------------------------
+# Databases (Prisma & SQLite)
+# ------------------------------------------------------------------------------
+backend/prisma/*.db
+backend/prisma/*.db-journal
+dev.db
+dev.db-journal
+
+# ------------------------------------------------------------------------------
+# IDE, OS, & Logs
+# ------------------------------------------------------------------------------
 .idea/
 .vscode/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db
-
-# Logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Prisma
-backend/prisma/*.db
-backend/prisma/*.db-journal
-
-# Next.js
-frontend/.next/
-frontend/out/
-
-# Testing
+# ------------------------------------------------------------------------------
+# Testing & Coverage
+# ------------------------------------------------------------------------------
 coverage/
-
-# Misc
-*.tsbuildinfo
+.nyc_output/

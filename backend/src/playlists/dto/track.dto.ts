@@ -1,65 +1,39 @@
-import { ApiProperty } from "@nestjs/swagger";
-
-export class ArtistDto {
-  @ApiProperty({ example: "0du5cEVh5yTK9QJze8zA0C" })
-  id: string;
-
-  @ApiProperty({ example: "Bruno Mars" })
-  name: string;
-}
-
-export class AlbumImageDto {
-  @ApiProperty({ example: "https://i.scdn.co/image/ab67616d0000b273..." })
-  url: string;
-
-  @ApiProperty({ example: 640, nullable: true })
-  height: number | null;
-
-  @ApiProperty({ example: 640, nullable: true })
-  width: number | null;
-}
-
-export class AlbumDto {
-  @ApiProperty({ example: "4aawyAB9vmqN3uQ7FjRGTy" })
-  id: string;
-
-  @ApiProperty({ example: "Doo-Wops & Hooligans" })
-  name: string;
-
-  @ApiProperty({ type: [AlbumImageDto] })
-  images: AlbumImageDto[];
-}
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class TrackDto {
-  @ApiProperty({ example: "7ouMYWpwJ422jRcDASAM9z" })
+  @ApiProperty()
   id: string;
 
-  @ApiProperty({ example: "Grenade" })
+  @ApiProperty()
   name: string;
 
-  @ApiProperty({ type: [ArtistDto] })
-  artists: ArtistDto[];
+  @ApiProperty({type: String, isArray: true})
+  artists: string[];
 
-  @ApiProperty({ type: AlbumDto })
-  album: AlbumDto;
+  @ApiProperty()
+  albumName: string;
 
-  @ApiProperty({ example: 223946, description: "Duration in milliseconds" })
+  @ApiProperty()
+  imageUrl: string;
+
+  @ApiProperty()
   durationMs: number;
 
-  @ApiProperty({ example: "https://open.spotify.com/track/7ouMYWpwJ422jRcDASAM9z" })
+  @ApiProperty()
   externalUrl: string;
 
-  @ApiProperty({ example: "https://p.scdn.co/mp3-preview/...", nullable: true })
-  previewUrl: string | null;
+  @ApiPropertyOptional({ type: String })
+  previewUrl?: string;
 
-  @ApiProperty({ example: false, description: "Whether track is playable" })
+  @ApiProperty()
   isPlayable: boolean;
-}
 
-export class PlaylistTrackDto {
-  @ApiProperty({ type: TrackDto })
-  track: TrackDto;
+  @ApiProperty({ description: "The primary artist for easier comparison" })
+  primaryArtist: string;
 
-  @ApiProperty({ example: "2023-12-15T10:30:00Z" })
-  addedAt: string;
+  @ApiPropertyOptional({ description: "Popularity score 0-100 for game balancing" })
+  popularity?: number;
+
+  @ApiProperty({ description: "Is the track explicit" })
+  isExplicit: boolean;
 }

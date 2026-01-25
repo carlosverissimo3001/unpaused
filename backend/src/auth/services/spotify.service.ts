@@ -1,19 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { UserProfileDto } from '../dto/user-profile.dto';
 
 // Spotify token response
 export interface SpotifyTokens {
   accessToken: string;
   refreshToken: string;
   expiresAt: number; // Unix timestamp in ms
-}
-
-// Spotify user profile from /me endpoint
-export interface SpotifyUserProfile {
-  id: string;
-  display_name: string | null;
-  email?: string;
 }
 
 @Injectable()
@@ -136,20 +130,31 @@ export class SpotifyService {
 
   /**
    * Fetch user profile from Spotify /me endpoint
+   * @param accessToken - The access token to use for the request
+   * @returns The user profile
    */
-  async getUserProfile(accessToken: string): Promise<SpotifyUserProfile> {
+  async getUserProfile(accessToken: string): Promise<UserProfileDto> {
     const response = await fetch('https://api.spotify.com/v1/me', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
 
+
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Spotify /me failed: ${error}`);
+      if (response.status === HttpStatus.UNAUTHORIZED) {
+        throw new UnauthorizedException('Spotify token is invalid or expired');
+      }
+      throw new BadRequestException(`Spotify API returned ${response.status}`);
     }
 
-    return response.json();
+    const rawData = await response.json();
+
+    return {
+      id: rawData.id,
+      displayName: rawData.display_name,
+      avatarUrl: rawData.images?.[0]?.url ?? '/default-avatar.png',
+    };
   }
 }
 
