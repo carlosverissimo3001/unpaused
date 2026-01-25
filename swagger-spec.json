@@ -1,0 +1,752 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/login": {
+      "get": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "Redirects to Spotify authorization"
+          }
+        },
+        "summary": "Start Spotify OAuth flow",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/auth/callback": {
+      "get": {
+        "operationId": "AuthController_callback",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects to frontend after auth"
+          }
+        },
+        "summary": "Handle Spotify OAuth callback",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get current authenticated user",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successfully logged out"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Logout and clear session",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/auth/token-login": {
+      "post": {
+        "description": "Use this when you have a Spotify access token but can't use OAuth flow. The token is validated by fetching your Spotify profile.",
+        "operationId": "AuthController_tokenLogin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully logged in"
+          },
+          "401": {
+            "description": "Invalid token"
+          },
+          "403": {
+            "description": "Not available in production"
+          }
+        },
+        "summary": "Dev-only: Login with a manually obtained Spotify token",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/playlists/me": {
+      "get": {
+        "operationId": "PlaylistsController_getMyPlaylists",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "includePrivate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "example": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "onlyUserOwned",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "example": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaylistsResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get current user's playlists",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/playlists/{id}": {
+      "get": {
+        "operationId": "PlaylistsController_getPlaylistById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaylistDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "Playlist not found"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get playlist by ID",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/game/start": {
+      "post": {
+        "operationId": "GameController_startGame",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartGameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Start a new game from a playlist",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/game/{id}": {
+      "get": {
+        "operationId": "GameController_getGameState",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The internal Game Session UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current game state",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/game/{id}/guess": {
+      "post": {
+        "operationId": "GameController_submitGuess",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The internal Game Session UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuessResultDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Submit a guess for a specific session",
+        "tags": [
+          "Api"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Unpaused Spotify API",
+    "description": "",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "unpaused_session"
+      }
+    },
+    "schemas": {
+      "AuthMeResponseDto": {
+        "type": "object",
+        "properties": {
+          "spotifyUserId": {
+            "type": "string",
+            "example": "spotify_user_123"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "isTrusted": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "spotifyUserId",
+          "displayName",
+          "isTrusted"
+        ]
+      },
+      "TokenLoginDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Spotify access token"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Spotify refresh token (optional)"
+          }
+        },
+        "required": [
+          "accessToken"
+        ]
+      },
+      "TrackDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "artists": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "albumName": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "number"
+          },
+          "externalUrl": {
+            "type": "string"
+          },
+          "previewUrl": {
+            "type": "string"
+          },
+          "isPlayable": {
+            "type": "boolean"
+          },
+          "primaryArtist": {
+            "type": "string",
+            "description": "The primary artist for easier comparison"
+          },
+          "popularity": {
+            "type": "number",
+            "description": "Popularity score 0-100 for game balancing"
+          },
+          "isExplicit": {
+            "type": "boolean",
+            "description": "Is the track explicit"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "artists",
+          "albumName",
+          "imageUrl",
+          "durationMs",
+          "externalUrl",
+          "isPlayable",
+          "primaryArtist",
+          "isExplicit"
+        ]
+      },
+      "PlaylistDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the playlist"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the playlist"
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the playlist",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "The image URL of the playlist"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The owner of the playlist"
+          },
+          "totalTracks": {
+            "type": "number",
+            "description": "The total number of tracks in the playlist"
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "Whether the playlist is public"
+          },
+          "externalUrl": {
+            "type": "string",
+            "description": "The external URL of the playlist"
+          },
+          "tracks": {
+            "description": "The tracks in the playlist",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "imageUrl",
+          "owner",
+          "totalTracks",
+          "isPublic",
+          "externalUrl",
+          "tracks"
+        ]
+      },
+      "PlaylistsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "The playlists",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlaylistDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "The total number of playlists"
+          },
+          "limit": {
+            "type": "number",
+            "description": "The limit of the playlists"
+          },
+          "offset": {
+            "type": "number",
+            "description": "The offset of the playlists"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "StartGameDto": {
+        "type": "object",
+        "properties": {
+          "playlistId": {
+            "type": "string",
+            "example": "37i9dQZF1DXcBWIGoYBM5M"
+          }
+        },
+        "required": [
+          "playlistId"
+        ]
+      },
+      "GuessHistoryDto": {
+        "type": "object",
+        "properties": {
+          "trackId": {
+            "type": "string",
+            "example": "7ouMYWpwJ422jRcDASAM9z",
+            "nullable": true
+          },
+          "trackName": {
+            "type": "string",
+            "example": "Grenade",
+            "nullable": true
+          },
+          "artistName": {
+            "type": "string",
+            "example": "Bruno Mars",
+            "nullable": true
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "CORRECT",
+              "ARTIST",
+              "WRONG",
+              "SKIP"
+            ],
+            "description": "The result of the guess"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "TrackOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "7ouMYWpwJ422jRcDASAM9z"
+          },
+          "name": {
+            "type": "string",
+            "example": "Grenade"
+          },
+          "artist": {
+            "type": "string",
+            "example": "Bruno Mars"
+          },
+          "albumImageUrl": {
+            "type": "string",
+            "example": "https://i.scdn.co/image/..."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "artist"
+        ]
+      },
+      "GameStateDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "example": "uuid-session-id"
+          },
+          "currentRound": {
+            "type": "number",
+            "example": 2
+          },
+          "snippetDuration": {
+            "type": "number",
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "example": "playing",
+            "enum": [
+              "PLAYING",
+              "WON",
+              "LOST"
+            ]
+          },
+          "guesses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuessHistoryDto"
+            }
+          },
+          "previewUrl": {
+            "type": "string",
+            "description": "The preview URL of the current track"
+          },
+          "trackOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackOptionDto"
+            }
+          },
+          "answer": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrackOptionDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "sessionId",
+          "currentRound",
+          "snippetDuration",
+          "status",
+          "guesses",
+          "trackOptions",
+          "answer"
+        ]
+      },
+      "GuessDto": {
+        "type": "object",
+        "properties": {
+          "trackId": {
+            "type": "string"
+          },
+          "skip": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "skip"
+        ]
+      },
+      "GuessResultDto": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "enum": [
+              "CORRECT",
+              "ARTIST",
+              "WRONG",
+              "SKIP"
+            ],
+            "description": "The result of the guess"
+          },
+          "gameOver": {
+            "type": "boolean",
+            "example": false
+          },
+          "status": {
+            "type": "string",
+            "example": "won",
+            "enum": [
+              "PLAYING",
+              "WON",
+              "LOST"
+            ]
+          },
+          "currentRound": {
+            "type": "number",
+            "example": 2
+          },
+          "snippetDuration": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "result",
+          "gameOver",
+          "status",
+          "currentRound",
+          "snippetDuration"
+        ]
+      }
+    }
+  }
+}

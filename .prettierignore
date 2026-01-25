@@ -1,0 +1,25 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+build
+.next
+out
+
+# Generated files
+*.generated.*
+swagger-spec.json
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

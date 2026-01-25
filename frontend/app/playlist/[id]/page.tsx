@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { fetchPlaylistById, fetchMe, type PlaylistDetails, type User } from "@/lib/api";
 import {
   ArrowLeft,
   Music2,
@@ -15,47 +13,29 @@ import {
   ExternalLink,
   Globe,
   Lock,
+  Play,
 } from "lucide-react";
+import { useMe } from "@/hooks/useMe";
+import { usePlaylistById } from "@/hooks/usePlaylistById";
 
 export default function PlaylistPage() {
   const params = useParams();
   const router = useRouter();
   const playlistId = params.id as string;
 
-  const [user, setUser] = useState<User | null>(null);
-  const [playlist, setPlaylist] = useState<PlaylistDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // TanStack Query hooks
+  const { data: user, isLoading: isLoadingUser } = useMe();
+  const { data: playlist, isLoading: isLoadingPlaylist, error: playlistError } = usePlaylistById(playlistId);
 
-  useEffect(() => {
-    fetchMe().then((u) => {
-      if (!u) {
-        router.push("/");
-        return;
-      }
-      setUser(u);
-    });
-  }, [router]);
+  // Redirect if not authenticated
+  if (!isLoadingUser && !user) {
+    router.push("/");
+    return null;
+  }
 
-  useEffect(() => {
-    if (!user || !playlistId) return;
+  const loading = isLoadingUser || isLoadingPlaylist;
 
-    setLoading(true);
-    setError(null);
-
-    fetchPlaylistById(playlistId)
-      .then((p) => {
-        if (!p) {
-          setError("Playlist not found");
-        } else {
-          setPlaylist(p);
-        }
-      })
-      .catch(() => setError("Failed to load playlist"))
-      .finally(() => setLoading(false));
-  }, [user, playlistId]);
-
-  if (loading || !user) {
+  if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <Disc3 className="w-12 h-12 text-primary animate-spin" />
@@ -63,10 +43,12 @@ export default function PlaylistPage() {
     );
   }
 
-  if (error || !playlist) {
+  if (playlistError || !playlist) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-destructive">{error || "Playlist not found"}</p>
+        <p className="text-destructive">
+          {playlistError instanceof Error ? playlistError.message : "Playlist not found"}
+        </p>
         <Button variant="outline" asChild>
           <Link href="/">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -77,11 +59,8 @@ export default function PlaylistPage() {
     );
   }
 
-  const imageUrl = playlist.images[0]?.url;
-  const totalDurationMs = playlist.tracks.reduce(
-    (acc, t) => acc + t.track.durationMs,
-    0
-  );
+  const imageUrl = playlist.imageUrl;
+  const totalDurationMs = playlist.tracks.reduce((acc, t) => acc + (t.durationMs || 0), 0);
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -133,25 +112,19 @@ export default function PlaylistPage() {
             <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">
               Playlist
             </p>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-              {playlist.name}
-            </h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">{playlist.name}</h1>
             {playlist.description && (
-              <p className="text-muted-foreground mb-4 max-w-lg">
-                {playlist.description}
-              </p>
+              <p className="text-muted-foreground mb-4 max-w-lg">{playlist.description}</p>
             )}
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">
-                {playlist.owner.displayName}
-              </span>
+              <span className="font-medium text-foreground">{playlist.owner}</span>
               <span>•</span>
               <span>{playlist.totalTracks} tracks</span>
               <span>•</span>
               <span>{formatDuration(totalDurationMs)}</span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                {playlist.public ? (
+                {playlist.isPublic ? (
                   <>
                     <Globe className="w-3 h-3" />
                     Public
@@ -164,7 +137,13 @@ export default function PlaylistPage() {
                 )}
               </span>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Button variant="spotify" size="sm" asChild>
+                <Link href={`/game/${playlist.id}`}>
+                  <Play className="w-4 h-4 mr-2" />
+                  Play Game
+                </Link>
+              </Button>
               <Button variant="outline" size="sm" asChild>
                 <a
                   href={playlist.externalUrl}
@@ -195,12 +174,8 @@ export default function PlaylistPage() {
 
           {/* Tracks */}
           <div className="space-y-1">
-            {playlist.tracks.map((item, index) => (
-              <TrackRow
-                key={item.track.id}
-                track={item.track}
-                index={index + 1}
-              />
+            {playlist.tracks.map((track, index) => (
+              <TrackRow key={track.id ?? `track-${index}`} track={track} index={index + 1} />
             ))}
           </div>
 
@@ -216,21 +191,13 @@ export default function PlaylistPage() {
   );
 }
 
-function TrackRow({
-  track,
-  index,
-}: {
-  track: PlaylistDetails["tracks"][0]["track"];
-  index: number;
-}) {
-  const albumImageUrl = track.album.images[0]?.url;
+function TrackRow({ track, index }: { track: any; index: number }) {
+  const albumImageUrl = track.imageUrl;
 
   return (
     <div className="group grid grid-cols-[auto_1fr_1fr_auto] gap-4 px-4 py-2 rounded-lg hover:bg-white/5 transition-colors items-center">
       {/* Index */}
-      <span className="w-8 text-center text-sm text-muted-foreground">
-        {index}
-      </span>
+      <span className="w-8 text-center text-sm text-muted-foreground">{index}</span>
 
       {/* Track info */}
       <div className="flex items-center gap-3 min-w-0">
@@ -238,7 +205,7 @@ function TrackRow({
           {albumImageUrl ? (
             <Image
               src={albumImageUrl}
-              alt={track.album.name}
+              alt={track.albumName}
               fill
               className="object-cover"
               sizes="40px"
@@ -254,19 +221,19 @@ function TrackRow({
             {track.name}
           </p>
           <p className="text-sm text-muted-foreground truncate">
-            {track.artists.map((a) => a.name).join(", ")}
+            {Array.isArray(track.artists) ? track.artists.join(", ") : track.primaryArtist}
           </p>
         </div>
       </div>
 
       {/* Album */}
       <p className="text-sm text-muted-foreground truncate hidden sm:block">
-        {track.album.name}
+        {track.albumName}
       </p>
 
       {/* Duration */}
       <span className="text-sm text-muted-foreground text-right">
-        {formatTrackDuration(track.durationMs)}
+        {formatTrackDuration(track.durationMs || 0)}
       </span>
     </div>
   );

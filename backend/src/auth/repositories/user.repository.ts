@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "@prisma/client";
+import { User as PrismaUser } from "@prisma/client";
 import { UserEntity } from "../entities/user.entity";
-import { PrismaService } from "src/prisma/prisma.service";
+import { PrismaService } from "@prisma/prisma.service";
 import { UpsertUserDto } from "../dto/upsert-user.dto";
 
 @Injectable()
@@ -62,7 +62,7 @@ export class UserRepository {
    * @param user - The Prisma user
    * @returns The UserEntity
    */
-  private fromPrisma(user: User): UserEntity {
+  private fromPrisma(user: PrismaUser): UserEntity {
     // This is a weird syntax, but will allow us to map something like a null to undefined lated
     return {
       ...user,

@@ -24,7 +24,10 @@
       "@redis/*": ["src/redis/*"],
       "@prisma/*": ["src/prisma/*"],
       "@playlists/*": ["src/playlists/*"],
-      "@game/*": ["src/game/*"]
+      "@game/*": ["src/game/*"],
+      "@spotify/*": ["src/spotify/*"],
+      "@tracks/*": ["src/tracks/*"],
+      "@utils/*": ["src/utils/*"]
     }
   }
 }

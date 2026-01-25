@@ -1,60 +1,31 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { TrackDto } from "./track.dto";
 
-export class PlaylistImageDto {
-  @ApiProperty({ example: "https://i.scdn.co/image/ab67616d0000b273..." })
-  url: string;
-
-  @ApiProperty({ example: 640, nullable: true })
-  height: number | null;
-
-  @ApiProperty({ example: 640, nullable: true })
-  width: number | null;
-}
-
-export class PlaylistOwnerDto {
-  @ApiProperty({ example: "spotify_user_123" })
+export class PlaylistDto {
+  @ApiProperty({ description: "The ID of the playlist" })
   id: string;
 
-  @ApiProperty({ example: "John Doe" })
-  displayName: string;
-}
-
-export class PlaylistSummaryDto {
-  @ApiProperty({ example: "37i9dQZF1DXcBWIGoYBM5M" })
-  id: string;
-
-  @ApiProperty({ example: "Today's Top Hits" })
+  @ApiProperty({ description: "The name of the playlist" })
   name: string;
 
-  @ApiProperty({ example: "The hottest 50 tracks right now", nullable: true })
-  description: string | null;
+  @ApiPropertyOptional({ description: "The description of the playlist", nullable: true })
+  description?: string;
 
-  @ApiProperty({ type: [PlaylistImageDto] })
-  images: PlaylistImageDto[];
+  @ApiProperty({ description: "The image URL of the playlist" })
+  imageUrl: string;
 
-  @ApiProperty({ type: PlaylistOwnerDto })
-  owner: PlaylistOwnerDto;
+  @ApiProperty({ description: "The owner of the playlist" })
+  owner: string;
 
-  @ApiProperty({ example: 50 })
+  @ApiProperty({ description: "The total number of tracks in the playlist" })
   totalTracks: number;
 
-  @ApiProperty({ example: true })
-  public: boolean;
+  @ApiProperty({ description: "Whether the playlist is public" })
+  isPublic: boolean;
 
-  @ApiProperty({ example: "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M" })
+  @ApiProperty({ description: "The external URL of the playlist" })
   externalUrl: string;
-}
 
-export class PlaylistsResponseDto {
-  @ApiProperty({ type: [PlaylistSummaryDto] })
-  items: PlaylistSummaryDto[];
-
-  @ApiProperty({ example: 25 })
-  total: number;
-
-  @ApiProperty({ example: 20 })
-  limit: number;
-
-  @ApiProperty({ example: 0 })
-  offset: number;
+  @ApiProperty({ description: "The tracks in the playlist", type: TrackDto, isArray: true })
+  tracks: TrackDto[];
 }

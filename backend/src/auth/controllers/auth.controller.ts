@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   ForbiddenException,
   Get,
@@ -10,13 +11,14 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { SESSION_COOKIE_NAME } from "../consts";
 import { AuthMeResponseDto } from "../dto/auth.dto";
 import { AuthService } from "../services/auth.service";
+import { TokenLoginDto } from "../dto/token-login.dto";
 
-@ApiTags("Auth")
+@ApiTags("Api")
 @Controller("auth")
 export class AuthController {
   private readonly frontendUrl: string;
@@ -113,28 +115,40 @@ export class AuthController {
     res.json({ success: true });
   }
 
-  @Get("dev-login")
-  @ApiOperation({ summary: "Dev-only: Create mock session without OAuth" })
-  @ApiResponse({
-    status: 302,
-    description: "Redirects to frontend after mock auth",
+  @Post("token-login")
+  @ApiOperation({
+    summary: "Dev-only: Login with a manually obtained Spotify token",
+    description:
+      "Use this when you have a Spotify access token but can't use OAuth flow. " +
+      "The token is validated by fetching your Spotify profile.",
   })
+  @ApiBody({ type: TokenLoginDto })
+  @ApiResponse({ status: 200, description: "Successfully logged in" })
+  @ApiResponse({ status: 401, description: "Invalid token" })
   @ApiResponse({ status: 403, description: "Not available in production" })
-  async devLogin(@Res() res: Response) {
+  async tokenLogin(@Body() body: TokenLoginDto, @Res() res: Response) {
     if (process.env.NODE_ENV === "production") {
-      throw new ForbiddenException("Dev login not available in production");
+      throw new ForbiddenException("Token login not available in production");
     }
 
-    const sessionId = await this.authService.createDevSession();
+    try {
+      const sessionId = await this.authService.createSessionFromToken(
+        body.accessToken,
+        body.refreshToken
+      );
 
-    res.cookie(SESSION_COOKIE_NAME, sessionId, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: this.sessionMaxAge * 1000,
-      path: "/",
-    });
+      res.cookie(SESSION_COOKIE_NAME, sessionId, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: this.sessionMaxAge * 1000,
+        path: "/",
+      });
 
-    res.redirect(this.frontendUrl);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Token login error:", err);
+      throw new UnauthorizedException("Invalid or expired token");
+    }
   }
 }
