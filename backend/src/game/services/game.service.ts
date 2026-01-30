@@ -77,7 +77,7 @@ export class GameService {
     sessionId: string
   ): Promise<{ selectedTrack: TrackDto; previewUrl: string }> {
     const total = await this.playlistsService.getLikedSongsTotal(sessionId);
-    if (total === 0) {
+    if (!total) {
       throw new BadRequestException("Liked Songs is empty");
     }
 
@@ -85,7 +85,9 @@ export class GameService {
     for (let i = 0; i < maxAttempts; i++) {
       const offset = Math.floor(Math.random() * total);
       const track = await this.playlistsService.getOneLikedTrackAtOffset(sessionId, offset);
-      if (!track?.id) continue;
+      if (!track?.id) {
+        continue;
+      }
       try {
         const withPreview = await this.trackService.getTrackWithPreview(track.id, track);
         if (withPreview?.previewUrl) {
@@ -104,9 +106,13 @@ export class GameService {
     playlistId: string
   ): Promise<{ selectedTrack: TrackDto; previewUrl: string }> {
     const tracks = await this.playlistsService.getPlaylistFirstTracks(sessionId, playlistId);
-    const playable = tracks.filter((t) => t.id);
-    if (playable.length === 0) {
+    if (!tracks.length) {
       throw new BadRequestException("Playlist is empty");
+    }
+    // This happens if the user added local files to the playlist (or songs that are no longer available on Spotify)
+    const playable = tracks.filter((t) => t.id);
+    if (!playable.length) {
+      throw new BadRequestException("No playable tracks in playlist");
     }
 
     const shuffled = [...playable].sort(() => Math.random() - 0.5);
@@ -183,9 +189,9 @@ export class GameService {
       throw new NotFoundException("Active track not found");
     }
 
-    const { result, guessedTrack } = await this.evaluateGuess(params, track);
+    const result = await this.evaluateGuess(params, track);
 
-    const updatedGuesses = this.addGuessToHistory(game, result, track, guessedTrack, params);
+    const updatedGuesses = this.addGuessToHistory(game, result, track, params);
     // 3. Determine new game state
     const nextRound = game.currentRound + 1;
     const { status, gameOver } = this.calculateNextState(result, nextRound);
@@ -225,39 +231,30 @@ export class GameService {
    * Business Logic: Compares the guess against the actual track.
    * Match on exact trackId OR normalized trackName + artistName (forgiving: Remix/Single etc.).
    */
-  private async evaluateGuess(params: GuessDto, actual: Track): Promise<{
-    result: GuessResult;
-    guessedTrack: Track | null;
-  }> {
-    const { trackId, skip, trackName: dtoTrackName, artistName: dtoArtistName } = params;
+  private async evaluateGuess(guess: GuessDto, actual: Track): Promise<GuessResult> {
+    const { trackId, skip } = guess;
 
     if (skip || !trackId) {
-      return { result: GuessResult.Skip, guessedTrack: null };
+      return GuessResult.Skip;
     }
 
     if (trackId === actual.id) {
-      return { result: GuessResult.Correct, guessedTrack: null };
+      return GuessResult.Correct;
     }
 
     // Forgiving match: same song, different version (e.g. Remix, Single, Live From Paris)
-    if (dtoTrackName != null && dtoTrackName !== "" && dtoArtistName != null && dtoArtistName !== "") {
-      const normName = normalizeTrackNameForMatch(dtoTrackName);
-      const normArtist = normalizeText(dtoArtistName);
+    if (guess.trackName != null && guess.trackName !== "" && guess.artistName != null && guess.artistName !== "") {
+      const normName = normalizeTrackNameForMatch(guess.trackName);
+      const normArtist = normalizeText(guess.artistName);
       if (
         normName === normalizeTrackNameForMatch(actual.name) &&
         normArtist === normalizeText(actual.artistName)
       ) {
-        return { result: GuessResult.Correct, guessedTrack: null };
+        return GuessResult.Correct;
       }
     }
-
-    const guessed = await this.trackRepository.findById(trackId);
-    if (!guessed) {
-      return { result: GuessResult.Wrong, guessedTrack: null };
-    }
-
-    const isArtistCorrect = guessed.artistName === actual.artistName;
-    const isAlbumCorrect = guessed.albumName === actual.albumName;
+    const isArtistCorrect = guess.artistName === actual.artistName;
+    const isAlbumCorrect = guess.albumName === actual.albumName;
 
     let result = GuessResult.Wrong;
     if (isArtistCorrect && isAlbumCorrect) {
@@ -268,29 +265,28 @@ export class GameService {
       result = GuessResult.Album;
     }
 
-    return { result, guessedTrack: guessed };
+    return result;
   }
 
   private addGuessToHistory(
     game: GameSession,
     result: GuessResult,
     actual: Track,
-    guessed: Track | null,
-    params?: GuessDto
+    guess: GuessDto
   ): GuessHistoryDto[] {
     const history = [...(game.guesses as unknown as GuessHistoryDto[])];
 
     const trackName =
       result === GuessResult.Correct
         ? actual.name
-        : guessed?.name ?? params?.trackName ?? "Unknown";
+        : guess.trackName ?? "Unknown";
     const artistName =
       result === GuessResult.Correct
         ? actual.artistName
-        : guessed?.artistName ?? params?.artistName ?? "Unknown";
+        : guess.artistName ?? "Unknown";
 
     history.push({
-      trackId: guessed?.id,
+      trackId: guess.trackId,
       trackName,
       artistName,
       result,

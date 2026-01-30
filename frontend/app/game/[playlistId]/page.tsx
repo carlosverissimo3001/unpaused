@@ -151,7 +151,6 @@ export default function GamePage() {
   // Submit guess mutation
   const submitGuessMutation = useSubmitGuess();
 
-  // Track search via Spotify API (SDK)
   const {
     searchQuery,
     setSearchQuery,
@@ -395,6 +394,7 @@ export default function GamePage() {
         skip: false,
         trackName: selectedTrack.name,
         artistName: selectedTrack.artist,
+        albumName: selectedTrack.albumName,
       },
       {
         onSuccess: () => {
@@ -1011,20 +1011,20 @@ export default function GamePage() {
                       transition={{ delay: index * 0.1 }}
                       className={`p-3 rounded-lg border ${style.cardClass}`}
                     >
-                      {!isSkip && (
-                        <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium min-w-0">
+                          {isSkip ? "Skipped" : guess.trackName}
+                        </p>
+                        {!isSkip && (
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${style.badgeClass}`}
+                            className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${style.badgeClass}`}
                           >
                             {style.label}
                           </span>
-                        </div>
-                      )}
-                      <p className="font-medium">
-                        {isSkip ? "Skipped" : guess.trackName}
-                      </p>
+                        )}
+                      </div>
                       {!isSkip && (
-                        <p className="text-sm text-gray-400">{guess.artistName}</p>
+                        <p className="text-sm text-gray-400 mt-0.5">{guess.artistName}</p>
                       )}
                     </motion.div>
                   );

@@ -10,6 +10,7 @@ Name | Type
 `skip` | boolean
 `trackName` | string
 `artistName` | string
+`albumName` | string
 
 ## Example
 
@@ -22,6 +23,7 @@ const example = {
   "skip": null,
   "trackName": null,
   "artistName": null,
+  "albumName": null,
 } satisfies GuessDto
 
 console.log(example)

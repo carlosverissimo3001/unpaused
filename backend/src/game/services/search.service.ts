@@ -42,6 +42,7 @@ export class SearchService {
       artist,
       normalizedArtist: normalizeText(artist),
       albumImageUrl: albumImageUrl || undefined,
+      albumName: track.album?.name ?? undefined,
     };
   }
 }

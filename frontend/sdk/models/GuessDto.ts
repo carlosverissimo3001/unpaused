@@ -32,17 +32,23 @@ export interface GuessDto {
      */
     skip?: boolean;
     /**
-     * Track name (for forgiving match, e.g. from search)
+     * Track name
      * @type {string}
      * @memberof GuessDto
      */
     trackName?: string;
     /**
-     * Artist name (for forgiving match, e.g. from search)
+     * Artist name
      * @type {string}
      * @memberof GuessDto
      */
     artistName?: string;
+    /**
+     * Album name
+     * @type {string}
+     * @memberof GuessDto
+     */
+    albumName?: string;
 }
 
 /**
@@ -66,6 +72,7 @@ export function GuessDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'skip': json['skip'] == null ? undefined : json['skip'],
         'trackName': json['trackName'] == null ? undefined : json['trackName'],
         'artistName': json['artistName'] == null ? undefined : json['artistName'],
+        'albumName': json['albumName'] == null ? undefined : json['albumName'],
     };
 }
 
@@ -84,6 +91,7 @@ export function GuessDtoToJSONTyped(value?: GuessDto | null, ignoreDiscriminator
         'skip': value['skip'],
         'trackName': value['trackName'],
         'artistName': value['artistName'],
+        'albumName': value['albumName'],
     };
 }
 

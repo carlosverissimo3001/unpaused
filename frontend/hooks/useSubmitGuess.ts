@@ -12,6 +12,7 @@ interface SubmitGuessParams {
   skip?: boolean;
   trackName?: string;
   artistName?: string;
+  albumName?: string;
 }
 
 /**
@@ -27,12 +28,13 @@ export function useSubmitGuess() {
     SubmitGuessParams,
     { previousState?: GameStateDto }
   >({
-    mutationFn: async ({ sessionId, trackId, skip = false, trackName, artistName }) => {
+    mutationFn: async ({ sessionId, trackId, skip = false, trackName, artistName, albumName }) => {
       const guessDto: GuessDto = {
         trackId: trackId || undefined,
         skip,
         trackName,
         artistName,
+        albumName,
       };
       return api.gameControllerSubmitGuess({ id: sessionId, guessDto });
     },

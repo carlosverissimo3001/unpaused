@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { api } from "@/sdk/client";
 import type { GameStateDto, StartGameDto } from "@/sdk";
 
@@ -14,8 +15,13 @@ export function useStartGame() {
 
   return useMutation<GameStateDto, Error, string>({
     mutationFn: async (playlistId: string) => {
-      const startGameDto: StartGameDto = { playlistId };
-      return api.gameControllerStartGame({ startGameDto });
+      try {
+        const startGameDto: StartGameDto = { playlistId };
+        return await api.gameControllerStartGame({ startGameDto });
+      } catch (e) {
+        const message = await getApiErrorMessage(e);
+        throw new Error(message);
+      }
     },
     onSuccess: (data) => {
       // Set the game state in cache immediately

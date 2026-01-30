@@ -157,13 +157,13 @@ export function useGameSession(): UseGameSessionReturn {
    * Submit a guess for the current round (trackName/artistName from search selection).
    */
   const submitGuess = useCallback(
-    async (params: { trackId: string; trackName?: string; artistName?: string }) => {
-      const { trackId, trackName, artistName } = params;
+    async (params: { trackId: string; trackName?: string; artistName?: string; albumName?: string }) => {
+      const { trackId, trackName, artistName, albumName } = params;
       if (!apiRef.current || !state.gameState || state.submitting) return;
 
       dispatch({ type: "SET_SUBMITTING", payload: true });
       try {
-        const guessDto: GuessDto = { trackId, skip: false, trackName, artistName };
+        const guessDto: GuessDto = { trackId, skip: false, trackName, artistName, albumName };
         const result = await apiRef.current.gameControllerSubmitGuess({
           id: state.gameState.sessionId,
           guessDto,

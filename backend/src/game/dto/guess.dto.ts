@@ -15,14 +15,19 @@ export class GuessDto {
     @Transform(({ obj }) => toBoolean(obj.skip))
     skip?: boolean = false;
 
-    @ApiPropertyOptional({ description: "Track name (for forgiving match, e.g. from search)", type: String })
+    @ApiPropertyOptional({ description: "Track name", type: String })
     @IsNotNullableOptional()
     @IsString()
     trackName?: string;
 
-    @ApiPropertyOptional({ description: "Artist name (for forgiving match, e.g. from search)", type: String })
+    @ApiPropertyOptional({ description: "Artist name", type: String })
     @IsNotNullableOptional()
     @IsString()
     artistName?: string;
+
+    @ApiPropertyOptional({ description: "Album name", type: String })
+    @IsNotNullableOptional()
+    @IsString()
+    albumName?: string;
   }
   

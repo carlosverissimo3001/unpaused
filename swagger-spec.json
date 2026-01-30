@@ -712,11 +712,15 @@
           },
           "trackName": {
             "type": "string",
-            "description": "Track name (for forgiving match, e.g. from search)"
+            "description": "Track name"
           },
           "artistName": {
             "type": "string",
-            "description": "Artist name (for forgiving match, e.g. from search)"
+            "description": "Artist name"
+          },
+          "albumName": {
+            "type": "string",
+            "description": "Album name"
           }
         }
       },
