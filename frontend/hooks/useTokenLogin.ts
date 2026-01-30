@@ -23,9 +23,11 @@ export function useTokenLogin() {
       return api.authControllerTokenLogin({ tokenLoginDto });
     },
     onSuccess: () => {
-      // Invalidate auth queries to refetch user
       queryClient.invalidateQueries({
         queryKey: queryKeys.auth.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.playlists.all,
       });
     },
   });

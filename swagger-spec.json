@@ -3,9 +3,12 @@
   "paths": {
     "/auth/login": {
       "get": {
-        "operationId": "AuthController_login",
+        "operationId": "login",
         "parameters": [],
         "responses": {
+          "200": {
+            "description": ""
+          },
           "302": {
             "description": "Redirects to Spotify authorization"
           }
@@ -18,7 +21,7 @@
     },
     "/auth/callback": {
       "get": {
-        "operationId": "AuthController_callback",
+        "operationId": "callback",
         "parameters": [
           {
             "name": "code",
@@ -46,6 +49,9 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": ""
+          },
           "302": {
             "description": "Redirects to frontend after auth"
           }
@@ -58,7 +64,7 @@
     },
     "/auth/me": {
       "get": {
-        "operationId": "AuthController_me",
+        "operationId": "me",
         "parameters": [],
         "responses": {
           "200": {
@@ -88,7 +94,7 @@
     },
     "/auth/logout": {
       "post": {
-        "operationId": "AuthController_logout",
+        "operationId": "logout",
         "parameters": [],
         "responses": {
           "200": {
@@ -109,7 +115,7 @@
     "/auth/token-login": {
       "post": {
         "description": "Use this when you have a Spotify access token but can't use OAuth flow. The token is validated by fetching your Spotify profile.",
-        "operationId": "AuthController_tokenLogin",
+        "operationId": "tokenLogin",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -124,6 +130,9 @@
         "responses": {
           "200": {
             "description": "Successfully logged in"
+          },
+          "201": {
+            "description": ""
           },
           "401": {
             "description": "Invalid token"
@@ -140,7 +149,7 @@
     },
     "/playlists/me": {
       "get": {
-        "operationId": "PlaylistsController_getMyPlaylists",
+        "operationId": "getMyPlaylists",
         "parameters": [
           {
             "name": "limit",
@@ -209,7 +218,7 @@
     },
     "/playlists/{id}": {
       "get": {
-        "operationId": "PlaylistsController_getPlaylistById",
+        "operationId": "getPlaylistById",
         "parameters": [
           {
             "name": "id",
@@ -251,7 +260,7 @@
     },
     "/game/start": {
       "post": {
-        "operationId": "GameController_startGame",
+        "operationId": "startGame",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -288,7 +297,7 @@
     },
     "/game/{id}": {
       "get": {
-        "operationId": "GameController_getGameState",
+        "operationId": "getGameState",
         "parameters": [
           {
             "name": "id",
@@ -320,7 +329,7 @@
     },
     "/game/{id}/guess": {
       "post": {
-        "operationId": "GameController_submitGuess",
+        "operationId": "submitGuess",
         "parameters": [
           {
             "name": "id",
@@ -352,9 +361,61 @@
                 }
               }
             }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuessResultDto"
+                }
+              }
+            }
           }
         },
         "summary": "Submit a guess for a specific session",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/search/tracks": {
+      "get": {
+        "operationId": "searchTracks",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Track options",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackOptionDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Search Spotify tracks (for game guess options)",
         "tags": [
           "Api"
         ]
@@ -363,7 +424,7 @@
   },
   "info": {
     "title": "Unpaused Spotify API",
-    "description": "",
+    "description": "The backend for the Spotify guessing game",
     "version": "1.0",
     "contact": {}
   },
@@ -416,65 +477,6 @@
           "accessToken"
         ]
       },
-      "TrackDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "artists": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "albumName": {
-            "type": "string"
-          },
-          "imageUrl": {
-            "type": "string"
-          },
-          "durationMs": {
-            "type": "number"
-          },
-          "externalUrl": {
-            "type": "string"
-          },
-          "previewUrl": {
-            "type": "string"
-          },
-          "isPlayable": {
-            "type": "boolean"
-          },
-          "primaryArtist": {
-            "type": "string",
-            "description": "The primary artist for easier comparison"
-          },
-          "popularity": {
-            "type": "number",
-            "description": "Popularity score 0-100 for game balancing"
-          },
-          "isExplicit": {
-            "type": "boolean",
-            "description": "Is the track explicit"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "artists",
-          "albumName",
-          "imageUrl",
-          "durationMs",
-          "externalUrl",
-          "isPlayable",
-          "primaryArtist",
-          "isExplicit"
-        ]
-      },
       "PlaylistDto": {
         "type": "object",
         "properties": {
@@ -510,13 +512,6 @@
           "externalUrl": {
             "type": "string",
             "description": "The external URL of the playlist"
-          },
-          "tracks": {
-            "description": "The tracks in the playlist",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TrackDto"
-            }
           }
         },
         "required": [
@@ -526,8 +521,7 @@
           "owner",
           "totalTracks",
           "isPublic",
-          "externalUrl",
-          "tracks"
+          "externalUrl"
         ]
       },
       "PlaylistsResponseDto": {
@@ -565,7 +559,7 @@
         "properties": {
           "playlistId": {
             "type": "string",
-            "example": "37i9dQZF1DXcBWIGoYBM5M"
+            "description": "The ID of the playlist to start the game with"
           }
         },
         "required": [
@@ -577,27 +571,26 @@
         "properties": {
           "trackId": {
             "type": "string",
-            "example": "7ouMYWpwJ422jRcDASAM9z",
-            "nullable": true
+            "description": "The ID of the track"
           },
           "trackName": {
             "type": "string",
-            "example": "Grenade",
-            "nullable": true
+            "description": "The name of the track"
           },
           "artistName": {
             "type": "string",
-            "example": "Bruno Mars",
-            "nullable": true
+            "description": "The artist of the track"
           },
           "result": {
-            "type": "string",
             "enum": [
               "CORRECT",
               "ARTIST",
+              "ALBUM",
               "WRONG",
-              "SKIP"
+              "SKIP",
+              "ARTIST_AND_ALBUM"
             ],
+            "type": "string",
             "description": "The result of the guess"
           }
         },
@@ -610,25 +603,47 @@
         "properties": {
           "id": {
             "type": "string",
-            "example": "7ouMYWpwJ422jRcDASAM9z"
+            "description": "The ID of the track"
           },
           "name": {
             "type": "string",
-            "example": "Grenade"
+            "description": "The name of the track"
+          },
+          "normalizedName": {
+            "type": "string",
+            "description": "Normalized name for search/matching"
           },
           "artist": {
             "type": "string",
-            "example": "Bruno Mars"
+            "description": "The artist of the track"
+          },
+          "normalizedArtist": {
+            "type": "string",
+            "description": "Normalized artist for search/matching"
           },
           "albumImageUrl": {
             "type": "string",
-            "example": "https://i.scdn.co/image/..."
+            "description": "The album image URL of the track"
+          },
+          "albumName": {
+            "type": "string",
+            "description": "The album name of the track"
+          },
+          "albumUrl": {
+            "type": "string",
+            "description": "The album URL of the track"
+          },
+          "releaseYear": {
+            "type": "number",
+            "description": "The release year of the track"
           }
         },
         "required": [
           "id",
           "name",
-          "artist"
+          "normalizedName",
+          "artist",
+          "normalizedArtist"
         ]
       },
       "GameStateDto": {
@@ -636,19 +651,19 @@
         "properties": {
           "sessionId": {
             "type": "string",
-            "example": "uuid-session-id"
+            "description": "The ID of the game session"
           },
           "currentRound": {
             "type": "number",
-            "example": 2
+            "description": "The current round of the game"
           },
           "snippetDuration": {
             "type": "number",
-            "example": 1
+            "description": "The duration of the current snippet"
           },
           "status": {
             "type": "string",
-            "example": "playing",
+            "description": "The status of the game",
             "enum": [
               "PLAYING",
               "WON",
@@ -656,6 +671,7 @@
             ]
           },
           "guesses": {
+            "description": "The guesses of the game",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GuessHistoryDto"
@@ -665,14 +681,8 @@
             "type": "string",
             "description": "The preview URL of the current track"
           },
-          "trackOptions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TrackOptionDto"
-            }
-          },
           "answer": {
-            "nullable": true,
+            "description": "The answer to the current track",
             "allOf": [
               {
                 "$ref": "#/components/schemas/TrackOptionDto"
@@ -685,45 +695,53 @@
           "currentRound",
           "snippetDuration",
           "status",
-          "guesses",
-          "trackOptions",
-          "answer"
+          "guesses"
         ]
       },
       "GuessDto": {
         "type": "object",
         "properties": {
           "trackId": {
-            "type": "string"
+            "type": "string",
+            "description": "The ID of the track to guess"
           },
           "skip": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": false,
+            "description": "Whether the current guess is a skip"
+          },
+          "trackName": {
+            "type": "string",
+            "description": "Track name (for forgiving match, e.g. from search)"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Artist name (for forgiving match, e.g. from search)"
           }
-        },
-        "required": [
-          "skip"
-        ]
+        }
       },
       "GuessResultDto": {
         "type": "object",
         "properties": {
           "result": {
-            "type": "string",
             "enum": [
               "CORRECT",
               "ARTIST",
+              "ALBUM",
               "WRONG",
-              "SKIP"
+              "SKIP",
+              "ARTIST_AND_ALBUM"
             ],
+            "type": "string",
             "description": "The result of the guess"
           },
           "gameOver": {
             "type": "boolean",
-            "example": false
+            "description": "Whether the game is over"
           },
           "status": {
             "type": "string",
-            "example": "won",
+            "description": "The status of the game",
             "enum": [
               "PLAYING",
               "WON",
@@ -732,11 +750,11 @@
           },
           "currentRound": {
             "type": "number",
-            "example": 2
+            "description": "The current round of the game"
           },
           "snippetDuration": {
             "type": "number",
-            "example": 1
+            "description": "The duration of the current snippet"
           }
         },
         "required": [

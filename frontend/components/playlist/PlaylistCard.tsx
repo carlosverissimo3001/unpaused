@@ -1,10 +1,10 @@
 "use client";
 
 import { memo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Lock, Globe, ListMusic, ExternalLink } from "lucide-react";
+import { Play, Lock, Globe, ListMusic } from "lucide-react";
 import type { PlaylistDto } from "@/sdk";
 
 interface PlaylistCardProps {
@@ -77,7 +77,7 @@ function PlaylistCardComponent({ playlist, index, onHover }: PlaylistCardProps) 
         willChange: "transform, opacity",
         transform: "translateZ(0)", // GPU acceleration
       }}
-      className="group relative bg-white/[0.03] backdrop-blur-sm rounded-xl p-4 text-left border border-white/10 hover:border-green-500/50 transition-all duration-300"
+      className="group relative bg-white/[0.03] backdrop-blur-sm rounded-xl p-4 text-left border border-white/10 hover:border-spotify-green transition-all duration-300"
     >
       {/* Inner Glow on Hover */}
       <motion.div
@@ -106,31 +106,7 @@ function PlaylistCardComponent({ playlist, index, onHover }: PlaylistCardProps) 
               <ListMusic className="w-10 h-10 text-white/40" />
             </div>
           )}
-          
-          {/* Floating Play Button (Spotify Style) */}
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-                className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-              >
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <Link
-                    href={`/game/${playlist.id}`}
-                    className="w-14 h-14 rounded-full bg-spotify-green hover:bg-green-400 flex items-center justify-center shadow-lg transition-colors duration-200"
-                  >
-                    <Play className="w-6 h-6 text-black ml-0.5" fill="currentColor" />
-                  </Link>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        
         </div>
 
         {/* Playlist info */}
@@ -160,15 +136,14 @@ function PlaylistCardComponent({ playlist, index, onHover }: PlaylistCardProps) 
         </div>
       </div>
 
-      {/* Details Button - Subtle ghost button at bottom */}
       <div className="mt-4 relative z-10">
-        <motion.div whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.02 }}>
+        <motion.div whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.02, color: ambientColor }}>
           <Link
-            href={`/playlist/${playlist.id}`}
-            className="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white font-medium py-2 px-3 rounded-lg text-sm transition-all duration-200 border border-white/10 hover:border-white/20"
+            href={`/game/${playlist.id}`}
+            className="flex items-center justify-center gap-2 w-full bg-white/5 group-hover:bg-spotify-green text-white/70 group-hover:text-black font-medium py-2 px-3 rounded-lg text-sm transition-all duration-200 border border-white/10 group-hover:border-spotify-green"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Details</span>
+            <Play className="w-3.5 h-3.5" />
+            <span>Play</span>
           </Link>
         </motion.div>
       </div>

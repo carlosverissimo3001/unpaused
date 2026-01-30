@@ -10,6 +10,8 @@ interface SubmitGuessParams {
   sessionId: string;
   trackId: string | null;
   skip?: boolean;
+  trackName?: string;
+  artistName?: string;
 }
 
 /**
@@ -19,12 +21,22 @@ interface SubmitGuessParams {
 export function useSubmitGuess() {
   const queryClient = useQueryClient();
 
-  return useMutation<GuessResultDto, Error, SubmitGuessParams>({
-    mutationFn: async ({ sessionId, trackId, skip = false }) => {
-      const guessDto: GuessDto = { trackId: trackId || undefined, skip };
+  return useMutation<
+    GuessResultDto,
+    Error,
+    SubmitGuessParams,
+    { previousState?: GameStateDto }
+  >({
+    mutationFn: async ({ sessionId, trackId, skip = false, trackName, artistName }) => {
+      const guessDto: GuessDto = {
+        trackId: trackId || undefined,
+        skip,
+        trackName,
+        artistName,
+      };
       return api.gameControllerSubmitGuess({ id: sessionId, guessDto });
     },
-    onMutate: async ({ sessionId, trackId, skip }) => {
+    onMutate: async ({ sessionId, trackId, skip, trackName, artistName }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({
         queryKey: queryKeys.game.state(sessionId),
@@ -35,27 +47,21 @@ export function useSubmitGuess() {
         queryKeys.game.state(sessionId)
       );
 
-      // Optimistically update the game state
+      // Optimistically update the game state (trackName/artistName from search selection)
       if (previousState) {
-        const selectedTrack = trackId
-          ? previousState.trackOptions.find((t) => t.id === trackId)
-          : null;
-
         const optimisticGuess: GuessHistoryDto = {
-          trackId: selectedTrack?.id || null,
-          trackName: selectedTrack?.name || null,
-          artistName: selectedTrack?.artist || null,
-          result: skip ? GuessHistoryDtoResultEnum.Skip : GuessHistoryDtoResultEnum.Wrong, // We'll update this with the real result
-        };
-
-        const optimisticState: GameStateDto = {
-          ...previousState,
-          guesses: [...previousState.guesses, optimisticGuess],
+          trackId: trackId ?? null,
+          trackName: trackName ?? null,
+          artistName: artistName ?? null,
+          result: skip ? GuessHistoryDtoResultEnum.Skip : GuessHistoryDtoResultEnum.Wrong,
         };
 
         queryClient.setQueryData<GameStateDto>(
           queryKeys.game.state(sessionId),
-          optimisticState
+          {
+            ...previousState,
+            guesses: [...previousState.guesses, optimisticGuess],
+          }
         );
       }
 
@@ -77,15 +83,12 @@ export function useSubmitGuess() {
           };
         }
 
-        // Preserve trackOptions from the current state (backend doesn't return them)
         const updatedState: GameStateDto = {
           ...currentState,
           currentRound: result.currentRound,
           snippetDuration: result.snippetDuration,
           status: result.status,
           guesses: updatedGuesses,
-          // Preserve trackOptions - backend getGameState returns empty array
-          trackOptions: currentState.trackOptions || [],
         };
 
         queryClient.setQueryData<GameStateDto>(
@@ -101,9 +104,9 @@ export function useSubmitGuess() {
         }
       }
     },
-    onError: (error, variables, context) => {
+    onError: (_error, variables, context) => {
       // Rollback on error
-      if (context?.previousState) {
+      if (context?.previousState != null) {
         queryClient.setQueryData<GameStateDto>(
           queryKeys.game.state(variables.sessionId),
           context.previousState

@@ -20,24 +20,35 @@ import { mapValues } from '../runtime';
  */
 export interface GuessDto {
     /**
-     * 
+     * The ID of the track to guess
      * @type {string}
      * @memberof GuessDto
      */
     trackId?: string;
     /**
-     * 
+     * Whether the current guess is a skip
      * @type {boolean}
      * @memberof GuessDto
      */
-    skip: boolean;
+    skip?: boolean;
+    /**
+     * Track name (for forgiving match, e.g. from search)
+     * @type {string}
+     * @memberof GuessDto
+     */
+    trackName?: string;
+    /**
+     * Artist name (for forgiving match, e.g. from search)
+     * @type {string}
+     * @memberof GuessDto
+     */
+    artistName?: string;
 }
 
 /**
  * Check if a given object implements the GuessDto interface.
  */
 export function instanceOfGuessDto(value: object): value is GuessDto {
-    if (!('skip' in value) || value['skip'] === undefined) return false;
     return true;
 }
 
@@ -52,7 +63,9 @@ export function GuessDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     return {
         
         'trackId': json['trackId'] == null ? undefined : json['trackId'],
-        'skip': json['skip'],
+        'skip': json['skip'] == null ? undefined : json['skip'],
+        'trackName': json['trackName'] == null ? undefined : json['trackName'],
+        'artistName': json['artistName'] == null ? undefined : json['artistName'],
     };
 }
 
@@ -69,6 +82,8 @@ export function GuessDtoToJSONTyped(value?: GuessDto | null, ignoreDiscriminator
         
         'trackId': value['trackId'],
         'skip': value['skip'],
+        'trackName': value['trackName'],
+        'artistName': value['artistName'],
     };
 }
 

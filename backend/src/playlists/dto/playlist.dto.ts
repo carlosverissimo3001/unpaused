@@ -1,5 +1,4 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { TrackDto } from "./track.dto";
 
 export class PlaylistDto {
   @ApiProperty({ description: "The ID of the playlist" })
@@ -25,7 +24,4 @@ export class PlaylistDto {
 
   @ApiProperty({ description: "The external URL of the playlist" })
   externalUrl: string;
-
-  @ApiProperty({ description: "The tracks in the playlist", type: TrackDto, isArray: true })
-  tracks: TrackDto[];
 }

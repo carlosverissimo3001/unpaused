@@ -20,17 +20,23 @@ import { mapValues } from '../runtime';
  */
 export interface TrackDto {
     /**
-     * 
+     * The ID of the track
      * @type {string}
      * @memberof TrackDto
      */
     id: string;
     /**
-     * 
+     * The name of the track
      * @type {string}
      * @memberof TrackDto
      */
     name: string;
+    /**
+     * Normalized name for search/matching (no weird Unicode/spacing)
+     * @type {string}
+     * @memberof TrackDto
+     */
+    normalizedName: string;
     /**
      * 
      * @type {Array<string>}
@@ -38,35 +44,41 @@ export interface TrackDto {
      */
     artists: Array<string>;
     /**
-     * 
+     * The name of the album
      * @type {string}
      * @memberof TrackDto
      */
     albumName: string;
     /**
-     * 
+     * The ID of the album
+     * @type {string}
+     * @memberof TrackDto
+     */
+    albumId: string;
+    /**
+     * The image URL of the track
      * @type {string}
      * @memberof TrackDto
      */
     imageUrl: string;
     /**
-     * 
+     * The duration of the track in milliseconds
      * @type {number}
      * @memberof TrackDto
      */
     durationMs: number;
     /**
-     * 
+     * The external URL of the track
      * @type {string}
      * @memberof TrackDto
      */
     externalUrl: string;
     /**
-     * 
+     * The preview URL of the track
      * @type {string}
      * @memberof TrackDto
      */
-    previewUrl?: string;
+    previewUrl?: string | null;
     /**
      * 
      * @type {boolean}
@@ -91,6 +103,12 @@ export interface TrackDto {
      * @memberof TrackDto
      */
     isExplicit: boolean;
+    /**
+     * The release year of the track
+     * @type {number}
+     * @memberof TrackDto
+     */
+    releaseYear?: number | null;
 }
 
 /**
@@ -99,8 +117,10 @@ export interface TrackDto {
 export function instanceOfTrackDto(value: object): value is TrackDto {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('normalizedName' in value) || value['normalizedName'] === undefined) return false;
     if (!('artists' in value) || value['artists'] === undefined) return false;
     if (!('albumName' in value) || value['albumName'] === undefined) return false;
+    if (!('albumId' in value) || value['albumId'] === undefined) return false;
     if (!('imageUrl' in value) || value['imageUrl'] === undefined) return false;
     if (!('durationMs' in value) || value['durationMs'] === undefined) return false;
     if (!('externalUrl' in value) || value['externalUrl'] === undefined) return false;
@@ -122,8 +142,10 @@ export function TrackDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'id': json['id'],
         'name': json['name'],
+        'normalizedName': json['normalizedName'],
         'artists': json['artists'],
         'albumName': json['albumName'],
+        'albumId': json['albumId'],
         'imageUrl': json['imageUrl'],
         'durationMs': json['durationMs'],
         'externalUrl': json['externalUrl'],
@@ -132,6 +154,7 @@ export function TrackDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'primaryArtist': json['primaryArtist'],
         'popularity': json['popularity'] == null ? undefined : json['popularity'],
         'isExplicit': json['isExplicit'],
+        'releaseYear': json['releaseYear'] == null ? undefined : json['releaseYear'],
     };
 }
 
@@ -148,8 +171,10 @@ export function TrackDtoToJSONTyped(value?: TrackDto | null, ignoreDiscriminator
         
         'id': value['id'],
         'name': value['name'],
+        'normalizedName': value['normalizedName'],
         'artists': value['artists'],
         'albumName': value['albumName'],
+        'albumId': value['albumId'],
         'imageUrl': value['imageUrl'],
         'durationMs': value['durationMs'],
         'externalUrl': value['externalUrl'],
@@ -158,6 +183,7 @@ export function TrackDtoToJSONTyped(value?: TrackDto | null, ignoreDiscriminator
         'primaryArtist': value['primaryArtist'],
         'popularity': value['popularity'],
         'isExplicit': value['isExplicit'],
+        'releaseYear': value['releaseYear'],
     };
 }
 

@@ -6,13 +6,11 @@ import {
   ApiCookieAuth,
   ApiParam,
 } from "@nestjs/swagger";
-import { GameService } from "./game.service";
-import {
-  StartGameDto,
-  GuessDto,
-  GameStateDto,
-  GuessResultDto,
-} from "./dto/game.dto";
+import { GameService } from "../services/game.service";
+import { GameStateDto } from "../dto/game-state.dto";
+import { StartGameDto } from "../dto/start-game.dto";
+import { GuessDto } from "../dto/guess.dto";
+import { GuessResultDto } from "../dto/guess-result.dto";
 import { SessionId } from "@utils/decorators/sessionId.decorator";
 import { SessionGuard } from "@utils/guards/session-guard";
 

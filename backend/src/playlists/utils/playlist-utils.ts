@@ -1,12 +1,16 @@
-import { Playlist, PlaylistedTrack, SimplifiedPlaylist, Track } from "@spotify/web-api-ts-sdk";
+import { Playlist, SimplifiedPlaylist, Track } from "@spotify/web-api-ts-sdk";
 import { UserSessionDto } from "../../auth/dto/user-session.dto";
 import { GetPlaylistsDto } from "../dto/get-playlists-dto";
 import { PlaylistDto } from "../dto/playlist.dto";
 import { getFirstImage } from "../../utils/utils";
-import { mapTrack } from "@tracks/utils.ts/track-utils";
 
 
-function mapCommonFields(playlist: Playlist<Track> | SimplifiedPlaylist): PlaylistDto {
+/**
+ * Lite Version: For browsing lists of playlists
+ */
+export function mapPlaylistLite(
+  playlist: Playlist<Track> | SimplifiedPlaylist
+): PlaylistDto {
   return {
     id: playlist.id,
     name: playlist.name,
@@ -16,25 +20,10 @@ function mapCommonFields(playlist: Playlist<Track> | SimplifiedPlaylist): Playli
     totalTracks: playlist.tracks?.total || 0,
     isPublic: playlist.public ?? true,
     externalUrl: playlist.external_urls?.spotify || "",
-    tracks: [],
   };
 }
 
-/**
- * Lite Version: For browsing lists of playlists
- */
-export function mapPlaylistLite(
-  playlist: Playlist<Track> | SimplifiedPlaylist
-): PlaylistDto {
-  return mapCommonFields(playlist);
-}
 
-export function mapPlaylistWithTracks(playlist: Playlist<Track>): PlaylistDto {
-  return {
-    ...mapCommonFields(playlist),
-    tracks: (playlist.tracks?.items || []).map((item: PlaylistedTrack<Track>) => mapTrack(item.track)),
-  };
-}
 
 /**
  * Apply filters to a list of playlists

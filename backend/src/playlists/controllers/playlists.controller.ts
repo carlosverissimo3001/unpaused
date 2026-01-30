@@ -38,7 +38,7 @@ export class PlaylistsController {
   @ApiResponse({ status: 200, type: PlaylistDto })
   async getPlaylistById(
     @SessionId() sessionId: string,
-    @Param("id") playlistId: string
+    @Param("id") playlistId: string,
   ): Promise<PlaylistDto> {
     return this.playlistsService.getPlaylistById(sessionId, playlistId);
   }

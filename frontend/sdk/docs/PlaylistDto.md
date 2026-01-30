@@ -14,7 +14,6 @@ Name | Type
 `totalTracks` | number
 `isPublic` | boolean
 `externalUrl` | string
-`tracks` | [Array&lt;TrackDto&gt;](TrackDto.md)
 
 ## Example
 
@@ -31,7 +30,6 @@ const example = {
   "totalTracks": null,
   "isPublic": null,
   "externalUrl": null,
-  "tracks": null,
 } satisfies PlaylistDto
 
 console.log(example)

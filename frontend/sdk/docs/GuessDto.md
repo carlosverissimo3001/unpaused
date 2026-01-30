@@ -8,6 +8,8 @@ Name | Type
 ------------ | -------------
 `trackId` | string
 `skip` | boolean
+`trackName` | string
+`artistName` | string
 
 ## Example
 
@@ -18,6 +20,8 @@ import type { GuessDto } from ''
 const example = {
   "trackId": null,
   "skip": null,
+  "trackName": null,
+  "artistName": null,
 } satisfies GuessDto
 
 console.log(example)

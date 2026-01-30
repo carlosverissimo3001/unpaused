@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { TrackDto } from './TrackDto';
-import {
-    TrackDtoFromJSON,
-    TrackDtoFromJSONTyped,
-    TrackDtoToJSON,
-    TrackDtoToJSONTyped,
-} from './TrackDto';
-
 /**
  * 
  * @export
@@ -75,12 +67,6 @@ export interface PlaylistDto {
      * @memberof PlaylistDto
      */
     externalUrl: string;
-    /**
-     * The tracks in the playlist
-     * @type {Array<TrackDto>}
-     * @memberof PlaylistDto
-     */
-    tracks: Array<TrackDto>;
 }
 
 /**
@@ -94,7 +80,6 @@ export function instanceOfPlaylistDto(value: object): value is PlaylistDto {
     if (!('totalTracks' in value) || value['totalTracks'] === undefined) return false;
     if (!('isPublic' in value) || value['isPublic'] === undefined) return false;
     if (!('externalUrl' in value) || value['externalUrl'] === undefined) return false;
-    if (!('tracks' in value) || value['tracks'] === undefined) return false;
     return true;
 }
 
@@ -116,7 +101,6 @@ export function PlaylistDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'totalTracks': json['totalTracks'],
         'isPublic': json['isPublic'],
         'externalUrl': json['externalUrl'],
-        'tracks': ((json['tracks'] as Array<any>).map(TrackDtoFromJSON)),
     };
 }
 
@@ -139,7 +123,6 @@ export function PlaylistDtoToJSONTyped(value?: PlaylistDto | null, ignoreDiscrim
         'totalTracks': value['totalTracks'],
         'isPublic': value['isPublic'],
         'externalUrl': value['externalUrl'],
-        'tracks': ((value['tracks'] as Array<any>).map(TrackDtoToJSON)),
     };
 }
 

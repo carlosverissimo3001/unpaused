@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@prisma/prisma.service";
 import { Prisma, GameSession, GameStatus } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/client";
-import { GuessHistoryDto } from "../dto/game.dto";
+import { GuessHistoryDto } from "../dto/guess-history.dto";
 
 @Injectable()
 export class GameSessionRepository {
@@ -27,6 +27,7 @@ export class GameSessionRepository {
   async findById(id: string): Promise<GameSession | null> {
     return await this.prisma.gameSession.findUnique({
       where: { id },
+      include: { track: true },
     });
   }
 

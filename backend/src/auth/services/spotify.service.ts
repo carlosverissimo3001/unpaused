@@ -19,6 +19,7 @@ export class SpotifyService {
     'user-read-email',
     'playlist-read-private',
     'playlist-read-collaborative',
+    'user-library-read',
     'streaming',
     'user-read-playback-state',
     'user-modify-playback-state',

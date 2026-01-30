@@ -8,8 +8,10 @@ Name | Type
 ------------ | -------------
 `id` | string
 `name` | string
+`normalizedName` | string
 `artists` | Array&lt;string&gt;
 `albumName` | string
+`albumId` | string
 `imageUrl` | string
 `durationMs` | number
 `externalUrl` | string
@@ -18,6 +20,7 @@ Name | Type
 `primaryArtist` | string
 `popularity` | number
 `isExplicit` | boolean
+`releaseYear` | number
 
 ## Example
 
@@ -28,8 +31,10 @@ import type { TrackDto } from ''
 const example = {
   "id": null,
   "name": null,
+  "normalizedName": null,
   "artists": null,
   "albumName": null,
+  "albumId": null,
   "imageUrl": null,
   "durationMs": null,
   "externalUrl": null,
@@ -38,6 +43,7 @@ const example = {
   "primaryArtist": null,
   "popularity": null,
   "isExplicit": null,
+  "releaseYear": null,
 } satisfies TrackDto
 
 console.log(example)

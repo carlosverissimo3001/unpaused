@@ -20,29 +20,59 @@ import { mapValues } from '../runtime';
  */
 export interface TrackOptionDto {
     /**
-     * 
+     * The ID of the track
      * @type {string}
      * @memberof TrackOptionDto
      */
     id: string;
     /**
-     * 
+     * The name of the track
      * @type {string}
      * @memberof TrackOptionDto
      */
     name: string;
     /**
-     * 
+     * Normalized name for search/matching
+     * @type {string}
+     * @memberof TrackOptionDto
+     */
+    normalizedName: string;
+    /**
+     * The artist of the track
      * @type {string}
      * @memberof TrackOptionDto
      */
     artist: string;
     /**
-     * 
+     * Normalized artist for search/matching
+     * @type {string}
+     * @memberof TrackOptionDto
+     */
+    normalizedArtist: string;
+    /**
+     * The album image URL of the track
      * @type {string}
      * @memberof TrackOptionDto
      */
     albumImageUrl?: string;
+    /**
+     * The album name of the track
+     * @type {string}
+     * @memberof TrackOptionDto
+     */
+    albumName?: string;
+    /**
+     * The album URL of the track
+     * @type {string}
+     * @memberof TrackOptionDto
+     */
+    albumUrl?: string;
+    /**
+     * The release year of the track
+     * @type {number}
+     * @memberof TrackOptionDto
+     */
+    releaseYear?: number;
 }
 
 /**
@@ -51,7 +81,9 @@ export interface TrackOptionDto {
 export function instanceOfTrackOptionDto(value: object): value is TrackOptionDto {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('normalizedName' in value) || value['normalizedName'] === undefined) return false;
     if (!('artist' in value) || value['artist'] === undefined) return false;
+    if (!('normalizedArtist' in value) || value['normalizedArtist'] === undefined) return false;
     return true;
 }
 
@@ -67,8 +99,13 @@ export function TrackOptionDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'id': json['id'],
         'name': json['name'],
+        'normalizedName': json['normalizedName'],
         'artist': json['artist'],
+        'normalizedArtist': json['normalizedArtist'],
         'albumImageUrl': json['albumImageUrl'] == null ? undefined : json['albumImageUrl'],
+        'albumName': json['albumName'] == null ? undefined : json['albumName'],
+        'albumUrl': json['albumUrl'] == null ? undefined : json['albumUrl'],
+        'releaseYear': json['releaseYear'] == null ? undefined : json['releaseYear'],
     };
 }
 
@@ -85,8 +122,13 @@ export function TrackOptionDtoToJSONTyped(value?: TrackOptionDto | null, ignoreD
         
         'id': value['id'],
         'name': value['name'],
+        'normalizedName': value['normalizedName'],
         'artist': value['artist'],
+        'normalizedArtist': value['normalizedArtist'],
         'albumImageUrl': value['albumImageUrl'],
+        'albumName': value['albumName'],
+        'albumUrl': value['albumUrl'],
+        'releaseYear': value['releaseYear'],
     };
 }
 

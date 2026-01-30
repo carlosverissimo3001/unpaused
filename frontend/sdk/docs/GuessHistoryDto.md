@@ -18,9 +18,9 @@ import type { GuessHistoryDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "trackId": 7ouMYWpwJ422jRcDASAM9z,
-  "trackName": Grenade,
-  "artistName": Bruno Mars,
+  "trackId": null,
+  "trackName": null,
+  "artistName": null,
   "result": null,
 } satisfies GuessHistoryDto
 

@@ -20,7 +20,7 @@ import { mapValues } from '../runtime';
  */
 export interface StartGameDto {
     /**
-     * 
+     * The ID of the playlist to start the game with
      * @type {string}
      * @memberof StartGameDto
      */

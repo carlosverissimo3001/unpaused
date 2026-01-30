@@ -8,8 +8,13 @@ Name | Type
 ------------ | -------------
 `id` | string
 `name` | string
+`normalizedName` | string
 `artist` | string
+`normalizedArtist` | string
 `albumImageUrl` | string
+`albumName` | string
+`albumUrl` | string
+`releaseYear` | number
 
 ## Example
 
@@ -18,10 +23,15 @@ import type { TrackOptionDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "id": 7ouMYWpwJ422jRcDASAM9z,
-  "name": Grenade,
-  "artist": Bruno Mars,
-  "albumImageUrl": https://i.scdn.co/image/...,
+  "id": null,
+  "name": null,
+  "normalizedName": null,
+  "artist": null,
+  "normalizedArtist": null,
+  "albumImageUrl": null,
+  "albumName": null,
+  "albumUrl": null,
+  "releaseYear": null,
 } satisfies TrackOptionDto
 
 console.log(example)

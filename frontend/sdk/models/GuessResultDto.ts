@@ -26,25 +26,25 @@ export interface GuessResultDto {
      */
     result: GuessResultDtoResultEnum;
     /**
-     * 
+     * Whether the game is over
      * @type {boolean}
      * @memberof GuessResultDto
      */
     gameOver: boolean;
     /**
-     * 
+     * The status of the game
      * @type {string}
      * @memberof GuessResultDto
      */
     status: GuessResultDtoStatusEnum;
     /**
-     * 
+     * The current round of the game
      * @type {number}
      * @memberof GuessResultDto
      */
     currentRound: number;
     /**
-     * 
+     * The duration of the current snippet
      * @type {number}
      * @memberof GuessResultDto
      */
@@ -58,8 +58,10 @@ export interface GuessResultDto {
 export const GuessResultDtoResultEnum = {
     Correct: 'CORRECT',
     Artist: 'ARTIST',
+    Album: 'ALBUM',
     Wrong: 'WRONG',
-    Skip: 'SKIP'
+    Skip: 'SKIP',
+    ArtistAndAlbum: 'ARTIST_AND_ALBUM'
 } as const;
 export type GuessResultDtoResultEnum = typeof GuessResultDtoResultEnum[keyof typeof GuessResultDtoResultEnum];
 

@@ -9,5 +9,4 @@ export * from './PlaylistDto';
 export * from './PlaylistsResponseDto';
 export * from './StartGameDto';
 export * from './TokenLoginDto';
-export * from './TrackDto';
 export * from './TrackOptionDto';

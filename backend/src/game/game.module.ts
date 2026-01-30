@@ -1,14 +1,17 @@
 import { Module } from "@nestjs/common";
-import { GameController } from "./game.controller";
-import { GameService } from "./game.service";
+import { GameController } from "./controllers/game.controller";
+import { SearchController } from "./controllers/search.controller";
+import { GameService } from "./services/game.service";
+import { SearchService } from "./services/search.service";
 import { GameSessionRepository } from "./repositories/game-session.repository";
 import { AuthModule } from "../auth/auth.module";
 import { PlaylistsModule } from "../playlists/playlists.module";
+import { SpotifyModule } from "../spotify/spotify.module";
 import { TrackModule } from "../tracks/track.module";
 
 @Module({
-  imports: [AuthModule, PlaylistsModule, TrackModule],
-  controllers: [GameController],
-  providers: [GameService, GameSessionRepository],
+  imports: [AuthModule, PlaylistsModule, SpotifyModule, TrackModule],
+  controllers: [GameController, SearchController],
+  providers: [GameService, SearchService, GameSessionRepository],
 })
 export class GameModule {}

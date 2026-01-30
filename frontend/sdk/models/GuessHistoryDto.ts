@@ -20,23 +20,23 @@ import { mapValues } from '../runtime';
  */
 export interface GuessHistoryDto {
     /**
-     * 
+     * The ID of the track
      * @type {string}
      * @memberof GuessHistoryDto
      */
-    trackId?: string | null;
+    trackId?: string;
     /**
-     * 
+     * The name of the track
      * @type {string}
      * @memberof GuessHistoryDto
      */
-    trackName?: string | null;
+    trackName?: string;
     /**
-     * 
+     * The artist of the track
      * @type {string}
      * @memberof GuessHistoryDto
      */
-    artistName?: string | null;
+    artistName?: string;
     /**
      * The result of the guess
      * @type {string}
@@ -52,8 +52,10 @@ export interface GuessHistoryDto {
 export const GuessHistoryDtoResultEnum = {
     Correct: 'CORRECT',
     Artist: 'ARTIST',
+    Album: 'ALBUM',
     Wrong: 'WRONG',
-    Skip: 'SKIP'
+    Skip: 'SKIP',
+    ArtistAndAlbum: 'ARTIST_AND_ALBUM'
 } as const;
 export type GuessHistoryDtoResultEnum = typeof GuessHistoryDtoResultEnum[keyof typeof GuessHistoryDtoResultEnum];
 

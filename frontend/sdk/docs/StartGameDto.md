@@ -15,7 +15,7 @@ import type { StartGameDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "playlistId": 37i9dQZF1DXcBWIGoYBM5M,
+  "playlistId": null,
 } satisfies StartGameDto
 
 console.log(example)

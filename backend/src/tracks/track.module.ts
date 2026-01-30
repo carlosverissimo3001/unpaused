@@ -7,7 +7,7 @@ import { Module } from "@nestjs/common"
 @Module({
     imports: [AuthModule, SpotifyModule],
     providers: [TrackService, TrackRepository],
-    exports: [TrackService],
+    exports: [TrackService, TrackRepository],
 })
 
 export class TrackModule {}

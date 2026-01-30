@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { RedisService } from '@redis/redis.service';
+import { AppLoggerService } from '../../logger/logger.service';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
@@ -16,9 +17,14 @@ const SCRAPE_DELAY_MS = 200;
 
 @Injectable()
 export class PreviewScraperService {
-  private readonly logger = new Logger(PreviewScraperService.name);
+  private readonly logger: AppLoggerService;
 
-  constructor(private readonly redis: RedisService) {}
+  constructor(
+    private readonly redis: RedisService,
+    appLogger: AppLoggerService
+  ) {
+    this.logger = appLogger.child(PreviewScraperService.name);
+  }
 
   /**
    * Get preview URL for a track (checks cache first, scrapes if needed)
@@ -32,10 +38,10 @@ export class PreviewScraperService {
     const cached = await this.redis.get(cacheKey);
     if (cached !== null) {
       if (cached === 'NOT_FOUND') {
-        this.logger.debug(`Cache hit (not found): ${trackId}`);
+        this.logger.debug?.(`Cache hit (not found): ${trackId}`);
         return null;
       }
-      this.logger.debug(`Cache hit: ${trackId}`);
+      this.logger.debug?.(`Cache hit: ${trackId}`);
       return cached;
     }
 

@@ -3,7 +3,7 @@ import { PreviewScraperService } from "./preview-scraper.service";
 import { RedisService } from "@redis/redis.service";
 import { TRACK_PREVIEW_CACHE_PREFIX, TRACK_PREVIEW_CACHE_TTL } from "../../consts";
 import { Track } from "@prisma/client";
-import { TrackDto } from "../../playlists/dto/track.dto";
+import { TrackDto } from "../dto/track.dto";
 import { TrackRepository } from "../repositories/track.repository";
 
 @Injectable()
@@ -20,7 +20,6 @@ export class TrackService {
    * @param trackData - The track data
    * @returns The track with its preview URL
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getTrackWithPreview(spotifyTrackId: string, trackData: TrackDto): Promise<Track> {
     const cacheKey = `${TRACK_PREVIEW_CACHE_PREFIX}${spotifyTrackId}`;
     const cachedUrl = await this.redis.get(cacheKey);
@@ -33,7 +32,10 @@ export class TrackService {
         previewUrl: cachedUrl, 
         name: trackData.name,
         artistName: trackData.primaryArtist,
-        albumImageUrl: trackData.imageUrl,
+        albumImageUrl: trackData.imageUrl ?? null,
+        albumName: trackData.albumName ?? null,
+        albumUrl: trackData.albumId ? `https://open.spotify.com/album/${trackData.albumId}` : null,
+        releaseYear: trackData.releaseYear ?? null,
         lastScrapedAt: new Date(),
         createdAt: new Date()
       };
@@ -53,6 +55,9 @@ export class TrackService {
       name: trackData.name,
       artistName: trackData.primaryArtist,
       albumImageUrl: trackData.imageUrl,
+      albumName: trackData.albumName,
+      albumUrl: trackData.albumId ? `https://open.spotify.com/album/${trackData.albumId}` : null,
+      releaseYear: trackData.releaseYear,
       previewUrl: scrapedUrl,
     });
   }

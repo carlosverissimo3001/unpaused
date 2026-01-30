@@ -1,3 +1,8 @@
+/**
+ * This script generates the OpenAPI specification for the backend API.
+ * The resulting JSON file is placed at the root of the project, to be consumed by the frontend SDK generator.
+ */
+
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from '../src/app.module';

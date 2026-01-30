@@ -1,105 +1,66 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
+  provider = "postgresql"
 }
 
 model User {
-    id            String   @id @default(uuid())
-    spotifyUserId String   @unique @map("spotify_user_id")
-    displayName   String   @map("display_name")
-    isTrusted     Boolean  @default(false) @map("is_trusted")
-    createdAt     DateTime @default(now()) @map("created_at")
-    updatedAt     DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid())
+  spotifyUserId String   @unique @map("spotify_user_id")
+  displayName   String   @map("display_name")
+  isTrusted     Boolean  @default(false) @map("is_trusted")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-    gameSessions GameSession[]
-    dailyResults DailyResult[]
+  gameSessions GameSession[]
 
-    @@map("users")
+  @@map("users")
 }
 
 enum GameStatus {
-    PLAYING
-    WON
-    LOST
+  PLAYING
+  WON
+  LOST
 }
-
 
 model GameSession {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    userId String? @map("user_id")
-    user   User?   @relation(fields: [userId], references: [id])
+  userId String? @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id])
 
-    playlistId String  @map("playlist_id")
-    isDaily    Boolean @default(false) @map("is_daily")
+  playlistId String  @map("playlist_id")
+  isDaily    Boolean @default(false) @map("is_daily")
 
-    trackId       String  @map("track_id")
-    trackName     String  @map("track_name")
-    artistName    String  @map("artist_name")
-    albumImageUrl String? @map("album_image_url")
-    previewUrl    String? @map("preview_url")
+  trackId String @map("track_id")
+  track   Track  @relation(fields: [trackId], references: [id])
 
-    currentRound Int    @default(0) @map("current_round")
-    guesses      Json   @default("[]") 
-    status       GameStatus @default(PLAYING)
+  currentRound Int        @default(0) @map("current_round")
+  guesses      Json       @default("[]")
+  status       GameStatus @default(PLAYING)
 
-    createdAt   DateTime  @default(now()) @map("created_at")
-    completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
 
-    @@map("game_sessions")
-}
-
-model DailyPuzzle {
-    id   String   @id @default(uuid())
-    date DateTime @unique @db.Date 
-
-    playlistId   String @map("playlist_id")
-    playlistName String @map("playlist_name")
-
-    trackId       String  @map("track_id")
-    trackName     String  @map("track_name")
-    artistName    String  @map("artist_name")
-    albumImageUrl String? @map("album_image_url")
-    previewUrl    String? @map("preview_url")
-
-    createdAt DateTime @default(now()) @map("created_at")
-
-    results DailyResult[]
-
-    @@map("daily_puzzles")
-}
-
-model DailyResult {
-    id String @id @default(uuid())
-
-    puzzleId String      @map("puzzle_id")
-    puzzle   DailyPuzzle @relation(fields: [puzzleId], references: [id])
-
-    userId String @map("user_id")
-    user   User   @relation(fields: [userId], references: [id])
-
-    guesses Json @default("[]")
-    score   Int 
-    wonAt   Int? @map("won_at")
-
-    createdAt DateTime @default(now()) @map("created_at")
-
-    @@unique([puzzleId, userId])
-    @@map("daily_results")
+  @@map("game_sessions")
 }
 
 model Track {
-  id            String   @id 
+  id            String  @id
   name          String
-  artistName    String   @map("artist_name")
-  albumImageUrl String?  @map("album_image_url")
-  previewUrl    String?  @map("preview_url") 
-  
+  artistName    String  @map("artist_name")
+  albumImageUrl String? @map("album_image_url")
+  albumName     String? @map("album_name")
+  albumUrl      String? @map("album_url")
+  releaseYear   Int?    @map("release_year")
+  previewUrl    String? @map("preview_url")
+
   lastScrapedAt DateTime @default(now()) @map("last_scraped_at")
   createdAt     DateTime @default(now()) @map("created_at")
+
+  gameSessions GameSession[]
 
   @@map("tracks")
 }

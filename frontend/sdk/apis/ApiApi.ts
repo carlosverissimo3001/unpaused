@@ -23,6 +23,7 @@ import type {
   PlaylistsResponseDto,
   StartGameDto,
   TokenLoginDto,
+  TrackOptionDto,
 } from '../models/index';
 import {
     AuthMeResponseDtoFromJSON,
@@ -41,6 +42,8 @@ import {
     StartGameDtoToJSON,
     TokenLoginDtoFromJSON,
     TokenLoginDtoToJSON,
+    TrackOptionDtoFromJSON,
+    TrackOptionDtoToJSON,
 } from '../models/index';
 
 export interface AuthControllerCallbackRequest {
@@ -75,6 +78,10 @@ export interface PlaylistsControllerGetMyPlaylistsRequest {
 
 export interface PlaylistsControllerGetPlaylistByIdRequest {
     id: string;
+}
+
+export interface SearchControllerSearchTracksRequest {
+    q: string;
 }
 
 /**
@@ -470,6 +477,46 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async playlistsControllerGetPlaylistById(requestParameters: PlaylistsControllerGetPlaylistByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistDto> {
         const response = await this.playlistsControllerGetPlaylistByIdRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search Spotify tracks (for game guess options)
+     */
+    async searchControllerSearchTracksRaw(requestParameters: SearchControllerSearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TrackOptionDto>>> {
+        if (requestParameters['q'] == null) {
+            throw new runtime.RequiredError(
+                'q',
+                'Required parameter "q" was null or undefined when calling searchControllerSearchTracks().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/search/tracks`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TrackOptionDtoFromJSON));
+    }
+
+    /**
+     * Search Spotify tracks (for game guess options)
+     */
+    async searchControllerSearchTracks(requestParameters: SearchControllerSearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TrackOptionDto>> {
+        const response = await this.searchControllerSearchTracksRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

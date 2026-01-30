@@ -14,6 +14,7 @@ All URIs are relative to *http://localhost*
 | [**gameControllerSubmitGuess**](ApiApi.md#gamecontrollersubmitguess) | **POST** /game/{id}/guess | Submit a guess for a specific session |
 | [**playlistsControllerGetMyPlaylists**](ApiApi.md#playlistscontrollergetmyplaylists) | **GET** /playlists/me | Get current user\&#39;s playlists |
 | [**playlistsControllerGetPlaylistById**](ApiApi.md#playlistscontrollergetplaylistbyid) | **GET** /playlists/{id} | Get playlist by ID |
+| [**searchControllerSearchTracks**](ApiApi.md#searchcontrollersearchtracks) | **GET** /search/tracks | Search Spotify tracks (for game guess options) |
 
 
 
@@ -685,6 +686,76 @@ example().catch(console.error);
 | **200** |  |  -  |
 | **401** | Not authenticated |  -  |
 | **404** | Playlist not found |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## searchControllerSearchTracks
+
+> Array&lt;TrackOptionDto&gt; searchControllerSearchTracks(q)
+
+Search Spotify tracks (for game guess options)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { SearchControllerSearchTracksRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string
+    q: q_example,
+  } satisfies SearchControllerSearchTracksRequest;
+
+  try {
+    const data = await api.searchControllerSearchTracks(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **q** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;TrackOptionDto&gt;**](TrackOptionDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Track options |  -  |
+| **401** | Not authenticated |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

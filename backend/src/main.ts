@@ -32,7 +32,8 @@ async function bootstrap() {
     });
 
   fs.writeFileSync(
-    path.join(__dirname, '../..', 'swagger-spec.json'),
+    // Note: This is ugly af
+    path.join(__dirname, '../../..', 'swagger-spec.json'),
     JSON.stringify(document, null, 2),
   );
 

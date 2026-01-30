@@ -20,10 +20,10 @@ import type { GuessResultDto } from ''
 // TODO: Update the object below with actual values
 const example = {
   "result": null,
-  "gameOver": false,
-  "status": won,
-  "currentRound": 2,
-  "snippetDuration": 1,
+  "gameOver": null,
+  "status": null,
+  "currentRound": null,
+  "snippetDuration": null,
 } satisfies GuessResultDto
 
 console.log(example)

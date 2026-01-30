@@ -35,31 +35,31 @@ import {
  */
 export interface GameStateDto {
     /**
-     * 
+     * The ID of the game session
      * @type {string}
      * @memberof GameStateDto
      */
     sessionId: string;
     /**
-     * 
+     * The current round of the game
      * @type {number}
      * @memberof GameStateDto
      */
     currentRound: number;
     /**
-     * 
+     * The duration of the current snippet
      * @type {number}
      * @memberof GameStateDto
      */
     snippetDuration: number;
     /**
-     * 
+     * The status of the game
      * @type {string}
      * @memberof GameStateDto
      */
     status: GameStateDtoStatusEnum;
     /**
-     * 
+     * The guesses of the game
      * @type {Array<GuessHistoryDto>}
      * @memberof GameStateDto
      */
@@ -71,17 +71,11 @@ export interface GameStateDto {
      */
     previewUrl?: string;
     /**
-     * 
-     * @type {Array<TrackOptionDto>}
-     * @memberof GameStateDto
-     */
-    trackOptions: Array<TrackOptionDto>;
-    /**
-     * 
+     * The answer to the current track
      * @type {TrackOptionDto}
      * @memberof GameStateDto
      */
-    answer: TrackOptionDto | null;
+    answer?: TrackOptionDto;
 }
 
 
@@ -105,8 +99,6 @@ export function instanceOfGameStateDto(value: object): value is GameStateDto {
     if (!('snippetDuration' in value) || value['snippetDuration'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('guesses' in value) || value['guesses'] === undefined) return false;
-    if (!('trackOptions' in value) || value['trackOptions'] === undefined) return false;
-    if (!('answer' in value) || value['answer'] === undefined) return false;
     return true;
 }
 
@@ -126,8 +118,7 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'status': json['status'],
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
         'previewUrl': json['previewUrl'] == null ? undefined : json['previewUrl'],
-        'trackOptions': ((json['trackOptions'] as Array<any>).map(TrackOptionDtoFromJSON)),
-        'answer': TrackOptionDtoFromJSON(json['answer']),
+        'answer': json['answer'] == null ? undefined : TrackOptionDtoFromJSON(json['answer']),
     };
 }
 
@@ -148,7 +139,6 @@ export function GameStateDtoToJSONTyped(value?: GameStateDto | null, ignoreDiscr
         'status': value['status'],
         'guesses': ((value['guesses'] as Array<any>).map(GuessHistoryDtoToJSON)),
         'previewUrl': value['previewUrl'],
-        'trackOptions': ((value['trackOptions'] as Array<any>).map(TrackOptionDtoToJSON)),
         'answer': TrackOptionDtoToJSON(value['answer']),
     };
 }

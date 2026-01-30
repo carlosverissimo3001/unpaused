@@ -12,7 +12,6 @@ Name | Type
 `status` | string
 `guesses` | [Array&lt;GuessHistoryDto&gt;](GuessHistoryDto.md)
 `previewUrl` | string
-`trackOptions` | [Array&lt;TrackOptionDto&gt;](TrackOptionDto.md)
 `answer` | [TrackOptionDto](TrackOptionDto.md)
 
 ## Example
@@ -22,13 +21,12 @@ import type { GameStateDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "sessionId": uuid-session-id,
-  "currentRound": 2,
-  "snippetDuration": 1,
-  "status": playing,
+  "sessionId": null,
+  "currentRound": null,
+  "snippetDuration": null,
+  "status": null,
   "guesses": null,
   "previewUrl": null,
-  "trackOptions": null,
   "answer": null,
 } satisfies GameStateDto
 

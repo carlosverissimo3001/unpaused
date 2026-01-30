@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "i.scdn.co" },
-      { protocol: "https", hostname: "mosaic.scdn.co" },
+      { protocol: "https", hostname: "*.scdn.co" },
       { protocol: "https", hostname: "*.spotifycdn.com" },
     ],
   },

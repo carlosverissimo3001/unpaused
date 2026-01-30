@@ -103,43 +103,6 @@ export interface PlaylistTrack {
   addedAt: string;
   track: Track;
 }
-// Get this from the SDK later
-export interface PlaylistDetails {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  owner: string;
-  tracks: Track[];
-  totalTracks: number;
-  public: boolean;
-  externalUrl: string;
-  totalDurationMs: number;
-}
-
-export async function getPlaylistDetails(playlistId: string): Promise<PlaylistDetails | null> {
-  const res = await fetch(`${API_BASE}/playlists/${playlistId}`, {
-    credentials: "include",
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch playlist");
-  }
-  return res.json();
-}
-
-export async function fetchPlaylistById(playlistId: string): Promise<PlaylistDetails | null> {
-  try {
-    const res = await fetch(`${API_BASE}/playlists/${playlistId}`, {
-      credentials: "include",
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-
 export interface User {
   spotifyUserId: string;
   displayName: string;

@@ -4,10 +4,8 @@ import { useReducer, useEffect, useCallback, useRef } from "react";
 import { ApiApi } from "@/sdk";
 import type {
   GameStateDto,
-  GameStateDtoStatusEnum,
   GuessResultDto,
   GuessHistoryDto,
-  TrackOptionDto,
   StartGameDto,
   GuessDto,
 } from "@/sdk";
@@ -103,7 +101,7 @@ export interface UseGameSessionReturn {
 
   // Actions
   startGame: (playlistId: string) => Promise<void>;
-  submitGuess: (trackId: string) => Promise<void>;
+  submitGuess: (params: { trackId: string; trackName?: string; artistName?: string }) => Promise<void>;
   skipRound: () => Promise<void>;
   playSnippet: (audioRef: React.RefObject<HTMLAudioElement>) => void;
 }
@@ -156,29 +154,25 @@ export function useGameSession(): UseGameSessionReturn {
   );
 
   /**
-   * Submit a guess for the current round
+   * Submit a guess for the current round (trackName/artistName from search selection).
    */
   const submitGuess = useCallback(
-    async (trackId: string) => {
+    async (params: { trackId: string; trackName?: string; artistName?: string }) => {
+      const { trackId, trackName, artistName } = params;
       if (!apiRef.current || !state.gameState || state.submitting) return;
 
       dispatch({ type: "SET_SUBMITTING", payload: true });
       try {
-        const guessDto: GuessDto = { trackId, skip: false };
+        const guessDto: GuessDto = { trackId, skip: false, trackName, artistName };
         const result = await apiRef.current.gameControllerSubmitGuess({
           id: state.gameState.sessionId,
           guessDto,
         });
 
-        // Find the selected track to build guess history
-        const selectedTrack = state.gameState.trackOptions.find(
-          (t) => t.id === trackId
-        );
-
         const guess: GuessHistoryDto = {
-          trackId: selectedTrack?.id || null,
-          trackName: selectedTrack?.name || null,
-          artistName: selectedTrack?.artist || null,
+          trackId: trackId ?? null,
+          trackName: trackName ?? null,
+          artistName: artistName ?? null,
           result: result.result,
         };
 
