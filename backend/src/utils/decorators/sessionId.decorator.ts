@@ -1,6 +1,5 @@
 import { createParamDecorator, ExecutionContext, UnauthorizedException } from "@nestjs/common";
-
-const SESSION_COOKIE_NAME = "unpaused_session";
+import { SESSION_COOKIE_NAME } from "../../consts";
 
 export const SessionId = createParamDecorator(
     (_: unknown, ctx: ExecutionContext) => {

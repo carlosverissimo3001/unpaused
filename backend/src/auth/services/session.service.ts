@@ -49,7 +49,11 @@ export class SessionService {
     }
 
     await this.redisService.del(key);
-    return JSON.parse(data);
+    try {
+      return JSON.parse(data);
+    } catch {
+      throw new UnauthorizedException("Corrupted OAuth state");
+    }
   }
 
   /**
@@ -96,7 +100,11 @@ export class SessionService {
     if (!data) {
       throw new UnauthorizedException("Session not found");
     }
-    return JSON.parse(data);
+    try {
+      return JSON.parse(data);
+    } catch {
+      throw new UnauthorizedException("Corrupted session data");
+    }
   }
 
   /**

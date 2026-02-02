@@ -13,10 +13,11 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
-import { SESSION_COOKIE_NAME } from "../consts";
+import { SESSION_COOKIE_NAME } from "../../consts";
 import { AuthMeResponseDto } from "../dto/auth.dto";
 import { AuthService } from "../services/auth.service";
 import { TokenLoginDto } from "../dto/token-login.dto";
+import { AppLoggerService } from "../../logger/logger.service";
 
 @ApiTags("Api")
 @Controller("auth")
@@ -24,7 +25,10 @@ export class AuthController {
   private readonly frontendUrl: string;
   private readonly sessionMaxAge: number;
 
-  constructor(private authService: AuthService, private configService: ConfigService) {
+  private readonly logger: AppLoggerService;
+
+  constructor(private authService: AuthService, private configService: ConfigService, appLogger: AppLoggerService) {
+    this.logger = appLogger.child(AuthController.name);
     this.frontendUrl = this.configService.get<string>("FRONTEND_URL") || "http://localhost:3000";
     this.sessionMaxAge = this.configService.get<number>("SESSION_MAX_AGE_SECONDS") || 604800;
   }
@@ -70,7 +74,7 @@ export class AuthController {
 
       res.redirect(this.frontendUrl);
     } catch (err) {
-      console.error("OAuth callback error:", err);
+      this.logger.error("OAuth callback error:", err);
       res.redirect(`${this.frontendUrl}?error=auth_failed`);
     }
   }
@@ -127,8 +131,11 @@ export class AuthController {
   @ApiResponse({ status: 401, description: "Invalid token" })
   @ApiResponse({ status: 403, description: "Not available in production" })
   async tokenLogin(@Body() body: TokenLoginDto, @Res() res: Response) {
-    if (process.env.NODE_ENV === "production") {
-      throw new ForbiddenException("Token login not available in production");
+    if (
+      process.env.NODE_ENV === "production" ||
+      this.configService.get<string>("ENABLE_TOKEN_LOGIN") !== "true"
+    ) {
+      throw new ForbiddenException("Token login not available in this environment");
     }
 
     try {
@@ -147,7 +154,7 @@ export class AuthController {
 
       res.json({ success: true });
     } catch (err) {
-      console.error("Token login error:", err);
+      this.logger.error("Token login error:", err);
       throw new UnauthorizedException("Invalid or expired token");
     }
   }

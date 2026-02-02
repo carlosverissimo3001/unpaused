@@ -22,4 +22,4 @@ import { SpotifyModule } from "./spotify/spotify.module";
     SpotifyModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

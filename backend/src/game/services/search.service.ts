@@ -16,7 +16,7 @@ export class SearchService {
    * Uses session's Spotify client; returns TrackOptionDto-shaped items.
    */
   async searchTracks(sessionId: string, query: string): Promise<TrackOptionDto[]> {
-    const trimmed = query?.trim() ?? "";
+    const trimmed = query?.trim().slice(0, 200) ?? "";
     if (trimmed.length === 0) {
       return [];
     }

@@ -24,14 +24,19 @@ export interface StartGameDto {
      * @type {string}
      * @memberof StartGameDto
      */
-    playlistId: string;
+    playlistId?: string;
+    /**
+     * Whether the game is daily
+     * @type {boolean}
+     * @memberof StartGameDto
+     */
+    isDaily?: boolean;
 }
 
 /**
  * Check if a given object implements the StartGameDto interface.
  */
 export function instanceOfStartGameDto(value: object): value is StartGameDto {
-    if (!('playlistId' in value) || value['playlistId'] === undefined) return false;
     return true;
 }
 
@@ -45,7 +50,8 @@ export function StartGameDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'playlistId': json['playlistId'],
+        'playlistId': json['playlistId'] == null ? undefined : json['playlistId'],
+        'isDaily': json['isDaily'] == null ? undefined : json['isDaily'],
     };
 }
 
@@ -61,6 +67,7 @@ export function StartGameDtoToJSONTyped(value?: StartGameDto | null, ignoreDiscr
     return {
         
         'playlistId': value['playlistId'],
+        'isDaily': value['isDaily'],
     };
 }
 

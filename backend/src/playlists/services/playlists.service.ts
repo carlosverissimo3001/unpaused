@@ -39,27 +39,27 @@ export class PlaylistsService {
    */
   async getMyPlaylists(params: GetPlaylistsDto & { sessionId: string }): Promise<PlaylistsResponseDto> {
     const { sessionId, limit = 20, offset = 0, includePrivate = false, onlyUserOwned = false } = params;
-  
+
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
-    
+
     // 1. Fetch playlists from Spotify
     const response = await sdk.currentUser.playlists.playlists(limit as 0 | 20 | 50, offset);
     const saved = applyFilters(response.items, { includePrivate, onlyUserOwned }, session);
     const savedMapped = saved.map((p) => mapPlaylistLite(p as Playlist<Track>));
-  
+
     const playlists: PlaylistDto[] = [];
-  
+
     // 2. Only inject "Liked Songs" on the very first page
     if (offset === 0) {
       const likedSongs = await this.getLikedSongs(sessionId);
       playlists.push(likedSongs);
     }
-  
+
     playlists.push(...savedMapped);
-  
+
     return {
       items: playlists,
-      total: (response.total ?? 0) + 1, 
+      total: (response.total ?? 0) + 1,
       limit: response.limit ?? limit,
       offset: response.offset ?? offset,
     };
@@ -71,7 +71,7 @@ export class PlaylistsService {
    */
   async getLikedSongs(sessionId: string): Promise<PlaylistDto> {
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
-    
+
     const collection = await sdk.currentUser.tracks.savedTracks(1, 0);
 
     return {
@@ -102,12 +102,24 @@ export class PlaylistsService {
     const { sdk } = await this.spotifyService.getClient(sessionId);
     const page = await sdk.currentUser.tracks.savedTracks(1, offset);
     const item = page.items?.[0];
-    
+
     if (!item?.track) {
       return null;
     }
-    
+
     return mapTrack(item.track);
+  }
+
+  /**
+   * Get first batch of liked (saved) tracks. Used when aggregating pool for daily game.
+   */
+  async getLikedSongsFirstTracks(sessionId: string): Promise<TrackDto[]> {
+    const { sdk } = await this.spotifyService.getClient(sessionId);
+    const page = await sdk.currentUser.tracks.savedTracks(50, 0);
+    const items = page.items ?? [];
+    return items
+      .filter((item) => !!item.track)
+      .map((item) => mapTrack(item.track as Track));
   }
 
   /**
@@ -120,5 +132,46 @@ export class PlaylistsService {
     return items
       .filter((item): item is PlaylistedTrack<Track> & { track: Track } => !!item.track)
       .map((item) => mapTrack(item.track));
+  }
+
+  /**
+   * Get tracks from multiple playlists (first batch of each). Used by daily game for pool/options.
+   * When playlistIds is empty, uses first page of user's playlists.
+   */
+  async getTracksFromPlaylistIds(
+    sessionId: string,
+    playlistIds: string[],
+  ): Promise<TrackDto[]> {
+    let ids = playlistIds;
+    if (ids.length === 0) {
+      const { items } = await this.getMyPlaylists({
+        sessionId,
+        limit: 20,
+        offset: 0,
+        includePrivate: true,
+        onlyUserOwned: false,
+      });
+      ids = items.map((p) => p.id);
+    }
+    const all: TrackDto[] = [];
+    const seen = new Set<string>();
+    for (const id of ids) {
+      try {
+        const tracks = id.endsWith(LIKED_SONGS_ID_SUFFIX)
+          ? await this.getLikedSongsFirstTracks(sessionId)
+          : await this.getPlaylistFirstTracks(sessionId, id);
+        for (const t of tracks) {
+          if (t.id && !seen.has(t.id)) {
+            seen.add(t.id);
+            all.push(t);
+          }
+        }
+      } catch (err) {
+        this.logger.warn(
+          `getTracksFromPlaylistIds: skip playlist ${id}: ${(err as Error).message}`,
+        );
+      }
+    }
+    return all;
   }
 }

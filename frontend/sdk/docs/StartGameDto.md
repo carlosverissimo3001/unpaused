@@ -7,6 +7,7 @@
 Name | Type
 ------------ | -------------
 `playlistId` | string
+`isDaily` | boolean
 
 ## Example
 
@@ -16,6 +17,7 @@ import type { StartGameDto } from ''
 // TODO: Update the object below with actual values
 const example = {
   "playlistId": null,
+  "isDaily": null,
 } satisfies StartGameDto
 
 console.log(example)

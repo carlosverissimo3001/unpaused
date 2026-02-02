@@ -10,7 +10,10 @@ All URIs are relative to *http://localhost*
 | [**authControllerMe**](ApiApi.md#authcontrollerme) | **GET** /auth/me | Get current authenticated user |
 | [**authControllerTokenLogin**](ApiApi.md#authcontrollertokenlogin) | **POST** /auth/token-login | Dev-only: Login with a manually obtained Spotify token |
 | [**gameControllerGetGameState**](ApiApi.md#gamecontrollergetgamestate) | **GET** /game/{id} | Get current game state |
-| [**gameControllerStartGame**](ApiApi.md#gamecontrollerstartgame) | **POST** /game/start | Start a new game from a playlist |
+| [**gameControllerGetHistory**](ApiApi.md#gamecontrollergethistory) | **GET** /game/history | Get user\&#39;s game session history (paginated) |
+| [**gameControllerGetShare**](ApiApi.md#gamecontrollergetshare) | **GET** /game/share/{id} | Get shareable result for a game session |
+| [**gameControllerGetStats**](ApiApi.md#gamecontrollergetstats) | **GET** /game/stats | Get user\&#39;s daily stats |
+| [**gameControllerStartGame**](ApiApi.md#gamecontrollerstartgame) | **POST** /game/start | Start a new game from a playlist or daily |
 | [**gameControllerSubmitGuess**](ApiApi.md#gamecontrollersubmitguess) | **POST** /game/{id}/guess | Submit a guess for a specific session |
 | [**playlistsControllerGetMyPlaylists**](ApiApi.md#playlistscontrollergetmyplaylists) | **GET** /playlists/me | Get current user\&#39;s playlists |
 | [**playlistsControllerGetPlaylistById**](ApiApi.md#playlistscontrollergetplaylistbyid) | **GET** /playlists/{id} | Get playlist by ID |
@@ -403,11 +406,219 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## gameControllerGetHistory
+
+> GameHistoryDto gameControllerGetHistory(isDaily, isCompleted, limit, offset)
+
+Get user\&#39;s game session history (paginated)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GameControllerGetHistoryRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // boolean | Whether the game is daily (optional)
+    isDaily: true,
+    // boolean | Filter by completed (completedAt != null) (optional)
+    isCompleted: true,
+    // number | The limit of the history (optional)
+    limit: 8.14,
+    // number | The offset of the history (optional)
+    offset: 8.14,
+  } satisfies GameControllerGetHistoryRequest;
+
+  try {
+    const data = await api.gameControllerGetHistory(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **isDaily** | `boolean` | Whether the game is daily | [Optional] [Defaults to `undefined`] |
+| **isCompleted** | `boolean` | Filter by completed (completedAt !&#x3D; null) | [Optional] [Defaults to `undefined`] |
+| **limit** | `number` | The limit of the history | [Optional] [Defaults to `undefined`] |
+| **offset** | `number` | The offset of the history | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**GameHistoryDto**](GameHistoryDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gameControllerGetShare
+
+> ShareResultDto gameControllerGetShare(id)
+
+Get shareable result for a game session
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GameControllerGetShareRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Game session ID
+    id: id_example,
+  } satisfies GameControllerGetShareRequest;
+
+  try {
+    const data = await api.gameControllerGetShare(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | Game session ID | [Defaults to `undefined`] |
+
+### Return type
+
+[**ShareResultDto**](ShareResultDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gameControllerGetStats
+
+> DailyStatsDto gameControllerGetStats()
+
+Get user\&#39;s daily stats
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GameControllerGetStatsRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.gameControllerGetStats();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**DailyStatsDto**](DailyStatsDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## gameControllerStartGame
 
 > GameStateDto gameControllerStartGame(startGameDto)
 
-Start a new game from a playlist
+Start a new game from a playlist or daily
 
 ### Example
 

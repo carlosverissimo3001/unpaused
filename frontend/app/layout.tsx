@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -21,7 +23,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${quicksand.variable} font-sans antialiased`}>
-        <QueryProvider>{children}</QueryProvider>
+        <ErrorBoundary>
+          <QueryProvider>{children}</QueryProvider>
+        </ErrorBoundary>
+        <Toaster theme="dark" position="bottom-center" />
       </body>
     </html>
   );

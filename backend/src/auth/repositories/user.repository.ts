@@ -14,10 +14,10 @@ export class UserRepository {
    * @returns The UserEntity
    */
   async findById(id: string): Promise<UserEntity | null> {
-    const user = await this.prismaService.user.findUniqueOrThrow({
+    const user = await this.prismaService.user.findUnique({
       where: { id },
     });
-    return this.fromPrisma(user);
+    return user ? this.fromPrisma(user) : null;
   }
 
   /**
@@ -26,10 +26,10 @@ export class UserRepository {
    * @returns The UserEntity
    */
   async findBySpotifyUserId(spotifyUserId: string): Promise<UserEntity | null> {
-    const user = await this.prismaService.user.findUniqueOrThrow({
+    const user = await this.prismaService.user.findUnique({
       where: { spotifyUserId },
     });
-    return this.fromPrisma(user);
+    return user ? this.fromPrisma(user) : null;
   }
 
   /**

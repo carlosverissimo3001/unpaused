@@ -7,12 +7,13 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  spotifyUserId String   @unique @map("spotify_user_id")
-  displayName   String   @map("display_name")
-  isTrusted     Boolean  @default(false) @map("is_trusted")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id            String      @id @default(uuid())
+  spotifyUserId String      @unique @map("spotify_user_id")
+  displayName   String      @map("display_name")
+  isTrusted     Boolean     @default(false) @map("is_trusted")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  dailyStats    DailyStats?
 
   gameSessions GameSession[]
 
@@ -29,7 +30,7 @@ model GameSession {
   id String @id @default(uuid())
 
   userId String? @map("user_id")
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   playlistId String  @map("playlist_id")
   isDaily    Boolean @default(false) @map("is_daily")
@@ -44,6 +45,9 @@ model GameSession {
   createdAt   DateTime  @default(now()) @map("created_at")
   completedAt DateTime? @map("completed_at")
 
+  @@index([userId])
+  @@index([userId, isDaily])
+  @@index([userId, createdAt])
   @@map("game_sessions")
 }
 
@@ -63,4 +67,24 @@ model Track {
   gameSessions GameSession[]
 
   @@map("tracks")
+}
+
+model DailyStats {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  currentStreak Int       @default(0) @map("current_streak")
+  bestStreak    Int       @default(0) @map("best_streak")
+  lastPlayedAt  DateTime? @map("last_played_at")
+
+  totalGames        Int   @default(0) @map("total_games")
+  totalWins         Int   @default(0) @map("total_wins")
+  totalScore        Int   @default(0) @map("total_score")
+  scoreDistribution Int[] @default([0, 0, 0, 0, 0, 0]) @map("score_distribution")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("daily_stats")
 }

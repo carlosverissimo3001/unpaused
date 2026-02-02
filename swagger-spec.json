@@ -289,7 +289,137 @@
             "cookie": []
           }
         ],
-        "summary": "Start a new game from a playlist",
+        "summary": "Start a new game from a playlist or daily",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/game/history": {
+      "get": {
+        "operationId": "getHistory",
+        "parameters": [
+          {
+            "name": "isDaily",
+            "required": false,
+            "in": "query",
+            "description": "Whether the game is daily",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "The limit of the history",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "The offset of the history",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "isCompleted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameHistoryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get user's game session history (paginated)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/game/stats": {
+      "get": {
+        "operationId": "getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get user's daily stats",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/game/share/{id}": {
+      "get": {
+        "operationId": "getShare",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Game session ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get shareable result for a game session",
         "tags": [
           "Api"
         ]
@@ -321,6 +451,11 @@
             }
           }
         },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
         "summary": "Get current game state",
         "tags": [
           "Api"
@@ -560,11 +695,12 @@
           "playlistId": {
             "type": "string",
             "description": "The ID of the playlist to start the game with"
+          },
+          "isDaily": {
+            "type": "boolean",
+            "description": "Whether the game is daily"
           }
-        },
-        "required": [
-          "playlistId"
-        ]
+        }
       },
       "GuessHistoryDto": {
         "type": "object",
@@ -696,6 +832,174 @@
           "snippetDuration",
           "status",
           "guesses"
+        ]
+      },
+      "GameHistoryEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Game session ID"
+          },
+          "date": {
+            "type": "string",
+            "description": "Date (YYYY-MM-DD) from completedAt or createdAt"
+          },
+          "status": {
+            "type": "string",
+            "description": "Game status",
+            "enum": [
+              "PLAYING",
+              "WON",
+              "LOST"
+            ]
+          },
+          "score": {
+            "type": "number",
+            "description": "Score 0-6 if completed"
+          },
+          "isDaily": {
+            "type": "boolean",
+            "description": "Whether the game was daily"
+          },
+          "guesses": {
+            "description": "Guess history",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuessHistoryDto"
+            }
+          },
+          "trackName": {
+            "type": "string",
+            "description": "Track name (answer)"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Artist name"
+          },
+          "albumImageUrl": {
+            "type": "string",
+            "description": "Album image URL"
+          },
+          "playlistName": {
+            "type": "string",
+            "description": "Playlist/source name e.g. Liked Songs"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "status",
+          "isDaily",
+          "guesses",
+          "trackName",
+          "artistName"
+        ]
+      },
+      "GameHistoryDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GameHistoryEntryDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total count"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "DailyStatsDto": {
+        "type": "object",
+        "properties": {
+          "currentStreak": {
+            "type": "number",
+            "description": "Current streak (consecutive days played)"
+          },
+          "bestStreak": {
+            "type": "number",
+            "description": "Best streak ever"
+          },
+          "totalGames": {
+            "type": "number",
+            "description": "Total daily games played"
+          },
+          "totalWins": {
+            "type": "number",
+            "description": "Total wins"
+          },
+          "winRate": {
+            "type": "number",
+            "description": "Win rate 0-1"
+          },
+          "averageScore": {
+            "type": "number",
+            "description": "Average score per game"
+          },
+          "scoreDistribution": {
+            "description": "Wins per round [round1, round2, ..., round6]",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "currentStreak",
+          "bestStreak",
+          "totalGames",
+          "totalWins",
+          "winRate",
+          "averageScore",
+          "scoreDistribution"
+        ]
+      },
+      "ShareResultDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Date (YYYY-MM-DD)"
+          },
+          "score": {
+            "type": "number",
+            "description": "Score 0-6"
+          },
+          "guessPattern": {
+            "type": "string",
+            "description": "Guess pattern e.g. 🟥🟨🟩"
+          },
+          "trackName": {
+            "type": "string",
+            "description": "Track name"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Artist name"
+          },
+          "shareText": {
+            "type": "string",
+            "description": "Pre-formatted share text"
+          },
+          "gameNumber": {
+            "type": "number",
+            "description": "Game number (days since epoch or similar)"
+          }
+        },
+        "required": [
+          "date",
+          "score",
+          "guessPattern",
+          "trackName",
+          "artistName",
+          "shareText",
+          "gameNumber"
         ]
       },
       "GuessDto": {

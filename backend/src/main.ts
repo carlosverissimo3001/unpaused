@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import cookieParser from 'cookie-parser';
 import { VALIDATION_CONFIG } from './utils/validators/validators';
-import { SESSION_COOKIE_NAME } from './auth/consts';
+import { SESSION_COOKIE_NAME } from './consts';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const module: any;
 
@@ -37,8 +37,9 @@ async function bootstrap() {
     JSON.stringify(document, null, 2),
   );
 
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   app.enableCors({
-    origin: true,
+    origin: frontendUrl,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
@@ -54,4 +55,8 @@ async function bootstrap() {
   }
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error('Failed to start application:', err);
+  process.exit(1);
+});

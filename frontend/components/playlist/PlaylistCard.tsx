@@ -6,157 +6,104 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play, Lock, Globe, ListMusic } from "lucide-react";
 import type { PlaylistDto } from "@/sdk";
+import { usePlaylistColor } from "@/hooks/misc/usePlaylistColor";
 
 interface PlaylistCardProps {
   playlist: PlaylistDto;
   index: number;
   onHover?: (color: string | null) => void;
+  fullWidth?: boolean;
 }
 
-// Extract a muted color from image URL hash for ambient glow
-function getColorFromImage(imageUrl: string | null | undefined): string {
-  if (!imageUrl) return "rgba(30, 215, 96, 0.1)"; // Default Spotify green
-  
-  // Simple hash-based color extraction
-  let hash = 0;
-  for (let i = 0; i < imageUrl.length; i++) {
-    hash = imageUrl.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  
-  // Generate muted colors (not too bright)
-  const hue = Math.abs(hash % 360);
-  const saturation = 40 + (Math.abs(hash) % 30); // 40-70%
-  const lightness = 20 + (Math.abs(hash) % 15); // 20-35%
-  
-  return `hsla(${hue}, ${saturation}%, ${lightness}%, 0.15)`;
-}
-
-function PlaylistCardComponent({ playlist, index, onHover }: PlaylistCardProps) {
+function PlaylistCardComponent({ playlist, index, onHover, fullWidth }: PlaylistCardProps) {
   const imageUrl = playlist.imageUrl;
   const [isHovered, setIsHovered] = useState(false);
-  const ambientColor = getColorFromImage(imageUrl);
+  const ambientColor = usePlaylistColor(imageUrl);
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    onHover?.(ambientColor);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    onHover?.(null);
-  };
+  // Soften the glow for the background
+  const glowColor = ambientColor.replace('0.15', '0.1').replace('0.1', '0.08');
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ 
-        opacity: 0, 
-        scale: 0.95, 
-        position: "absolute",
-        transition: { duration: 0.2, ease: "easeInOut" } 
-      }}
-      transition={{
-        layout: { type: "tween", ease: "easeInOut", duration: 0.2 },
-        opacity: { duration: 0.2 },
-        y: { type: "tween", ease: "easeInOut", duration: 0.2, delay: index * 0.05 },
-      }}
-      whileHover={{
-        scale: 1.03,
-        y: -4, // Lift the card
-        transition: {
-          type: "spring",
-          stiffness: 300,
-          damping: 20,
-        },
-      }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      style={{ 
-        willChange: "transform, opacity",
-        transform: "translateZ(0)", // GPU acceleration
-      }}
-      className="group relative bg-white/[0.03] backdrop-blur-sm rounded-xl p-4 text-left border border-white/10 hover:border-spotify-green transition-all duration-300"
-    >
-      {/* Inner Glow on Hover */}
+    <Link href={`/game/${playlist.id}`} className={fullWidth ? "w-full" : ""}>
       <motion.div
-        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none"
+        onMouseEnter={() => { setIsHovered(true); onHover?.(ambientColor); }}
+        onMouseLeave={() => { setIsHovered(false); onHover?.(null); }}
+        whileHover={{ y: -12 }}
+        className="group relative bg-[#181818]/40 backdrop-blur-md rounded-2xl p-5 border border-white/5 transition-all duration-500 hover:bg-white/[0.08]"
         style={{
           boxShadow: isHovered 
-            ? `inset 0 0 20px rgba(30, 215, 96, 0.15), 0 0 25px ${ambientColor}, 0 0 15px rgba(30, 215, 96, 0.1)`
-            : "none",
-          transition: "opacity 0.3s ease",
+            ? `0 30px 60px -12px rgba(0,0,0,0.6), 0 0 20px ${glowColor}` 
+            : "0 10px 30px -15px rgba(0,0,0,0.3)",
         }}
-      />
+      >
+        {/* Vertical Stack: Image on top, Text below */}
+        <div className="flex flex-col relative z-10">
+          
+          {/* Image Container: Full Width aspect-square */}
+          <div className="relative aspect-square w-full rounded-xl overflow-hidden mb-5 shadow-2xl">
+            {imageUrl ? (
+              <Image 
+                src={imageUrl} 
+                alt="" 
+                fill 
+                className="object-cover transition-transform duration-700 group-hover:scale-110" 
+              />
+            ) : (
+              <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                <ListMusic className="text-white/10 w-12 h-12" />
+              </div>
+            )}
+            
+            {/* Play Button Overlay: Centered and scaled */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
+              className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]"
+            >
+              <div className="bg-spotify-green p-4 rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.5)] text-black transform group-hover:scale-110 transition-transform">
+                <Play fill="currentColor" className="w-8 h-8 ml-1" />
+              </div>
+            </motion.div>
+          </div>
 
-      <div className="flex gap-4 relative z-10">
-        {/* Playlist image - Larger with rounded-lg */}
-        <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-white/10 flex-shrink-0 group-hover:opacity-90 transition-opacity duration-300">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={playlist.name}
-              fill
-              className="object-cover"
-              sizes="96px"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <ListMusic className="w-10 h-10 text-white/40" />
-            </div>
-          )}
-        
-        </div>
-
-        {/* Playlist info */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between">
-          <div>
-            {/* Title - Bold, larger, line-clamp-1 */}
-            <h3 className="font-bold text-base line-clamp-1 text-white mb-1">
+          {/* Text Content: Properly spaced for grid width */}
+          <div className="flex flex-col min-w-0">
+            <h3 className="font-black text-xl text-white truncate leading-tight group-hover:text-spotify-green transition-colors">
               {playlist.name}
             </h3>
-            {/* Secondary Info - Smaller, muted */}
-            <p className="text-xs text-white/50 truncate mb-2">
-              {playlist.description || `By ${playlist.owner}`}
+            
+            <p className="text-sm text-white/40 font-medium truncate mt-1">
+              {playlist.owner}
             </p>
-          </div>
-          
-          {/* Metadata Row */}
-          <div className="flex items-center gap-3 text-xs text-white/50">
-            <span>{playlist.totalTracks} tracks</span>
-            <span className="flex items-center gap-1">
-              {playlist.isPublic ? (
-                <Globe className="w-3.5 h-3.5" />
-              ) : (
-                <Lock className="w-3.5 h-3.5" />
-              )}
-            </span>
+
+            {/* Bottom Meta Row */}
+            <div className="mt-4 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.15em] text-white/20">
+              <div className="flex items-center gap-1.5">
+                <ListMusic className="w-3 h-3" />
+                <span>{playlist.totalTracks} tracks</span>
+              </div>
+              
+              <div className="flex items-center gap-1.5">
+                {playlist.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                <span>{playlist.isPublic ? "Public" : "Private"}</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-4 relative z-10">
-        <motion.div whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.02, color: ambientColor }}>
-          <Link
-            href={`/game/${playlist.id}`}
-            className="flex items-center justify-center gap-2 w-full bg-white/5 group-hover:bg-spotify-green text-white/70 group-hover:text-black font-medium py-2 px-3 rounded-lg text-sm transition-all duration-200 border border-white/10 group-hover:border-spotify-green"
-          >
-            <Play className="w-3.5 h-3.5" />
-            <span>Play</span>
-          </Link>
-        </motion.div>
-      </div>
-    </motion.div>
+        {/* Subtle top-edge light leak */}
+        <div 
+          className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+          style={{ 
+            background: `linear-gradient(to bottom, ${ambientColor}, transparent 40%)`,
+            maskImage: 'linear-gradient(to bottom, black, transparent)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black, transparent)',
+            opacity: 0.2
+          }}
+        />
+      </motion.div>
+    </Link>
   );
 }
 
-export const PlaylistCard = memo(PlaylistCardComponent, (prevProps, nextProps) => {
-  // Only re-render if playlist data actually changes
-  return prevProps.playlist.id === nextProps.playlist.id &&
-         prevProps.playlist.name === nextProps.playlist.name &&
-         prevProps.playlist.imageUrl === nextProps.playlist.imageUrl &&
-         prevProps.playlist.totalTracks === nextProps.playlist.totalTracks &&
-         prevProps.playlist.isPublic === nextProps.playlist.isPublic &&
-         prevProps.index === nextProps.index;
-});
+export const PlaylistCard = memo(PlaylistCardComponent);

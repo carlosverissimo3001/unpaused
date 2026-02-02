@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git show:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(powershell.exe -Command \"Remove-Item -LiteralPath ''\\\\?\\\\M:\\\\Programming\\\\unpaused\\\\nul'' -Force\")"
+    ]
+  }
+}

@@ -1,11 +1,11 @@
 import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiCookieAuth, 
-  ApiUnauthorizedResponse, 
-  ApiNotFoundResponse, 
-  ApiResponse
+import {
+  ApiTags,
+  ApiOperation,
+  ApiCookieAuth,
+  ApiUnauthorizedResponse,
+  ApiNotFoundResponse,
+  ApiResponse,
 } from "@nestjs/swagger";
 import { PlaylistsService } from "../services/playlists.service";
 import { PlaylistsResponseDto } from "../dto/playlist-response.dto";
@@ -20,7 +20,7 @@ import { SessionGuard } from "../../utils/guards/session-guard";
 @UseGuards(SessionGuard)
 @Controller("playlists")
 export class PlaylistsController {
-  constructor(private readonly playlistsService: PlaylistsService) {}
+  constructor(private readonly playlistsService: PlaylistsService) { }
 
   @Get("me")
   @ApiOperation({ summary: "Get current user's playlists" })

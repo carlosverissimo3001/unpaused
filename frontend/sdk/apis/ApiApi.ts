@@ -16,11 +16,14 @@
 import * as runtime from '../runtime';
 import type {
   AuthMeResponseDto,
+  DailyStatsDto,
+  GameHistoryDto,
   GameStateDto,
   GuessDto,
   GuessResultDto,
   PlaylistDto,
   PlaylistsResponseDto,
+  ShareResultDto,
   StartGameDto,
   TokenLoginDto,
   TrackOptionDto,
@@ -28,6 +31,10 @@ import type {
 import {
     AuthMeResponseDtoFromJSON,
     AuthMeResponseDtoToJSON,
+    DailyStatsDtoFromJSON,
+    DailyStatsDtoToJSON,
+    GameHistoryDtoFromJSON,
+    GameHistoryDtoToJSON,
     GameStateDtoFromJSON,
     GameStateDtoToJSON,
     GuessDtoFromJSON,
@@ -38,6 +45,8 @@ import {
     PlaylistDtoToJSON,
     PlaylistsResponseDtoFromJSON,
     PlaylistsResponseDtoToJSON,
+    ShareResultDtoFromJSON,
+    ShareResultDtoToJSON,
     StartGameDtoFromJSON,
     StartGameDtoToJSON,
     TokenLoginDtoFromJSON,
@@ -57,6 +66,17 @@ export interface AuthControllerTokenLoginRequest {
 }
 
 export interface GameControllerGetGameStateRequest {
+    id: string;
+}
+
+export interface GameControllerGetHistoryRequest {
+    isDaily?: boolean;
+    isCompleted?: boolean;
+    limit?: number;
+    offset?: number;
+}
+
+export interface GameControllerGetShareRequest {
     id: string;
 }
 
@@ -313,7 +333,118 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Start a new game from a playlist
+     * Get user\'s game session history (paginated)
+     */
+    async gameControllerGetHistoryRaw(requestParameters: GameControllerGetHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GameHistoryDto>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['isDaily'] != null) {
+            queryParameters['isDaily'] = requestParameters['isDaily'];
+        }
+
+        if (requestParameters['isCompleted'] != null) {
+            queryParameters['isCompleted'] = requestParameters['isCompleted'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['offset'] != null) {
+            queryParameters['offset'] = requestParameters['offset'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/game/history`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GameHistoryDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user\'s game session history (paginated)
+     */
+    async gameControllerGetHistory(requestParameters: GameControllerGetHistoryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GameHistoryDto> {
+        const response = await this.gameControllerGetHistoryRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get shareable result for a game session
+     */
+    async gameControllerGetShareRaw(requestParameters: GameControllerGetShareRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ShareResultDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling gameControllerGetShare().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/game/share/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ShareResultDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get shareable result for a game session
+     */
+    async gameControllerGetShare(requestParameters: GameControllerGetShareRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ShareResultDto> {
+        const response = await this.gameControllerGetShareRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get user\'s daily stats
+     */
+    async gameControllerGetStatsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DailyStatsDto>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/game/stats`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DailyStatsDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user\'s daily stats
+     */
+    async gameControllerGetStats(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DailyStatsDto> {
+        const response = await this.gameControllerGetStatsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Start a new game from a playlist or daily
      */
     async gameControllerStartGameRaw(requestParameters: GameControllerStartGameRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GameStateDto>> {
         if (requestParameters['startGameDto'] == null) {
@@ -344,7 +475,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Start a new game from a playlist
+     * Start a new game from a playlist or daily
      */
     async gameControllerStartGame(requestParameters: GameControllerStartGameRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GameStateDto> {
         const response = await this.gameControllerStartGameRaw(requestParameters, initOverrides);

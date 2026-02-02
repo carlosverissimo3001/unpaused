@@ -1,0 +1,114 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { GameStateDtoStatusEnum } from "@/sdk/models/GameStateDto";
+import { GuessHistoryDtoResultEnum } from "@/sdk/models/GuessHistoryDto";
+import { queryKeys } from "@/lib/queryKeys";
+import { useGameSession } from "./useGameSession";
+import { useGameState } from "./useGameState";
+import { useSubmitGuess } from "./useSubmitGuess";
+import { useGameAudio } from "./useGameAudio";
+import { useGameStats } from "./useGameStats";
+import { useSpotifyTrackSearch } from "@/hooks/spotify/useSpotifyTrackSearch";
+import { usePlaylistById } from "@/hooks/playlists/usePlaylistById";
+import { triggerConfetti } from "@/components/game/confetti";
+import type { GameMode } from "@/components/game/types";
+
+export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
+  const queryClient = useQueryClient();
+  const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
+
+  const isPlaylist = mode === "playlist";
+  const isDaily = mode === "daily";
+
+  const { data: playlist } = usePlaylistById(playlistId ?? "");
+  const {
+    sessionId,
+    isLoading: sessionLoading,
+    error: sessionError,
+    startGameMutation,
+  } = useGameSession(mode, playlistId);
+  const { data: gameState, isLoading: loadingState, error: errorState } = useGameState(sessionId);
+  const submitGuessMutation = useSubmitGuess();
+  const spotifySearch = useSpotifyTrackSearch();
+  const { data: stats } = useGameStats({ enabled: isDaily });
+
+  const isGameOver = gameState?.status !== GameStateDtoStatusEnum.Playing;
+  const gameAudio = useGameAudio({
+    previewUrl: gameState?.previewUrl,
+    isGameOver: !!isGameOver,
+    currentRound: gameState?.currentRound ?? 0,
+  });
+
+  const isLoading = isPlaylist || isDaily ? sessionLoading || loadingState : false;
+  const error = sessionError ?? errorState;
+  const submitPending = submitGuessMutation.isPending;
+
+  // Confetti on correct guess
+  useEffect(() => {
+    if (!gameState?.guesses?.length) return;
+    const last = gameState.guesses[gameState.guesses.length - 1];
+    if (last.result !== lastGuessResult) {
+      setLastGuessResult(last.result);
+      if (last.result === GuessHistoryDtoResultEnum.Correct) triggerConfetti();
+    }
+  }, [gameState?.guesses, lastGuessResult]);
+
+  const handleSubmit = useCallback(() => {
+    if (!gameState || submitPending) return;
+    if (!spotifySearch.selectedTrack) return;
+    submitGuessMutation.mutate(
+      {
+        sessionId: gameState.sessionId,
+        trackId: spotifySearch.selectedTrack.id,
+        skip: false,
+        trackName: spotifySearch.selectedTrack.name,
+        artistName: spotifySearch.selectedTrack.artist,
+        albumName: spotifySearch.selectedTrack.albumName,
+      },
+      { onSuccess: () => spotifySearch.handleClearSelection() },
+    );
+  }, [gameState, submitPending, spotifySearch, submitGuessMutation]);
+
+  const handleSkip = useCallback(() => {
+    if (!gameState || submitPending) return;
+    submitGuessMutation.mutate({
+      sessionId: gameState.sessionId,
+      trackId: null,
+      skip: true,
+    });
+  }, [gameState, submitPending, submitGuessMutation]);
+
+  const handlePlayAgain = useCallback(() => {
+    gameAudio.stopFullSong();
+    if (gameState?.sessionId) {
+      queryClient.removeQueries({ queryKey: queryKeys.game.state(gameState.sessionId) });
+    }
+    startGameMutation.reset();
+    if (playlistId) startGameMutation.mutate({ playlistId });
+  }, [gameAudio, gameState?.sessionId, queryClient, startGameMutation, playlistId]);
+
+  const shouldShake = lastGuessResult === GuessHistoryDtoResultEnum.Wrong;
+
+  return {
+    // State
+    playlist,
+    gameState,
+    stats,
+    isLoading,
+    error,
+    isGameOver,
+    isPlaylist,
+    isDaily,
+    submitPending,
+    shouldShake,
+    // Sub-systems
+    gameAudio,
+    spotifySearch,
+    // Handlers
+    handleSubmit,
+    handleSkip,
+    handlePlayAgain,
+  };
+}
