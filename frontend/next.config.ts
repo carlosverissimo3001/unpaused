@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/:path*",
-        destination: "http://localhost:3001/:path*",
+        source: "/api/((?!auth/gate).*)",
+        destination: "http://localhost:3001/$1",
       },
     ];
   },
