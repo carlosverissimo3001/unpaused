@@ -21,17 +21,13 @@ export function HistoryFilter({ dailyOnly, onDailyOnlyChange }: HistoryFilterPro
           Back
         </Link>
       </Button>
-      <h1 className="font-black italic uppercase text-xl text-white tracking-tight">
-        Vault
-      </h1>
-      <div className="ml-auto flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
+      <h1 className="font-black italic uppercase text-xl text-white tracking-tight">Vault</h1>
+      <div className="ml-auto flex items-center gap-1.5 p-1 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
         <button
           type="button"
           onClick={() => onDailyOnlyChange(false)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-widest transition-all ${
-            !dailyOnly
-              ? "bg-white/15 text-white shadow-sm"
-              : "text-white/50 hover:text-white/80"
+          className={`px-3 py-1.5 rounded-[10px] text-xs font-semibold uppercase tracking-widest transition-all ${
+            !dailyOnly ? "bg-white/15 text-white shadow-sm" : "text-white/50 hover:text-white/80"
           }`}
         >
           All
@@ -39,7 +35,7 @@ export function HistoryFilter({ dailyOnly, onDailyOnlyChange }: HistoryFilterPro
         <button
           type="button"
           onClick={() => onDailyOnlyChange(true)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-widest transition-all ${
+          className={`px-3 py-1.5 rounded-[10px] text-xs font-semibold uppercase tracking-widest transition-all ${
             dailyOnly
               ? "bg-spotify-green/30 text-spotify-green shadow-sm"
               : "text-white/50 hover:text-white/80"

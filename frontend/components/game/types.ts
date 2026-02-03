@@ -13,8 +13,5 @@ export interface GameViewState {
   guesses: GuessHistoryDto[];
   previewUrl?: string | null;
   answer?: TrackOptionDto | null;
-  /** Only set in daily mode – used for Share and track selection */
   trackOptions?: TrackOptionDto[];
 }
-
-export type GameMode = "playlist" | "daily";

@@ -104,7 +104,7 @@ export function HistoryStats({ items }: HistoryStatsProps) {
   const wins = items.filter((e) => e.status === GameHistoryEntryDtoStatusEnum.Won).length;
   const streak = computeStreak(items);
   const perfectScores = items.filter(
-    (e) => e.status === GameHistoryEntryDtoStatusEnum.Won && e.score === 1
+    (e) => e.status === GameHistoryEntryDtoStatusEnum.Won && e.score === 6
   ).length;
 
   return (

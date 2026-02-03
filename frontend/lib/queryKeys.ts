@@ -14,6 +14,7 @@ export const queryKeys = {
     history: (params?: { limit?: number; offset?: number; isDaily?: boolean; isCompleted?: boolean }) =>
       ["game", "history", params] as const,
     stats: ["game", "stats"] as const,
+    playedToday: ["game", "playedToday"] as const,
     share: (gameId: string) => ["game", "share", gameId] as const,
   },
   // Playlist-related queries

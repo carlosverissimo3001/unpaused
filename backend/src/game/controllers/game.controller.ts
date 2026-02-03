@@ -24,6 +24,7 @@ import { GameHistoryDto } from "../dto/game-history.dto";
 import { GetHistoryDto } from "../dto/get-history.dto";
 import { ShareResultDto } from "../dto/share-result.dto";
 import { DailyStatsDto } from "../dto/daily-stats.dto";
+import { PlayedTodayDto } from "../dto/played-today.dto";
 import { SessionId } from "@utils/decorators/sessionId.decorator";
 import { SessionGuard } from "@utils/guards/session-guard";
 
@@ -65,6 +66,14 @@ export class GameController {
   @ApiResponse({ status: 200, type: DailyStatsDto })
   async getStats(@SessionId() sessionId: string): Promise<DailyStatsDto> {
     return this.gameService.getStats(sessionId);
+  }
+
+  @Get("daily/played-today")
+  @ApiOperation({ summary: "Whether the user has played today's daily" })
+  @ApiCookieAuth()
+  @ApiResponse({ status: 200, type: PlayedTodayDto })
+  async getPlayedToday(@SessionId() sessionId: string): Promise<PlayedTodayDto> {
+    return this.gameService.getPlayedToday(sessionId);
   }
 
   @Get("share/:id")

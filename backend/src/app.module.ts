@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { LoggerModule } from "./logger/logger.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { TransactionModule } from "./transaction/transaction.module";
 import { RedisModule } from "./redis/redis.module";
 import { AuthModule } from "./auth/auth.module";
 import { PlaylistsModule } from "./playlists/playlists.module";
@@ -15,6 +16,7 @@ import { SpotifyModule } from "./spotify/spotify.module";
     }),
     LoggerModule,
     PrismaModule,
+    TransactionModule,
     RedisModule,
     AuthModule,
     PlaylistsModule,

@@ -21,6 +21,7 @@ import type {
   GameStateDto,
   GuessDto,
   GuessResultDto,
+  PlayedTodayDto,
   PlaylistDto,
   PlaylistsResponseDto,
   ShareResultDto,
@@ -41,6 +42,8 @@ import {
     GuessDtoToJSON,
     GuessResultDtoFromJSON,
     GuessResultDtoToJSON,
+    PlayedTodayDtoFromJSON,
+    PlayedTodayDtoToJSON,
     PlaylistDtoFromJSON,
     PlaylistDtoToJSON,
     PlaylistsResponseDtoFromJSON,
@@ -71,9 +74,9 @@ export interface GameControllerGetGameStateRequest {
 
 export interface GameControllerGetHistoryRequest {
     isDaily?: boolean;
-    isCompleted?: boolean;
     limit?: number;
     offset?: number;
+    isCompleted?: boolean;
 }
 
 export interface GameControllerGetShareRequest {
@@ -342,16 +345,16 @@ export class ApiApi extends runtime.BaseAPI {
             queryParameters['isDaily'] = requestParameters['isDaily'];
         }
 
-        if (requestParameters['isCompleted'] != null) {
-            queryParameters['isCompleted'] = requestParameters['isCompleted'];
-        }
-
         if (requestParameters['limit'] != null) {
             queryParameters['limit'] = requestParameters['limit'];
         }
 
         if (requestParameters['offset'] != null) {
             queryParameters['offset'] = requestParameters['offset'];
+        }
+
+        if (requestParameters['isCompleted'] != null) {
+            queryParameters['isCompleted'] = requestParameters['isCompleted'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -374,6 +377,35 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async gameControllerGetHistory(requestParameters: GameControllerGetHistoryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GameHistoryDto> {
         const response = await this.gameControllerGetHistoryRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Whether the user has played today\'s daily
+     */
+    async gameControllerGetPlayedTodayRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlayedTodayDto>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/game/daily/played-today`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PlayedTodayDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Whether the user has played today\'s daily
+     */
+    async gameControllerGetPlayedToday(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlayedTodayDto> {
+        const response = await this.gameControllerGetPlayedTodayRaw(initOverrides);
         return await response.value();
     }
 

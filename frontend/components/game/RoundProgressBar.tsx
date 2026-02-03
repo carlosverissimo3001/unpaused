@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { getGuessResultStyle } from "./guess-result-styles";
 import { ROUND_DURATIONS } from "@/consts/consts";
 
@@ -27,17 +28,34 @@ export function RoundProgressBar({
         const style = result != null ? getGuessResultStyle(result) : null;
         const isCompleted = index < currentRound;
         const isCurrent = !isGameOver && index === currentRound;
+
         return (
-          <div
+          <motion.div
             key={index}
-            className={`flex-1 h-2 rounded-full transition-all duration-300 ${
-              isCompleted
-                ? style?.barClass ?? "bg-red-500"
-                : isCurrent
-                  ? "bg-spotify-green"
+            layout
+            className="flex-1 h-2 rounded-full relative overflow-visible"
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          >
+            <motion.div
+              className={`absolute inset-0 rounded-full transition-colors duration-300 ${
+                isCompleted
+                  ? style?.barClass ?? "bg-red-500"
+                  : isCurrent
+                  ? "bg-[#1DB954]"
                   : "bg-white/20"
-            }`}
-          />
+              }`}
+              {...(isCurrent && {
+                animate: {
+                  boxShadow: [
+                    "0 0 8px rgba(29, 185, 84, 0.4)",
+                    "0 0 16px rgba(29, 185, 84, 0.6)",
+                    "0 0 8px rgba(29, 185, 84, 0.4)",
+                  ],
+                },
+                transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" as const },
+              })}
+            />
+          </motion.div>
         );
       })}
     </div>

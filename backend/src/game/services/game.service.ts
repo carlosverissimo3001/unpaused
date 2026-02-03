@@ -6,7 +6,7 @@ import {
 import { startOfDay, differenceInDays } from "date-fns";
 import { AuthService } from "@auth/services/auth.service";
 import { PlaylistsService } from "@playlists/services/playlists.service";
-import { PrismaService } from "@prisma/prisma.service";
+import { Transactional } from "@transaction/transactional.decorator";
 import { AppLoggerService } from "../../logger/logger.service";
 import { ROUND_DURATIONS, MAX_ROUNDS, GuessResult } from "../consts";
 import { LIKED_SONGS_ID_SUFFIX } from "../../consts";
@@ -28,7 +28,9 @@ import {
 import { GetHistoryDto } from "../dto/get-history.dto";
 import { ShareResultDto } from "../dto/share-result.dto";
 import { DailyStatsDto } from "../dto/daily-stats.dto";
+import { PlayedTodayDto } from "../dto/played-today.dto";
 import { GameSessionEntity } from "../entities/game-session.entity";
+import { PrismaService } from "@prisma/prisma.service";
 
 @Injectable()
 export class GameService {
@@ -46,6 +48,7 @@ export class GameService {
     this.logger = appLogger.child(GameService.name);
   }
 
+  @Transactional()
   async startGame(sessionId: string, params: StartGameDto): Promise<GameStateDto> {
     const { playlistId: requestedPlaylistId, isDaily } = params;
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
@@ -55,26 +58,47 @@ export class GameService {
     let gamePlaylistId: string;
 
     if (isDaily) {
-      const existingToday = await this.gameSessionRepository.findTodayDailySession(userId);
-      if (existingToday) {
-        return this.getGameState(existingToday.id);
-      }
+      // Pick track and upsert outside the critical section (no lock needed)
       const trackInfo = await this.pickLikedTrackWithPreview(sessionId);
       selectedTrack = trackInfo.selectedTrack;
       previewUrl = trackInfo.previewUrl;
       gamePlaylistId = `${userId}-liked-songs`;
-    } else {
-      if (!requestedPlaylistId) {
-        throw new BadRequestException("Playlist ID is required");
-      }
-      gamePlaylistId = requestedPlaylistId;
-      const trackInfo = requestedPlaylistId.endsWith(LIKED_SONGS_ID_SUFFIX)
-        ? await this.pickLikedTrackWithPreview(sessionId)
-        : await this.pickPlaylistTrackWithPreview(sessionId, requestedPlaylistId);
+      await this.trackRepository.upsertTrack(selectedTrack.id, {
+        name: selectedTrack.name,
+        artistName: selectedTrack.primaryArtist,
+        albumImageUrl: selectedTrack.imageUrl,
+        albumName: selectedTrack.albumName,
+        albumUrl: `https://open.spotify.com/album/${selectedTrack.albumId}`,
+        releaseYear: selectedTrack.releaseYear,
+        previewUrl,
+      });
 
-      selectedTrack = trackInfo.selectedTrack;
-      previewUrl = trackInfo.previewUrl;
+
+      const existing =
+        await this.gameSessionRepository.findTodayDailySession(userId);
+      if (existing) return this.getGameState(existing.id);
+      const game = await this.gameSessionRepository.createSession({
+        user: { connect: { id: userId } },
+        playlistId: gamePlaylistId,
+        isDaily: true,
+        track: { connect: { id: selectedTrack.id } },
+        currentRound: 0,
+        guesses: [],
+        status: GameStatus.PLAYING,
+      });
+      return this.getGameState(game.id);
     }
+
+    if (!requestedPlaylistId) {
+      throw new BadRequestException("Playlist ID is required");
+    }
+    gamePlaylistId = requestedPlaylistId;
+    const trackInfo = requestedPlaylistId.endsWith(LIKED_SONGS_ID_SUFFIX)
+      ? await this.pickLikedTrackWithPreview(sessionId)
+      : await this.pickPlaylistTrackWithPreview(sessionId, requestedPlaylistId);
+
+    selectedTrack = trackInfo.selectedTrack;
+    previewUrl = trackInfo.previewUrl;
 
     await this.trackRepository.upsertTrack(selectedTrack.id, {
       name: selectedTrack.name,
@@ -106,6 +130,7 @@ export class GameService {
       answer: undefined,
     };
   }
+
 
   /** Liked Songs: random offset, fetch 1 track, try until we find one with preview. */
   private async pickLikedTrackWithPreview(
@@ -211,11 +236,10 @@ export class GameService {
   }
 
   /**
-   * Submit a guess
-   * @param gameSessionId - The ID of the game session
-   * @param params - The guess data
-   * @returns The result of the guess
+   * Submit a guess. Runs in a transaction so session progress and daily stats
+   * commit or roll back together. If any step throws, the transaction rolls back.
    */
+  @Transactional()
   async submitGuess(gameSessionId: string, params: GuessDto): Promise<GuessResultDto> {
     const game = await this.validateGameSession(gameSessionId);
     const track = await this.trackRepository.findById(game.trackId);
@@ -252,25 +276,32 @@ export class GameService {
     };
   }
 
-  private async getOrCreateDailyStats(userId: string) {
-    let stats = await this.prisma.dailyStats.findUnique({
-      where: { userId },
-    });
-    if (!stats) {
-      stats = await this.prisma.dailyStats.create({
-        data: { userId },
-      });
-    }
-    return stats;
-  }
-
+  /**
+   * Updates daily stats for the user. Uses upsert to atomically ensure the
+   * stats row exists (avoids race on initial create), then read and update.
+   * Must run within a @Transactional() boundary so it participates in the same transaction.
+   */
   private async updateDailyStats(
     userId: string,
     won: boolean,
     score: number
   ): Promise<void> {
-    const stats = await this.getOrCreateDailyStats(userId);
     const today = startOfDay(new Date());
+
+    // Atomic upsert: create row if missing, no-op update if exists (avoids find-then-create race)
+    await this.prisma.dailyStats.upsert({
+      where: { userId },
+      create: { userId },
+      update: {},
+    });
+
+    const stats = await this.prisma.dailyStats.findUnique({
+      where: { userId },
+    });
+    if (!stats) {
+      return;
+    }
+
     const lastPlayed = stats.lastPlayedAt
       ? startOfDay(stats.lastPlayedAt)
       : null;
@@ -416,9 +447,35 @@ export class GameService {
     });
     const trackMap = new Map(tracks.map((t) => [t.id, t]));
 
+    // Resolve playlist names for non–Liked-Songs playlists (batch by unique ID)
+    const playlistIdsToResolve = [
+      ...new Set(
+        items
+          .map((s) => s.playlistId)
+          .filter((id) => !id.endsWith(LIKED_SONGS_ID_SUFFIX)),
+      ),
+    ];
+    const playlistNameMap = new Map<string, string>();
+    await Promise.all(
+      playlistIdsToResolve.map(async (playlistId) => {
+        try {
+          const playlist = await this.playlistsService.getPlaylistById(
+            sessionId,
+            playlistId,
+          );
+          playlistNameMap.set(playlistId, playlist.name);
+        } catch {
+          // Playlist may have been deleted or access revoked; leave name unset
+        }
+      }),
+    );
+
     const entries: GameHistoryEntryDto[] = items.map((s) => {
       const track = trackMap.get(s.trackId);
       const dateSource = s.completedAt ?? s.createdAt;
+      const playlistName = s.playlistId.endsWith(LIKED_SONGS_ID_SUFFIX)
+        ? "Liked Songs"
+        : playlistNameMap.get(s.playlistId);
       return {
         id: s.id,
         date: dateSource.toISOString().slice(0, 10),
@@ -429,7 +486,7 @@ export class GameService {
         trackName: track?.name ?? "",
         artistName: track?.artistName ?? "",
         albumImageUrl: track?.albumImageUrl ?? undefined,
-        playlistName: s.isDaily ? "Liked Songs" : undefined,
+        playlistName,
       };
     });
 
@@ -438,21 +495,30 @@ export class GameService {
 
   async getStats(sessionId: string): Promise<DailyStatsDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const stats = await this.getOrCreateDailyStats(userId);
+    const stats = await this.prisma.dailyStats.findUnique({
+      where: { userId },
+    });
 
-    const totalGames = stats.totalGames || 0;
-    const totalWins = stats.totalWins || 0;
-    const totalScore = stats.totalScore || 0;
+    const totalGames = stats?.totalGames ?? 0;
+    const totalWins = stats?.totalWins ?? 0;
+    const totalScore = stats?.totalScore ?? 0;
 
     return {
-      currentStreak: stats.currentStreak,
-      bestStreak: stats.bestStreak,
+      currentStreak: stats?.currentStreak ?? 0,
+      bestStreak: stats?.bestStreak ?? 0,
       totalGames,
       totalWins,
       winRate: totalGames > 0 ? totalWins / totalGames : 0,
       averageScore: totalGames > 0 ? totalScore / totalGames : 0,
-      scoreDistribution: stats.scoreDistribution ?? [0, 0, 0, 0, 0, 0],
+      scoreDistribution: stats?.scoreDistribution ?? [0, 0, 0, 0, 0, 0],
     };
+  }
+
+  async getPlayedToday(sessionId: string): Promise<PlayedTodayDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const todaySession =
+      await this.gameSessionRepository.findTodayDailySession(userId);
+    return { playedToday: !!todaySession };
   }
 
   async getShare(sessionId: string, gameId: string): Promise<ShareResultDto> {

@@ -110,7 +110,7 @@ export default function HistoryPage() {
               showWinnerGlow={
                 entry.status === GameHistoryEntryDtoStatusEnum.Won &&
                 entry.score != null &&
-                (entry.score === 1 || entry.score === 2)
+                (entry.score === 6 || entry.score === 5)
               }
               staggerIndex={index}
             />

@@ -11,6 +11,7 @@ All URIs are relative to *http://localhost*
 | [**authControllerTokenLogin**](ApiApi.md#authcontrollertokenlogin) | **POST** /auth/token-login | Dev-only: Login with a manually obtained Spotify token |
 | [**gameControllerGetGameState**](ApiApi.md#gamecontrollergetgamestate) | **GET** /game/{id} | Get current game state |
 | [**gameControllerGetHistory**](ApiApi.md#gamecontrollergethistory) | **GET** /game/history | Get user\&#39;s game session history (paginated) |
+| [**gameControllerGetPlayedToday**](ApiApi.md#gamecontrollergetplayedtoday) | **GET** /game/daily/played-today | Whether the user has played today\&#39;s daily |
 | [**gameControllerGetShare**](ApiApi.md#gamecontrollergetshare) | **GET** /game/share/{id} | Get shareable result for a game session |
 | [**gameControllerGetStats**](ApiApi.md#gamecontrollergetstats) | **GET** /game/stats | Get user\&#39;s daily stats |
 | [**gameControllerStartGame**](ApiApi.md#gamecontrollerstartgame) | **POST** /game/start | Start a new game from a playlist or daily |
@@ -358,7 +359,11 @@ import type { GameControllerGetGameStateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const api = new ApiApi();
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
 
   const body = {
     // string | The internal Game Session UUID
@@ -390,7 +395,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[cookie](../README.md#cookie)
 
 ### HTTP request headers
 
@@ -408,7 +413,7 @@ No authorization required
 
 ## gameControllerGetHistory
 
-> GameHistoryDto gameControllerGetHistory(isDaily, isCompleted, limit, offset)
+> GameHistoryDto gameControllerGetHistory(isDaily, limit, offset, isCompleted)
 
 Get user\&#39;s game session history (paginated)
 
@@ -432,12 +437,12 @@ async function example() {
   const body = {
     // boolean | Whether the game is daily (optional)
     isDaily: true,
-    // boolean | Filter by completed (completedAt != null) (optional)
-    isCompleted: true,
     // number | The limit of the history (optional)
     limit: 8.14,
     // number | The offset of the history (optional)
     offset: 8.14,
+    // boolean (optional)
+    isCompleted: true,
   } satisfies GameControllerGetHistoryRequest;
 
   try {
@@ -458,13 +463,74 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **isDaily** | `boolean` | Whether the game is daily | [Optional] [Defaults to `undefined`] |
-| **isCompleted** | `boolean` | Filter by completed (completedAt !&#x3D; null) | [Optional] [Defaults to `undefined`] |
 | **limit** | `number` | The limit of the history | [Optional] [Defaults to `undefined`] |
 | **offset** | `number` | The offset of the history | [Optional] [Defaults to `undefined`] |
+| **isCompleted** | `boolean` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
 [**GameHistoryDto**](GameHistoryDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gameControllerGetPlayedToday
+
+> PlayedTodayDto gameControllerGetPlayedToday()
+
+Whether the user has played today\&#39;s daily
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GameControllerGetPlayedTodayRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.gameControllerGetPlayedToday();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**PlayedTodayDto**](PlayedTodayDto.md)
 
 ### Authorization
 

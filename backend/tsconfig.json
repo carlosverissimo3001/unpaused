@@ -23,6 +23,7 @@
       "@auth/*": ["src/auth/*"],
       "@redis/*": ["src/redis/*"],
       "@prisma/*": ["src/prisma/*"],
+      "@transaction/*": ["src/transaction/*"],
       "@playlists/*": ["src/playlists/*"],
       "@game/*": ["src/game/*"],
       "@spotify/*": ["src/spotify/*"],

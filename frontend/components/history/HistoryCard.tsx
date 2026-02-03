@@ -11,6 +11,7 @@ import {
   GameHistoryEntryDtoStatusEnum,
   type GameHistoryEntryDto,
 } from "@/sdk/models/GameHistoryEntryDto";
+import { format } from "date-fns";
 
 const GUESS_LABEL: Record<string, string> = {
   [GuessHistoryDtoResultEnum.Correct]: "Correct",
@@ -19,6 +20,15 @@ const GUESS_LABEL: Record<string, string> = {
   [GuessHistoryDtoResultEnum.Album]: "Same album",
   [GuessHistoryDtoResultEnum.Wrong]: "Wrong",
   [GuessHistoryDtoResultEnum.Skip]: "Skipped",
+};
+
+const GUESS_BORDER: Record<string, string> = {
+  [GuessHistoryDtoResultEnum.Correct]: "border-l-green-500",
+  [GuessHistoryDtoResultEnum.Artist]: "border-l-yellow-500",
+  [GuessHistoryDtoResultEnum.ArtistAndAlbum]: "border-l-yellow-500",
+  [GuessHistoryDtoResultEnum.Album]: "border-l-yellow-500",
+  [GuessHistoryDtoResultEnum.Wrong]: "border-l-red-500",
+  [GuessHistoryDtoResultEnum.Skip]: "border-l-white/30",
 };
 
 interface HistoryCardProps {
@@ -47,7 +57,11 @@ export function HistoryCard({
 }: HistoryCardProps) {
   const [expanded, setExpanded] = useState(false);
   const isWon = entry.status === GameHistoryEntryDtoStatusEnum.Won;
-  const score = entry.score ?? 0;
+  // Backend score = 6 - roundIndex (6 = 1st guess, 1 = 6th guess). Show "guess number" so X/6 = "got it on Xth guess".
+  const guessesUsed =
+    isWon && entry.score != null && entry.score >= 1 && entry.score <= 6
+      ? 7 - entry.score
+      : entry.score ?? 0;
 
   return (
     <motion.article
@@ -57,16 +71,24 @@ export function HistoryCard({
       animate="visible"
       custom={staggerIndex}
       whileHover={{ scale: 1.01 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      className={`group rounded-2xl bg-white/[0.03] border overflow-hidden backdrop-blur-sm transition-colors duration-200 hover:border-white/20 flex ${
+      transition={{
+        type: "spring",
+        stiffness: 400,
+        damping: 25,
+        layout: { duration: 0.3, ease: "easeInOut" },
+      }}
+      className={`group rounded-2xl bg-white/[0.03] border overflow-hidden backdrop-blur-sm transition-[background-color,border-color] duration-200 hover:bg-white/[0.05] hover:border-white/20 flex ${
         showWinnerGlow
           ? "border-amber-400/30 shadow-[0_0_15px_rgba(30,215,96,0.1)] hover:shadow-[0_0_20px_rgba(30,215,96,0.15)]"
           : "border-white/10"
       }`}
     >
-      {/* Vertical status bar */}
       <div
-        className={`w-1 shrink-0 ${isWon ? "bg-spotify-green/80" : "bg-red-500/80"}`}
+        className={`w-1 shrink-0 ${
+          isWon
+            ? "bg-gradient-to-b from-spotify-green to-emerald-600"
+            : "bg-gradient-to-b from-red-500 to-rose-700"
+        }`}
         aria-hidden
       />
       <div className="p-4 sm:p-5 flex-1 min-w-0">
@@ -77,7 +99,7 @@ export function HistoryCard({
                 src={entry.albumImageUrl}
                 alt={`${entry.trackName} by ${entry.artistName}`}
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                 sizes="112px"
               />
             ) : (
@@ -88,32 +110,32 @@ export function HistoryCard({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="font-black text-[10px] uppercase tracking-widest text-white/50">
-                  {new Date(entry.date).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
+              <div className="min-w-0">
+                <p className={`${entry.isDaily ? "text-spotify-green" : "text-white/50"} font-black text-[10px] uppercase tracking-widest m-0 p-0 leading-none`}>
+                  {format(new Date(entry.date), "MMM d, yyyy")}
                 </p>
-                {entry.playlistName && (
-                  <span className="inline-block mt-1 font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/10 text-white/70 truncate max-w-full">
-                    {entry.playlistName}
-                  </span>
-                )}
-                {entry.isDaily && (
-                  <span className="inline-block mt-1 ml-1 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-spotify-green/20 text-spotify-green">
-                    Daily
-                  </span>
-                )}
+                <div className="flex flex-wrap items-center gap-1 mt-2">
+                  {entry.playlistName && (
+                    <span className="font-black text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/10 text-white/70 truncate max-w-full">
+                      {entry.playlistName}
+                    </span>
+                  )}
+                  {entry.isDaily && (
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-spotify-green/20 text-spotify-green">
+                      Daily
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <span
-                  className={`text-sm font-semibold px-2.5 py-1 rounded-full ${
-                    isWon ? "bg-spotify-green/25 text-green-300" : "bg-red-500/20 text-red-300"
+                  className={`text-sm font-semibold px-2.5 py-1 rounded-full border-2 backdrop-blur-md ${
+                    isWon
+                      ? "bg-spotify-green/25 text-green-300 border-green-400/50 shadow-[0_0_10px_rgba(30,215,96,0.3)]"
+                      : "bg-red-500/20 text-red-300 border-red-400/50"
                   }`}
                 >
-                  {isWon ? `${score}/6` : "Lost"}
+                  {isWon ? `${guessesUsed}/6` : "Lost"}
                 </span>
                 <Button
                   variant="ghost"
@@ -140,7 +162,7 @@ export function HistoryCard({
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="ml-auto flex items-center gap-1 text-white/50 hover:text-white text-sm transition-colors"
+            className="ml-auto flex items-center gap-1 text-white/50 hover:text-white text-sm transition-all duration-200 hover:translate-x-0.5"
           >
             {expanded ? (
               <>
@@ -169,7 +191,9 @@ export function HistoryCard({
                 {entry.guesses.map((g, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg bg-white/5"
+                    className={`flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg bg-white/5 border-l-2 ${
+                      GUESS_BORDER[g.result] ?? "border-l-white/30"
+                    }`}
                   >
                     <span className="truncate text-sm text-white/90">
                       {g.result === GuessHistoryDtoResultEnum.Skip ? "Skipped" : g.trackName}

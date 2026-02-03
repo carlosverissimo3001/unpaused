@@ -13,14 +13,14 @@ import { useGameStats } from "./useGameStats";
 import { useSpotifyTrackSearch } from "@/hooks/spotify/useSpotifyTrackSearch";
 import { usePlaylistById } from "@/hooks/playlists/usePlaylistById";
 import { triggerConfetti } from "@/components/game/confetti";
-import type { GameMode } from "@/components/game/types";
+import { GAME_MODE } from "@/consts/consts";
 
-export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
+export function useGameOrchestrator(mode: GAME_MODE, playlistId?: string) {
   const queryClient = useQueryClient();
   const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
 
-  const isPlaylist = mode === "playlist";
-  const isDaily = mode === "daily";
+  const isPlaylist = mode === GAME_MODE.PLAYLIST;
+  const isDaily = mode === GAME_MODE.DAILY;
 
   const { data: playlist } = usePlaylistById(playlistId ?? "");
   const {
@@ -54,6 +54,13 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
       if (last.result === GuessHistoryDtoResultEnum.Correct) triggerConfetti();
     }
   }, [gameState?.guesses, lastGuessResult]);
+
+  useEffect(() => {
+    if (isDaily && isGameOver) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.game.stats });
+      queryClient.invalidateQueries({ queryKey: queryKeys.game.playedToday });
+    }
+  }, [isDaily, isGameOver, queryClient]);
 
   const handleSubmit = useCallback(() => {
     if (!gameState || submitPending) return;

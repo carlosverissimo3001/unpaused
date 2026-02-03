@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -8,20 +9,27 @@ import { GameStateDtoStatusEnum } from "@/sdk/models/GameStateDto";
 import type { TrackOptionDto } from "@/sdk";
 import { GuessPattern } from "./GuessPattern";
 import { ShareButton } from "@/components/daily/ShareButton";
+import { triggerRevealConfetti } from "./confetti";
+import { useAlbumArtColor } from "@/hooks/misc/useAlbumArtColor";
+
+const GLASS_STYLE = {
+  background: "rgba(18, 18, 18, 0.6)",
+  backdropFilter: "blur(24px)",
+  WebkitBackdropFilter: "blur(24px)" as const,
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow:
+    "0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(29,185,84,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+};
 
 interface SongRevealCardProps {
   status: string;
   answer: TrackOptionDto | null | undefined;
   guesses: Array<{ result: string }>;
   previewUrl?: string | null;
-  /** When set, show Share Result button (daily game id) */
   shareGameId?: string | null;
-  /** When true, show View Stats link (daily) */
   showViewStats?: boolean;
-  /** When true, show Play Again / Home (playlist mode) */
   showPlayAgain?: boolean;
   onPlayAgain?: () => void;
-  /** Optional playlist info for "Listen to the full playlist" (playlist mode) */
   playlistExternalUrl?: string | null;
   playlistName?: string | null;
   playlistTotalTracks?: number | null;
@@ -52,31 +60,84 @@ export function SongRevealCard({
 }: SongRevealCardProps) {
   const songSpotifyUrl = answer ? `https://open.spotify.com/track/${answer.id}` : undefined;
   const isWon = status === GameStateDtoStatusEnum.Won;
+  const albumColor = useAlbumArtColor(answer?.albumImageUrl ?? null);
+  const albumGlowColor = albumColor.replace(/[\d.]+\)$/, "0.5)");
+
+  useEffect(() => {
+    if (isWon) triggerRevealConfetti();
+  }, [isWon]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-      className="mb-6 md:mb-8 p-6 md:p-8 bg-white/10 rounded-xl text-center"
+      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="mb-6 md:mb-8 p-6 md:p-8 rounded-2xl text-center relative overflow-hidden"
+      style={GLASS_STYLE}
     >
-      <h2 className="text-xl md:text-2xl font-bold mb-4">{isWon ? "You won!" : "Game over"}</h2>
+      <h2
+        className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 tracking-tight"
+        style={{
+          background: isWon
+            ? "linear-gradient(135deg, #1DB954 0%, #1ed760 50%, #91ed91 100%)"
+            : "linear-gradient(135deg, #b3b3b3 0%, #535353 50%, #282828 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+      >
+        {isWon ? "You Won" : "Game Over"}
+      </h2>
       {answer && (
         <div className="mb-4 md:mb-6">
           {answer.albumImageUrl && (
-            <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-3 md:mb-4 rounded-lg overflow-hidden shadow-lg">
-              <Image
-                src={answer.albumImageUrl}
-                alt={answer.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 128px, 160px"
-              />
-            </div>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{
+                scale: { type: "spring", stiffness: 260, damping: 20 },
+                opacity: { duration: 0.35 },
+              }}
+              className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-3 md:mb-4 rounded-xl overflow-visible"
+              style={{
+                filter: `drop-shadow(0 0 28px 12px ${albumGlowColor})`,
+              }}
+            >
+              <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+                <Image
+                  src={answer.albumImageUrl}
+                  alt={answer.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 128px, 160px"
+                />
+              </div>
+            </motion.div>
           )}
-          <p className="text-white/60 text-sm">The song was</p>
-          <p className="font-semibold text-lg md:text-xl">{answer.name}</p>
-          <p className="text-white/60 text-sm">by {answer.artist}</p>
+          <motion.p
+            className="text-[#b3b3b3] text-sm mb-1"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            The song was
+          </motion.p>
+          <motion.p
+            className="font-semibold text-lg md:text-xl text-white"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            {answer.name}
+          </motion.p>
+          <motion.p
+            className="text-[#b3b3b3] text-sm"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+          >
+            by {answer.artist}
+          </motion.p>
         </div>
       )}
       <GuessPattern results={guesses.map((g) => g.result)} className="justify-center mb-4" />
@@ -84,39 +145,65 @@ export function SongRevealCard({
         {shareGameId && <ShareButton gameId={shareGameId} variant="default" />}
         {showViewStats && (
           <Link href="/daily/stats">
-            <span className="inline-block px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-sm font-medium transition-colors">
+            <motion.span
+              className="inline-block px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-sm font-medium text-white border border-white/10 transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
               View Stats
-            </span>
+            </motion.span>
           </Link>
         )}
         {showPlayAgain && onPlayAgain && (
-          <button
+          <motion.button
             type="button"
             onClick={onPlayAgain}
-            className="px-4 py-2 rounded-full bg-spotify-green hover:bg-green-400 text-black font-medium transition-colors"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-5 py-2.5 rounded-full bg-[#1DB954] hover:bg-[#1ed760] text-black font-semibold transition-colors"
           >
             Play Again
-          </button>
+          </motion.button>
         )}
       </div>
       {previewUrl && (
         <div className="flex justify-center gap-2 mt-4">
-          <button
+          <motion.button
             type="button"
             onClick={onToggleFullSong}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-colors"
             aria-label={isFullSongPlaying ? "Pause" : "Play"}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {isFullSongPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-          </button>
-          <button
+            {isFullSongPlaying ? (
+              <motion.span whileHover={{ rotate: 5 }}>
+                <Pause className="w-5 h-5 text-white" />
+              </motion.span>
+            ) : (
+              <motion.span whileHover={{ rotate: 5 }}>
+                <Play className="w-5 h-5 text-white" />
+              </motion.span>
+            )}
+          </motion.button>
+          <motion.button
             type="button"
             onClick={onToggleMute}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-colors"
             aria-label={isMuted ? "Unmute" : "Mute"}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-          </button>
+            {isMuted ? (
+              <motion.span whileHover={{ rotate: -5 }}>
+                <VolumeX className="w-5 h-5 text-white" />
+              </motion.span>
+            ) : (
+              <motion.span whileHover={{ rotate: -5 }}>
+                <Volume2 className="w-5 h-5 text-white" />
+              </motion.span>
+            )}
+          </motion.button>
         </div>
       )}
 
@@ -124,19 +211,19 @@ export function SongRevealCard({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.4, duration: 0.35 }}
           className="mt-6 pt-6 border-t border-white/10 space-y-3"
         >
-          <p className="text-sm text-white/50 mb-3">Listen on Spotify:</p>
+          <p className="text-sm text-[#b3b3b3] mb-3">Listen on Spotify:</p>
 
           {songSpotifyUrl && (
             <a
               href={songSpotifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors group w-full max-w-md mx-auto"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-colors group w-full max-w-md mx-auto"
             >
-              <div className="relative w-10 h-10 rounded-md overflow-hidden bg-white/10 flex-shrink-0">
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
                 {answer.albumImageUrl ? (
                   <Image
                     src={answer.albumImageUrl}
@@ -147,20 +234,24 @@ export function SongRevealCard({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Play className="w-5 h-5 text-white/40" />
+                    <motion.span whileHover={{ rotate: 15 }}>
+                      <Play className="w-5 h-5 text-white/40" />
+                    </motion.span>
                   </div>
                 )}
               </div>
               <div className="text-left flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-sm truncate">{answer.name}</p>
-                  <span className="bg-spotify-green text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
+                  <span className="bg-[#1DB954] text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
                     SONG
                   </span>
                 </div>
-                <p className="text-xs text-white/60 truncate">by {answer.artist}</p>
+                <p className="text-xs text-[#b3b3b3] truncate">by {answer.artist}</p>
               </div>
-              <ExternalLink className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              <motion.span className="flex-shrink-0" whileHover={{ rotate: 15 }}>
+                <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
+              </motion.span>
             </a>
           )}
 
@@ -169,9 +260,9 @@ export function SongRevealCard({
               href={answer.albumUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors group w-full max-w-md mx-auto"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-colors group w-full max-w-md mx-auto"
             >
-              <div className="relative w-10 h-10 rounded-md overflow-hidden bg-white/10 flex-shrink-0">
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
                 {answer.albumImageUrl ? (
                   <Image
                     src={answer.albumImageUrl}
@@ -182,7 +273,9 @@ export function SongRevealCard({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Disc3 className="w-5 h-5 text-white/40" />
+                    <motion.span whileHover={{ rotate: 15 }}>
+                      <Disc3 className="w-5 h-5 text-white/40" />
+                    </motion.span>
                   </div>
                 )}
               </div>
@@ -193,9 +286,11 @@ export function SongRevealCard({
                     ALBUM
                   </span>
                 </div>
-                <p className="text-xs text-white/60 truncate">{answer.artist}</p>
+                <p className="text-xs text-[#b3b3b3] truncate">{answer.artist}</p>
               </div>
-              <ExternalLink className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              <motion.span className="flex-shrink-0" whileHover={{ rotate: 15 }}>
+                <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
+              </motion.span>
             </a>
           )}
         </motion.div>
@@ -208,14 +303,14 @@ export function SongRevealCard({
           transition={{ delay: 0.3 }}
           className="mt-6 pt-6 border-t border-white/10"
         >
-          <p className="text-sm text-white/50 mb-3">Listen to the full playlist:</p>
+          <p className="text-sm text-[#b3b3b3] mb-3">Listen to the full playlist:</p>
           <a
             href={playlistExternalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors group w-full max-w-md mx-auto"
+            className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-colors group w-full max-w-md mx-auto"
           >
-            <div className="relative w-10 h-10 rounded-md overflow-hidden bg-white/10 flex-shrink-0">
+            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
               {playlistImageUrl ? (
                 <Image
                   src={playlistImageUrl}
@@ -226,17 +321,21 @@ export function SongRevealCard({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center min-w-[40px] min-h-[40px]">
-                  <Play className="w-5 h-5 text-white/40" />
+                  <motion.span whileHover={{ rotate: 15 }}>
+                    <Play className="w-5 h-5 text-white/40" />
+                  </motion.span>
                 </div>
               )}
             </div>
             <div className="text-left min-w-0 flex-1">
               <p className="font-medium text-sm truncate">{playlistName}</p>
               {playlistTotalTracks != null && (
-                <p className="text-xs text-white/60">{playlistTotalTracks} tracks</p>
+                <p className="text-xs text-[#b3b3b3]">{playlistTotalTracks} tracks</p>
               )}
             </div>
-            <ExternalLink className="w-4 h-4 ml-auto opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+            <motion.span className="ml-auto flex-shrink-0" whileHover={{ rotate: 15 }}>
+              <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
+            </motion.span>
           </a>
         </motion.div>
       )}

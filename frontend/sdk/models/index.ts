@@ -8,6 +8,7 @@ export * from './GameStateDto';
 export * from './GuessDto';
 export * from './GuessHistoryDto';
 export * from './GuessResultDto';
+export * from './PlayedTodayDto';
 export * from './PlaylistDto';
 export * from './PlaylistsResponseDto';
 export * from './ShareResultDto';

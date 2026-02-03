@@ -388,6 +388,33 @@
         ]
       }
     },
+    "/game/daily/played-today": {
+      "get": {
+        "operationId": "getPlayedToday",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayedTodayDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Whether the user has played today's daily",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/game/share/{id}": {
       "get": {
         "operationId": "getShare",
@@ -958,6 +985,18 @@
           "winRate",
           "averageScore",
           "scoreDistribution"
+        ]
+      },
+      "PlayedTodayDto": {
+        "type": "object",
+        "properties": {
+          "playedToday": {
+            "type": "boolean",
+            "description": "Whether the user has played today's daily"
+          }
+        },
+        "required": [
+          "playedToday"
         ]
       },
       "ShareResultDto": {
