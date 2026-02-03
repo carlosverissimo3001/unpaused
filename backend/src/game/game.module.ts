@@ -9,10 +9,11 @@ import { PlaylistsModule } from "../playlists/playlists.module";
 import { SpotifyModule } from "../spotify/spotify.module";
 import { TrackModule } from "../tracks/track.module";
 import { MessageModule } from "../messages/message.module";
+import { GameStatsRepository } from "./repositories/game-stats.repository";
 
 @Module({
   imports: [AuthModule, PlaylistsModule, SpotifyModule, TrackModule, MessageModule],
   controllers: [GameController, SearchController],
-  providers: [GameService, SearchService, GameSessionRepository],
+  providers: [GameService, SearchService, GameSessionRepository, GameStatsRepository],
 })
 export class GameModule { }

@@ -84,25 +84,26 @@ export function SongRevealCard({
       className="mb-6 md:mb-8 p-6 md:p-8 rounded-2xl text-center relative overflow-hidden"
       style={GLASS_STYLE}
     >
-      <h2
-        className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 tracking-tight"
-        style={{
-          background: isWon
-            ? "linear-gradient(135deg, #1DB954 0%, #1ed760 50%, #91ed91 100%)"
-            : "linear-gradient(135deg, #b3b3b3 0%, #535353 50%, #282828 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
-      >
-        {isWon ? "You Won" : "Game Over"}
+      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 tracking-tight flex items-center justify-center gap-1 flex-wrap">
+        <span
+          style={{
+            background: isWon
+              ? "linear-gradient(135deg, #1DB954 0%, #1ed760 50%, #91ed91 100%)"
+              : "linear-gradient(135deg, #b3b3b3 0%, #535353 50%, #282828 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          {isWon ? "You Won" : "Game Over"}
+        </span>
         {isWon && meta?.showHeart && (
           <motion.span
-            className="inline-block ml-1"
+            className="inline-block text-[#f472b6]"
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            🩷
+            🫰
           </motion.span>
         )}
       </h2>

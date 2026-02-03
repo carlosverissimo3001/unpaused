@@ -81,9 +81,11 @@ function PlaylistGridComponent({
       initial="initial"
       animate="animate"
       exit="exit"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center"
       style={{
-        gridTemplateColumns: playlists.length === 1 ? "1fr" : "repeat(auto-fill, minmax(240px, 1fr))",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        maxWidth: "1200px",
+        margin: "0 auto" 
       }}
     >
       <AnimatePresence mode="popLayout">
@@ -93,7 +95,6 @@ function PlaylistGridComponent({
             playlist={playlist}
             index={index}
             onHover={onPlaylistHover}
-            fullWidth={playlists.length === 1}
           />
         ))}
       </AnimatePresence>

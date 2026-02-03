@@ -7,6 +7,7 @@ import { useGameStats } from "@/hooks/game/useGameStats";
 import { usePlayedToday } from "@/hooks/game/usePlayedToday";
 import { AnimatedCounter } from "@/components/daily/AnimatedCounter";
 import { ScoreDistributionChart } from "@/components/daily/ScoreDistributionChart";
+import { GameStatsDtoModeEnum as GameMode } from "@/sdk";
 
 const SPRING = { type: "spring" as const, stiffness: 120, damping: 18 };
 const STAGGER_DELAY = 0.12;
@@ -35,7 +36,7 @@ const RING_DURATION = 0.5;
 const RING_DELAY = 0.25;
 
 export default function DailyStatsPage() {
-  const { data: stats, isLoading, error } = useGameStats();
+  const { data: stats, isLoading, error } = useGameStats(GameMode.Daily);
   const { data: playedTodayData } = usePlayedToday();
   const playedToday = playedTodayData?.playedToday ?? false;
 

@@ -99,7 +99,6 @@ export default function Home() {
                 />
               </div>
 
-              {/* Refined Header Section */}
               <div className="mb-8 pt-4">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 relative z-10">
                   <div className="space-y-1">

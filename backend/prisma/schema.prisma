@@ -14,7 +14,7 @@ model User {
   isAdmin       Boolean     @default(false) @map("is_admin")
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
-  dailyStats    DailyStats?
+  stats         Stats?
 
   gameSessions GameSession[]
 
@@ -70,24 +70,29 @@ model Track {
   @@map("tracks")
 }
 
-model DailyStats {
+enum GameMode {
+  DAILY
+  ALL
+}
+
+model Stats {
   id     String @id @default(uuid())
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
   currentStreak Int       @default(0) @map("current_streak")
   bestStreak    Int       @default(0) @map("best_streak")
-  lastPlayedAt  DateTime? @map("last_played_at")
 
   totalGames        Int   @default(0) @map("total_games")
   totalWins         Int   @default(0) @map("total_wins")
   totalScore        Int   @default(0) @map("total_score")
   scoreDistribution Int[] @default([0, 0, 0, 0, 0, 0]) @map("score_distribution")
+  mode              GameMode @default(ALL) @map("mode")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("daily_stats")
+  @@map("stats")
 }
 
 model Message {

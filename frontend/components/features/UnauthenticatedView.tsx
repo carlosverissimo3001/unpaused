@@ -30,7 +30,7 @@ function UnauthenticatedViewComponent({
   };
 
   return (
-    <div className="relative flex-1 flex flex-col items-center justify-center min-h-[80vh] overflow-hidden">
+    <div className="relative flex-1 flex flex-col items-center justify-center min-h-[80vh] overflow-visible">
       <motion.div
         animate={{
           scale: [1, 1.2, 1],
@@ -115,10 +115,7 @@ function UnauthenticatedViewComponent({
                   disabled={!tokenInput.trim() || isTokenLoginPending}
                   className="h-8 rounded-xl bg-white px-4 text-xs font-bold shadow-lg transition-all hover:bg-zinc-200 active:scale-95 disabled:opacity-50"
                 >
-                  <span className="text-black">
-                    {" "}
-                    {isTokenLoginPending ? "..." : "Login"}
-                  </span>
+                  <span className="text-black"> {isTokenLoginPending ? "..." : "Login"}</span>
                 </Button>
               </motion.div>
             </div>

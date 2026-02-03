@@ -14,11 +14,13 @@ import { HistoryFilter } from "@/components/history/HistoryFilter";
 import { HistoryCard } from "@/components/history/HistoryCard";
 import { EmptyHistory } from "@/components/history/EmptyHistory";
 import { Button } from "@/components/ui/button";
+import { useMe } from "@/hooks/auth/useMe";
 
 export default function HistoryPage() {
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteGameHistory();
   const shareMutation = useGameShare();
+  const { data: user } = useMe();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [dailyOnly, setDailyOnly] = useState(false);
 
@@ -33,7 +35,9 @@ export default function HistoryPage() {
   const allItems = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data?.pages]);
 
   const items = useMemo(() => {
-    if (dailyOnly) return allItems.filter((e) => e.isDaily);
+    if (dailyOnly) {
+      return allItems.filter((e) => e.isDaily);
+    }
     return allItems;
   }, [allItems, dailyOnly]);
 
@@ -85,7 +89,7 @@ export default function HistoryPage() {
       />
 
       <HistoryStats items={items} />
-      <HistoryFilter dailyOnly={dailyOnly} onDailyOnlyChange={setDailyOnly} />
+      <HistoryFilter dailyOnly={dailyOnly} isTrusted={user?.isTrusted ?? false} onDailyOnlyChange={setDailyOnly} />
 
       {items.length === 0 ? (
         <EmptyHistory dailyOnly={dailyOnly} />

@@ -17,9 +17,10 @@ import * as runtime from '../runtime';
 import type {
   AuthMeResponseDto,
   CreateMessageDto,
-  DailyStatsDto,
   GameHistoryDto,
   GameStateDto,
+  GameStatsDto,
+  GetStatsDto,
   GuessDto,
   GuessResultDto,
   MessageDto,
@@ -37,12 +38,14 @@ import {
     AuthMeResponseDtoToJSON,
     CreateMessageDtoFromJSON,
     CreateMessageDtoToJSON,
-    DailyStatsDtoFromJSON,
-    DailyStatsDtoToJSON,
     GameHistoryDtoFromJSON,
     GameHistoryDtoToJSON,
     GameStateDtoFromJSON,
     GameStateDtoToJSON,
+    GameStatsDtoFromJSON,
+    GameStatsDtoToJSON,
+    GetStatsDtoFromJSON,
+    GetStatsDtoToJSON,
     GuessDtoFromJSON,
     GuessDtoToJSON,
     GuessResultDtoFromJSON,
@@ -103,6 +106,10 @@ export interface GameControllerGetHistoryRequest {
 
 export interface GameControllerGetShareRequest {
     id: string;
+}
+
+export interface GameControllerGetStatsRequest {
+    getStatsDto: GetStatsDto;
 }
 
 export interface GameControllerStartGameRequest {
@@ -622,10 +629,19 @@ export class ApiApi extends runtime.BaseAPI {
     /**
      * Get user\'s daily stats
      */
-    async gameControllerGetStatsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DailyStatsDto>> {
+    async gameControllerGetStatsRaw(requestParameters: GameControllerGetStatsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GameStatsDto>> {
+        if (requestParameters['getStatsDto'] == null) {
+            throw new runtime.RequiredError(
+                'getStatsDto',
+                'Required parameter "getStatsDto" was null or undefined when calling gameControllerGetStats().'
+            );
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
 
         let urlPath = `/game/stats`;
@@ -635,16 +651,17 @@ export class ApiApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
+            body: GetStatsDtoToJSON(requestParameters['getStatsDto']),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DailyStatsDtoFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => GameStatsDtoFromJSON(jsonValue));
     }
 
     /**
      * Get user\'s daily stats
      */
-    async gameControllerGetStats(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DailyStatsDto> {
-        const response = await this.gameControllerGetStatsRaw(initOverrides);
+    async gameControllerGetStats(requestParameters: GameControllerGetStatsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GameStatsDto> {
+        const response = await this.gameControllerGetStatsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

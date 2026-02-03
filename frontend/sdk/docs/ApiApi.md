@@ -896,7 +896,7 @@ example().catch(console.error);
 
 ## gameControllerGetStats
 
-> DailyStatsDto gameControllerGetStats()
+> GameStatsDto gameControllerGetStats(getStatsDto)
 
 Get user\&#39;s daily stats
 
@@ -917,8 +917,13 @@ async function example() {
   });
   const api = new ApiApi(config);
 
+  const body = {
+    // GetStatsDto
+    getStatsDto: ...,
+  } satisfies GameControllerGetStatsRequest;
+
   try {
-    const data = await api.gameControllerGetStats();
+    const data = await api.gameControllerGetStats(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -931,11 +936,14 @@ example().catch(console.error);
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **getStatsDto** | [GetStatsDto](GetStatsDto.md) |  | |
 
 ### Return type
 
-[**DailyStatsDto**](DailyStatsDto.md)
+[**GameStatsDto**](GameStatsDto.md)
 
 ### Authorization
 
@@ -943,7 +951,7 @@ This endpoint does not need any parameter.
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

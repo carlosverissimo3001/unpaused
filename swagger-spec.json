@@ -365,13 +365,23 @@
       "get": {
         "operationId": "getStats",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetStatsDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DailyStatsDto"
+                  "$ref": "#/components/schemas/GameStatsDto"
                 }
               }
             }
@@ -1105,39 +1115,77 @@
           "total"
         ]
       },
-      "DailyStatsDto": {
+      "GetStatsDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "The game mode",
+            "enum": [
+              "DAILY",
+              "ALL"
+            ]
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "GameStatsDto": {
         "type": "object",
         "properties": {
           "currentStreak": {
             "type": "number",
-            "description": "Current streak (consecutive days played)"
+            "description": "The current streak"
           },
           "bestStreak": {
             "type": "number",
-            "description": "Best streak ever"
+            "description": "The best streak"
           },
           "totalGames": {
             "type": "number",
-            "description": "Total daily games played"
+            "description": "The total games"
           },
           "totalWins": {
             "type": "number",
-            "description": "Total wins"
+            "description": "The total wins"
           },
-          "winRate": {
+          "totalScore": {
             "type": "number",
-            "description": "Win rate 0-1"
-          },
-          "averageScore": {
-            "type": "number",
-            "description": "Average score per game"
+            "description": "The total score"
           },
           "scoreDistribution": {
-            "description": "Wins per round [round1, round2, ..., round6]",
+            "description": "The score distribution",
+            "example": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
             "type": "array",
             "items": {
               "type": "number"
             }
+          },
+          "mode": {
+            "type": "string",
+            "description": "The game mode",
+            "enum": [
+              "DAILY",
+              "ALL"
+            ]
+          },
+          "winRate": {
+            "type": "number",
+            "description": "The win rate",
+            "example": 0.5
+          },
+          "averageScore": {
+            "type": "number",
+            "description": "The average score",
+            "example": 3.5
           }
         },
         "required": [
@@ -1145,9 +1193,11 @@
           "bestStreak",
           "totalGames",
           "totalWins",
+          "totalScore",
+          "scoreDistribution",
+          "mode",
           "winRate",
-          "averageScore",
-          "scoreDistribution"
+          "averageScore"
         ]
       },
       "PlayedTodayDto": {

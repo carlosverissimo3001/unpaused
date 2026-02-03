@@ -3,14 +3,14 @@ import {
   NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
-import { startOfDay, differenceInDays } from "date-fns";
+import { startOfDay } from "date-fns";
 import { AuthService } from "@auth/services/auth.service";
 import { PlaylistsService } from "@playlists/services/playlists.service";
 import { Transactional } from "@transaction/transactional.decorator";
 import { AppLoggerService } from "../../logger/logger.service";
 import { ROUND_DURATIONS, MAX_ROUNDS, GuessResult } from "../consts";
 import { LIKED_SONGS_ID_SUFFIX } from "../../consts";
-import { GameStatus, Track } from "@prisma/client";
+import { GameMode, GameStatus, Track } from "@prisma/client";
 import { TrackService } from "@tracks/services/track.service";
 import { TrackDto } from "@tracks/dto/track.dto";
 import { TrackRepository } from "@tracks/repositories/track.repository";
@@ -27,11 +27,14 @@ import {
 } from "../dto/game-history.dto";
 import { GetHistoryDto } from "../dto/get-history.dto";
 import { ShareResultDto } from "../dto/share-result.dto";
-import { DailyStatsDto } from "../dto/daily-stats.dto";
 import { PlayedTodayDto } from "../dto/played-today.dto";
 import { GameSessionEntity } from "../entities/game-session.entity";
 import { PrismaService } from "@prisma/prisma.service";
 import { MessageService } from "../../messages/message.service";
+import { GameStatsRepository } from "../repositories/game-stats.repository";
+import { UpdateGameStatsParams } from "../types";
+import { GetStatsDto } from "../dto/get-stats.dto";
+import { GameStatsDto } from "../dto/game-stats.dto";
 
 @Injectable()
 export class GameService {
@@ -45,6 +48,7 @@ export class GameService {
     private readonly messageService: MessageService,
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
+    private readonly gameStatsRepository: GameStatsRepository,
     appLogger: AppLoggerService
   ) {
     this.logger = appLogger.child(GameService.name);
@@ -213,7 +217,6 @@ export class GameService {
     }
 
     const user = await this.authService.getUserById(game.userId);
-    this.logger.log(`User: ${user.id} ${user.displayName} ${user.isTrusted}`);
 
     const extras =
       game.userId != null
@@ -300,9 +303,9 @@ export class GameService {
       completedAt: gameOver ? new Date() : undefined,
     });
 
-    if (gameOver && game.isDaily && game.userId) {
+    if (gameOver && game.userId) {
       const score = status === GameStatus.WON ? 6 - game.currentRound : 0;
-      await this.updateDailyStats(game.userId, status === GameStatus.WON, score);
+      await this.updateGameStats({ userId: game.userId, won: status === GameStatus.WON, score, isDaily: game.isDaily });
     }
 
     const base: GuessResultDto = {
@@ -321,61 +324,42 @@ export class GameService {
   }
 
   /**
-   * Updates daily stats for the user. Uses upsert to atomically ensure the
+   * Updates stats for the user. Uses upsert to atomically ensure the
    * stats row exists (avoids race on initial create), then read and update.
    * Must run within a @Transactional() boundary so it participates in the same transaction.
    */
-  private async updateDailyStats(
-    userId: string,
-    won: boolean,
-    score: number
-  ): Promise<void> {
-    const today = startOfDay(new Date());
+  private async updateGameStats(params: UpdateGameStatsParams): Promise<void> {
+    const { userId, won, score, isDaily } = params;
+    
+    const stats = await this.gameStatsRepository.upsert(userId, GameMode.ALL);
+    const dailyStats = await this.gameStatsRepository.upsert(userId, GameMode.DAILY);
 
-    // Atomic upsert: create row if missing, no-op update if exists (avoids find-then-create race)
-    await this.prisma.dailyStats.upsert({
-      where: { userId },
-      create: { userId },
-      update: {},
-    });
-
-    const stats = await this.prisma.dailyStats.findUnique({
-      where: { userId },
-    });
-    if (!stats) {
-      return;
-    }
-
-    const lastPlayed = stats.lastPlayedAt
-      ? startOfDay(stats.lastPlayedAt)
-      : null;
-    const isConsecutive =
-      lastPlayed && differenceInDays(today, lastPlayed) === 1;
-
-    let newStreak: number;
-    if (won) {
-      newStreak = isConsecutive ? stats.currentStreak + 1 : 1;
-    } else {
-      newStreak = 0;
-    }
+    const newStreak = won ? stats.currentStreak + 1 : 0;
+    const newDailyStreak = won ? dailyStats.currentStreak + 1 : 0;
 
     const dist = [...(stats.scoreDistribution ?? [0, 0, 0, 0, 0, 0])];
     if (won && score >= 1 && score <= 6) {
       dist[score - 1] = (dist[score - 1] ?? 0) + 1;
     }
 
-    await this.prisma.dailyStats.update({
-      where: { userId },
-      data: {
+    await this.gameStatsRepository.update(userId, {
+      currentStreak: newStreak,
+      bestStreak: Math.max(stats.bestStreak, newStreak),
+      won,
+      score,
+      scoreDistribution: dist,
+    }, GameMode.ALL);
+
+    if (isDaily) {
+      await this.gameStatsRepository.update(userId, {
         currentStreak: newStreak,
-        bestStreak: Math.max(stats.bestStreak, newStreak),
-        lastPlayedAt: today,
-        totalGames: { increment: 1 },
-        totalWins: won ? { increment: 1 } : undefined,
-        totalScore: { increment: score },
+        bestStreak: Math.max(dailyStats.bestStreak, newDailyStreak),
         scoreDistribution: dist,
-      },
-    });
+        won,
+        score,
+      }, GameMode.DAILY);
+    } 
+
   }
 
   /**
@@ -473,7 +457,6 @@ export class GameService {
     const out: { rankTitle?: string; specialNote?: string; meta?: { showHeart: boolean } } = {};
     if (isGameOver && isTrusted) {
       const messages = await this.messageService.findAll();
-      this.logger.log(`Messages: ${messages.length}`);
       const index = new Date().getDate() % messages.length;
       Object.assign(out, { rankTitle: messages[index].title, specialNote: messages[index].note });
     }
@@ -559,25 +542,11 @@ export class GameService {
     return { items: entries, total };
   }
 
-  async getStats(sessionId: string): Promise<DailyStatsDto> {
+  async getStats(sessionId: string, params: GetStatsDto): Promise<GameStatsDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const stats = await this.prisma.dailyStats.findUnique({
-      where: { userId },
-    });
+    const stats = await this.gameStatsRepository.findByUserId(userId, params.mode);
 
-    const totalGames = stats?.totalGames ?? 0;
-    const totalWins = stats?.totalWins ?? 0;
-    const totalScore = stats?.totalScore ?? 0;
-
-    return {
-      currentStreak: stats?.currentStreak ?? 0,
-      bestStreak: stats?.bestStreak ?? 0,
-      totalGames,
-      totalWins,
-      winRate: totalGames > 0 ? totalWins / totalGames : 0,
-      averageScore: totalGames > 0 ? totalScore / totalGames : 0,
-      scoreDistribution: stats?.scoreDistribution ?? [0, 0, 0, 0, 0, 0],
-    };
+    return GameStatsDto.fromEntity(stats);
   }
 
   async getPlayedToday(sessionId: string): Promise<PlayedTodayDto> {
