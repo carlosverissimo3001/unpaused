@@ -17,7 +17,7 @@ export class AuthService {
     private spotifyService: SpotifyService,
     private sessionService: SessionService,
     private userRepository: UserRepository
-  ) {}
+  ) { }
 
   /**
    * Start OAuth flow: generate PKCE, store state, return auth URL
@@ -82,10 +82,16 @@ export class AuthService {
       throw new UnauthorizedException("Session expired");
     }
 
+    const user = await this.userRepository.findBySpotifyUserId(session.spotifyUserId);
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+
     return {
       spotifyUserId: session.spotifyUserId,
       displayName: session.displayName,
       isTrusted: session.isTrusted,
+      isAdmin: user.isAdmin,
     };
   }
 
@@ -102,7 +108,7 @@ export class AuthService {
 
     const bufferMs = 5 * MS_IN_MINUTE;
     const timeUntilExpiry = session.tokens.expiresAt - Date.now();
-    
+
     if (timeUntilExpiry < bufferMs) {
       if (!session.tokens.refreshToken || session.tokens.refreshToken.trim() === "") {
         if (timeUntilExpiry <= 0) {
@@ -111,7 +117,7 @@ export class AuthService {
         }
         return session;
       }
-      
+
       try {
         const newTokens = await this.spotifyService.refreshAccessToken(session.tokens.refreshToken);
         session.tokens = newTokens;
@@ -127,13 +133,24 @@ export class AuthService {
   }
 
   /**
-   * Get user by session ID
-   * @param sessionId - The session ID
+   * Get user by session ID (cookie value / Redis session key)
+   * @param sessionId - The session ID from the cookie
    * @returns The user
    */
   async getUserBySessionId(sessionId: string): Promise<User> {
     const session = await this.sessionService.getSession(sessionId);
     const user = await this.prismaService.user.findUnique({ where: { spotifyUserId: session.spotifyUserId } });
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    return user;
+  }
+
+  /**
+   * Get user by database user ID (users.id)
+   */
+  async getUserById(userId: string): Promise<User> {
+    const user = await this.prismaService.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new UnauthorizedException("User not found");
     }
@@ -160,7 +177,7 @@ export class AuthService {
     refreshToken?: string
   ): Promise<string> {
     const profile = await this.spotifyService.getUserProfile(accessToken);
-    
+
     // fyi: Move this to repo later
     const user = await this.prismaService.user.upsert({
       where: { spotifyUserId: profile.id },
@@ -172,13 +189,13 @@ export class AuthService {
         displayName: profile.displayName || profile.id,
       },
     });
-  
+
     const tokens = {
       accessToken,
       refreshToken: refreshToken ?? "",
       expiresAt: Date.now() + MS_IN_HOUR
     };
-  
+
     return this.sessionService.createSession(
       user.spotifyUserId,
       user.displayName,

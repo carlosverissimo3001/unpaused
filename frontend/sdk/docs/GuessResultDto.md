@@ -11,6 +11,9 @@ Name | Type
 `status` | string
 `currentRound` | number
 `snippetDuration` | number
+`rankTitle` | string
+`specialNote` | string
+`meta` | object
 
 ## Example
 
@@ -24,6 +27,9 @@ const example = {
   "status": null,
   "currentRound": null,
   "snippetDuration": null,
+  "rankTitle": null,
+  "specialNote": null,
+  "meta": null,
 } satisfies GuessResultDto
 
 console.log(example)

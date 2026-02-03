@@ -31,6 +31,7 @@ import { DailyStatsDto } from "../dto/daily-stats.dto";
 import { PlayedTodayDto } from "../dto/played-today.dto";
 import { GameSessionEntity } from "../entities/game-session.entity";
 import { PrismaService } from "@prisma/prisma.service";
+import { MessageService } from "../../messages/message.service";
 
 @Injectable()
 export class GameService {
@@ -41,6 +42,7 @@ export class GameService {
     private readonly trackService: TrackService,
     private readonly trackRepository: TrackRepository,
     private readonly gameSessionRepository: GameSessionRepository,
+    private readonly messageService: MessageService,
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
     appLogger: AppLoggerService
@@ -198,7 +200,7 @@ export class GameService {
   async getGameState(gameSessionId: string): Promise<GameStateDto> {
     const game = await this.gameSessionRepository.findById(gameSessionId);
 
-    if (!game) {
+    if (!game || !game.userId) {
       throw new NotFoundException("Game session not found");
     }
 
@@ -209,6 +211,18 @@ export class GameService {
     if (!track) {
       throw new NotFoundException("Track not found");
     }
+
+    const user = await this.authService.getUserById(game.userId);
+    this.logger.log(`User: ${user.id} ${user.displayName} ${user.isTrusted}`);
+
+    const extras =
+      game.userId != null
+        ? await this.getUserExtras(
+          user.isTrusted,
+          game.status !== GameStatus.PLAYING,
+          game.status === GameStatus.WON
+        )
+        : {};
 
     return {
       sessionId: game.id,
@@ -232,26 +246,50 @@ export class GameService {
             releaseYear: track.releaseYear || undefined,
           }
           : undefined,
+      ...extras,
     };
   }
 
   /**
-   * Submit a guess. Runs in a transaction so session progress and daily stats
-   * commit or roll back together. If any step throws, the transaction rolls back.
+   * Submit a guess. Runs writes in a transaction
    */
-  @Transactional()
   async submitGuess(gameSessionId: string, params: GuessDto): Promise<GuessResultDto> {
+    const { base, isTrusted, gameOver, isWin } = await this.submitGuessTx(gameSessionId, params);
+    const extras =
+      isTrusted != null
+        ? await this.getUserExtras(isTrusted, gameOver, isWin)
+        : {};
+    return { ...base, ...extras };
+  }
+
+  @Transactional()
+  private async submitGuessTx(
+    gameSessionId: string,
+    params: GuessDto
+  ): Promise<{
+    base: GuessResultDto;
+    isTrusted: boolean | null;
+    gameOver: boolean;
+    isWin: boolean;
+  }> {
     const game = await this.validateGameSession(gameSessionId);
+    if (!game.userId) {
+      throw new NotFoundException("Game session not found");
+    }
     const track = await this.trackRepository.findById(game.trackId);
 
     if (!track) {
       throw new NotFoundException("Active track not found");
     }
 
+    const user = await this.authService.getUserById(game.userId);
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
     const result = await this.evaluateGuess(params, track);
 
     const updatedGuesses = this.addGuessToHistory(game, result, track, params);
-    // 3. Determine new game state
     const nextRound = game.currentRound + 1;
     const { status, gameOver } = this.calculateNextState(result, nextRound);
 
@@ -267,12 +305,18 @@ export class GameService {
       await this.updateDailyStats(game.userId, status === GameStatus.WON, score);
     }
 
-    return {
+    const base: GuessResultDto = {
       result,
       gameOver,
       status,
       currentRound: nextRound,
       snippetDuration: ROUND_DURATIONS[Math.min(nextRound, MAX_ROUNDS - 1)],
+    };
+    return {
+      base,
+      isTrusted: game.userId != null ? user.isTrusted : null,
+      gameOver,
+      isWin: status === GameStatus.WON,
     };
   }
 
@@ -415,6 +459,28 @@ export class GameService {
     });
 
     return history;
+  }
+
+  /**
+   * Combined extras for a user (personalized lore when game over, meta when win).
+   * Keeps getGameState and submitGuess flow simple.
+   */
+  async getUserExtras(
+    isTrusted: boolean,
+    isGameOver: boolean,
+    isWin: boolean
+  ): Promise<{ rankTitle?: string; specialNote?: string; meta?: { showHeart: boolean } }> {
+    const out: { rankTitle?: string; specialNote?: string; meta?: { showHeart: boolean } } = {};
+    if (isGameOver && isTrusted) {
+      const messages = await this.messageService.findAll();
+      this.logger.log(`Messages: ${messages.length}`);
+      const index = new Date().getDate() % messages.length;
+      Object.assign(out, { rankTitle: messages[index].title, specialNote: messages[index].note });
+    }
+    if (isWin && isTrusted) {
+      out.meta = { showHeart: true };
+    }
+    return out;
   }
 
   private calculateNextState(result: GuessResult, nextRound: number): { status: GameStatus; gameOver: boolean } {

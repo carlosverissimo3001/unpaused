@@ -11,6 +11,7 @@ model User {
   spotifyUserId String      @unique @map("spotify_user_id")
   displayName   String      @map("display_name")
   isTrusted     Boolean     @default(false) @map("is_trusted")
+  isAdmin       Boolean     @default(false) @map("is_admin")
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
   dailyStats    DailyStats?
@@ -87,4 +88,15 @@ model DailyStats {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("daily_stats")
+}
+
+model Message {
+  id String @id @default(uuid())
+  title String @map("title")
+  note String @map("note")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("message")
 }

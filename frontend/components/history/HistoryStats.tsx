@@ -6,6 +6,7 @@ import { motion, animate } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { GameHistoryEntryDto } from "@/sdk/models/GameHistoryEntryDto";
 import { GameHistoryEntryDtoStatusEnum } from "@/sdk/models/GameHistoryEntryDto";
+import { computeStreak } from "@/utils/stats-utills";
 
 const SIZE = 64;
 const STROKE = 6;
@@ -83,17 +84,7 @@ function WinRateCircle({ wins, total }: { wins: number; total: number }) {
   );
 }
 
-function computeStreak(items: GameHistoryEntryDto[]): number {
-  const dailyByDateDesc = [...items]
-    .filter((e) => e.isDaily)
-    .sort((a, b) => (b.date > a.date ? 1 : -1));
-  let streak = 0;
-  for (const e of dailyByDateDesc) {
-    if (e.status !== GameHistoryEntryDtoStatusEnum.Won) break;
-    streak++;
-  }
-  return streak;
-}
+
 
 export interface HistoryStatsProps {
   items: GameHistoryEntryDto[];
@@ -147,10 +138,28 @@ export function HistoryStats({ items }: HistoryStatsProps) {
         transition={{ duration: 0.3, delay: 0.1 }}
         className="rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm p-4 flex flex-col items-center gap-2"
       >
-        <div className="flex flex-col items-center justify-center h-[64px] gap-0.5">
-          <Star className="w-8 h-8 text-amber-400/90" strokeWidth={2} fill="currentColor" />
-          <span className="text-lg font-bold text-white/90 tabular-nums">{perfectScores}</span>
-        </div>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="flex flex-col items-center justify-center h-[64px] gap-0.5 cursor-default"
+                aria-label={`${perfectScores} perfect scores. A perfect score is winning on the first guess.`}
+              >
+                <Star className="w-8 h-8 text-amber-400/90" strokeWidth={2} fill="currentColor" />
+                <span className="text-lg font-bold text-white/90 tabular-nums">
+                  {perfectScores}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="bg-white/10 text-white border-white/10 backdrop-blur-md"
+            >
+              <span className="text-white/90 font-semibold">Perfect score</span>
+              <span className="text-white/40"> = win on the first guess</span>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <span className="font-black text-[10px] uppercase tracking-widest text-white/40">
           Perfect scores
         </span>

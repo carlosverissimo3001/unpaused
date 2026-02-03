@@ -29,6 +29,11 @@ export const queryKeys = {
     all: ["auth"] as const,
     me: ["auth", "me"] as const,
   },
+  // Admin queries
+  admin: {
+    all: ["admin"] as const,
+    messages: ["admin", "messages"] as const,
+  },
   // Daily game queries
   daily: {
     all: ["daily"] as const,

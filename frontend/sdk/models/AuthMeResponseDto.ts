@@ -37,6 +37,12 @@ export interface AuthMeResponseDto {
      * @memberof AuthMeResponseDto
      */
     isTrusted: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof AuthMeResponseDto
+     */
+    isAdmin: boolean;
 }
 
 /**
@@ -46,6 +52,7 @@ export function instanceOfAuthMeResponseDto(value: object): value is AuthMeRespo
     if (!('spotifyUserId' in value) || value['spotifyUserId'] === undefined) return false;
     if (!('displayName' in value) || value['displayName'] === undefined) return false;
     if (!('isTrusted' in value) || value['isTrusted'] === undefined) return false;
+    if (!('isAdmin' in value) || value['isAdmin'] === undefined) return false;
     return true;
 }
 
@@ -62,6 +69,7 @@ export function AuthMeResponseDtoFromJSONTyped(json: any, ignoreDiscriminator: b
         'spotifyUserId': json['spotifyUserId'],
         'displayName': json['displayName'],
         'isTrusted': json['isTrusted'],
+        'isAdmin': json['isAdmin'],
     };
 }
 
@@ -79,6 +87,7 @@ export function AuthMeResponseDtoToJSONTyped(value?: AuthMeResponseDto | null, i
         'spotifyUserId': value['spotifyUserId'],
         'displayName': value['displayName'],
         'isTrusted': value['isTrusted'],
+        'isAdmin': value['isAdmin'],
     };
 }
 

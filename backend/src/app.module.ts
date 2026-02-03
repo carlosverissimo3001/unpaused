@@ -8,6 +8,8 @@ import { AuthModule } from "./auth/auth.module";
 import { PlaylistsModule } from "./playlists/playlists.module";
 import { GameModule } from "./game/game.module";
 import { SpotifyModule } from "./spotify/spotify.module";
+import { MessageModule } from "./messages/message.module";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { SpotifyModule } from "./spotify/spotify.module";
     PlaylistsModule,
     GameModule,
     SpotifyModule,
+    MessageModule,
+    AdminModule,
   ],
 })
 export class AppModule { }

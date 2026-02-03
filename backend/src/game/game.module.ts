@@ -8,10 +8,11 @@ import { AuthModule } from "../auth/auth.module";
 import { PlaylistsModule } from "../playlists/playlists.module";
 import { SpotifyModule } from "../spotify/spotify.module";
 import { TrackModule } from "../tracks/track.module";
+import { MessageModule } from "../messages/message.module";
 
 @Module({
-  imports: [AuthModule, PlaylistsModule, SpotifyModule, TrackModule],
+  imports: [AuthModule, PlaylistsModule, SpotifyModule, TrackModule, MessageModule],
   controllers: [GameController, SearchController],
   providers: [GameService, SearchService, GameSessionRepository],
 })
-export class GameModule {}
+export class GameModule { }

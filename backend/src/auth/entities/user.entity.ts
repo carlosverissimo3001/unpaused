@@ -13,6 +13,9 @@ export class UserEntity {
     @ApiProperty({ example: false })
     isTrusted: boolean;
 
+    @ApiProperty({ example: false })
+    isAdmin: boolean;
+
     @ApiProperty({ example: "2021-01-01" })
     createdAt: Date;
 

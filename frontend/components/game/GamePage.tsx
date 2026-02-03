@@ -176,6 +176,9 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                   isMuted={gameAudio.isMuted}
                   onToggleFullSong={gameAudio.toggleFullSong}
                   onToggleMute={gameAudio.toggleMute}
+                  rankTitle={gameState.rankTitle ?? null}
+                  specialNote={gameState.specialNote ?? null}
+                  meta={gameState.meta ?? null}
                 />
               </motion.div>
             ) : (

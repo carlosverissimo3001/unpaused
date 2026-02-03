@@ -16,11 +16,13 @@
 import * as runtime from '../runtime';
 import type {
   AuthMeResponseDto,
+  CreateMessageDto,
   DailyStatsDto,
   GameHistoryDto,
   GameStateDto,
   GuessDto,
   GuessResultDto,
+  MessageDto,
   PlayedTodayDto,
   PlaylistDto,
   PlaylistsResponseDto,
@@ -28,10 +30,13 @@ import type {
   StartGameDto,
   TokenLoginDto,
   TrackOptionDto,
+  UpdateMessageDto,
 } from '../models/index';
 import {
     AuthMeResponseDtoFromJSON,
     AuthMeResponseDtoToJSON,
+    CreateMessageDtoFromJSON,
+    CreateMessageDtoToJSON,
     DailyStatsDtoFromJSON,
     DailyStatsDtoToJSON,
     GameHistoryDtoFromJSON,
@@ -42,6 +47,8 @@ import {
     GuessDtoToJSON,
     GuessResultDtoFromJSON,
     GuessResultDtoToJSON,
+    MessageDtoFromJSON,
+    MessageDtoToJSON,
     PlayedTodayDtoFromJSON,
     PlayedTodayDtoToJSON,
     PlaylistDtoFromJSON,
@@ -56,7 +63,22 @@ import {
     TokenLoginDtoToJSON,
     TrackOptionDtoFromJSON,
     TrackOptionDtoToJSON,
+    UpdateMessageDtoFromJSON,
+    UpdateMessageDtoToJSON,
 } from '../models/index';
+
+export interface AdminControllerCreateMessageRequest {
+    createMessageDto: CreateMessageDto;
+}
+
+export interface AdminControllerDeleteMessageRequest {
+    id: string;
+}
+
+export interface AdminControllerUpdateMessageRequest {
+    id: string;
+    updateMessageDto: UpdateMessageDto;
+}
 
 export interface AuthControllerCallbackRequest {
     code: string;
@@ -111,6 +133,157 @@ export interface SearchControllerSearchTracksRequest {
  * 
  */
 export class ApiApi extends runtime.BaseAPI {
+
+    /**
+     * Create a new message (admin only)
+     */
+    async adminControllerCreateMessageRaw(requestParameters: AdminControllerCreateMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MessageDto>> {
+        if (requestParameters['createMessageDto'] == null) {
+            throw new runtime.RequiredError(
+                'createMessageDto',
+                'Required parameter "createMessageDto" was null or undefined when calling adminControllerCreateMessage().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/admin/messages`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateMessageDtoToJSON(requestParameters['createMessageDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MessageDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Create a new message (admin only)
+     */
+    async adminControllerCreateMessage(requestParameters: AdminControllerCreateMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MessageDto> {
+        const response = await this.adminControllerCreateMessageRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Delete a message (admin only)
+     */
+    async adminControllerDeleteMessageRaw(requestParameters: AdminControllerDeleteMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling adminControllerDeleteMessage().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/admin/messages/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete a message (admin only)
+     */
+    async adminControllerDeleteMessage(requestParameters: AdminControllerDeleteMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminControllerDeleteMessageRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Get all messages (admin only)
+     */
+    async adminControllerGetAllMessagesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<MessageDto>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/admin/messages`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(MessageDtoFromJSON));
+    }
+
+    /**
+     * Get all messages (admin only)
+     */
+    async adminControllerGetAllMessages(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<MessageDto>> {
+        const response = await this.adminControllerGetAllMessagesRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update a message (admin only)
+     */
+    async adminControllerUpdateMessageRaw(requestParameters: AdminControllerUpdateMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MessageDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling adminControllerUpdateMessage().'
+            );
+        }
+
+        if (requestParameters['updateMessageDto'] == null) {
+            throw new runtime.RequiredError(
+                'updateMessageDto',
+                'Required parameter "updateMessageDto" was null or undefined when calling adminControllerUpdateMessage().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/admin/messages/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateMessageDtoToJSON(requestParameters['updateMessageDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MessageDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Update a message (admin only)
+     */
+    async adminControllerUpdateMessage(requestParameters: AdminControllerUpdateMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MessageDto> {
+        const response = await this.adminControllerUpdateMessageRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Handle Spotify OAuth callback

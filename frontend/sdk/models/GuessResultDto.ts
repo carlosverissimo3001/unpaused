@@ -49,6 +49,24 @@ export interface GuessResultDto {
      * @memberof GuessResultDto
      */
     snippetDuration: number;
+    /**
+     * Optional personalized rank title (easter egg)
+     * @type {string}
+     * @memberof GuessResultDto
+     */
+    rankTitle?: string;
+    /**
+     * Optional personalized note (easter egg)
+     * @type {string}
+     * @memberof GuessResultDto
+     */
+    specialNote?: string;
+    /**
+     * Optional meta flags (e.g. showHeart for special win celebration)
+     * @type {object}
+     * @memberof GuessResultDto
+     */
+    meta?: object;
 }
 
 
@@ -103,6 +121,9 @@ export function GuessResultDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'status': json['status'],
         'currentRound': json['currentRound'],
         'snippetDuration': json['snippetDuration'],
+        'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
+        'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
+        'meta': json['meta'] == null ? undefined : json['meta'],
     };
 }
 
@@ -122,6 +143,9 @@ export function GuessResultDtoToJSONTyped(value?: GuessResultDto | null, ignoreD
         'status': value['status'],
         'currentRound': value['currentRound'],
         'snippetDuration': value['snippetDuration'],
+        'rankTitle': value['rankTitle'],
+        'specialNote': value['specialNote'],
+        'meta': value['meta'],
     };
 }
 

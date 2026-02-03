@@ -76,6 +76,24 @@ export interface GameStateDto {
      * @memberof GameStateDto
      */
     answer?: TrackOptionDto;
+    /**
+     * Optional personalized rank title (easter egg for special users)
+     * @type {string}
+     * @memberof GameStateDto
+     */
+    rankTitle?: string;
+    /**
+     * Optional personalized note (easter egg for special users)
+     * @type {string}
+     * @memberof GameStateDto
+     */
+    specialNote?: string;
+    /**
+     * Optional meta flags (e.g. showHeart for special win celebration)
+     * @type {object}
+     * @memberof GameStateDto
+     */
+    meta?: object;
 }
 
 
@@ -119,6 +137,9 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
         'previewUrl': json['previewUrl'] == null ? undefined : json['previewUrl'],
         'answer': json['answer'] == null ? undefined : TrackOptionDtoFromJSON(json['answer']),
+        'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
+        'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
+        'meta': json['meta'] == null ? undefined : json['meta'],
     };
 }
 
@@ -140,6 +161,9 @@ export function GameStateDtoToJSONTyped(value?: GameStateDto | null, ignoreDiscr
         'guesses': ((value['guesses'] as Array<any>).map(GuessHistoryDtoToJSON)),
         'previewUrl': value['previewUrl'],
         'answer': TrackOptionDtoToJSON(value['answer']),
+        'rankTitle': value['rankTitle'],
+        'specialNote': value['specialNote'],
+        'meta': value['meta'],
     };
 }
 

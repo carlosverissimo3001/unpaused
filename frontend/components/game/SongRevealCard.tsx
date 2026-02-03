@@ -38,6 +38,12 @@ interface SongRevealCardProps {
   isMuted: boolean;
   onToggleFullSong: () => void;
   onToggleMute: () => void;
+  /** Easter egg: personalized rank for special users */
+  rankTitle?: string | null;
+  /** Easter egg: personalized note for special users */
+  specialNote?: string | null;
+  /** Meta flags (e.g. showHeart for cat celebration) */
+  meta?: { showHeart?: boolean } | null;
 }
 
 export function SongRevealCard({
@@ -57,6 +63,9 @@ export function SongRevealCard({
   isMuted,
   onToggleFullSong,
   onToggleMute,
+  rankTitle,
+  specialNote,
+  meta,
 }: SongRevealCardProps) {
   const songSpotifyUrl = answer ? `https://open.spotify.com/track/${answer.id}` : undefined;
   const isWon = status === GameStateDtoStatusEnum.Won;
@@ -87,7 +96,27 @@ export function SongRevealCard({
         }}
       >
         {isWon ? "You Won" : "Game Over"}
+        {isWon && meta?.showHeart && (
+          <motion.span
+            className="inline-block ml-1"
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            🩷
+          </motion.span>
+        )}
       </h2>
+      {(rankTitle || specialNote) && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.3 }}
+          className="mb-4 md:mb-6 space-y-1"
+        >
+          {rankTitle && <p className="text-sm font-medium text-[#b3b3b3]">{rankTitle}</p>}
+          {specialNote && <p className="text-xs text-[#737373] italic">{specialNote}</p>}
+        </motion.div>
+      )}
       {answer && (
         <div className="mb-4 md:mb-6">
           {answer.albumImageUrl && (

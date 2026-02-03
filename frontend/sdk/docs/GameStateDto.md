@@ -13,6 +13,9 @@ Name | Type
 `guesses` | [Array&lt;GuessHistoryDto&gt;](GuessHistoryDto.md)
 `previewUrl` | string
 `answer` | [TrackOptionDto](TrackOptionDto.md)
+`rankTitle` | string
+`specialNote` | string
+`meta` | object
 
 ## Example
 
@@ -28,6 +31,9 @@ const example = {
   "guesses": null,
   "previewUrl": null,
   "answer": null,
+  "rankTitle": null,
+  "specialNote": null,
+  "meta": null,
 } satisfies GameStateDto
 
 console.log(example)

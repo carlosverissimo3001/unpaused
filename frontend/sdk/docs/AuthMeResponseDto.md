@@ -9,6 +9,7 @@ Name | Type
 `spotifyUserId` | string
 `displayName` | string
 `isTrusted` | boolean
+`isAdmin` | boolean
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "spotifyUserId": spotify_user_123,
   "displayName": John Doe,
   "isTrusted": false,
+  "isAdmin": false,
 } satisfies AuthMeResponseDto
 
 console.log(example)

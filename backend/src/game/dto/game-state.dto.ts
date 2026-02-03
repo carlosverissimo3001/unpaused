@@ -24,4 +24,19 @@ export class GameStateDto {
 
   @ApiPropertyOptional({ description: "The answer to the current track", type: TrackOptionDto })
   answer?: TrackOptionDto;
+
+  @ApiPropertyOptional({
+    description: "Optional personalized rank title (easter egg for special users)",
+  })
+  rankTitle?: string;
+
+  @ApiPropertyOptional({
+    description: "Optional personalized note (easter egg for special users)",
+  })
+  specialNote?: string;
+
+  @ApiPropertyOptional({
+    description: "Optional meta flags (e.g. showHeart for special win celebration)",
+  })
+  meta?: { showHeart?: boolean };
 }

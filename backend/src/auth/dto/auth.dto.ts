@@ -13,4 +13,8 @@ export class AuthMeResponseDto {
   @ApiProperty({ example: false })
   @IsBoolean()
   isTrusted: boolean;
+
+  @ApiProperty({ example: false })
+  @IsBoolean()
+  isAdmin: boolean;
 }

@@ -582,6 +582,147 @@
           "Api"
         ]
       }
+    },
+    "/admin/messages": {
+      "get": {
+        "operationId": "getAllMessages",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get all messages (admin only)",
+        "tags": [
+          "Api"
+        ]
+      },
+      "post": {
+        "operationId": "createMessage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Create a new message (admin only)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/admin/messages/{id}": {
+      "patch": {
+        "operationId": "updateMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Update a message (admin only)",
+        "tags": [
+          "Api"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Delete a message (admin only)",
+        "tags": [
+          "Api"
+        ]
+      }
     }
   },
   "info": {
@@ -615,12 +756,17 @@
           "isTrusted": {
             "type": "boolean",
             "example": false
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "example": false
           }
         },
         "required": [
           "spotifyUserId",
           "displayName",
-          "isTrusted"
+          "isTrusted",
+          "isAdmin"
         ]
       },
       "TokenLoginDto": {
@@ -851,6 +997,23 @@
                 "$ref": "#/components/schemas/TrackOptionDto"
               }
             ]
+          },
+          "rankTitle": {
+            "type": "string",
+            "description": "Optional personalized rank title (easter egg for special users)"
+          },
+          "specialNote": {
+            "type": "string",
+            "description": "Optional personalized note (easter egg for special users)"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "showHeart": {
+                "type": "boolean"
+              }
+            },
+            "required": []
           }
         },
         "required": [
@@ -1102,6 +1265,23 @@
           "snippetDuration": {
             "type": "number",
             "description": "The duration of the current snippet"
+          },
+          "rankTitle": {
+            "type": "string",
+            "description": "Optional personalized rank title (easter egg)"
+          },
+          "specialNote": {
+            "type": "string",
+            "description": "Optional personalized note (easter egg)"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "showHeart": {
+                "type": "boolean"
+              }
+            },
+            "required": []
           }
         },
         "required": [
@@ -1111,6 +1291,68 @@
           "currentRound",
           "snippetDuration"
         ]
+      },
+      "MessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "example": "Message Title"
+          },
+          "note": {
+            "type": "string",
+            "example": "Message Note"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "note",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateMessageDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Message Title"
+          },
+          "note": {
+            "type": "string",
+            "example": "Message Note"
+          }
+        },
+        "required": [
+          "title",
+          "note"
+        ]
+      },
+      "UpdateMessageDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Message Title"
+          },
+          "note": {
+            "type": "string",
+            "example": "Message Note"
+          }
+        }
       }
     }
   }
