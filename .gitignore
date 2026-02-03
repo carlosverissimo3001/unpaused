@@ -4,6 +4,7 @@
 node_modules/
 .pnpm-store/
 jspm_packages/
+package-lock.json
 
 # ------------------------------------------------------------------------------
 # Build & Workspace Outputs

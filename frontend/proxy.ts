@@ -5,7 +5,7 @@ const SITE_PASSWORD = process.env.SITE_PASSWORD;
 export function proxy(request: NextRequest) {
   const cookie = request.cookies.get("site-access");
   const hasAccess =
-    !SITE_PASSWORD || cookie?.value === SITE_PASSWORD;
+    SITE_PASSWORD && cookie?.value && cookie.value === SITE_PASSWORD;
 
   if (hasAccess) {
     return NextResponse.next();
