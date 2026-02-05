@@ -125,7 +125,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
 
           <GameTitle mode={mode} currentRound={gameState.currentRound} isGameOver={!!isGameOver} />
 
-          <audio ref={gameAudio.audioRef} src={gameState.previewUrl ?? undefined} preload="auto" />
+          <audio ref={gameAudio.audioRef} src={gameState.previewUrl ?? undefined} preload="auto" crossOrigin="anonymous" />
           {isGameOver && gameState.previewUrl && (
             <audio
               ref={gameAudio.fullAudioRef}
@@ -145,6 +145,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             <PlaySnippetButton
               currentRound={gameState.currentRound}
               isPlaying={gameAudio.isPlaying}
+              amplitude={gameAudio.amplitude}
               onPlay={gameAudio.playSnippet}
               onPause={gameAudio.pauseSnippet}
             />

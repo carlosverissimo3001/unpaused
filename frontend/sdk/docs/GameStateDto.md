@@ -15,7 +15,7 @@ Name | Type
 `answer` | [TrackOptionDto](TrackOptionDto.md)
 `rankTitle` | string
 `specialNote` | string
-`meta` | object
+`meta` | [MetaGameExtrasVo](MetaGameExtrasVo.md)
 
 ## Example
 

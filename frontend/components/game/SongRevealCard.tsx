@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Play, Pause, Volume2, VolumeX, ExternalLink, Disc3 } from "lucide-react";
 import { GameStateDtoStatusEnum } from "@/sdk/models/GameStateDto";
-import type { TrackOptionDto } from "@/sdk";
+import type { MetaGameExtrasVo, TrackOptionDto } from "@/sdk";
 import { GuessPattern } from "./GuessPattern";
 import { ShareButton } from "@/components/daily/ShareButton";
 import { triggerRevealConfetti } from "./confetti";
@@ -42,8 +42,8 @@ interface SongRevealCardProps {
   rankTitle?: string | null;
   /** Easter egg: personalized note for special users */
   specialNote?: string | null;
-  /** Meta flags (e.g. showHeart for cat celebration) */
-  meta?: { showHeart?: boolean } | null;
+  /** easter eggs for win celebration */
+  meta?: MetaGameExtrasVo
 }
 
 export function SongRevealCard({
@@ -97,13 +97,13 @@ export function SongRevealCard({
         >
           {isWon ? "You Won" : "Game Over"}
         </span>
-        {isWon && meta?.showHeart && (
+        {isWon && (
           <motion.span
             className="inline-block text-[#f472b6]"
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            🫰
+           {meta.winEmoji}
           </motion.span>
         )}
       </h2>

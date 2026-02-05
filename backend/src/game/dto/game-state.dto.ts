@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { GameStatus } from "@prisma/client";
 import { TrackOptionDto } from "@/track/dto/track-option.dto";
 import { GuessHistoryDto } from "./guess/guess-history.dto";
+import { MetaGameExtrasVo } from "../vos/game-extras.vo";
 
 export class GameStateDto {
   @ApiProperty({ description: "The ID of the game session" })
@@ -36,7 +37,9 @@ export class GameStateDto {
   specialNote?: string;
 
   @ApiPropertyOptional({
-    description: "Optional meta flags (e.g. showHeart for special win celebration)",
+    description: "Optional win easter eggs",
+    required: false,
+    type: MetaGameExtrasVo
   })
-  meta?: { showHeart?: boolean };
+  meta?: MetaGameExtrasVo
 }

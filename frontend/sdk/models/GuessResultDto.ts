@@ -62,7 +62,7 @@ export interface GuessResultDto {
      */
     specialNote?: string;
     /**
-     * Optional meta flags (e.g. showHeart for special win celebration)
+     * Optional win easter eggs
      * @type {object}
      * @memberof GuessResultDto
      */

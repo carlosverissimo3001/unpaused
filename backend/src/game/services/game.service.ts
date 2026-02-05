@@ -16,7 +16,7 @@ import { formatDate, startOfDay } from "date-fns";
 import { LIKED_SONGS_ID_SUFFIX } from "../../consts";
 import { AppLoggerService } from "../../logger/logger.service";
 import { MessageService } from "../../message/services/message.service";
-import { GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from "../consts";
+import { EMOJIS, GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from "../consts";
 import { PlayedTodayDto } from "../dto/daily/played-today.dto";
 import { ShareResultDto } from "../dto/daily/share-result.dto";
 import {
@@ -194,7 +194,7 @@ export class GameService {
         )
         : {};
 
-    return mapToGameStateDto(game, track);
+    return mapToGameStateDto(game, track, extras);
   }
 
   /**
@@ -420,7 +420,8 @@ export class GameService {
     } */
   
     if (isWin) {
-      extras.meta = new MetaGameExtrasVo(true);
+      const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+      extras.meta = new MetaGameExtrasVo(emoji);
     }
   
     return extras;

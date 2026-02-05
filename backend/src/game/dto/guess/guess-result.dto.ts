@@ -1,6 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { GuessResult } from "../../consts";
 import { GameStatus } from "@prisma/client";
+import { MetaGameExtrasVo } from "../../vos/game-extras.vo";
 
 export class GuessResultDto {
   @ApiProperty({ enum: GuessResult, description: "The result of the guess" })
@@ -30,9 +31,10 @@ export class GuessResultDto {
   })
   specialNote?: string;
 
-  @ApiProperty({
-    description: "Optional meta flags (e.g. showHeart for special win celebration)",
+  @ApiPropertyOptional({
+    description: "Optional win easter eggs",
     required: false,
+    type: Object
   })
-  meta?: { showHeart?: boolean };
+  meta?: MetaGameExtrasVo
 }

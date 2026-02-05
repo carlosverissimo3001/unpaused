@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { ROUND_DURATIONS } from "@/consts/consts";
+import { useAudioAmplitude } from "./useAudioAmplitude";
 
 interface UseGameAudioOptions {
   /** Preview URL for the snippet (and full song when game over) */
@@ -29,32 +30,39 @@ export function useGameAudio({
 
   const snippetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const { amplitude, init: initAmplitude, start: startAmplitude, stop: stopAmplitude } =
+    useAudioAmplitude(audioRef);
+
   const playSnippet = useCallback(() => {
     if (!audioRef.current || !previewUrl) return;
     if (snippetTimeoutRef.current) clearTimeout(snippetTimeoutRef.current);
     const duration = ROUND_DURATIONS[currentRound] * 1000;
     audioRef.current.currentTime = 0;
+    initAmplitude();
     audioRef.current.play();
+    startAmplitude();
     setIsPlaying(true);
     snippetTimeoutRef.current = setTimeout(() => {
       snippetTimeoutRef.current = null;
+      stopAmplitude();
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
       setIsPlaying(false);
     }, duration);
-  }, [currentRound, previewUrl]);
+  }, [currentRound, previewUrl, initAmplitude, startAmplitude, stopAmplitude]);
 
   const pauseSnippet = useCallback(() => {
     if (snippetTimeoutRef.current) clearTimeout(snippetTimeoutRef.current);
     snippetTimeoutRef.current = null;
+    stopAmplitude();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
     setIsPlaying(false);
-  }, []);
+  }, [stopAmplitude]);
 
   useEffect(() => {
     return () => {
@@ -110,6 +118,7 @@ export function useGameAudio({
     isPlaying,
     isFullSongPlaying,
     isMuted,
+    amplitude,
     playSnippet,
     pauseSnippet,
     toggleFullSong,

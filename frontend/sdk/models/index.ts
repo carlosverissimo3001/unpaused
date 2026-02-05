@@ -10,6 +10,7 @@ export * from './GuessDto';
 export * from './GuessHistoryDto';
 export * from './GuessResultDto';
 export * from './MessageDto';
+export * from './MetaGameExtrasVo';
 export * from './PlayedTodayDto';
 export * from './PlaylistDto';
 export * from './PlaylistsResponseDto';

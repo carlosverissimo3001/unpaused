@@ -67,7 +67,7 @@ export default function DailyStatsPage() {
             {error instanceof Error ? error.message : "Something went wrong"}
           </p>
           <Link href="/" className="text-spotify-green hover:underline">
-            Back home
+            Back
           </Link>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default function DailyStatsPage() {
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back home
+            Back
           </Link>
           <h1 className="text-xl font-bold text-white">Daily Stats</h1>
         </motion.div>

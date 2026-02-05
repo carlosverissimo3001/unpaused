@@ -1,14 +1,13 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class MetaGameExtrasVo {
-    @ApiPropertyOptional({
-        description: "Optional meta flags (e.g. showHeart for special win celebration)",
-        type: Boolean,
+    @ApiProperty({
+        description: "Show this emoji on the win screen",
     })
-    showHeart?: boolean;
+    winEmoji: string;
 
-    constructor(showHeart?: boolean) {
-        this.showHeart = showHeart;
+    constructor(winEmoji: string) {
+        this.winEmoji = winEmoji;
     }
 }
 

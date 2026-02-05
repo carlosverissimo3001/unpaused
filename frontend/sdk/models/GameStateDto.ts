@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { MetaGameExtrasVo } from './MetaGameExtrasVo';
+import {
+    MetaGameExtrasVoFromJSON,
+    MetaGameExtrasVoFromJSONTyped,
+    MetaGameExtrasVoToJSON,
+    MetaGameExtrasVoToJSONTyped,
+} from './MetaGameExtrasVo';
 import type { GuessHistoryDto } from './GuessHistoryDto';
 import {
     GuessHistoryDtoFromJSON,
@@ -89,11 +96,11 @@ export interface GameStateDto {
      */
     specialNote?: string;
     /**
-     * Optional meta flags (e.g. showHeart for special win celebration)
-     * @type {object}
+     * Optional win easter eggs
+     * @type {MetaGameExtrasVo}
      * @memberof GameStateDto
      */
-    meta?: object;
+    meta?: MetaGameExtrasVo;
 }
 
 
@@ -140,7 +147,7 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'answer': json['answer'] == null ? undefined : TrackOptionDtoFromJSON(json['answer']),
         'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
         'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
-        'meta': json['meta'] == null ? undefined : json['meta'],
+        'meta': json['meta'] == null ? undefined : MetaGameExtrasVoFromJSON(json['meta']),
     };
 }
 
@@ -164,7 +171,7 @@ export function GameStateDtoToJSONTyped(value?: GameStateDto | null, ignoreDiscr
         'answer': TrackOptionDtoToJSON(value['answer']),
         'rankTitle': value['rankTitle'],
         'specialNote': value['specialNote'],
-        'meta': value['meta'],
+        'meta': MetaGameExtrasVoToJSON(value['meta']),
     };
 }
 

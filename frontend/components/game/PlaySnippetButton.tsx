@@ -1,63 +1,42 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useTransform, type MotionValue } from "framer-motion";
 import { Play, Pause } from "lucide-react";
 import { ROUND_DURATIONS } from "@/consts/consts";
 
 const SPRING = { type: "spring" as const, stiffness: 100, damping: 15 };
 
-// Playing only: concentric ripples (rings stopped when not playing)
-const PLAYING_RING_DURATION = 0.42;
-const PLAYING_RING_DELAY = 0.21;
-
 interface PlaySnippetButtonProps {
   currentRound: number;
   isPlaying: boolean;
+  amplitude: MotionValue<number>;
   onPlay: () => void;
   onPause: () => void;
 }
 
-export function PlaySnippetButton({ currentRound, isPlaying, onPlay, onPause }: PlaySnippetButtonProps) {
+export function PlaySnippetButton({ currentRound, isPlaying, amplitude, onPlay, onPause }: PlaySnippetButtonProps) {
   const duration = ROUND_DURATIONS[currentRound];
+
+  // Ring 1 — larger, more opaque
+  const ring1Scale = useTransform(amplitude, [0, 1], [1, 1.75]);
+  const ring1Opacity = useTransform(amplitude, [0, 1], [0, 0.6]);
+
+  // Ring 2 — slightly smaller, subtler
+  const ring2Scale = useTransform(amplitude, [0, 1], [1, 1.5]);
+  const ring2Opacity = useTransform(amplitude, [0, 1], [0, 0.4]);
 
   return (
     <div className="text-center mb-6 md:mb-8">
       <div className="relative inline-flex items-center justify-center">
-        {/* Decoupled rings — absolute behind button, no layout/scale impact */}
+        {/* Audio-reactive rings — absolute behind button, no layout/scale impact */}
         <div className="absolute inset-0 pointer-events-none rounded-full" aria-hidden>
-          {/* Ring 1 — only animates when playing */}
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-[#1DB954]/30"
-            animate={
-              isPlaying ? { scale: [1, 1.75, 1], opacity: [0.5, 0, 0.5] } : { scale: 1, opacity: 0 }
-            }
-            transition={
-              isPlaying
-                ? {
-                    duration: PLAYING_RING_DURATION,
-                    repeat: Infinity,
-                    ease: "easeOut",
-                    delay: 0,
-                  }
-                : { duration: 0 }
-            }
+            style={{ scale: ring1Scale, opacity: ring1Opacity }}
           />
-          {/* Ring 2 — offset when playing */}
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-[#1DB954]/30"
-            animate={
-              isPlaying ? { scale: [1, 1.75, 1], opacity: [0.4, 0, 0.4] } : { scale: 1, opacity: 0 }
-            }
-            transition={
-              isPlaying
-                ? {
-                    duration: PLAYING_RING_DURATION,
-                    repeat: Infinity,
-                    ease: "easeOut",
-                    delay: PLAYING_RING_DELAY,
-                  }
-                : { duration: 0 }
-            }
+            style={{ scale: ring2Scale, opacity: ring2Opacity }}
           />
         </div>
 
