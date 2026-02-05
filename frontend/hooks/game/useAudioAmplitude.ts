@@ -44,6 +44,7 @@ export function useAudioAmplitude(
     dataRef.current = new Uint8Array(analyser.fftSize) as Uint8Array<ArrayBuffer>;
   }, [audioRef]);
 
+   
   const tick = useCallback(() => {
     const analyser = analyserRef.current;
     const data = dataRef.current;
@@ -59,6 +60,7 @@ export function useAudioAmplitude(
     }
     amplitude.set(peak / 128);
 
+    // eslint-disable-next-line react-hooks/immutability -- Callback is fully defined before it's called
     rafRef.current = requestAnimationFrame(tick);
   }, [amplitude]);
 

@@ -1,45 +1,53 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { GameStatus } from "@prisma/client";
-import { TrackOptionDto } from "@/track/dto/track-option.dto";
-import { GuessHistoryDto } from "./guess/guess-history.dto";
-import { MetaGameExtrasVo } from "../vos/game-extras.vo";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { GameStatus } from '@prisma/client';
+import { TrackOptionDto } from '@/track/dto/track-option.dto';
+import { GuessHistoryDto } from './guess/guess-history.dto';
+import { MetaGameExtrasVo } from '../vos/game-extras.vo';
 
 export class GameStateDto {
-  @ApiProperty({ description: "The ID of the game session" })
+  @ApiProperty({ description: 'The ID of the game session' })
   sessionId: string;
 
-  @ApiProperty({ description: "The current round of the game" })
+  @ApiProperty({ description: 'The current round of the game' })
   currentRound: number;
 
-  @ApiProperty({ description: "The duration of the current snippet" })
+  @ApiProperty({ description: 'The duration of the current snippet' })
   snippetDuration: number;
 
-  @ApiProperty({ description: "The status of the game", enum: GameStatus })
+  @ApiProperty({ description: 'The status of the game', enum: GameStatus })
   status: GameStatus;
 
-  @ApiProperty({ description: "The guesses of the game", type: GuessHistoryDto, isArray: true })
+  @ApiProperty({
+    description: 'The guesses of the game',
+    type: GuessHistoryDto,
+    isArray: true,
+  })
   guesses: GuessHistoryDto[];
 
-  @ApiProperty({ description: "The preview URL of the current track" })
+  @ApiProperty({ description: 'The preview URL of the current track' })
   previewUrl: string;
 
-  @ApiPropertyOptional({ description: "The answer to the current track", type: TrackOptionDto })
+  @ApiPropertyOptional({
+    description: 'The answer to the current track',
+    type: TrackOptionDto,
+  })
   answer?: TrackOptionDto;
 
   @ApiPropertyOptional({
-    description: "Optional personalized rank title (easter egg for special users)",
+    description:
+      'Optional personalized rank title (easter egg for special users)',
   })
   rankTitle?: string;
 
   @ApiPropertyOptional({
-    description: "Optional personalized note (easter egg for special users)",
+    description: 'Optional personalized note (easter egg for special users)',
   })
   specialNote?: string;
 
   @ApiPropertyOptional({
-    description: "Optional win easter eggs",
+    description: 'Optional win easter eggs',
     required: false,
-    type: MetaGameExtrasVo
+    type: MetaGameExtrasVo,
   })
-  meta?: MetaGameExtrasVo
+  meta?: MetaGameExtrasVo;
 }

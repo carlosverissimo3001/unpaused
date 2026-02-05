@@ -3,14 +3,14 @@
  * or "Song (Remix)" matches the base "With Or Without You" / "Song".
  */
 export function normalizeTrackNameForMatch(value: string): string {
-  if (!value || typeof value !== "string") return "";
+  if (!value || typeof value !== 'string') return '';
   let s = value.trim();
   // Strip trailing parenthetical e.g. "(Remix)", "(Live)", "(Single Version)", "(Radio Edit)"
-  s = s.replace(/\s*\([^)]*\)\s*$/i, "").trim();
+  s = s.replace(/\s*\([^)]*\)\s*$/i, '').trim();
   // Strip trailing " - ..." e.g. " - Live From Paris", " - Single Version", " - Remix"
-  s = s.replace(/\s+-\s+.*$/, "").trim();
+  s = s.replace(/\s+-\s+.*$/, '').trim();
   // One more pass for "Title (Year Remaster) - Live"
-  s = s.replace(/\s*\([^)]*\)\s*$/i, "").trim();
+  s = s.replace(/\s*\([^)]*\)\s*$/i, '').trim();
   return normalizeText(s);
 }
 
@@ -19,13 +19,13 @@ export function normalizeTrackNameForMatch(value: string): string {
  * "spaced-out" words (e.g. "M a k e   I t" from weird fonts) into "Make It".
  */
 export function normalizeText(value: string): string {
-  if (!value || typeof value !== "string") return "";
+  if (!value || typeof value !== 'string') return '';
   // 1. Unicode NFC and replace any space-like/control chars with normal space
   const withNormalSpaces = value
-    .normalize("NFC")
-    .replace(/[\s\u00A0\u2000-\u200B\u202F\u205F\u3000\uFEFF]+/g, " ")
+    .normalize('NFC')
+    .replace(/[\s\u00A0\u2000-\u200B\u202F\u205F\u3000\uFEFF]+/g, ' ')
     .trim();
-  if (!withNormalSpaces) return "";
+  if (!withNormalSpaces) return '';
   // 2. Split on spaces
   const tokens = withNormalSpaces.split(/\s+/);
   // 3. Rebuild words: consecutive single-char tokens → one word; multi-char stays as word
@@ -36,12 +36,12 @@ export function normalizeText(value: string): string {
       current.push(t);
     } else {
       if (current.length) {
-        words.push(current.join(""));
+        words.push(current.join(''));
         current = [];
       }
       words.push(t);
     }
   }
-  if (current.length) words.push(current.join(""));
-  return words.join(" ");
+  if (current.length) words.push(current.join(''));
+  return words.join(' ');
 }

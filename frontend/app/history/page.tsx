@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -19,7 +19,7 @@ import { useMe } from "@/hooks/auth/useMe";
 import { useGameStats } from "../../hooks/game/useGameStats";
 import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
-export default function HistoryPage() {
+function HistoryPageContent() {
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteGameHistory();
 
@@ -145,5 +145,19 @@ export default function HistoryPage() {
         </motion.div>
       )}
     </div>
+  );
+}
+
+export default function HistoryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-spotify-green" />
+        </div>
+      }
+    >
+      <HistoryPageContent />
+    </Suspense>
   );
 }

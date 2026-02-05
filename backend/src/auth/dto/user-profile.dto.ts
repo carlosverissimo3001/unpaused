@@ -7,9 +7,9 @@ export class UserProfileDto {
   @ApiProperty({ example: 'Carlos Veríssimo' })
   displayName: string;
 
-  @ApiProperty({ 
-    example: 'https://i.scdn.co/image/...', 
-    description: 'The primary profile image' 
+  @ApiProperty({
+    example: 'https://i.scdn.co/image/...',
+    description: 'The primary profile image',
   })
   avatarUrl: string;
 }

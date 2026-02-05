@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
-import { User as PrismaUser } from "@prisma/client";
-import { UserEntity } from "../entities/user.entity";
-import { PrismaService } from "@prisma/prisma.service";
-import { UpsertUserDto } from "../dto/upsert-user.dto";
+import { Injectable } from '@nestjs/common';
+import { User as PrismaUser } from '@prisma/client';
+import { UserEntity } from '../entities/user.entity';
+import { PrismaService } from '@prisma/prisma.service';
+import { UpsertUserDto } from '../dto/upsert-user.dto';
 
 @Injectable()
 export class UserRepository {
@@ -40,7 +40,7 @@ export class UserRepository {
     const users = await this.prismaService.user.findMany({
       where: { isTrusted: true },
     });
-    return users.map(this.fromPrisma);
+    return users.map((user) => this.fromPrisma(user));
   }
 
   /**

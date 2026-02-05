@@ -1,42 +1,42 @@
-import { AuthService } from "@auth/services/auth.service";
+import { AuthService } from '@auth/services/auth.service';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import { PlaylistService } from "@/playlist/services/playlist.service";
-import { GameMode, GameStatus, Track } from "@prisma/client";
-import { PrismaService } from "@prisma/prisma.service";
-import { TrackDto } from "@/track/dto/track.dto";
-import { TrackRepository } from "@/track/repositories/track.repository";
-import { TrackService } from "@/track/services/track.service";
-import { Transactional } from "@transaction/transactional.decorator";
-import { normalizeText, normalizeTrackNameForMatch } from "@utils/text";
-import { formatDate, startOfDay } from "date-fns";
-import { LIKED_SONGS_ID_SUFFIX } from "../../consts";
-import { AppLoggerService } from "../../logger/logger.service";
-import { MessageService } from "../../message/services/message.service";
-import { EMOJIS, GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from "../consts";
-import { PlayedTodayDto } from "../dto/daily/played-today.dto";
-import { ShareResultDto } from "../dto/daily/share-result.dto";
+} from '@nestjs/common';
+import { PlaylistService } from '@/playlist/services/playlist.service';
+import { GameMode, GameStatus, Track } from '@prisma/client';
+import { PrismaService } from '@prisma/prisma.service';
+import { TrackDto } from '@/track/dto/track.dto';
+import { TrackRepository } from '@/track/repositories/track.repository';
+import { TrackService } from '@/track/services/track.service';
+import { Transactional } from '@transaction/transactional.decorator';
+import { normalizeText, normalizeTrackNameForMatch } from '@utils/text';
+import { formatDate, startOfDay } from 'date-fns';
+import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
+import { AppLoggerService } from '../../logger/logger.service';
+import { MessageService } from '../../message/services/message.service';
+import { EMOJIS, GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
+import { PlayedTodayDto } from '../dto/daily/played-today.dto';
+import { ShareResultDto } from '../dto/daily/share-result.dto';
+import { GameHistoryDto, GameHistoryEntryDto } from '../dto/game-history.dto';
+import { GameStateDto } from '../dto/game-state.dto';
+import { StartGameDto } from '../dto/game/start-game.dto';
+import { GetHistoryDto } from '../dto/get-history.dto';
+import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
+import { GuessResultDto } from '../dto/guess/guess-result.dto';
+import { GuessDto } from '../dto/guess/guess.dto';
+import { GameStatsDto } from '../dto/stats/game-stats.dto';
+import { GetStatsDto } from '../dto/stats/get-stats.dto';
+import { GameSessionEntity } from '../entities/game-session.entity';
+import { GameSessionRepository } from '../repositories/game-session.repository';
+import { GameStatsRepository } from '../repositories/game-stats.repository';
+import { UpdateGameStatsParams } from '../types';
 import {
-  GameHistoryDto,
-  GameHistoryEntryDto,
-} from "../dto/game-history.dto";
-import { GameStateDto } from "../dto/game-state.dto";
-import { StartGameDto } from "../dto/game/start-game.dto";
-import { GetHistoryDto } from "../dto/get-history.dto";
-import { GuessHistoryDto } from "../dto/guess/guess-history.dto";
-import { GuessResultDto } from "../dto/guess/guess-result.dto";
-import { GuessDto } from "../dto/guess/guess.dto";
-import { GameStatsDto } from "../dto/stats/game-stats.dto";
-import { GetStatsDto } from "../dto/stats/get-stats.dto";
-import { GameSessionEntity } from "../entities/game-session.entity";
-import { GameSessionRepository } from "../repositories/game-session.repository";
-import { GameStatsRepository } from "../repositories/game-stats.repository";
-import { UpdateGameStatsParams } from "../types";
-import { mapInitialGameState, mapToGameStateDto } from "../utils/game-state-mapper";
-import { GameExtrasVo, MetaGameExtrasVo } from "../vos/game-extras.vo";
+  mapInitialGameState,
+  mapToGameStateDto,
+} from '../utils/game-state-mapper';
+import { GameExtrasVo, MetaGameExtrasVo } from '../vos/game-extras.vo';
 
 @Injectable()
 export class GameService {
@@ -51,31 +51,40 @@ export class GameService {
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
     private readonly gameStatsRepository: GameStatsRepository,
-    appLogger: AppLoggerService
+    appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
   }
 
   @Transactional()
-  async startGame(sessionId: string, params: StartGameDto): Promise<GameStateDto> {
+  async startGame(
+    sessionId: string,
+    params: StartGameDto,
+  ): Promise<GameStateDto> {
     const { playlistId, isDaily } = params;
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-  
+
     if (isDaily) {
-      const existing = await this.gameSessionRepository.findTodayDailySession(userId);
+      const existing =
+        await this.gameSessionRepository.findTodayDailySession(userId);
       // Already played today, we'll just return the game state
       if (existing) {
         return this.getGameState(existing.id);
       }
     }
-  
-    const targetPlaylistId = isDaily ? `${userId}-${LIKED_SONGS_ID_SUFFIX}` : playlistId;
+
+    const targetPlaylistId = isDaily
+      ? `${userId}-${LIKED_SONGS_ID_SUFFIX}`
+      : playlistId;
     if (!targetPlaylistId) {
-      throw new BadRequestException("Playlist ID is required");
+      throw new BadRequestException('Playlist ID is required');
     }
-  
-    const { selectedTrack, previewUrl } = await this.resolveTrackWithPreview(sessionId, targetPlaylistId);
-  
+
+    const { selectedTrack, previewUrl } = await this.resolveTrackWithPreview(
+      sessionId,
+      targetPlaylistId,
+    );
+
     await this.trackRepository.upsertTrack(selectedTrack.id, {
       name: selectedTrack.name,
       artistName: selectedTrack.primaryArtist,
@@ -85,7 +94,7 @@ export class GameService {
       releaseYear: selectedTrack.releaseYear,
       previewUrl,
     });
-  
+
     const game = await this.gameSessionRepository.createSession({
       user: { connect: { id: userId } },
       playlistId: targetPlaylistId,
@@ -95,7 +104,7 @@ export class GameService {
       guesses: [],
       status: GameStatus.PLAYING,
     });
-  
+
     return mapInitialGameState(game.id, previewUrl);
   }
 
@@ -106,48 +115,60 @@ export class GameService {
     return this.pickPlaylistTrackWithPreview(sessionId, playlistId);
   }
 
-
   /** Liked Songs: random offset, fetch 1 track, try until we find one with preview. */
   private async pickLikedTrackWithPreview(
-    sessionId: string
+    sessionId: string,
   ): Promise<{ selectedTrack: TrackDto; previewUrl: string }> {
     const total = await this.playlistService.getLikedSongsTotal(sessionId);
     if (!total) {
-      throw new BadRequestException("Liked Songs is empty");
+      throw new BadRequestException('Liked Songs is empty');
     }
 
     const maxAttempts = 20;
     for (let i = 0; i < maxAttempts; i++) {
       const offset = Math.floor(Math.random() * total);
-      const track = await this.playlistService.getOneLikedTrackAtOffset(sessionId, offset);
+      const track = await this.playlistService.getOneLikedTrackAtOffset(
+        sessionId,
+        offset,
+      );
       if (!track?.id) {
         continue;
       }
       try {
-        const withPreview = await this.trackService.getTrackWithPreview(track.id, track);
+        const withPreview = await this.trackService.getTrackWithPreview(
+          track.id,
+          track,
+        );
         if (withPreview?.previewUrl) {
           return { selectedTrack: track, previewUrl: withPreview.previewUrl };
         }
       } catch (err) {
-        this.logger.warn(`Preview failed for ${track.id}: ${(err as Error).message}`);
+        this.logger.warn(
+          `Preview failed for ${track.id}: ${(err as Error).message}`,
+        );
       }
     }
-    throw new BadRequestException("No tracks with preview audio in Liked Songs.");
+    throw new BadRequestException(
+      'No tracks with preview audio in Liked Songs.',
+    );
   }
 
   /** Regular playlist: get first batch, shuffle, try until we find one with preview. */
   private async pickPlaylistTrackWithPreview(
     sessionId: string,
-    playlistId: string
+    playlistId: string,
   ): Promise<{ selectedTrack: TrackDto; previewUrl: string }> {
-    const tracks = await this.playlistService.getPlaylistFirstTracks(sessionId, playlistId);
+    const tracks = await this.playlistService.getPlaylistFirstTracks(
+      sessionId,
+      playlistId,
+    );
     if (!tracks.length) {
-      throw new BadRequestException("Playlist is empty");
+      throw new BadRequestException('Playlist is empty');
     }
     // This happens if the user added local files to the playlist (or songs that are no longer available on Spotify)
     const playable = tracks.filter((t) => t.id);
     if (!playable.length) {
-      throw new BadRequestException("No playable tracks in playlist");
+      throw new BadRequestException('No playable tracks in playlist');
     }
 
     const shuffled = [...playable].sort(() => Math.random() - 0.5);
@@ -155,15 +176,22 @@ export class GameService {
     for (let i = 0; i < maxAttempts; i++) {
       const track = shuffled[i];
       try {
-        const withPreview = await this.trackService.getTrackWithPreview(track.id, track);
+        const withPreview = await this.trackService.getTrackWithPreview(
+          track.id,
+          track,
+        );
         if (withPreview?.previewUrl) {
           return { selectedTrack: track, previewUrl: withPreview.previewUrl };
         }
       } catch (err) {
-        this.logger.warn(`Preview failed for ${track.id}: ${(err as Error).message}`);
+        this.logger.warn(
+          `Preview failed for ${track.id}: ${(err as Error).message}`,
+        );
       }
     }
-    throw new BadRequestException("No tracks with preview audio in this playlist.");
+    throw new BadRequestException(
+      'No tracks with preview audio in this playlist.',
+    );
   }
 
   /**
@@ -174,24 +202,24 @@ export class GameService {
     const game = await this.gameSessionRepository.findById(gameSessionId);
 
     if (!game || !game.userId) {
-      throw new NotFoundException("Game session not found");
+      throw new NotFoundException('Game session not found');
     }
 
     // Fetch track with relation
     const track = await this.trackRepository.findById(game.trackId);
     if (!track || !track.previewUrl) {
-      throw new NotFoundException("Track not found or no preview URL");
+      throw new NotFoundException('Track not found or no preview URL');
     }
 
     const user = await this.authService.getUserById(game.userId);
 
     const extras =
       game.userId != null
-        ? await this.getUserExtras(
-          user.isTrusted,
-          game.status !== GameStatus.PLAYING,
-          game.status === GameStatus.WON
-        )
+        ? this.getUserExtras(
+            user.isTrusted,
+            game.status !== GameStatus.PLAYING,
+            game.status === GameStatus.WON,
+          )
         : {};
 
     return mapToGameStateDto(game, track, extras);
@@ -200,19 +228,23 @@ export class GameService {
   /**
    * Submit a guess. Runs writes in a transaction
    */
-  async submitGuess(gameSessionId: string, params: GuessDto): Promise<GuessResultDto> {
-    const { base, isTrusted, gameOver, isWin } = await this.submitGuessTx(gameSessionId, params);
+  async submitGuess(
+    gameSessionId: string,
+    params: GuessDto,
+  ): Promise<GuessResultDto> {
+    const { base, isTrusted, gameOver, isWin } = await this.submitGuessTx(
+      gameSessionId,
+      params,
+    );
     const extras =
-      isTrusted != null
-        ? await this.getUserExtras(isTrusted, gameOver, isWin)
-        : {};
+      isTrusted != null ? this.getUserExtras(isTrusted, gameOver, isWin) : {};
     return { ...base, ...extras };
   }
 
   @Transactional()
   private async submitGuessTx(
     gameSessionId: string,
-    params: GuessDto
+    params: GuessDto,
   ): Promise<{
     base: GuessResultDto;
     isTrusted: boolean | null;
@@ -221,20 +253,20 @@ export class GameService {
   }> {
     const game = await this.validateGameSession(gameSessionId);
     if (!game.userId) {
-      throw new NotFoundException("Game session not found");
+      throw new NotFoundException('Game session not found');
     }
     const track = await this.trackRepository.findById(game.trackId);
 
     if (!track) {
-      throw new NotFoundException("Active track not found");
+      throw new NotFoundException('Active track not found');
     }
 
     const user = await this.authService.getUserById(game.userId);
     if (!user) {
-      throw new NotFoundException("User not found");
+      throw new NotFoundException('User not found');
     }
 
-    const result = await this.evaluateGuess(params, track);
+    const result = this.evaluateGuess(params, track);
 
     const updatedGuesses = this.addGuessToHistory(game, result, track, params);
     const nextRound = game.currentRound + 1;
@@ -248,13 +280,10 @@ export class GameService {
     });
 
     if (gameOver && game.userId) {
-      const score = status === GameStatus.WON ? 6 - game.currentRound : 0;
-      await this.updateGameStats({ 
-        userId: game.userId, 
-        roundWon: 
-        game.currentRound, 
-        isDaily: 
-        game.isDaily 
+      await this.updateGameStats({
+        userId: game.userId,
+        roundWon: game.currentRound,
+        isDaily: game.isDaily,
       });
     }
 
@@ -282,34 +311,46 @@ export class GameService {
     const { userId, roundWon, isDaily } = params;
 
     const stats = await this.gameStatsRepository.upsert(userId, GameMode.ALL);
-    const dailyStats = await this.gameStatsRepository.upsert(userId, GameMode.DAILY);
+    const dailyStats = await this.gameStatsRepository.upsert(
+      userId,
+      GameMode.DAILY,
+    );
 
-    const newStreak = !!roundWon ? stats.currentStreak + 1 : 0;
-    const newDailyStreak = !!roundWon ? dailyStats.currentStreak + 1 : 0;
+    const newStreak = roundWon ? stats.currentStreak + 1 : 0;
+    const newDailyStreak = roundWon ? dailyStats.currentStreak + 1 : 0;
 
     const dist = [...(stats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0])];
-    const dailyDist = [...(dailyStats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0])];
+    const dailyDist = [
+      ...(dailyStats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0]),
+    ];
 
     const index = roundWon ? roundWon : 6; // Failures go to index 6
     dist[index] = (dist[index] ?? 0) + 1;
     dailyDist[index] = (dailyDist[index] ?? 0) + 1;
 
-    await this.gameStatsRepository.update(userId, {
-      currentStreak: newStreak,
-      bestStreak: Math.max(stats.bestStreak, newStreak),
-      roundDistribution: dist,
-      won: !!roundWon,
-    }, GameMode.ALL);
+    await this.gameStatsRepository.update(
+      userId,
+      {
+        currentStreak: newStreak,
+        bestStreak: Math.max(stats.bestStreak, newStreak),
+        roundDistribution: dist,
+        won: !!roundWon,
+      },
+      GameMode.ALL,
+    );
 
     if (isDaily) {
-      await this.gameStatsRepository.update(userId, {
-        currentStreak: newDailyStreak,
-        bestStreak: Math.max(dailyStats.bestStreak, newDailyStreak),
-        roundDistribution: dailyDist,
-        won: !!roundWon,
-      }, GameMode.DAILY);
+      await this.gameStatsRepository.update(
+        userId,
+        {
+          currentStreak: newDailyStreak,
+          bestStreak: Math.max(dailyStats.bestStreak, newDailyStreak),
+          roundDistribution: dailyDist,
+          won: !!roundWon,
+        },
+        GameMode.DAILY,
+      );
     }
-
   }
 
   /**
@@ -319,10 +360,10 @@ export class GameService {
   private async validateGameSession(id: string): Promise<GameSessionEntity> {
     const game = await this.gameSessionRepository.findById(id);
     if (!game) {
-      throw new NotFoundException("Game session not found");
+      throw new NotFoundException('Game session not found');
     }
     if (game.status !== GameStatus.PLAYING) {
-      throw new BadRequestException("Game is already over");
+      throw new BadRequestException('Game is already over');
     }
     return game;
   }
@@ -331,7 +372,7 @@ export class GameService {
    * Business Logic: Compares the guess against the actual track.
    * Match on exact trackId OR normalized trackName + artistName (forgiving: Remix/Single etc.).
    */
-  private async evaluateGuess(guess: GuessDto, actual: Track): Promise<GuessResult> {
+  private evaluateGuess(guess: GuessDto, actual: Track): GuessResult {
     const { trackId, skip } = guess;
 
     if (skip || !trackId) {
@@ -343,7 +384,12 @@ export class GameService {
     }
 
     // Forgiving match: same song, different version (e.g. Remix, Single, Live From Paris)
-    if (guess.trackName != null && guess.trackName !== "" && guess.artistName != null && guess.artistName !== "") {
+    if (
+      guess.trackName != null &&
+      guess.trackName !== '' &&
+      guess.artistName != null &&
+      guess.artistName !== ''
+    ) {
       const normName = normalizeTrackNameForMatch(guess.trackName);
       const normArtist = normalizeText(guess.artistName);
       if (
@@ -372,18 +418,18 @@ export class GameService {
     game: GameSessionEntity,
     result: GuessResult,
     actual: Track,
-    guess: GuessDto
+    guess: GuessDto,
   ): GuessHistoryDto[] {
     const history = [...(game.guesses as unknown as GuessHistoryDto[])];
 
     const trackName =
       result === GuessResult.Correct
         ? actual.name
-        : guess.trackName ?? "Unknown";
+        : (guess.trackName ?? 'Unknown');
     const artistName =
       result === GuessResult.Correct
         ? actual.artistName
-        : guess.artistName ?? "Unknown";
+        : (guess.artistName ?? 'Unknown');
 
     history.push({
       trackId: guess.trackId,
@@ -399,17 +445,17 @@ export class GameService {
    * Combined extras for a user (personalized lore when game over, meta when win).
    * Keeps getGameState and submitGuess flow simple.
    */
-  async getUserExtras(
+  getUserExtras(
     isTrusted: boolean,
     _isGameOver: boolean,
-    isWin: boolean
-  ): Promise<GameExtrasVo> {
+    isWin: boolean,
+  ): GameExtrasVo {
     if (!isTrusted) {
       return {};
     }
-  
+
     const extras: GameExtrasVo = {};
-  
+
     /* if (isGameOver) {
       const messages = await this.messageService.findAll();
       const dailyIndex = new Date().getDate() % messages.length;
@@ -418,16 +464,19 @@ export class GameService {
       extras.rankTitle = title;
       extras.specialNote = note;
     } */
-  
+
     if (isWin) {
       const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
       extras.meta = new MetaGameExtrasVo(emoji);
     }
-  
+
     return extras;
   }
 
-  private calculateNextState(result: GuessResult, nextRound: number): { status: GameStatus; gameOver: boolean } {
+  private calculateNextState(
+    result: GuessResult,
+    nextRound: number,
+  ): { status: GameStatus; gameOver: boolean } {
     if (result === GuessResult.Correct) {
       return { status: GameStatus.WON, gameOver: true };
     }
@@ -441,15 +490,16 @@ export class GameService {
 
   async getHistory(
     sessionId: string,
-    dto: GetHistoryDto
+    dto: GetHistoryDto,
   ): Promise<GameHistoryDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const { items, total } = await this.gameSessionRepository.findUserGameSessions({
-      userId,
-      ...dto,
-      // In the history tab, we don't care about incomplete games
-      onlyCompleted: true,
-    });
+    const { items, total } =
+      await this.gameSessionRepository.findUserGameSessions({
+        userId,
+        ...dto,
+        // In the history tab, we don't care about incomplete games
+        onlyCompleted: true,
+      });
 
     const trackIds = [...new Set(items.map((s) => s.trackId))];
     const tracks = await this.prisma.track.findMany({
@@ -484,17 +534,17 @@ export class GameService {
       const track = trackMap.get(s.trackId);
       const dateSource = s.completedAt ?? s.createdAt;
       const playlistName = s.playlistId.endsWith(LIKED_SONGS_ID_SUFFIX)
-        ? "Liked Songs"
+        ? 'Liked Songs'
         : playlistNameMap.get(s.playlistId);
       return {
         id: s.id,
-        date: formatDate(dateSource, "yyyy-MM-dd"),
+        date: formatDate(dateSource, 'yyyy-MM-dd'),
         status: s.status,
         score: s.score,
         isDaily: s.isDaily,
         guesses: s.guesses,
-        trackName: track?.name ?? "",
-        artistName: track?.artistName ?? "",
+        trackName: track?.name ?? '',
+        artistName: track?.artistName ?? '',
         albumImageUrl: track?.albumImageUrl ?? undefined,
         playlistName,
       };
@@ -503,9 +553,15 @@ export class GameService {
     return { items: entries, total };
   }
 
-  async getStats(sessionId: string, params: GetStatsDto): Promise<GameStatsDto> {
+  async getStats(
+    sessionId: string,
+    params: GetStatsDto,
+  ): Promise<GameStatsDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const stats = await this.gameStatsRepository.findByUserId(userId, params.mode);
+    const stats = await this.gameStatsRepository.findByUserId(
+      userId,
+      params.mode,
+    );
 
     return GameStatsDto.fromEntity(stats);
   }
@@ -521,33 +577,33 @@ export class GameService {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
     const game = await this.gameSessionRepository.findById(gameId);
     if (!game) {
-      throw new NotFoundException("Game session not found");
+      throw new NotFoundException('Game session not found');
     }
     if (game.userId !== userId) {
-      throw new NotFoundException("Game session not found");
+      throw new NotFoundException('Game session not found');
     }
     if (game.status === GameStatus.PLAYING) {
-      throw new BadRequestException("Game not completed");
+      throw new BadRequestException('Game not completed');
     }
 
-    const guesses = game.guesses as GuessHistoryDto[];
+    const guesses = game.guesses;
     const guessPattern = guesses
       .map((g) => {
-        if (g.result === GuessResult.Correct) return "🟩";
+        if (g.result === GuessResult.Correct) return '🟩';
         if (
           g.result === GuessResult.Artist ||
           g.result === GuessResult.ArtistAndAlbum
         )
-          return "🟨";
-        if (g.result === GuessResult.Skip) return "⬜";
-        return "🟥";
+          return '🟨';
+        if (g.result === GuessResult.Skip) return '⬜';
+        return '🟥';
       })
-      .join("");
+      .join('');
 
     const dateSource = game.completedAt ?? game.createdAt;
     const gameNum = this.gameNumberFromDate(dateSource);
-    const resultEmoji = game.status === GameStatus.WON ? "🎉" : "😢";
-    const appUrl = process.env.APP_URL || "https://unpaused.example.com";
+    const resultEmoji = game.status === GameStatus.WON ? '🎉' : '😢';
+    const appUrl = process.env.APP_URL || 'https://unpaused.example.com';
     const shareText = `Unpaused Daily #${gameNum} ${resultEmoji}
 Score: ${game.score ?? 0}/6
 
@@ -561,18 +617,18 @@ Play at: ${appUrl}/daily`;
       date: dateSource.toISOString().slice(0, 10),
       score: game.score ?? 0,
       guessPattern,
-      trackName: track?.name ?? "",
-      artistName: track?.artistName ?? "",
+      trackName: track?.name ?? '',
+      artistName: track?.artistName ?? '',
       shareText,
       gameNumber: gameNum,
     };
   }
 
   private gameNumberFromDate(date: Date): number {
-    const epoch = new Date("2025-01-01");
+    const epoch = new Date('2025-01-01');
     return Math.floor(
       (startOfDay(date).getTime() - startOfDay(epoch).getTime()) /
-      (24 * 60 * 60 * 1000)
+        (24 * 60 * 60 * 1000),
     );
   }
 }

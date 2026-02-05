@@ -1,13 +1,10 @@
- 
- 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as fs from 'fs';
-import * as path from 'path';
 import cookieParser from 'cookie-parser';
 import { VALIDATION_CONFIG } from './utils/validators/validators';
-import { SESSION_COOKIE_NAME } from './consts';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const module: any;
 
@@ -33,7 +30,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error('Failed to start application:', err);
   process.exit(1);
 });

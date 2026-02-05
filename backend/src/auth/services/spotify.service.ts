@@ -1,29 +1,20 @@
-import { BadRequestException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { UserProfileDto } from '../dto/user-profile.dto';
-
-// Spotify token response
-export interface SpotifyTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number; // Unix timestamp in ms
-}
+import { SpotifyTokenResponseDto } from '../dto/spotify/spotify-token-response.dto';
+import { SpotifyTokenDto } from '../dto/spotify/spotify-token.dto';
+import { SpotifyUserProfileResponseDto } from '../dto/spotify/spotify-user-profile-response.dto';
+import { SCOPES } from '../consts';
 
 @Injectable()
 export class SpotifyService {
   private readonly clientId: string;
   private readonly redirectUri: string;
-  private readonly scopes = [
-    'user-read-private',
-    'user-read-email',
-    'playlist-read-private',
-    'playlist-read-collaborative',
-    'user-library-read',
-    'streaming',
-    'user-read-playback-state',
-    'user-modify-playback-state',
-  ].join(' ');
 
   constructor(private configService: ConfigService) {
     this.clientId = this.configService.getOrThrow<string>('SPOTIFY_CLIENT_ID');
@@ -50,11 +41,13 @@ export class SpotifyService {
    * Build Spotify authorization URL with PKCE
    */
   buildAuthUrl(state: string, codeChallenge: string): string {
+    const scope = SCOPES.join(' ');
+
     const params = new URLSearchParams({
       client_id: this.clientId,
       response_type: 'code',
       redirect_uri: this.redirectUri,
-      scope: this.scopes,
+      scope,
       state,
       code_challenge_method: 'S256',
       code_challenge: codeChallenge,
@@ -65,11 +58,14 @@ export class SpotifyService {
 
   /**
    * Exchange authorization code for tokens
+   * @param code - The authorization code received from Spotify
+   * @param codeVerifier - The PKCE code verifier
+   * @returns The Spotify tokens (inclues access and refresh tokens)
    */
   async exchangeCodeForTokens(
     code: string,
     codeVerifier: string,
-  ): Promise<SpotifyTokens> {
+  ): Promise<SpotifyTokenDto> {
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -89,8 +85,7 @@ export class SpotifyService {
       throw new Error(`Spotify token exchange failed: ${error}`);
     }
 
-    const data = await response.json();
-
+    const data = (await response.json()) as SpotifyTokenResponseDto;
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
@@ -100,8 +95,10 @@ export class SpotifyService {
 
   /**
    * Refresh access token using refresh token
+   * @param refreshToken - The refresh token
+   * @returns The new Spotify tokens (refreshed access token and possibly new refresh token, if provided)
    */
-  async refreshAccessToken(refreshToken: string): Promise<SpotifyTokens> {
+  async refreshAccessToken(refreshToken: string): Promise<SpotifyTokenDto> {
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -119,7 +116,7 @@ export class SpotifyService {
       throw new Error(`Spotify token refresh failed: ${error}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as SpotifyTokenResponseDto;
 
     return {
       accessToken: data.access_token,
@@ -141,26 +138,20 @@ export class SpotifyService {
       },
     });
 
-
     if (!response.ok) {
-      if (response.status === HttpStatus.UNAUTHORIZED) {
+      if (response.status === 401) {
         throw new UnauthorizedException('Spotify token is invalid or expired');
       }
       throw new BadRequestException(`Spotify API returned ${response.status}`);
     }
 
-    const rawData = await response.json();
+    const profileResponse =
+      (await response.json()) as SpotifyUserProfileResponseDto;
 
     return {
-      id: rawData.id,
-      displayName: rawData.display_name,
-      avatarUrl: rawData.images?.[0]?.url ?? '/default-avatar.png',
+      id: profileResponse.id,
+      displayName: profileResponse.display_name,
+      avatarUrl: profileResponse.images?.[0]?.url ?? '/default-avatar.png',
     };
   }
 }
-
-
-
-
-
-

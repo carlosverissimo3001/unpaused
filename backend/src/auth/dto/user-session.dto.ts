@@ -1,33 +1,30 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsNumber, IsObject, IsString } from "class-validator";
-import { SpotifyTokens } from "../services/spotify.service";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsNumber, IsString } from 'class-validator';
+import { SpotifyTokenDto } from './spotify/spotify-token.dto';
 
 export class UserSessionDto {
-    @ApiProperty({ example: "session_1234567890" })
-    @IsString()
-    sessionId: string;
+  @ApiProperty({ description: 'Unique identifier for the user session' })
+  @IsString()
+  sessionId: string;
 
-    @ApiProperty({ example: "spotify_user_123" })
-    @IsString()
-    spotifyUserId: string;
+  @ApiProperty({ description: 'Spotify user ID associated with the session' })
+  @IsString()
+  spotifyUserId: string;
 
-    @ApiProperty({ example: "John Doe" })
-    @IsString()
-    displayName: string;
+  @ApiProperty({ description: 'Display name of the Spotify user' })
+  @IsString()
+  displayName: string;
 
-    @ApiProperty({ example: false })
-    @IsBoolean()
-    isTrusted: boolean;
+  @ApiProperty({ description: 'Indicates if the user is trusted' })
+  @IsBoolean()
+  isTrusted: boolean;
 
-    @ApiProperty({ example: 1715328000 })
-    @IsNumber()
-    createdAt: number;
+  @ApiProperty({ description: 'Timestamp when the session was created' })
+  @IsNumber()
+  createdAt: number;
 
-    @ApiProperty({ example: {
-        accessToken: "access_token",
-        refreshToken: "refresh_token",
-        expiresAt: 1715328000,
-    } })
-    @IsObject()
-    tokens: SpotifyTokens;
+  @ApiProperty({
+    description: 'Spotify tokens associated with the session',
+  })
+  tokens: SpotifyTokenDto;
 }

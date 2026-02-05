@@ -1,13 +1,13 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class MessageDto {
-  @ApiProperty({ example: "uuid" })
+  @ApiProperty({ example: 'uuid' })
   id: string;
 
-  @ApiProperty({ example: "Message Title" })
+  @ApiProperty({ example: 'Message Title' })
   title: string;
 
-  @ApiProperty({ example: "Message Note" })
+  @ApiProperty({ example: 'Message Note' })
   note: string;
 
   @ApiProperty()

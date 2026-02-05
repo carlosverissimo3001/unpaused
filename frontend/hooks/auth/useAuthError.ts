@@ -13,6 +13,7 @@ export function useAuthError() {
     const params = new URLSearchParams(window.location.search);
     const urlError = params.get("error");
     if (urlError) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- One-time initialization from URL parameter
       setError(urlError === "auth_failed" ? "Authentication failed" : urlError);
       window.history.replaceState({}, "", "/");
     }

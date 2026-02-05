@@ -1,4 +1,4 @@
-import { Injectable, LoggerService as NestLoggerService } from "@nestjs/common";
+import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
 
 /**
  * Global application logger. Inject anywhere; pass context (e.g. service name) for tagged logs.
@@ -15,30 +15,25 @@ export class AppLoggerService implements NestLoggerService {
   }
 
   log(message: string, ...optionalParams: unknown[]): void {
-    // eslint-disable-next-line no-console
     console.log(message, ...optionalParams);
   }
 
   error(message: string, ...optionalParams: unknown[]): void {
-    // eslint-disable-next-line no-console
     console.error(message, ...optionalParams);
   }
 
   warn(message: string, ...optionalParams: unknown[]): void {
-    // eslint-disable-next-line no-console
     console.warn(message, ...optionalParams);
   }
 
   debug?(message: string, ...optionalParams: unknown[]): void {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
+    if (process.env.NODE_ENV !== 'production') {
       console.debug(message, ...optionalParams);
     }
   }
 
   verbose?(message: string, ...optionalParams: unknown[]): void {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
+    if (process.env.NODE_ENV !== 'production') {
       console.log(`[verbose] ${message}`, ...optionalParams);
     }
   }
@@ -50,12 +45,15 @@ export class AppLoggerService implements NestLoggerService {
 class ChildLogger extends AppLoggerService {
   constructor(
     private readonly parent: AppLoggerService,
-    private readonly context: string
+    private readonly context: string,
   ) {
     super();
   }
 
-  private format(message: string, ...optionalParams: unknown[]): [string, ...unknown[]] {
+  private format(
+    message: string,
+    ...optionalParams: unknown[]
+  ): [string, ...unknown[]] {
     return [`[${this.context}] ${message}`, ...optionalParams];
   }
 

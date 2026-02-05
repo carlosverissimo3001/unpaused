@@ -1,7 +1,7 @@
-import { Track } from "@spotify/web-api-ts-sdk";
-import { getFirstImage } from "@utils/utils";
-import { normalizeText } from "@utils/text";
-import { TrackDto } from "../dto/track.dto";
+import { Track } from '@spotify/web-api-ts-sdk';
+import { getFirstImage } from '@utils/utils';
+import { normalizeText } from '@utils/text';
+import { TrackDto } from '../dto/track.dto';
 
 /**
  * Map Spotify API track to internal DTO
@@ -13,8 +13,8 @@ export function mapTrack(track: Track): TrackDto {
     id: track.id,
     name: track.name,
     normalizedName: normalizeText(track.name),
-    artists: track.artists.map(a => a.name),
-    primaryArtist: track.artists[0]?.name || "Unknown Artist",
+    artists: track.artists.map((a) => a.name),
+    primaryArtist: track.artists[0]?.name || 'Unknown Artist',
     popularity: track.popularity,
     albumName: track.album.name,
     albumId: track.album.id,
@@ -24,6 +24,8 @@ export function mapTrack(track: Track): TrackDto {
     previewUrl: track.preview_url ?? undefined,
     isPlayable: track.is_playable ?? false,
     isExplicit: track.explicit,
-    releaseYear: track.album.release_date ? new Date(track.album.release_date).getFullYear() : undefined,
+    releaseYear: track.album.release_date
+      ? new Date(track.album.release_date).getFullYear()
+      : undefined,
   };
-}     
+}

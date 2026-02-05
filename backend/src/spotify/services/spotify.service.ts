@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { AuthService } from "../../auth/services/auth.service";
-import { SpotifyApi } from "@spotify/web-api-ts-sdk";
-import { SpotifyClient } from "../interfaces/spotify-client.interface";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { AuthService } from '../../auth/services/auth.service';
+import { SpotifyApi } from '@spotify/web-api-ts-sdk';
+import { SpotifyClient } from '../interfaces/spotify-client.interface';
 
 @Injectable()
 export class SpotifyService {
@@ -9,7 +9,7 @@ export class SpotifyService {
 
   async getClient(sessionId: string): Promise<SpotifyClient> {
     const session = await this.authService.getSessionWithValidToken(sessionId);
-    
+
     if (!session) {
       throw new UnauthorizedException('Spotify session expired');
     }

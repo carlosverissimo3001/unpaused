@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@prisma/prisma.service";
-import { Track } from "@prisma/client";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '@prisma/prisma.service';
+import { Track } from '@prisma/client';
 
 @Injectable()
 export class TrackRepository {
@@ -33,8 +33,8 @@ export class TrackRepository {
       },
       create: {
         id,
-        name: data.name ?? "",
-        artistName: data.artistName ?? "",
+        name: data.name ?? '',
+        artistName: data.artistName ?? '',
         albumImageUrl: data.albumImageUrl ?? null,
         albumName: data.albumName ?? null,
         albumUrl: data.albumUrl ?? null,

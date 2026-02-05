@@ -1,6 +1,6 @@
-import { transactionStorage, getBasePrismaClient } from "./transaction.store";
+import { transactionStorage, getBasePrismaClient } from './transaction.store';
 
-const TRANSACTIONAL_KEY = Symbol("transactional");
+const TRANSACTIONAL_KEY = Symbol('transactional');
 
 /**
  * Method decorator that runs the method body inside a Prisma transaction.
@@ -15,8 +15,10 @@ export function Transactional(): MethodDecorator {
     propertyKey: string | symbol,
     descriptor: PropertyDescriptor,
   ) {
-    const originalMethod = descriptor.value as (...args: unknown[]) => Promise<unknown>;
-    if (typeof originalMethod !== "function") {
+    const originalMethod = descriptor.value as (
+      ...args: unknown[]
+    ) => Promise<unknown>;
+    if (typeof originalMethod !== 'function') {
       throw new Error(
         `@Transactional() can only be applied to methods. Invalid target: ${String(propertyKey)}`,
       );
@@ -24,11 +26,14 @@ export function Transactional(): MethodDecorator {
 
     descriptor.value = async function (this: unknown, ...args: unknown[]) {
       const prisma = getBasePrismaClient();
-      return prisma.$transaction(async (tx) => {
-        return transactionStorage.run({ tx }, () =>
-          originalMethod.apply(this, args),
-        );
-      }, { timeout: 30000 });
+      return prisma.$transaction(
+        async (tx) => {
+          return transactionStorage.run({ tx }, () =>
+            originalMethod.apply(this, args),
+          );
+        },
+        { timeout: 30000 },
+      );
     };
 
     Reflect.defineMetadata(TRANSACTIONAL_KEY, true, descriptor.value);

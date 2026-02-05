@@ -1,12 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsBoolean } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsBoolean } from 'class-validator';
 
 export class AuthMeResponseDto {
-  @ApiProperty({ example: "spotify_user_123" })
+  @ApiProperty({ example: 'spotify_user_123' })
   @IsString()
   spotifyUserId: string;
 
-  @ApiProperty({ example: "John Doe" })
+  @ApiProperty({ example: 'John Doe' })
   @IsString()
   displayName: string;
 

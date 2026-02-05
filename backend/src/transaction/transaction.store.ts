@@ -1,11 +1,11 @@
-import { AsyncLocalStorage } from "async_hooks";
-import type { PrismaClient } from "@prisma/client";
+import { AsyncLocalStorage } from 'async_hooks';
+import type { PrismaClient } from '@prisma/client';
 
 export interface TransactionStore {
   /** Current Prisma transaction client when inside a transactional boundary */
   tx: Omit<
     PrismaClient,
-    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+    '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
   >;
 }
 
@@ -21,7 +21,7 @@ export function setBasePrismaClient(client: PrismaClient): void {
 export function getBasePrismaClient(): PrismaClient {
   if (!basePrismaClient) {
     throw new Error(
-      "Base Prisma client not set. Ensure TransactionModule is loaded and PrismaModule is imported before it.",
+      'Base Prisma client not set. Ensure TransactionModule is loaded and PrismaModule is imported before it.',
     );
   }
   return basePrismaClient;

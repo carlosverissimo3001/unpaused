@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class PlayedTodayDto {
   @ApiProperty({ description: "Whether the user has played today's daily" })

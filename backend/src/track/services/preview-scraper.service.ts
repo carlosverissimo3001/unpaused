@@ -21,7 +21,7 @@ export class PreviewScraperService {
 
   constructor(
     private readonly redis: RedisService,
-    appLogger: AppLoggerService
+    appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(PreviewScraperService.name);
   }
@@ -72,7 +72,8 @@ export class PreviewScraperService {
       const url = `https://open.spotify.com/track/${trackId}`;
       const response = await axios.get(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
         timeout: 10000,
       });
@@ -93,7 +94,9 @@ export class PreviewScraperService {
 
       return previewUrls[0] || null;
     } catch (error) {
-      this.logger.warn(`Failed to scrape preview for track ${trackId}: ${(error as Error).message}`);
+      this.logger.warn(
+        `Failed to scrape preview for track ${trackId}: ${(error as Error).message}`,
+      );
       return null;
     }
   }
@@ -107,7 +110,9 @@ export class PreviewScraperService {
    * @param trackIds - Array of Spotify track IDs
    * @returns Map of trackId -> previewUrl
    */
-  async getPreviewUrls(trackIds: string[]): Promise<Map<string, string | null>> {
+  async getPreviewUrls(
+    trackIds: string[],
+  ): Promise<Map<string, string | null>> {
     const results = new Map<string, string | null>();
 
     // Process in batches to avoid overwhelming the server

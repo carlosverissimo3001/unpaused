@@ -31,6 +31,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
     if (asChild && React.isValidElement(children)) {
+      // eslint-disable-next-line react-hooks/refs -- Forwarding ref through cloneElement is standard React pattern
       return React.cloneElement(children as React.ReactElement<any>, {
         className: `${classes} ${(children as React.ReactElement<any>).props.className || ""}`,
         ref,

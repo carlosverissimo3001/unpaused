@@ -1,16 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import { startOfDay } from "date-fns";
-import { PrismaService } from "@prisma/prisma.service";
-import { Prisma, GameSession, GameStatus } from "@prisma/client";
-import { InputJsonValue } from "@prisma/client/runtime/client";
-import { GuessHistoryDto } from "../dto/guess/guess-history.dto";
-import { GameSessionEntity } from "../entities/game-session.entity";
-import { mapGuessesFromPrisma } from "../utils/guess-mapper";
-import { FindGameSessionsDto } from "../dto/session/find-game-sessions.dto";
+import { Injectable } from '@nestjs/common';
+import { startOfDay } from 'date-fns';
+import { PrismaService } from '@prisma/prisma.service';
+import { Prisma, GameSession, GameStatus } from '@prisma/client';
+import { InputJsonValue } from '@prisma/client/runtime/client';
+import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
+import { GameSessionEntity } from '../entities/game-session.entity';
+import { mapGuessesFromPrisma } from '../utils/guess-mapper';
+import { FindGameSessionsDto } from '../dto/session/find-game-sessions.dto';
 
 @Injectable()
 export class GameSessionRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Creates a new game session (optionally inside a transaction).
@@ -66,11 +66,13 @@ export class GameSessionRepository {
   /**
    * Finds today's daily game session for a user (isDaily true, createdAt >= startOfToday).
    */
-  async findTodayDailySession(userId: string): Promise<GameSessionEntity | null> {
+  async findTodayDailySession(
+    userId: string,
+  ): Promise<GameSessionEntity | null> {
     const today = startOfDay(new Date());
     const session = await this.prisma.gameSession.findFirst({
       where: { userId, isDaily: true, createdAt: { gte: today } },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
     return session ? this.fromPrisma(session) : null;
   }
@@ -82,7 +84,7 @@ export class GameSessionRepository {
    * @returns { items, total }
    */
   async findUserGameSessions(
-    params: FindGameSessionsDto
+    params: FindGameSessionsDto,
   ): Promise<{ items: GameSessionEntity[]; total: number }> {
     const { userId, isDaily, onlyCompleted, limit, offset } = params;
 
@@ -97,7 +99,7 @@ export class GameSessionRepository {
     const [items, total] = await Promise.all([
       this.prisma.gameSession.findMany({
         where,
-        orderBy: { completedAt: "desc" },
+        orderBy: { completedAt: 'desc' },
         take: limit,
         skip: offset,
       }),
@@ -113,8 +115,8 @@ export class GameSessionRepository {
   fromPrisma(prismaEntity: GameSession): GameSessionEntity {
     const score =
       prismaEntity.status === GameStatus.WON
-        // Guessed on 6th round -> score = 1, guessed on 1st round -> score = 6
-        ? (6 - prismaEntity.currentRound) + 1
+        ? // Guessed on 6th round -> score = 1, guessed on 1st round -> score = 6
+          6 - prismaEntity.currentRound + 1
         : prismaEntity.status === GameStatus.LOST
           ? 0
           : undefined;

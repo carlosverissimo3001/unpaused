@@ -1,10 +1,10 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { RedisService } from "../../redis/redis.service";
-import { v4 as uuidv4 } from "uuid";
-import { SpotifyTokens } from "./spotify.service";
-import { PkceStateDto } from "../dto/pcke-state.dto";
-import { UserSessionDto } from "../dto/user-session.dto";
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../../redis/redis.service';
+import { v4 as uuidv4 } from 'uuid';
+import { SpotifyTokenDto } from '../dto/spotify/spotify-token.dto';
+import { PkceStateDto } from '../dto/pcke-state.dto';
+import { UserSessionDto } from '../dto/user-session.dto';
 
 @Injectable()
 export class SessionService {
@@ -13,10 +13,10 @@ export class SessionService {
 
   constructor(
     private redisService: RedisService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {
     this.sessionMaxAge =
-      this.configService.get<number>("SESSION_MAX_AGE_SECONDS") || 604800; // 7 days
+      this.configService.get<number>('SESSION_MAX_AGE_SECONDS') || 604800; // 7 days
   }
 
   /**
@@ -32,7 +32,7 @@ export class SessionService {
     await this.redisService.set(
       `pkce:${state}`,
       JSON.stringify(data),
-      this.pkceStateTtl
+      this.pkceStateTtl,
     );
   }
 
@@ -45,14 +45,14 @@ export class SessionService {
     const key = `pkce:${state}`;
     const data = await this.redisService.get(key);
     if (!data) {
-      throw new UnauthorizedException("Invalid or expired OAuth state");
+      throw new UnauthorizedException('Invalid or expired OAuth state');
     }
 
     await this.redisService.del(key);
     try {
-      return JSON.parse(data);
+      return JSON.parse(data) as PkceStateDto;
     } catch {
-      throw new UnauthorizedException("Corrupted OAuth state");
+      throw new UnauthorizedException('Corrupted OAuth state');
     }
   }
 
@@ -68,7 +68,7 @@ export class SessionService {
     spotifyUserId: string,
     displayName: string,
     isTrusted: boolean,
-    tokens: SpotifyTokens
+    tokens: SpotifyTokenDto,
   ): Promise<string> {
     const sessionId = uuidv4();
 
@@ -84,7 +84,7 @@ export class SessionService {
     await this.redisService.set(
       `session:${sessionId}`,
       JSON.stringify(session),
-      this.sessionMaxAge
+      this.sessionMaxAge,
     );
 
     return sessionId;
@@ -98,12 +98,12 @@ export class SessionService {
   async getSession(sessionId: string): Promise<UserSessionDto> {
     const data = await this.redisService.get(`session:${sessionId}`);
     if (!data) {
-      throw new UnauthorizedException("Session not found");
+      throw new UnauthorizedException('Session not found');
     }
     try {
-      return JSON.parse(data);
+      return JSON.parse(data) as UserSessionDto;
     } catch {
-      throw new UnauthorizedException("Corrupted session data");
+      throw new UnauthorizedException('Corrupted session data');
     }
   }
 
@@ -115,7 +115,7 @@ export class SessionService {
     await this.redisService.set(
       `session:${session.sessionId}`,
       JSON.stringify(session),
-      this.sessionMaxAge
+      this.sessionMaxAge,
     );
   }
 

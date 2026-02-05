@@ -1,14 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import { Playlist, Track, PlaylistedTrack } from "@spotify/web-api-ts-sdk";
-import { PlaylistsResponseDto } from "../dto/playlist-response.dto";
-import { PlaylistDto } from "../dto/playlist.dto";
-import { GetPlaylistsDto } from "../dto/get-playlists-dto";
-import { applyFilters, mapPlaylistLite } from "../utils/playlist-utils";
-import { SpotifyService } from "../../spotify/services/spotify.service";
-import { mapTrack } from "@/track/utils.ts/track-utils";
-import { TrackDto } from "@/track/dto/track.dto";
-import { AppLoggerService } from "../../logger/logger.service";
-import { LIKED_SONGS_ID_SUFFIX } from "../../consts";
+import { Injectable } from '@nestjs/common';
+import { Playlist, Track, PlaylistedTrack } from '@spotify/web-api-ts-sdk';
+import { PlaylistsResponseDto } from '../dto/playlist-response.dto';
+import { PlaylistDto } from '../dto/playlist.dto';
+import { GetPlaylistsDto } from '../dto/get-playlists-dto';
+import { applyFilters, mapPlaylistLite } from '../utils/playlist-utils';
+import { SpotifyService } from '../../spotify/services/spotify.service';
+import { mapTrack } from '@/track/utils.ts/track-utils';
+import { TrackDto } from '@/track/dto/track.dto';
+import { AppLoggerService } from '../../logger/logger.service';
+import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 
 @Injectable()
 export class PlaylistService {
@@ -16,7 +16,7 @@ export class PlaylistService {
 
   constructor(
     private spotifyService: SpotifyService,
-    appLogger: AppLoggerService
+    appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(PlaylistService.name);
   }
@@ -25,7 +25,10 @@ export class PlaylistService {
    * Get playlist by ID (metadata only, no tracks).
    * Handles Liked Songs via getLikedSongs; regular playlists via Spotify getPlaylist.
    */
-  async getPlaylistById(sessionId: string, playlistId: string): Promise<PlaylistDto> {
+  async getPlaylistById(
+    sessionId: string,
+    playlistId: string,
+  ): Promise<PlaylistDto> {
     if (playlistId.endsWith(LIKED_SONGS_ID_SUFFIX)) {
       return this.getLikedSongs(sessionId);
     }
@@ -37,14 +40,29 @@ export class PlaylistService {
   /**
    * Get current user's playlists
    */
-  async getMyPlaylists(params: GetPlaylistsDto & { sessionId: string }): Promise<PlaylistsResponseDto> {
-    const { sessionId, limit = 20, offset = 0, includePrivate = false, onlyUserOwned = false } = params;
+  async getMyPlaylists(
+    params: GetPlaylistsDto & { sessionId: string },
+  ): Promise<PlaylistsResponseDto> {
+    const {
+      sessionId,
+      limit = 20,
+      offset = 0,
+      includePrivate = false,
+      onlyUserOwned = false,
+    } = params;
 
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
 
     // 1. Fetch playlists from Spotify
-    const response = await sdk.currentUser.playlists.playlists(limit as 0 | 20 | 50, offset);
-    const saved = applyFilters(response.items, { includePrivate, onlyUserOwned }, session);
+    const response = await sdk.currentUser.playlists.playlists(
+      limit as 0 | 20 | 50,
+      offset,
+    );
+    const saved = applyFilters(
+      response.items,
+      { includePrivate, onlyUserOwned },
+      session,
+    );
     const savedMapped = saved.map((p) => mapPlaylistLite(p as Playlist<Track>));
 
     const playlists: PlaylistDto[] = [];
@@ -76,13 +94,13 @@ export class PlaylistService {
 
     return {
       id: `${session.spotifyUserId}${LIKED_SONGS_ID_SUFFIX}`,
-      name: "Liked Songs",
-      description: "Your Saved Songs",
-      imageUrl: "https://misc.scdn.co/liked-songs/liked-songs-300.jpg",
+      name: 'Liked Songs',
+      description: 'Your Saved Songs',
+      imageUrl: 'https://misc.scdn.co/liked-songs/liked-songs-300.jpg',
       owner: session.displayName,
       totalTracks: collection.total ?? 0,
       isPublic: false,
-      externalUrl: "https://open.spotify.com/collection/tracks",
+      externalUrl: 'https://open.spotify.com/collection/tracks',
     };
   }
 
@@ -98,7 +116,10 @@ export class PlaylistService {
   /**
    * Get one liked track at a given offset (for game: pick random offset until we find one with preview).
    */
-  async getOneLikedTrackAtOffset(sessionId: string, offset: number): Promise<TrackDto | null> {
+  async getOneLikedTrackAtOffset(
+    sessionId: string,
+    offset: number,
+  ): Promise<TrackDto | null> {
     const { sdk } = await this.spotifyService.getClient(sessionId);
     const page = await sdk.currentUser.tracks.savedTracks(1, offset);
     const item = page.items?.[0];
@@ -119,18 +140,24 @@ export class PlaylistService {
     const items = page.items ?? [];
     return items
       .filter((item) => !!item.track)
-      .map((item) => mapTrack(item.track as Track));
+      .map((item) => mapTrack(item.track));
   }
 
   /**
    * Get first batch of playlist tracks only (no pagination). Used by game to pick one track with preview.
    */
-  async getPlaylistFirstTracks(sessionId: string, playlistId: string): Promise<TrackDto[]> {
+  async getPlaylistFirstTracks(
+    sessionId: string,
+    playlistId: string,
+  ): Promise<TrackDto[]> {
     const { sdk } = await this.spotifyService.getClient(sessionId);
     const playlist = await sdk.playlists.getPlaylist(playlistId);
     const items = playlist.tracks?.items ?? [];
     return items
-      .filter((item): item is PlaylistedTrack<Track> & { track: Track } => !!item.track)
+      .filter(
+        (item): item is PlaylistedTrack<Track> & { track: Track } =>
+          !!item.track,
+      )
       .map((item) => mapTrack(item.track));
   }
 

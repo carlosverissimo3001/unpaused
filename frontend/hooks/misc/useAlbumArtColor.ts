@@ -12,6 +12,7 @@ export function useAlbumArtColor(imageUrl: string | null | undefined) {
 
   useEffect(() => {
     if (!imageUrl) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting color on imageUrl change
       setColor(SPOTIFY_GREEN_RGBA);
       return;
     }

@@ -1,5 +1,5 @@
-import { getTxClient } from "./transaction.store";
-import type { PrismaClient } from "@prisma/client";
+import { getTxClient } from './transaction.store';
+import type { PrismaClient } from '@prisma/client';
 
 /**
  * Creates a proxy around the base Prisma client. The proxy's get trap uses
@@ -11,8 +11,10 @@ export function createPrismaProxy(basePrisma: PrismaClient): PrismaClient {
   return new Proxy(basePrisma, {
     get(target, prop) {
       const client = getTxClient(target);
-      const value = (client as unknown as Record<string | symbol, unknown>)[prop];
-      if (typeof value === "function") {
+      const value = (client as unknown as Record<string | symbol, unknown>)[
+        prop
+      ];
+      if (typeof value === 'function') {
         return value.bind(client);
       }
       return value;

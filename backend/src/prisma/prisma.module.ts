@@ -1,6 +1,6 @@
-import { Global, Module } from "@nestjs/common";
-import { PrismaService } from "./prisma.service";
-import { PRISMA_CLIENT_INTERNAL } from "./prisma.constants";
+import { Global, Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+import { PRISMA_CLIENT_INTERNAL } from './prisma.constants';
 
 @Global()
 @Module({
@@ -10,4 +10,4 @@ import { PRISMA_CLIENT_INTERNAL } from "./prisma.constants";
   ],
   exports: [PRISMA_CLIENT_INTERNAL],
 })
-export class PrismaModule { }
+export class PrismaModule {}

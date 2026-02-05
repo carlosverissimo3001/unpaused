@@ -1,7 +1,7 @@
-import { Injectable, Inject, OnModuleInit } from "@nestjs/common";
-import { PRISMA_CLIENT_INTERNAL } from "@prisma/prisma.constants";
-import type { PrismaClient } from "@prisma/client";
-import { setBasePrismaClient } from "./transaction.store";
+import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+import { PRISMA_CLIENT_INTERNAL } from '@prisma/prisma.constants';
+import type { PrismaClient } from '@prisma/client';
+import { setBasePrismaClient } from './transaction.store';
 
 /**
  * Sets the base Prisma client in the transaction store at module init so

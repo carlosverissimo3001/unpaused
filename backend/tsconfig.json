@@ -30,5 +30,7 @@
       "@tracks/*": ["src/track/*"],
       "@utils/*": ["src/utils/*"]
     }
-  }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
 }

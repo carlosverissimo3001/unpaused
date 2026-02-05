@@ -52,6 +52,7 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     if (!gameState?.guesses?.length) return;
     const last = gameState.guesses[gameState.guesses.length - 1];
     if (last.result !== lastGuessResult) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Tracking last guess result to trigger confetti once
       setLastGuessResult(last.result);
       if (last.result === GuessHistoryDtoResultEnum.Correct) triggerConfetti();
     }
@@ -98,7 +99,7 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     }
     startGameMutation.reset();
     if (playlistId) startGameMutation.mutate({ playlistId });
-  }, [gameAudio, gameState?.sessionId, queryClient, startGameMutation, playlistId]);
+  }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
 
   const shouldShake = lastGuessResult === GuessHistoryDtoResultEnum.Wrong;
 

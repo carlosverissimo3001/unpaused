@@ -24,12 +24,15 @@ export function useSpotifyTrackSearch() {
   useEffect(() => {
     const trimmed = searchQuery.trim();
     if (trimmed.length < MIN_QUERY_LENGTH) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state on input change
       setFilteredTracks([]);
+       
       setIsLoading(false);
       return;
     }
 
     // Show loading immediately while debouncing or fetching (avoids brief "No songs found")
+     
     setIsLoading(true);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);

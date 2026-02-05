@@ -3,7 +3,7 @@
   "paths": {
     "/auth/login": {
       "get": {
-        "operationId": "AuthController_login",
+        "operationId": "login",
         "parameters": [],
         "responses": {
           "200": {
@@ -21,7 +21,7 @@
     },
     "/auth/callback": {
       "get": {
-        "operationId": "AuthController_callback",
+        "operationId": "callback",
         "parameters": [
           {
             "name": "code",
@@ -64,7 +64,7 @@
     },
     "/auth/me": {
       "get": {
-        "operationId": "AuthController_me",
+        "operationId": "me",
         "parameters": [],
         "responses": {
           "200": {
@@ -94,7 +94,7 @@
     },
     "/auth/logout": {
       "post": {
-        "operationId": "AuthController_logout",
+        "operationId": "logout",
         "parameters": [],
         "responses": {
           "200": {
@@ -115,7 +115,7 @@
     "/auth/token-login": {
       "post": {
         "description": "Use this when you have a Spotify access token but can't use OAuth flow. The token is validated by fetching your Spotify profile.",
-        "operationId": "AuthController_tokenLogin",
+        "operationId": "tokenLogin",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -149,7 +149,7 @@
     },
     "/playlists/me": {
       "get": {
-        "operationId": "PlaylistController_getMyPlaylists",
+        "operationId": "getMyPlaylists",
         "parameters": [
           {
             "name": "limit",
@@ -218,7 +218,7 @@
     },
     "/playlists/{id}": {
       "get": {
-        "operationId": "PlaylistController_getPlaylistById",
+        "operationId": "getPlaylistById",
         "parameters": [
           {
             "name": "id",
@@ -260,7 +260,7 @@
     },
     "/game/start": {
       "post": {
-        "operationId": "GameController_startGame",
+        "operationId": "startGame",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -297,7 +297,7 @@
     },
     "/game/history": {
       "get": {
-        "operationId": "GameController_getHistory",
+        "operationId": "getHistory",
         "parameters": [
           {
             "name": "isDaily",
@@ -355,7 +355,7 @@
     },
     "/game/stats": {
       "get": {
-        "operationId": "GameController_getStats",
+        "operationId": "getStats",
         "parameters": [
           {
             "name": "mode",
@@ -396,7 +396,7 @@
     },
     "/game/daily/played-today": {
       "get": {
-        "operationId": "GameController_getPlayedToday",
+        "operationId": "getPlayedToday",
         "parameters": [],
         "responses": {
           "200": {
@@ -423,7 +423,7 @@
     },
     "/game/share/{id}": {
       "get": {
-        "operationId": "GameController_getShare",
+        "operationId": "getShare",
         "parameters": [
           {
             "name": "id",
@@ -460,7 +460,7 @@
     },
     "/game/{id}": {
       "get": {
-        "operationId": "GameController_getGameState",
+        "operationId": "getGameState",
         "parameters": [
           {
             "name": "id",
@@ -497,7 +497,7 @@
     },
     "/game/{id}/guess": {
       "post": {
-        "operationId": "GameController_submitGuess",
+        "operationId": "submitGuess",
         "parameters": [
           {
             "name": "id",
@@ -549,7 +549,7 @@
     },
     "/search/tracks": {
       "get": {
-        "operationId": "SearchController_searchTracks",
+        "operationId": "searchTracks",
         "parameters": [
           {
             "name": "q",
@@ -591,7 +591,7 @@
     },
     "/admin/messages": {
       "get": {
-        "operationId": "AdminController_getAllMessages",
+        "operationId": "getAllMessages",
         "parameters": [],
         "responses": {
           "200": {
@@ -619,7 +619,7 @@
         ]
       },
       "post": {
-        "operationId": "AdminController_createMessage",
+        "operationId": "createMessage",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -656,7 +656,7 @@
     },
     "/admin/messages/{id}": {
       "patch": {
-        "operationId": "AdminController_updateMessage",
+        "operationId": "updateMessage",
         "parameters": [
           {
             "name": "id",
@@ -700,7 +700,7 @@
         ]
       },
       "delete": {
-        "operationId": "AdminController_deleteMessage",
+        "operationId": "deleteMessage",
         "parameters": [
           {
             "name": "id",
@@ -733,7 +733,7 @@
   },
   "info": {
     "title": "Unpaused Spotify API",
-    "description": "",
+    "description": "The backend for the Spotify guessing game",
     "version": "1.0",
     "contact": {}
   },

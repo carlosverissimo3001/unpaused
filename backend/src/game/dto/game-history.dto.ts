@@ -1,36 +1,45 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { GameStatus } from "@prisma/client";
-import { GuessHistoryDto } from "./guess/guess-history.dto";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { GameStatus } from '@prisma/client';
+import { GuessHistoryDto } from './guess/guess-history.dto';
 
 export class GameHistoryEntryDto {
-  @ApiProperty({ description: "Game session ID" })
+  @ApiProperty({ description: 'Game session ID' })
   id: string;
 
-  @ApiProperty({ description: "Date (YYYY-MM-DD) from completedAt or createdAt" })
+  @ApiProperty({
+    description: 'Date (YYYY-MM-DD) from completedAt or createdAt',
+  })
   date: string;
 
-  @ApiProperty({ description: "Game status", enum: GameStatus })
+  @ApiProperty({ description: 'Game status', enum: GameStatus })
   status: GameStatus;
 
-  @ApiPropertyOptional({ description: "Score 0-6 if completed", type: Number })
+  @ApiPropertyOptional({ description: 'Score 0-6 if completed', type: Number })
   score?: number;
 
-  @ApiProperty({ description: "Whether the game was daily" })
+  @ApiProperty({ description: 'Whether the game was daily' })
   isDaily: boolean;
 
-  @ApiProperty({ description: "Guess history", type: GuessHistoryDto, isArray: true })
+  @ApiProperty({
+    description: 'Guess history',
+    type: GuessHistoryDto,
+    isArray: true,
+  })
   guesses: GuessHistoryDto[];
 
-  @ApiProperty({ description: "Track name (answer)" })
+  @ApiProperty({ description: 'Track name (answer)' })
   trackName: string;
 
-  @ApiProperty({ description: "Artist name" })
+  @ApiProperty({ description: 'Artist name' })
   artistName: string;
 
-  @ApiPropertyOptional({ description: "Album image URL", type: String })
+  @ApiPropertyOptional({ description: 'Album image URL', type: String })
   albumImageUrl?: string;
 
-  @ApiPropertyOptional({ description: "Playlist/source name e.g. Liked Songs", type: String })
+  @ApiPropertyOptional({
+    description: 'Playlist/source name e.g. Liked Songs',
+    type: String,
+  })
   playlistName?: string;
 }
 
@@ -38,6 +47,6 @@ export class GameHistoryDto {
   @ApiProperty({ type: GameHistoryEntryDto, isArray: true })
   items: GameHistoryEntryDto[];
 
-  @ApiProperty({ description: "Total count" })
+  @ApiProperty({ description: 'Total count' })
   total: number;
 }

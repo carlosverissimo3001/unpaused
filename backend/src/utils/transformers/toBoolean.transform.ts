@@ -6,16 +6,14 @@
  */
 
 const BOOL_VALUES = ['TRUE', 'FALSE'];
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function toBoolean(value: any): any {
-    if (typeof value === 'boolean') {
-      return value;
-    }
-    if (
-    BOOL_VALUES.includes(value.toUpperCase()) &&
-      typeof value === 'string'
-    ) {
-      return value.toUpperCase() === 'TRUE';
-    }
+  if (typeof value === 'boolean') {
     return value;
   }
+  if (typeof value === 'string' && BOOL_VALUES.includes(value.toUpperCase())) {
+    return value.toUpperCase() === 'TRUE';
+  }
+  return value;
+}

@@ -37,11 +37,23 @@ const GLASS_STYLE = {
 const DROPDOWN_ITEM_STAGGER = 0.03;
 
 export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInputProps) {
-  const selectedTrack = search.selectedTrack;
+  // Destructure search to avoid ref access warnings
+  const {
+    searchQuery,
+    setSearchQuery,
+    showDropdown,
+    setShowDropdown,
+    selectedTrack,
+    filteredTracks,
+    isLoading,
+    searchRef,
+    handleSelectTrack,
+    handleClearSelection,
+  } = search;
 
   return (
     <div className="space-y-4">
-      <div ref={search.searchRef} className="relative">
+      <div ref={searchRef} className="relative">
         {selectedTrack ? (
           <motion.div
             layout
@@ -60,7 +72,7 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
             </div>
             <motion.button
               type="button"
-              onClick={search.handleClearSelection}
+              onClick={handleClearSelection}
               className="p-2 hover:bg-black/10 rounded-full transition-colors"
               whileHover={{ scale: 1.05, rotate: 90 }}
               whileTap={{ scale: 0.95 }}
@@ -79,12 +91,12 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
               </motion.span>
               <input
                 type="text"
-                value={search.searchQuery}
+                value={searchQuery}
                 onChange={(e) => {
-                  search.setSearchQuery(e.target.value);
-                  search.setShowDropdown(true);
+                  setSearchQuery(e.target.value);
+                  setShowDropdown(true);
                 }}
-                onFocus={() => search.setShowDropdown(true)}
+                onFocus={() => setShowDropdown(true)}
                 placeholder="Search for a song..."
                 className="w-full pl-12 pr-4 py-4 rounded-xl text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all"
                 style={{
@@ -94,7 +106,7 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
               />
             </div>
             <AnimatePresence>
-              {search.showDropdown && search.searchQuery.length > 0 && (
+              {showDropdown && searchQuery.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -108,12 +120,12 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                     boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)",
                   }}
                 >
-                  {search.filteredTracks.length > 0 ? (
-                    search.filteredTracks.map((track, index) => (
+                  {filteredTracks.length > 0 ? (
+                    filteredTracks.map((track, index) => (
                       <motion.button
                         key={track.id}
                         type="button"
-                        onClick={() => search.handleSelectTrack(track)}
+                        onClick={() => handleSelectTrack(track)}
                         initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * DROPDOWN_ITEM_STAGGER, duration: 0.2 }}
@@ -142,9 +154,9 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                     ))
                   ) : (
                     <div className="p-4 text-[#b3b3b3] text-center text-sm">
-                      {search.isLoading
+                      {isLoading
                         ? "Searching..."
-                        : search.searchQuery.trim().length < 2
+                        : searchQuery.trim().length < 2
                         ? "Type at least 2 characters"
                         : "No songs found"}
                     </div>
