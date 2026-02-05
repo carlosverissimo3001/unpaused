@@ -6,6 +6,9 @@
         "operationId": "AuthController_login",
         "parameters": [],
         "responses": {
+          "200": {
+            "description": ""
+          },
           "302": {
             "description": "Redirects to Spotify authorization"
           }
@@ -46,6 +49,9 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": ""
+          },
           "302": {
             "description": "Redirects to frontend after auth"
           }
@@ -124,6 +130,9 @@
         "responses": {
           "200": {
             "description": "Successfully logged in"
+          },
+          "201": {
+            "description": ""
           },
           "401": {
             "description": "Invalid token"
@@ -305,6 +314,8 @@
             "in": "query",
             "description": "The limit of the history",
             "schema": {
+              "minimum": 1,
+              "maximum": 100,
               "type": "number"
             }
           },
@@ -314,6 +325,7 @@
             "in": "query",
             "description": "The offset of the history",
             "schema": {
+              "minimum": 0,
               "type": "number"
             }
           }
@@ -517,6 +529,16 @@
                 }
               }
             }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuessResultDto"
+                }
+              }
+            }
           }
         },
         "summary": "Submit a guess for a specific session",
@@ -690,6 +712,9 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": ""
+          },
           "204": {
             "description": ""
           }
@@ -872,8 +897,6 @@
             "description": "The artist of the track"
           },
           "result": {
-            "type": "string",
-            "description": "The result of the guess",
             "enum": [
               "CORRECT",
               "ARTIST",
@@ -881,7 +904,9 @@
               "WRONG",
               "SKIP",
               "ARTIST_AND_ALBUM"
-            ]
+            ],
+            "type": "string",
+            "description": "The result of the guess"
           }
         },
         "required": [
@@ -1226,6 +1251,7 @@
           },
           "skip": {
             "type": "boolean",
+            "default": false,
             "description": "Whether the current guess is a skip"
           },
           "trackName": {
@@ -1246,7 +1272,6 @@
         "type": "object",
         "properties": {
           "result": {
-            "type": "string",
             "enum": [
               "CORRECT",
               "ARTIST",
@@ -1255,6 +1280,7 @@
               "SKIP",
               "ARTIST_AND_ALBUM"
             ],
+            "type": "string",
             "description": "The result of the guess"
           },
           "gameOver": {
