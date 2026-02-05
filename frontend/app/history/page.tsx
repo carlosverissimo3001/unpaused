@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
@@ -15,14 +16,20 @@ import { HistoryCard } from "@/components/history/HistoryCard";
 import { EmptyHistory } from "@/components/history/EmptyHistory";
 import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/auth/useMe";
+import { useGameStats } from "../../hooks/game/useGameStats";
+import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
 export default function HistoryPage() {
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteGameHistory();
+
   const shareMutation = useGameShare();
   const { data: user } = useMe();
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [dailyOnly, setDailyOnly] = useState(false);
+  const searchParams = useSearchParams();
+  const [dailyOnly, setDailyOnly] = useState(searchParams.get("filter") === "daily");
+
+  const { data: stats } = useGameStats( { mode: dailyOnly ? GameMode.Daily : GameMode.All, useCached: true } );
 
   const { ref: loadMoreRef } = useInView({
     onChange: (inView) => {
@@ -82,13 +89,12 @@ export default function HistoryPage() {
 
   return (
     <div className="min-h-screen p-6 max-w-2xl mx-auto pb-12 relative">
-      {/* Pro-stats background glow */}
       <div
         className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-spotify-green/10 via-transparent to-transparent"
         aria-hidden
       />
 
-      <HistoryStats items={items} />
+      {stats && <HistoryStats stats={stats} />}
       <HistoryFilter dailyOnly={dailyOnly} isTrusted={user?.isTrusted ?? false} onDailyOnlyChange={setDailyOnly} />
 
       {items.length === 0 ? (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Flame, Trophy, Target, BarChart3 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useGameStats } from "@/hooks/game/useGameStats";
 import { usePlayedToday } from "@/hooks/game/usePlayedToday";
 import { AnimatedCounter } from "@/components/daily/AnimatedCounter";
@@ -36,7 +37,7 @@ const RING_DURATION = 0.5;
 const RING_DELAY = 0.25;
 
 export default function DailyStatsPage() {
-  const { data: stats, isLoading, error } = useGameStats(GameMode.Daily);
+  const { data: stats, isLoading, error } = useGameStats({ mode: GameMode.Daily });
   const { data: playedTodayData } = usePlayedToday();
   const playedToday = playedTodayData?.playedToday ?? false;
 
@@ -65,8 +66,8 @@ export default function DailyStatsPage() {
           <p className="text-red-400 mb-4">
             {error instanceof Error ? error.message : "Something went wrong"}
           </p>
-          <Link href="/daily" className="text-spotify-green hover:underline">
-            Back to Daily
+          <Link href="/" className="text-spotify-green hover:underline">
+            Back home
           </Link>
         </div>
       </div>
@@ -109,11 +110,11 @@ export default function DailyStatsPage() {
         {/* Header */}
         <motion.div className="flex items-center gap-4 mb-6" variants={itemVariants}>
           <Link
-            href="/daily"
+            href="/"
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back
+            Back home
           </Link>
           <h1 className="text-xl font-bold text-white">Daily Stats</h1>
         </motion.div>
@@ -214,7 +215,7 @@ export default function DailyStatsPage() {
           className="p-4 rounded-2xl backdrop-blur-md border border-white/20 mb-8 bg-white/5"
           variants={itemVariants}
         >
-          <ScoreDistributionChart distribution={stats.scoreDistribution} />
+          <ScoreDistributionChart distribution={stats.roundDistribution} />
         </motion.div>
 
         <motion.div className="mt-8 flex justify-center" variants={itemVariants}>

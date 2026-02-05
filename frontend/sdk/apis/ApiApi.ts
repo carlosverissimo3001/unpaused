@@ -20,7 +20,6 @@ import type {
   GameHistoryDto,
   GameStateDto,
   GameStatsDto,
-  GetStatsDto,
   GuessDto,
   GuessResultDto,
   MessageDto,
@@ -44,8 +43,6 @@ import {
     GameStateDtoToJSON,
     GameStatsDtoFromJSON,
     GameStatsDtoToJSON,
-    GetStatsDtoFromJSON,
-    GetStatsDtoToJSON,
     GuessDtoFromJSON,
     GuessDtoToJSON,
     GuessResultDtoFromJSON,
@@ -101,7 +98,6 @@ export interface GameControllerGetHistoryRequest {
     isDaily?: boolean;
     limit?: number;
     offset?: number;
-    isCompleted?: boolean;
 }
 
 export interface GameControllerGetShareRequest {
@@ -109,7 +105,7 @@ export interface GameControllerGetShareRequest {
 }
 
 export interface GameControllerGetStatsRequest {
-    getStatsDto: GetStatsDto;
+    mode: GameControllerGetStatsModeEnum;
 }
 
 export interface GameControllerStartGameRequest {
@@ -121,14 +117,14 @@ export interface GameControllerSubmitGuessRequest {
     guessDto: GuessDto;
 }
 
-export interface PlaylistsControllerGetMyPlaylistsRequest {
+export interface PlaylistControllerGetMyPlaylistsRequest {
     limit?: number;
     offset?: number;
     includePrivate?: boolean;
     onlyUserOwned?: boolean;
 }
 
-export interface PlaylistsControllerGetPlaylistByIdRequest {
+export interface PlaylistControllerGetPlaylistByIdRequest {
     id: string;
 }
 
@@ -533,10 +529,6 @@ export class ApiApi extends runtime.BaseAPI {
             queryParameters['offset'] = requestParameters['offset'];
         }
 
-        if (requestParameters['isCompleted'] != null) {
-            queryParameters['isCompleted'] = requestParameters['isCompleted'];
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
 
 
@@ -630,18 +622,20 @@ export class ApiApi extends runtime.BaseAPI {
      * Get user\'s daily stats
      */
     async gameControllerGetStatsRaw(requestParameters: GameControllerGetStatsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GameStatsDto>> {
-        if (requestParameters['getStatsDto'] == null) {
+        if (requestParameters['mode'] == null) {
             throw new runtime.RequiredError(
-                'getStatsDto',
-                'Required parameter "getStatsDto" was null or undefined when calling gameControllerGetStats().'
+                'mode',
+                'Required parameter "mode" was null or undefined when calling gameControllerGetStats().'
             );
         }
 
         const queryParameters: any = {};
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        if (requestParameters['mode'] != null) {
+            queryParameters['mode'] = requestParameters['mode'];
+        }
 
-        headerParameters['Content-Type'] = 'application/json';
+        const headerParameters: runtime.HTTPHeaders = {};
 
 
         let urlPath = `/game/stats`;
@@ -651,7 +645,6 @@ export class ApiApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-            body: GetStatsDtoToJSON(requestParameters['getStatsDto']),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => GameStatsDtoFromJSON(jsonValue));
@@ -754,7 +747,7 @@ export class ApiApi extends runtime.BaseAPI {
     /**
      * Get current user\'s playlists
      */
-    async playlistsControllerGetMyPlaylistsRaw(requestParameters: PlaylistsControllerGetMyPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistsResponseDto>> {
+    async playlistControllerGetMyPlaylistsRaw(requestParameters: PlaylistControllerGetMyPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistsResponseDto>> {
         const queryParameters: any = {};
 
         if (requestParameters['limit'] != null) {
@@ -791,19 +784,19 @@ export class ApiApi extends runtime.BaseAPI {
     /**
      * Get current user\'s playlists
      */
-    async playlistsControllerGetMyPlaylists(requestParameters: PlaylistsControllerGetMyPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistsResponseDto> {
-        const response = await this.playlistsControllerGetMyPlaylistsRaw(requestParameters, initOverrides);
+    async playlistControllerGetMyPlaylists(requestParameters: PlaylistControllerGetMyPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistsResponseDto> {
+        const response = await this.playlistControllerGetMyPlaylistsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
      * Get playlist by ID
      */
-    async playlistsControllerGetPlaylistByIdRaw(requestParameters: PlaylistsControllerGetPlaylistByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistDto>> {
+    async playlistControllerGetPlaylistByIdRaw(requestParameters: PlaylistControllerGetPlaylistByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistDto>> {
         if (requestParameters['id'] == null) {
             throw new runtime.RequiredError(
                 'id',
-                'Required parameter "id" was null or undefined when calling playlistsControllerGetPlaylistById().'
+                'Required parameter "id" was null or undefined when calling playlistControllerGetPlaylistById().'
             );
         }
 
@@ -828,8 +821,8 @@ export class ApiApi extends runtime.BaseAPI {
     /**
      * Get playlist by ID
      */
-    async playlistsControllerGetPlaylistById(requestParameters: PlaylistsControllerGetPlaylistByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistDto> {
-        const response = await this.playlistsControllerGetPlaylistByIdRaw(requestParameters, initOverrides);
+    async playlistControllerGetPlaylistById(requestParameters: PlaylistControllerGetPlaylistByIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistDto> {
+        const response = await this.playlistControllerGetPlaylistByIdRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -874,3 +867,12 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
 }
+
+/**
+ * @export
+ */
+export const GameControllerGetStatsModeEnum = {
+    Daily: 'DAILY',
+    All: 'ALL'
+} as const;
+export type GameControllerGetStatsModeEnum = typeof GameControllerGetStatsModeEnum[keyof typeof GameControllerGetStatsModeEnum];

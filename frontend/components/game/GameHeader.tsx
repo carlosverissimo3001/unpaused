@@ -4,18 +4,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Play, ExternalLink, BarChart3, History } from "lucide-react";
 import { StreakBadge } from "@/components/daily/StreakBadge";
-import type { PlaylistDto, DailyStatsDto } from "@/sdk";
-import type { GameMode } from "./types";
+import type { PlaylistDto, GameStatsDto } from "@/sdk";
+import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+
 
 interface GameHeaderProps {
   mode: GameMode;
   playlist?: PlaylistDto | null;
-  stats?: DailyStatsDto | null;
+  stats?: GameStatsDto | null;
 }
 
 export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
-  const isPlaylist = mode === "playlist";
-  const isDaily = mode === "daily";
+  const isPlaylist = mode === GameMode.All;
+  const isDaily = mode === GameMode.Daily;
 
   return (
     <div className="flex items-center justify-between gap-4 mb-6">
@@ -67,7 +68,7 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
             Stats
           </Link>
           <Link
-            href="/history"
+            href="/history?filter=daily"
             className="flex items-center gap-2 text-white/60 hover:text-white text-sm"
           >
             <History className="w-4 h-4" />
@@ -76,5 +77,5 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
         </div>
       )}
     </div>
-  );
-}
+    );
+  }

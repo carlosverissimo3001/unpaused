@@ -5,10 +5,10 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { TransactionModule } from "./transaction/transaction.module";
 import { RedisModule } from "./redis/redis.module";
 import { AuthModule } from "./auth/auth.module";
-import { PlaylistsModule } from "./playlists/playlists.module";
+import { PlaylistModule } from "./playlist/playlist.module";
 import { GameModule } from "./game/game.module";
 import { SpotifyModule } from "./spotify/spotify.module";
-import { MessageModule } from "./messages/message.module";
+import { MessageModule } from "./message/message.module";
 import { AdminModule } from "./admin/admin.module";
 
 @Module({
@@ -21,7 +21,7 @@ import { AdminModule } from "./admin/admin.module";
     TransactionModule,
     RedisModule,
     AuthModule,
-    PlaylistsModule,
+    PlaylistModule,
     GameModule,
     SpotifyModule,
     MessageModule,

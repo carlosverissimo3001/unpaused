@@ -1,4 +1,4 @@
-import { GetHistoryDto } from "./get-history.dto";
+import { GetHistoryDto } from "../get-history.dto";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class FindGameSessionsDto extends GetHistoryDto {

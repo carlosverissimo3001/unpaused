@@ -12,6 +12,7 @@ import {
   type GameHistoryEntryDto,
 } from "@/sdk/models/GameHistoryEntryDto";
 import { format } from "date-fns";
+import { toOrdinal } from "../../utils/text-utils";
 
 const GUESS_LABEL: Record<string, string> = {
   [GuessHistoryDtoResultEnum.Correct]: "Correct",
@@ -62,6 +63,8 @@ export function HistoryCard({
     isWon && entry.score != null && entry.score >= 1 && entry.score <= 6
       ? 7 - entry.score
       : entry.score ?? 0;
+
+  const actualGuesses = entry.guesses.filter((g) => g.result !== GuessHistoryDtoResultEnum.Skip);
 
   return (
     <motion.article
@@ -135,7 +138,7 @@ export function HistoryCard({
                       : "bg-red-500/20 text-red-300 border-red-400/50"
                   }`}
                 >
-                  {isWon ? `${guessesUsed}/6` : "Lost"}
+                  {isWon ? `${toOrdinal(guessesUsed)} guess` : "Lost"}
                 </span>
                 <Button
                   variant="ghost"
@@ -159,6 +162,7 @@ export function HistoryCard({
 
         <div className="mt-4 flex items-center gap-3 flex-wrap">
           <GuessPattern results={entry.guesses.map((g) => g.result)} className="text-lg" />
+          {actualGuesses.length > 0 && (
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
@@ -176,6 +180,7 @@ export function HistoryCard({
               </>
             )}
           </button>
+          )}
         </div>
 
         <AnimatePresence initial={false}>
@@ -188,7 +193,7 @@ export function HistoryCard({
               className="overflow-hidden"
             >
               <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                {entry.guesses.map((g, i) => (
+                {entry.guesses.filter((g) => g.result !== GuessHistoryDtoResultEnum.Skip).map((g, i) => (
                   <div
                     key={i}
                     className={`flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg bg-white/5 border-l-2 ${
@@ -196,7 +201,7 @@ export function HistoryCard({
                     }`}
                   >
                     <span className="truncate text-sm text-white/90">
-                      {g.result === GuessHistoryDtoResultEnum.Skip ? "Skipped" : g.trackName}
+                      {g.result === GuessHistoryDtoResultEnum.Skip ? "" : `${g.trackName} by ${g.artistName}`}
                     </span>
                     <span className="font-black text-[10px] uppercase tracking-widest text-white/50 shrink-0">
                       {GUESS_LABEL[g.result] ?? g.result}

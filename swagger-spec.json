@@ -328,14 +328,6 @@
               "minimum": 0,
               "type": "number"
             }
-          },
-          {
-            "name": "isCompleted",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
           }
         ],
         "responses": {
@@ -364,17 +356,21 @@
     "/game/stats": {
       "get": {
         "operationId": "getStats",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetStatsDto"
-              }
+        "parameters": [
+          {
+            "name": "mode",
+            "required": true,
+            "in": "query",
+            "description": "The game mode",
+            "schema": {
+              "enum": [
+                "DAILY",
+                "ALL"
+              ],
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -1031,7 +1027,8 @@
           "currentRound",
           "snippetDuration",
           "status",
-          "guesses"
+          "guesses",
+          "previewUrl"
         ]
       },
       "GameHistoryEntryDto": {
@@ -1115,22 +1112,6 @@
           "total"
         ]
       },
-      "GetStatsDto": {
-        "type": "object",
-        "properties": {
-          "mode": {
-            "type": "string",
-            "description": "The game mode",
-            "enum": [
-              "DAILY",
-              "ALL"
-            ]
-          }
-        },
-        "required": [
-          "mode"
-        ]
-      },
       "GameStatsDto": {
         "type": "object",
         "properties": {
@@ -1150,13 +1131,10 @@
             "type": "number",
             "description": "The total wins"
           },
-          "totalScore": {
-            "type": "number",
-            "description": "The total score"
-          },
-          "scoreDistribution": {
-            "description": "The score distribution",
+          "roundDistribution": {
+            "description": "The round distribution",
             "example": [
+              0,
               0,
               0,
               0,
@@ -1193,8 +1171,7 @@
           "bestStreak",
           "totalGames",
           "totalWins",
-          "totalScore",
-          "scoreDistribution",
+          "roundDistribution",
           "mode",
           "winRate",
           "averageScore"

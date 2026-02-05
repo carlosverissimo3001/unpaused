@@ -10,8 +10,7 @@ Name | Type
 `bestStreak` | number
 `totalGames` | number
 `totalWins` | number
-`totalScore` | number
-`scoreDistribution` | Array&lt;number&gt;
+`roundDistribution` | Array&lt;number&gt;
 `mode` | string
 `winRate` | number
 `averageScore` | number
@@ -27,8 +26,7 @@ const example = {
   "bestStreak": null,
   "totalGames": null,
   "totalWins": null,
-  "totalScore": null,
-  "scoreDistribution": [0,0,0,0,0,0],
+  "roundDistribution": [0,0,0,0,0,0,0],
   "mode": null,
   "winRate": 0.5,
   "averageScore": 3.5,

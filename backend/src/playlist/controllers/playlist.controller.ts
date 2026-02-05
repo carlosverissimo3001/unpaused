@@ -7,7 +7,7 @@ import {
   ApiNotFoundResponse,
   ApiResponse,
 } from "@nestjs/swagger";
-import { PlaylistsService } from "../services/playlists.service";
+import { PlaylistService } from "../services/playlist.service";
 import { PlaylistsResponseDto } from "../dto/playlist-response.dto";
 import { PlaylistDto } from "../dto/playlist.dto";
 import { GetPlaylistsDto } from "../dto/get-playlists-dto";
@@ -19,8 +19,8 @@ import { SessionGuard } from "../../utils/guards/session-guard";
 @ApiUnauthorizedResponse({ description: "Not authenticated" })
 @UseGuards(SessionGuard)
 @Controller("playlists")
-export class PlaylistsController {
-  constructor(private readonly playlistsService: PlaylistsService) { }
+export class PlaylistController {
+  constructor(private readonly playlistsService: PlaylistService) { }
 
   @Get("me")
   @ApiOperation({ summary: "Get current user's playlists" })

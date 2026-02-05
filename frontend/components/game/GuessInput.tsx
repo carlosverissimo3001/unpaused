@@ -70,27 +70,29 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
           </motion.div>
         ) : (
           <>
-            <motion.span
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-[#535353]"
-              whileHover={{ rotate: 10 }}
-            >
-              <Search className="w-5 h-5 pointer-events-none" />
-            </motion.span>
-            <input
-              type="text"
-              value={search.searchQuery}
-              onChange={(e) => {
-                search.setSearchQuery(e.target.value);
-                search.setShowDropdown(true);
-              }}
-              onFocus={() => search.setShowDropdown(true)}
-              placeholder="Search for a song..."
-              className="w-full pl-12 pr-4 py-4 rounded-xl text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            />
+            <div className="relative">
+              <motion.span
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-[#535353]"
+                whileHover={{ rotate: 10 }}
+              >
+                <Search className="w-5 h-5 pointer-events-none" />
+              </motion.span>
+              <input
+                type="text"
+                value={search.searchQuery}
+                onChange={(e) => {
+                  search.setSearchQuery(e.target.value);
+                  search.setShowDropdown(true);
+                }}
+                onFocus={() => search.setShowDropdown(true)}
+                placeholder="Search for a song..."
+                className="w-full pl-12 pr-4 py-4 rounded-xl text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              />
+            </div>
             <AnimatePresence>
               {search.showDropdown && search.searchQuery.length > 0 && (
                 <motion.div

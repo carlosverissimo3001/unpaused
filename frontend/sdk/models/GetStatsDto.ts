@@ -33,7 +33,7 @@ export interface GetStatsDto {
  */
 export const GetStatsDtoModeEnum = {
     Daily: 'DAILY',
-    Playlist: 'PLAYLIST'
+    All: 'ALL'
 } as const;
 export type GetStatsDtoModeEnum = typeof GetStatsDtoModeEnum[keyof typeof GetStatsDtoModeEnum];
 

@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { GameStatus } from "@prisma/client";
-import { GuessHistoryDto } from "./guess-history.dto";
+import { GuessHistoryDto } from "./guess/guess-history.dto";
 
 export class GameHistoryEntryDto {
   @ApiProperty({ description: "Game session ID" })

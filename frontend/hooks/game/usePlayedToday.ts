@@ -9,5 +9,6 @@ export function usePlayedToday(options?: { enabled?: boolean }) {
     queryKey: queryKeys.game.playedToday,
     queryFn: () => api.gameControllerGetPlayedToday(),
     enabled: options?.enabled ?? true,
+    refetchInterval: 60 * 1000, // Refetch every minute to keep up-to-date (important around midnight)
   });
 }

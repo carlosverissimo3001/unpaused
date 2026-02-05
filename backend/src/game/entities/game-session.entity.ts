@@ -1,5 +1,5 @@
 import { GameStatus } from "@prisma/client";
-import { GuessHistoryDto } from "../dto/guess-history.dto";
+import { GuessHistoryDto } from "../dto/guess/guess-history.dto";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class GameSessionEntity {

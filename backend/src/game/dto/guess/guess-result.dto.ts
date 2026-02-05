@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { GuessResult } from "../consts";
+import { GuessResult } from "../../consts";
 import { GameStatus } from "@prisma/client";
 
 export class GuessResultDto {

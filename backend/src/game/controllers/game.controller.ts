@@ -1,33 +1,33 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
   Param,
+  Post,
   Query,
   UseGuards,
 } from "@nestjs/common";
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiCookieAuth,
+  ApiOperation,
   ApiParam,
   ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from "@nestjs/swagger";
-import { GameService } from "../services/game.service";
-import { GameStateDto } from "../dto/game-state.dto";
-import { StartGameDto } from "../dto/start-game.dto";
-import { GuessDto } from "../dto/guess.dto";
-import { GuessResultDto } from "../dto/guess-result.dto";
-import { GameHistoryDto } from "../dto/game-history.dto";
-import { GetHistoryDto } from "../dto/get-history.dto";
-import { ShareResultDto } from "../dto/share-result.dto";
-import { PlayedTodayDto } from "../dto/played-today.dto";
 import { SessionId } from "@utils/decorators/sessionId.decorator";
 import { SessionGuard } from "@utils/guards/session-guard";
-import { GetStatsDto } from "../dto/get-stats.dto";
-import { GameStatsDto } from "../dto/game-stats.dto";
+import { PlayedTodayDto } from "../dto/daily/played-today.dto";
+import { ShareResultDto } from "../dto/daily/share-result.dto";
+import { GameHistoryDto } from "../dto/game-history.dto";
+import { GameStateDto } from "../dto/game-state.dto";
+import { StartGameDto } from "../dto/game/start-game.dto";
+import { GetHistoryDto } from "../dto/get-history.dto";
+import { GuessResultDto } from "../dto/guess/guess-result.dto";
+import { GuessDto } from "../dto/guess/guess.dto";
+import { GameStatsDto } from "../dto/stats/game-stats.dto";
+import { GetStatsDto } from "../dto/stats/get-stats.dto";
+import { GameService } from "../services/game.service";
 
 @ApiTags("Api")
 @Controller("game")
@@ -49,10 +49,6 @@ export class GameController {
   @Get("history")
   @ApiOperation({ summary: "Get user's game session history (paginated)" })
   @ApiCookieAuth()
-  @ApiQuery({ name: "limit", required: false, type: Number })
-  @ApiQuery({ name: "offset", required: false, type: Number })
-  @ApiQuery({ name: "isDaily", required: false, type: Boolean })
-  @ApiQuery({ name: "isCompleted", required: false, type: Boolean })
   @ApiResponse({ status: 200, type: GameHistoryDto })
   async getHistory(
     @SessionId() sessionId: string,
@@ -65,7 +61,9 @@ export class GameController {
   @ApiOperation({ summary: "Get user's daily stats" })
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: GameStatsDto })
-  async getStats(@SessionId() sessionId: string, @Body() params: GetStatsDto): Promise<GameStatsDto> {
+  async getStats(
+    @SessionId() sessionId: string, 
+    @Query() params: GetStatsDto): Promise<GameStatsDto> {
     return this.gameService.getStats(sessionId, params);
   }
 

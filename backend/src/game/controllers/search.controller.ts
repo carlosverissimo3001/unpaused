@@ -7,7 +7,7 @@ import {
   ApiResponse,
 } from "@nestjs/swagger";
 import { SearchService } from "../services/search.service";
-import { TrackOptionDto } from "../../tracks/dto/track-option.dto";
+import { TrackOptionDto } from "../../track/dto/track-option.dto";
 import { SessionId } from "@utils/decorators/sessionId.decorator";
 import { SessionGuard } from "@utils/guards/session-guard";
 
@@ -17,7 +17,7 @@ import { SessionGuard } from "@utils/guards/session-guard";
 @ApiCookieAuth()
 @ApiUnauthorizedResponse({ description: "Not authenticated" })
 export class SearchController {
-  constructor(private readonly searchService: SearchService) {}
+  constructor(private readonly searchService: SearchService) { }
 
   @Get("tracks")
   @ApiOperation({ summary: "Search Spotify tracks (for game guess options)" })

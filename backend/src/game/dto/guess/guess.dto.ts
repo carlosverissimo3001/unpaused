@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { IsString } from "class-validator";
-import { IsNotNullableOptional } from "../../utils/decorators/notNullableOptional.decorator";
-import { toBoolean } from "../../utils/transformers/toBoolean.transform";
+import { IsNotNullableOptional } from "@utils/decorators/notNullableOptional.decorator";
+import { toBoolean } from "@utils/transformers/toBoolean.transform";
 import { Transform } from "class-transformer";
 
 export class GuessDto {

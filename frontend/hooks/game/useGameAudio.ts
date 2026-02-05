@@ -46,6 +46,16 @@ export function useGameAudio({
     }, duration);
   }, [currentRound, previewUrl]);
 
+  const pauseSnippet = useCallback(() => {
+    if (snippetTimeoutRef.current) clearTimeout(snippetTimeoutRef.current);
+    snippetTimeoutRef.current = null;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (snippetTimeoutRef.current) clearTimeout(snippetTimeoutRef.current);
@@ -101,6 +111,7 @@ export function useGameAudio({
     isFullSongPlaying,
     isMuted,
     playSnippet,
+    pauseSnippet,
     toggleFullSong,
     toggleMute,
     stopFullSong,

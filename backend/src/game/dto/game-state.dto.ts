@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { GameStatus } from "@prisma/client";
-import { TrackOptionDto } from "@tracks/dto/track-option.dto";
-import { GuessHistoryDto } from "./guess-history.dto";
+import { TrackOptionDto } from "@/track/dto/track-option.dto";
+import { GuessHistoryDto } from "./guess/guess-history.dto";
 
 export class GameStateDto {
   @ApiProperty({ description: "The ID of the game session" })
@@ -19,8 +19,8 @@ export class GameStateDto {
   @ApiProperty({ description: "The guesses of the game", type: GuessHistoryDto, isArray: true })
   guesses: GuessHistoryDto[];
 
-  @ApiPropertyOptional({ description: "The preview URL of the current track", type: String })
-  previewUrl?: string;
+  @ApiProperty({ description: "The preview URL of the current track" })
+  previewUrl: string;
 
   @ApiPropertyOptional({ description: "The answer to the current track", type: TrackOptionDto })
   answer?: TrackOptionDto;

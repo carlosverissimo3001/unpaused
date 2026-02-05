@@ -13,14 +13,14 @@ import { useGameStats } from "./useGameStats";
 import { useSpotifyTrackSearch } from "@/hooks/spotify/useSpotifyTrackSearch";
 import { usePlaylistById } from "@/hooks/playlists/usePlaylistById";
 import { triggerConfetti } from "@/components/game/confetti";
-import { GAME_MODE } from "@/consts/consts";
+import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
-export function useGameOrchestrator(mode: GAME_MODE, playlistId?: string) {
+export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   const queryClient = useQueryClient();
   const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
 
-  const isPlaylist = mode === GAME_MODE.PLAYLIST;
-  const isDaily = mode === GAME_MODE.DAILY;
+  const isPlaylist = mode === GameMode.All;
+  const isDaily = mode === GameMode.Daily;
 
   const { data: playlist } = usePlaylistById(playlistId ?? "");
   const {
@@ -32,7 +32,9 @@ export function useGameOrchestrator(mode: GAME_MODE, playlistId?: string) {
   const { data: gameState, isLoading: loadingState, error: errorState } = useGameState(sessionId);
   const submitGuessMutation = useSubmitGuess();
   const spotifySearch = useSpotifyTrackSearch();
-  const { data: stats } = useGameStats({ enabled: isDaily });
+  const { data: stats } = useGameStats( {mode, useCached: false} );
+
+  console.log(stats);
 
   const isGameOver = gameState?.status !== GameStateDtoStatusEnum.Playing;
   const gameAudio = useGameAudio({
@@ -56,9 +58,11 @@ export function useGameOrchestrator(mode: GAME_MODE, playlistId?: string) {
   }, [gameState?.guesses, lastGuessResult]);
 
   useEffect(() => {
-    if (isDaily && isGameOver) {
+    if (isGameOver) {
       queryClient.invalidateQueries({ queryKey: queryKeys.game.stats });
       queryClient.invalidateQueries({ queryKey: queryKeys.game.playedToday });
+      queryClient.invalidateQueries({ queryKey: ["game", "history"] });
+      queryClient.invalidateQueries({ queryKey: ["daily", "history"] });
     }
   }, [isDaily, isGameOver, queryClient]);
 

@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { MessageRepository } from "./message.repository";
-import { MessageService } from "./message.service";
+import { MessageRepository } from "./repositories/message.repository";
+import { MessageService } from "./services/message.service";
 import { PrismaModule } from "../prisma/prisma.module";
 
 @Module({

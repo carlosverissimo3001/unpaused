@@ -7,8 +7,8 @@ interface ScoreDistributionChartProps {
   className?: string;
 }
 
-const ROUND_LABELS = ["1", "2", "3", "4", "5", "6"];
-const MAX_BARS = 6;
+const ROUND_LABELS = ["1", "2", "3", "4", "5", "6", "X"];
+const MAX_BARS = 7;
 
 export function ScoreDistributionChart({
   distribution,

@@ -1,6 +1,5 @@
 export type UpdateGameStatsParams = {
     userId: string;
-    won: boolean;
-    score: number;
+    roundWon?: number;
     isDaily: boolean;
 }

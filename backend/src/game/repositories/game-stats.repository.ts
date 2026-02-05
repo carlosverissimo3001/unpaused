@@ -1,5 +1,5 @@
 import { GameMode, Stats } from "@prisma/client";
-import { UpdateStatsDto } from "../dto/update-stats.dto";
+import { UpdateStatsDto } from "../dto/stats/update-stats.dto";
 import { PrismaService } from "@prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
 import { GameStatsEntity } from "../entities/game-stats.entity";
@@ -9,13 +9,13 @@ export class GameStatsRepository {
     constructor(private readonly prisma: PrismaService) { }
 
     async findByUserId(userId: string, mode: GameMode): Promise<GameStatsEntity> {
-        const stats = await this.prisma.stats.findUniqueOrThrow({ where: { userId, mode } });
-        return this.fromPrisma(stats);
+        const stats = await this.prisma.stats.findUnique({ where: { userId_mode: { userId, mode } } });
+        return stats ? this.fromPrisma(stats) : this.defaultEntity(mode);
     }
 
     async upsert(userId: string, mode: GameMode): Promise<GameStatsEntity> {
         const stats = await this.prisma.stats.upsert({
-            where: { userId },
+            where: { userId_mode: { userId, mode } },
             create: { userId, mode },
             update: {},
         });
@@ -24,21 +24,20 @@ export class GameStatsRepository {
 
     async update(userId: string, params: UpdateStatsDto, mode: GameMode): Promise<GameStatsEntity> {
         const stats = await this.prisma.stats.update({
-            where: { userId, mode },
+            where: { userId_mode: { userId, mode } },
             data: this.mapUpdateData(params),
         });
         return this.fromPrisma(stats);
     }
 
     private mapUpdateData(params: UpdateStatsDto) {
-        const { currentStreak, bestStreak, scoreDistribution, won, score } = params;
+        const { currentStreak, bestStreak, roundDistribution, won } = params;
         return {
             currentStreak,
             bestStreak,
-            scoreDistribution,
+            roundDistribution,
             totalGames: { increment: 1 },
             totalWins: won ? { increment: 1 } : undefined,
-            totalScore: { increment: score },
         };
     }
 
@@ -46,5 +45,17 @@ export class GameStatsRepository {
         return {
             ...prisma,
         };
+    }
+
+    private defaultEntity(mode: GameMode): GameStatsEntity {
+        return {
+            currentStreak: 0,
+            bestStreak: 0,
+            totalGames: 0,
+            totalWins: 0,
+            // Index 0-5 for rounds 1-6, index 6 for failures
+            roundDistribution: [0, 0, 0, 0, 0, 0, 0],
+            mode,
+        } as GameStatsEntity;
     }
 }

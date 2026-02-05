@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useStartGame } from "./useStartGame";
-import type { GameMode } from "@/components/game/types";
+import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
 /**
  * Handles game session initialization: starts playlist or daily game once on mount.
@@ -10,8 +10,8 @@ import type { GameMode } from "@/components/game/types";
  */
 export function useGameSession(mode: GameMode, playlistId?: string) {
   const startGameMutation = useStartGame();
-  const isPlaylist = mode === "playlist";
-  const isDaily = mode === "daily";
+  const isPlaylist = mode === GameMode.All;
+  const isDaily = mode === GameMode.Daily;
   const shouldStart = (isPlaylist && !!playlistId) || isDaily;
 
   useEffect(() => {

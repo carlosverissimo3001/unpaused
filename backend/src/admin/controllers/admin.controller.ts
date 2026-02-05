@@ -15,10 +15,10 @@ import {
   ApiCookieAuth,
   ApiParam,
 } from "@nestjs/swagger";
-import { MessageService } from "../messages/message.service";
-import { MessageDto } from "../game/dto/message.dto";
-import { CreateMessageDto } from "../game/dto/create-message.dto";
-import { UpdateMessageDto } from "../game/dto/update-message.dto";
+import { MessageService } from "../../message/services/message.service";
+import { MessageDto } from "../../message/dto/message.dto";
+import { CreateMessageDto } from "../../message/dto/create-message.dto";
+import { UpdateMessageDto } from "../../message/dto/update-message.dto";
 import { SessionGuard } from "@utils/guards/session-guard";
 import { AdminGuard } from "@utils/guards/admin-guard";
 
@@ -26,7 +26,7 @@ import { AdminGuard } from "@utils/guards/admin-guard";
 @Controller("admin")
 @UseGuards(SessionGuard, AdminGuard)
 export class AdminController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(private readonly messageService: MessageService) { }
 
   @Get("messages")
   @ApiCookieAuth()

@@ -4,9 +4,7 @@ import { useEffect, useState } from "react";
 import { Flame, Star } from "lucide-react";
 import { motion, animate } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { GameHistoryEntryDto } from "@/sdk/models/GameHistoryEntryDto";
-import { GameHistoryEntryDtoStatusEnum } from "@/sdk/models/GameHistoryEntryDto";
-import { computeStreak } from "@/utils/stats-utills";
+import { GameStatsDto } from "../../sdk";
 
 const SIZE = 64;
 const STROKE = 6;
@@ -87,16 +85,14 @@ function WinRateCircle({ wins, total }: { wins: number; total: number }) {
 
 
 export interface HistoryStatsProps {
-  items: GameHistoryEntryDto[];
+  stats: GameStatsDto
 }
 
-export function HistoryStats({ items }: HistoryStatsProps) {
-  const total = items.length;
-  const wins = items.filter((e) => e.status === GameHistoryEntryDtoStatusEnum.Won).length;
-  const streak = computeStreak(items);
-  const perfectScores = items.filter(
-    (e) => e.status === GameHistoryEntryDtoStatusEnum.Won && e.score === 6
-  ).length;
+export function HistoryStats({ stats }: HistoryStatsProps) {
+  const total = stats.totalGames;
+  const wins = stats.totalWins;
+  const streak = stats.currentStreak;
+  const perfectScores = stats.roundDistribution[0] || 0; // 0th index === wins on 1st round
 
   return (
     <div className="grid grid-cols-3 gap-3 mb-6">

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { SpotifyService } from "../../spotify/services/spotify.service";
-import { TrackOptionDto } from "../../tracks/dto/track-option.dto";
+import { TrackOptionDto } from "../../track/dto/track-option.dto";
 import { normalizeText } from "@utils/text";
 import { getFirstImage } from "@utils/utils";
 import { Track } from "@spotify/web-api-ts-sdk";
@@ -9,7 +9,7 @@ const SEARCH_LIMIT = 20 as const;
 
 @Injectable()
 export class SearchService {
-  constructor(private readonly spotifyService: SpotifyService) {}
+  constructor(private readonly spotifyService: SpotifyService) { }
 
   /**
    * Search Spotify for tracks (for game guess dropdown).

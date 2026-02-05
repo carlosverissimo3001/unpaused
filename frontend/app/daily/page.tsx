@@ -1,8 +1,8 @@
 "use client";
 
 import { GamePage } from "@/components/game/GamePage";
-import { GAME_MODE } from "../../consts/consts";
+import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
 export default function DailyPage() {
-  return <GamePage mode={GAME_MODE.DAILY} />;
+  return <GamePage mode={GameMode.Daily} />;
 }

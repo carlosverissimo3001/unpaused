@@ -1,5 +1,5 @@
 import { GuessResult } from "../consts";
-import { GuessHistoryDto } from "../dto/guess-history.dto";
+import { GuessHistoryDto } from "../dto/guess/guess-history.dto";
 import { InputJsonValue } from "@prisma/client/runtime/client";
 
 type PrismaGuessItem = {

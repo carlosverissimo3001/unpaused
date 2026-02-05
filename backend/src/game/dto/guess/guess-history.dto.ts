@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { GuessResult } from "../consts";
+import { GuessResult } from "../../consts";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
 export class GuessHistoryDto {

@@ -28,7 +28,7 @@ export function Transactional(): MethodDecorator {
         return transactionStorage.run({ tx }, () =>
           originalMethod.apply(this, args),
         );
-      });
+      }, { timeout: 30000 });
     };
 
     Reflect.defineMetadata(TRANSACTIONAL_KEY, true, descriptor.value);

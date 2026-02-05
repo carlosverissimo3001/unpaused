@@ -6,7 +6,7 @@ const RESULT_EMOJI: Record<string, string> = {
   ARTIST_AND_ALBUM: "🟨",
   ALBUM: "🟨",
   WRONG: "🟥",
-  SKIP: "⬜",
+  SKIP: "⬛",
 };
 
 interface GuessPatternProps {

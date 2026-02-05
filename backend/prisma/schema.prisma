@@ -7,14 +7,14 @@ datasource db {
 }
 
 model User {
-  id            String      @id @default(uuid())
-  spotifyUserId String      @unique @map("spotify_user_id")
-  displayName   String      @map("display_name")
-  isTrusted     Boolean     @default(false) @map("is_trusted")
-  isAdmin       Boolean     @default(false) @map("is_admin")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
-  stats         Stats?
+  id            String   @id @default(uuid())
+  spotifyUserId String   @unique @map("spotify_user_id")
+  displayName   String   @map("display_name")
+  isTrusted     Boolean  @default(false) @map("is_trusted")
+  isAdmin       Boolean  @default(false) @map("is_admin")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  stats         Stats[]
 
   gameSessions GameSession[]
 
@@ -30,6 +30,7 @@ enum GameStatus {
 model GameSession {
   id String @id @default(uuid())
 
+  // Nullable, as we allow users to play without logging in
   userId String? @map("user_id")
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -76,29 +77,28 @@ enum GameMode {
 }
 
 model Stats {
-  id     String @id @default(uuid())
-  userId String @unique @map("user_id")
+  userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
-  currentStreak Int       @default(0) @map("current_streak")
-  bestStreak    Int       @default(0) @map("best_streak")
+  currentStreak Int @default(0) @map("current_streak")
+  bestStreak    Int @default(0) @map("best_streak")
 
-  totalGames        Int   @default(0) @map("total_games")
-  totalWins         Int   @default(0) @map("total_wins")
-  totalScore        Int   @default(0) @map("total_score")
-  scoreDistribution Int[] @default([0, 0, 0, 0, 0, 0]) @map("score_distribution")
+  totalGames        Int      @default(0) @map("total_games")
+  totalWins         Int      @default(0) @map("total_wins")
+  roundDistribution Int[]    @default([0, 0, 0, 0, 0, 0, 0]) @map("score_distribution")
   mode              GameMode @default(ALL) @map("mode")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@id([userId, mode])
   @@map("stats")
 }
 
 model Message {
-  id String @id @default(uuid())
+  id    String @id @default(uuid())
   title String @map("title")
-  note String @map("note")
+  note  String @map("note")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

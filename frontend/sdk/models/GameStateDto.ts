@@ -69,7 +69,7 @@ export interface GameStateDto {
      * @type {string}
      * @memberof GameStateDto
      */
-    previewUrl?: string;
+    previewUrl: string;
     /**
      * The answer to the current track
      * @type {TrackOptionDto}
@@ -117,6 +117,7 @@ export function instanceOfGameStateDto(value: object): value is GameStateDto {
     if (!('snippetDuration' in value) || value['snippetDuration'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('guesses' in value) || value['guesses'] === undefined) return false;
+    if (!('previewUrl' in value) || value['previewUrl'] === undefined) return false;
     return true;
 }
 
@@ -135,7 +136,7 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'snippetDuration': json['snippetDuration'],
         'status': json['status'],
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
-        'previewUrl': json['previewUrl'] == null ? undefined : json['previewUrl'],
+        'previewUrl': json['previewUrl'],
         'answer': json['answer'] == null ? undefined : TrackOptionDtoFromJSON(json['answer']),
         'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
         'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],

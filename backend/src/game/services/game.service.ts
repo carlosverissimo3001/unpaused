@@ -1,47 +1,49 @@
+import { AuthService } from "@auth/services/auth.service";
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from "@nestjs/common";
-import { startOfDay } from "date-fns";
-import { AuthService } from "@auth/services/auth.service";
-import { PlaylistsService } from "@playlists/services/playlists.service";
-import { Transactional } from "@transaction/transactional.decorator";
-import { AppLoggerService } from "../../logger/logger.service";
-import { ROUND_DURATIONS, MAX_ROUNDS, GuessResult } from "../consts";
-import { LIKED_SONGS_ID_SUFFIX } from "../../consts";
+import { PlaylistService } from "@/playlist/services/playlist.service";
 import { GameMode, GameStatus, Track } from "@prisma/client";
-import { TrackService } from "@tracks/services/track.service";
-import { TrackDto } from "@tracks/dto/track.dto";
-import { TrackRepository } from "@tracks/repositories/track.repository";
-import { GuessDto } from "../dto/guess.dto";
-import { GameSessionRepository } from "../repositories/game-session.repository";
-import { GameStateDto } from "../dto/game-state.dto";
+import { PrismaService } from "@prisma/prisma.service";
+import { TrackDto } from "@/track/dto/track.dto";
+import { TrackRepository } from "@/track/repositories/track.repository";
+import { TrackService } from "@/track/services/track.service";
+import { Transactional } from "@transaction/transactional.decorator";
 import { normalizeText, normalizeTrackNameForMatch } from "@utils/text";
-import { GuessHistoryDto } from "../dto/guess-history.dto";
-import { GuessResultDto } from "../dto/guess-result.dto";
-import { StartGameDto } from "../dto/start-game.dto";
+import { formatDate, startOfDay } from "date-fns";
+import { LIKED_SONGS_ID_SUFFIX } from "../../consts";
+import { AppLoggerService } from "../../logger/logger.service";
+import { MessageService } from "../../message/services/message.service";
+import { GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from "../consts";
+import { PlayedTodayDto } from "../dto/daily/played-today.dto";
+import { ShareResultDto } from "../dto/daily/share-result.dto";
 import {
   GameHistoryDto,
   GameHistoryEntryDto,
 } from "../dto/game-history.dto";
+import { GameStateDto } from "../dto/game-state.dto";
+import { StartGameDto } from "../dto/game/start-game.dto";
 import { GetHistoryDto } from "../dto/get-history.dto";
-import { ShareResultDto } from "../dto/share-result.dto";
-import { PlayedTodayDto } from "../dto/played-today.dto";
+import { GuessHistoryDto } from "../dto/guess/guess-history.dto";
+import { GuessResultDto } from "../dto/guess/guess-result.dto";
+import { GuessDto } from "../dto/guess/guess.dto";
+import { GameStatsDto } from "../dto/stats/game-stats.dto";
+import { GetStatsDto } from "../dto/stats/get-stats.dto";
 import { GameSessionEntity } from "../entities/game-session.entity";
-import { PrismaService } from "@prisma/prisma.service";
-import { MessageService } from "../../messages/message.service";
+import { GameSessionRepository } from "../repositories/game-session.repository";
 import { GameStatsRepository } from "../repositories/game-stats.repository";
 import { UpdateGameStatsParams } from "../types";
-import { GetStatsDto } from "../dto/get-stats.dto";
-import { GameStatsDto } from "../dto/game-stats.dto";
+import { mapInitialGameState, mapToGameStateDto } from "../utils/game-state-mapper";
+import { GameExtrasVo, MetaGameExtrasVo } from "../vos/game-extras.vo";
 
 @Injectable()
 export class GameService {
   private readonly logger: AppLoggerService;
 
   constructor(
-    private readonly playlistsService: PlaylistsService,
+    private readonly playlistService: PlaylistService,
     private readonly trackService: TrackService,
     private readonly trackRepository: TrackRepository,
     private readonly gameSessionRepository: GameSessionRepository,
@@ -56,56 +58,24 @@ export class GameService {
 
   @Transactional()
   async startGame(sessionId: string, params: StartGameDto): Promise<GameStateDto> {
-    const { playlistId: requestedPlaylistId, isDaily } = params;
+    const { playlistId, isDaily } = params;
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-
-    let selectedTrack: TrackDto;
-    let previewUrl: string;
-    let gamePlaylistId: string;
-
+  
     if (isDaily) {
-      // Pick track and upsert outside the critical section (no lock needed)
-      const trackInfo = await this.pickLikedTrackWithPreview(sessionId);
-      selectedTrack = trackInfo.selectedTrack;
-      previewUrl = trackInfo.previewUrl;
-      gamePlaylistId = `${userId}-liked-songs`;
-      await this.trackRepository.upsertTrack(selectedTrack.id, {
-        name: selectedTrack.name,
-        artistName: selectedTrack.primaryArtist,
-        albumImageUrl: selectedTrack.imageUrl,
-        albumName: selectedTrack.albumName,
-        albumUrl: `https://open.spotify.com/album/${selectedTrack.albumId}`,
-        releaseYear: selectedTrack.releaseYear,
-        previewUrl,
-      });
-
-
-      const existing =
-        await this.gameSessionRepository.findTodayDailySession(userId);
-      if (existing) return this.getGameState(existing.id);
-      const game = await this.gameSessionRepository.createSession({
-        user: { connect: { id: userId } },
-        playlistId: gamePlaylistId,
-        isDaily: true,
-        track: { connect: { id: selectedTrack.id } },
-        currentRound: 0,
-        guesses: [],
-        status: GameStatus.PLAYING,
-      });
-      return this.getGameState(game.id);
+      const existing = await this.gameSessionRepository.findTodayDailySession(userId);
+      // Already played today, we'll just return the game state
+      if (existing) {
+        return this.getGameState(existing.id);
+      }
     }
-
-    if (!requestedPlaylistId) {
+  
+    const targetPlaylistId = isDaily ? `${userId}-${LIKED_SONGS_ID_SUFFIX}` : playlistId;
+    if (!targetPlaylistId) {
       throw new BadRequestException("Playlist ID is required");
     }
-    gamePlaylistId = requestedPlaylistId;
-    const trackInfo = requestedPlaylistId.endsWith(LIKED_SONGS_ID_SUFFIX)
-      ? await this.pickLikedTrackWithPreview(sessionId)
-      : await this.pickPlaylistTrackWithPreview(sessionId, requestedPlaylistId);
-
-    selectedTrack = trackInfo.selectedTrack;
-    previewUrl = trackInfo.previewUrl;
-
+  
+    const { selectedTrack, previewUrl } = await this.resolveTrackWithPreview(sessionId, targetPlaylistId);
+  
     await this.trackRepository.upsertTrack(selectedTrack.id, {
       name: selectedTrack.name,
       artistName: selectedTrack.primaryArtist,
@@ -115,26 +85,25 @@ export class GameService {
       releaseYear: selectedTrack.releaseYear,
       previewUrl,
     });
-
+  
     const game = await this.gameSessionRepository.createSession({
       user: { connect: { id: userId } },
-      playlistId: gamePlaylistId,
-      isDaily,
+      playlistId: targetPlaylistId,
+      isDaily: !!isDaily,
       track: { connect: { id: selectedTrack.id } },
       currentRound: 0,
       guesses: [],
       status: GameStatus.PLAYING,
     });
+  
+    return mapInitialGameState(game.id, previewUrl);
+  }
 
-    return {
-      sessionId: game.id,
-      currentRound: 0,
-      snippetDuration: ROUND_DURATIONS[0],
-      status: GameStatus.PLAYING,
-      guesses: [],
-      previewUrl,
-      answer: undefined,
-    };
+  private async resolveTrackWithPreview(sessionId: string, playlistId: string) {
+    if (playlistId.endsWith(LIKED_SONGS_ID_SUFFIX)) {
+      return this.pickLikedTrackWithPreview(sessionId);
+    }
+    return this.pickPlaylistTrackWithPreview(sessionId, playlistId);
   }
 
 
@@ -142,7 +111,7 @@ export class GameService {
   private async pickLikedTrackWithPreview(
     sessionId: string
   ): Promise<{ selectedTrack: TrackDto; previewUrl: string }> {
-    const total = await this.playlistsService.getLikedSongsTotal(sessionId);
+    const total = await this.playlistService.getLikedSongsTotal(sessionId);
     if (!total) {
       throw new BadRequestException("Liked Songs is empty");
     }
@@ -150,7 +119,7 @@ export class GameService {
     const maxAttempts = 20;
     for (let i = 0; i < maxAttempts; i++) {
       const offset = Math.floor(Math.random() * total);
-      const track = await this.playlistsService.getOneLikedTrackAtOffset(sessionId, offset);
+      const track = await this.playlistService.getOneLikedTrackAtOffset(sessionId, offset);
       if (!track?.id) {
         continue;
       }
@@ -171,7 +140,7 @@ export class GameService {
     sessionId: string,
     playlistId: string
   ): Promise<{ selectedTrack: TrackDto; previewUrl: string }> {
-    const tracks = await this.playlistsService.getPlaylistFirstTracks(sessionId, playlistId);
+    const tracks = await this.playlistService.getPlaylistFirstTracks(sessionId, playlistId);
     if (!tracks.length) {
       throw new BadRequestException("Playlist is empty");
     }
@@ -208,12 +177,10 @@ export class GameService {
       throw new NotFoundException("Game session not found");
     }
 
-    const guesses = game.guesses as unknown as GuessHistoryDto[];
-
     // Fetch track with relation
     const track = await this.trackRepository.findById(game.trackId);
-    if (!track) {
-      throw new NotFoundException("Track not found");
+    if (!track || !track.previewUrl) {
+      throw new NotFoundException("Track not found or no preview URL");
     }
 
     const user = await this.authService.getUserById(game.userId);
@@ -227,30 +194,7 @@ export class GameService {
         )
         : {};
 
-    return {
-      sessionId: game.id,
-      currentRound: game.currentRound,
-      snippetDuration:
-        ROUND_DURATIONS[Math.min(game.currentRound, MAX_ROUNDS - 1)],
-      status: game.status,
-      guesses,
-      previewUrl: track.previewUrl ?? undefined,
-      answer:
-        game.status !== GameStatus.PLAYING
-          ? {
-            id: track.id,
-            name: track.name,
-            normalizedName: normalizeText(track.name),
-            artist: track.artistName,
-            normalizedArtist: normalizeText(track.artistName),
-            albumImageUrl: track.albumImageUrl || undefined,
-            albumName: track.albumName || undefined,
-            albumUrl: track.albumUrl || undefined,
-            releaseYear: track.releaseYear || undefined,
-          }
-          : undefined,
-      ...extras,
-    };
+    return mapToGameStateDto(game, track);
   }
 
   /**
@@ -305,7 +249,13 @@ export class GameService {
 
     if (gameOver && game.userId) {
       const score = status === GameStatus.WON ? 6 - game.currentRound : 0;
-      await this.updateGameStats({ userId: game.userId, won: status === GameStatus.WON, score, isDaily: game.isDaily });
+      await this.updateGameStats({ 
+        userId: game.userId, 
+        roundWon: 
+        game.currentRound, 
+        isDaily: 
+        game.isDaily 
+      });
     }
 
     const base: GuessResultDto = {
@@ -329,36 +279,36 @@ export class GameService {
    * Must run within a @Transactional() boundary so it participates in the same transaction.
    */
   private async updateGameStats(params: UpdateGameStatsParams): Promise<void> {
-    const { userId, won, score, isDaily } = params;
-    
+    const { userId, roundWon, isDaily } = params;
+
     const stats = await this.gameStatsRepository.upsert(userId, GameMode.ALL);
     const dailyStats = await this.gameStatsRepository.upsert(userId, GameMode.DAILY);
 
-    const newStreak = won ? stats.currentStreak + 1 : 0;
-    const newDailyStreak = won ? dailyStats.currentStreak + 1 : 0;
+    const newStreak = !!roundWon ? stats.currentStreak + 1 : 0;
+    const newDailyStreak = !!roundWon ? dailyStats.currentStreak + 1 : 0;
 
-    const dist = [...(stats.scoreDistribution ?? [0, 0, 0, 0, 0, 0])];
-    if (won && score >= 1 && score <= 6) {
-      dist[score - 1] = (dist[score - 1] ?? 0) + 1;
-    }
+    const dist = [...(stats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0])];
+    const dailyDist = [...(dailyStats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0])];
+
+    const index = roundWon ? roundWon : 6; // Failures go to index 6
+    dist[index] = (dist[index] ?? 0) + 1;
+    dailyDist[index] = (dailyDist[index] ?? 0) + 1;
 
     await this.gameStatsRepository.update(userId, {
       currentStreak: newStreak,
       bestStreak: Math.max(stats.bestStreak, newStreak),
-      won,
-      score,
-      scoreDistribution: dist,
+      roundDistribution: dist,
+      won: !!roundWon,
     }, GameMode.ALL);
 
     if (isDaily) {
       await this.gameStatsRepository.update(userId, {
-        currentStreak: newStreak,
+        currentStreak: newDailyStreak,
         bestStreak: Math.max(dailyStats.bestStreak, newDailyStreak),
-        scoreDistribution: dist,
-        won,
-        score,
+        roundDistribution: dailyDist,
+        won: !!roundWon,
       }, GameMode.DAILY);
-    } 
+    }
 
   }
 
@@ -451,19 +401,29 @@ export class GameService {
    */
   async getUserExtras(
     isTrusted: boolean,
-    isGameOver: boolean,
+    _isGameOver: boolean,
     isWin: boolean
-  ): Promise<{ rankTitle?: string; specialNote?: string; meta?: { showHeart: boolean } }> {
-    const out: { rankTitle?: string; specialNote?: string; meta?: { showHeart: boolean } } = {};
-    if (isGameOver && isTrusted) {
+  ): Promise<GameExtrasVo> {
+    if (!isTrusted) {
+      return {};
+    }
+  
+    const extras: GameExtrasVo = {};
+  
+    /* if (isGameOver) {
       const messages = await this.messageService.findAll();
-      const index = new Date().getDate() % messages.length;
-      Object.assign(out, { rankTitle: messages[index].title, specialNote: messages[index].note });
+      const dailyIndex = new Date().getDate() % messages.length;
+      const { title, note } = messages[dailyIndex];
+      
+      extras.rankTitle = title;
+      extras.specialNote = note;
+    } */
+  
+    if (isWin) {
+      extras.meta = new MetaGameExtrasVo(true);
     }
-    if (isWin && isTrusted) {
-      out.meta = { showHeart: true };
-    }
-    return out;
+  
+    return extras;
   }
 
   private calculateNextState(result: GuessResult, nextRound: number): { status: GameStatus; gameOver: boolean } {
@@ -508,7 +468,7 @@ export class GameService {
     await Promise.all(
       playlistIdsToResolve.map(async (playlistId) => {
         try {
-          const playlist = await this.playlistsService.getPlaylistById(
+          const playlist = await this.playlistService.getPlaylistById(
             sessionId,
             playlistId,
           );
@@ -527,7 +487,7 @@ export class GameService {
         : playlistNameMap.get(s.playlistId);
       return {
         id: s.id,
-        date: dateSource.toISOString().slice(0, 10),
+        date: formatDate(dateSource, "yyyy-MM-dd"),
         status: s.status,
         score: s.score,
         isDaily: s.isDaily,

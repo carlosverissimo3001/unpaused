@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
-import { AdminController } from "./admin.controller";
-import { AdminGuard } from "../utils/guards/admin-guard";
 import { AuthModule } from "../auth/auth.module";
-import { MessageModule } from "../messages/message.module";
+import { MessageModule } from "../message/message.module";
+import { AdminGuard } from "../utils/guards/admin-guard";
+import { AdminController } from "./controllers/admin.controller";
 
 @Module({
   imports: [AuthModule, MessageModule],
   controllers: [AdminController],
   providers: [AdminGuard],
 })
-export class AdminModule {}
+export class AdminModule { }

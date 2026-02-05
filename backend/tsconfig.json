@@ -24,10 +24,10 @@
       "@redis/*": ["src/redis/*"],
       "@prisma/*": ["src/prisma/*"],
       "@transaction/*": ["src/transaction/*"],
-      "@playlists/*": ["src/playlists/*"],
+      "@playlists/*": ["src/playlist/*"],
       "@game/*": ["src/game/*"],
       "@spotify/*": ["src/spotify/*"],
-      "@tracks/*": ["src/tracks/*"],
+      "@tracks/*": ["src/track/*"],
       "@utils/*": ["src/utils/*"]
     }
   }

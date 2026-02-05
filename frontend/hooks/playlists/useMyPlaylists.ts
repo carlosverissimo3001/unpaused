@@ -20,7 +20,7 @@ export function useMyPlaylists(params?: UseMyPlaylistsParams) {
   return useQuery<PlaylistsResponseDto>({
     queryKey: queryKeys.playlists.me(params),
     queryFn: async () => {
-      return api.playlistsControllerGetMyPlaylists(params || {});
+      return api.playlistControllerGetMyPlaylists(params || {});
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes

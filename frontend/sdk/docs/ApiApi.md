@@ -20,8 +20,8 @@ All URIs are relative to *http://localhost*
 | [**gameControllerGetStats**](ApiApi.md#gamecontrollergetstats) | **GET** /game/stats | Get user\&#39;s daily stats |
 | [**gameControllerStartGame**](ApiApi.md#gamecontrollerstartgame) | **POST** /game/start | Start a new game from a playlist or daily |
 | [**gameControllerSubmitGuess**](ApiApi.md#gamecontrollersubmitguess) | **POST** /game/{id}/guess | Submit a guess for a specific session |
-| [**playlistsControllerGetMyPlaylists**](ApiApi.md#playlistscontrollergetmyplaylists) | **GET** /playlists/me | Get current user\&#39;s playlists |
-| [**playlistsControllerGetPlaylistById**](ApiApi.md#playlistscontrollergetplaylistbyid) | **GET** /playlists/{id} | Get playlist by ID |
+| [**playlistControllerGetMyPlaylists**](ApiApi.md#playlistcontrollergetmyplaylists) | **GET** /playlists/me | Get current user\&#39;s playlists |
+| [**playlistControllerGetPlaylistById**](ApiApi.md#playlistcontrollergetplaylistbyid) | **GET** /playlists/{id} | Get playlist by ID |
 | [**searchControllerSearchTracks**](ApiApi.md#searchcontrollersearchtracks) | **GET** /search/tracks | Search Spotify tracks (for game guess options) |
 
 
@@ -688,7 +688,7 @@ example().catch(console.error);
 
 ## gameControllerGetHistory
 
-> GameHistoryDto gameControllerGetHistory(isDaily, limit, offset, isCompleted)
+> GameHistoryDto gameControllerGetHistory(isDaily, limit, offset)
 
 Get user\&#39;s game session history (paginated)
 
@@ -716,8 +716,6 @@ async function example() {
     limit: 8.14,
     // number | The offset of the history (optional)
     offset: 8.14,
-    // boolean (optional)
-    isCompleted: true,
   } satisfies GameControllerGetHistoryRequest;
 
   try {
@@ -740,7 +738,6 @@ example().catch(console.error);
 | **isDaily** | `boolean` | Whether the game is daily | [Optional] [Defaults to `undefined`] |
 | **limit** | `number` | The limit of the history | [Optional] [Defaults to `undefined`] |
 | **offset** | `number` | The offset of the history | [Optional] [Defaults to `undefined`] |
-| **isCompleted** | `boolean` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -896,7 +893,7 @@ example().catch(console.error);
 
 ## gameControllerGetStats
 
-> GameStatsDto gameControllerGetStats(getStatsDto)
+> GameStatsDto gameControllerGetStats(mode)
 
 Get user\&#39;s daily stats
 
@@ -918,8 +915,8 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // GetStatsDto
-    getStatsDto: ...,
+    // 'DAILY' | 'ALL' | The game mode
+    mode: mode_example,
   } satisfies GameControllerGetStatsRequest;
 
   try {
@@ -939,7 +936,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **getStatsDto** | [GetStatsDto](GetStatsDto.md) |  | |
+| **mode** | `DAILY`, `ALL` | The game mode | [Defaults to `undefined`] [Enum: DAILY, ALL] |
 
 ### Return type
 
@@ -951,7 +948,7 @@ example().catch(console.error);
 
 ### HTTP request headers
 
-- **Content-Type**: `application/json`
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 
@@ -1100,9 +1097,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## playlistsControllerGetMyPlaylists
+## playlistControllerGetMyPlaylists
 
-> PlaylistsResponseDto playlistsControllerGetMyPlaylists(limit, offset, includePrivate, onlyUserOwned)
+> PlaylistsResponseDto playlistControllerGetMyPlaylists(limit, offset, includePrivate, onlyUserOwned)
 
 Get current user\&#39;s playlists
 
@@ -1113,7 +1110,7 @@ import {
   Configuration,
   ApiApi,
 } from '';
-import type { PlaylistsControllerGetMyPlaylistsRequest } from '';
+import type { PlaylistControllerGetMyPlaylistsRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -1132,10 +1129,10 @@ async function example() {
     includePrivate: false,
     // boolean (optional)
     onlyUserOwned: false,
-  } satisfies PlaylistsControllerGetMyPlaylistsRequest;
+  } satisfies PlaylistControllerGetMyPlaylistsRequest;
 
   try {
-    const data = await api.playlistsControllerGetMyPlaylists(body);
+    const data = await api.playlistControllerGetMyPlaylists(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -1179,9 +1176,9 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## playlistsControllerGetPlaylistById
+## playlistControllerGetPlaylistById
 
-> PlaylistDto playlistsControllerGetPlaylistById(id)
+> PlaylistDto playlistControllerGetPlaylistById(id)
 
 Get playlist by ID
 
@@ -1192,7 +1189,7 @@ import {
   Configuration,
   ApiApi,
 } from '';
-import type { PlaylistsControllerGetPlaylistByIdRequest } from '';
+import type { PlaylistControllerGetPlaylistByIdRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -1205,10 +1202,10 @@ async function example() {
   const body = {
     // string
     id: id_example,
-  } satisfies PlaylistsControllerGetPlaylistByIdRequest;
+  } satisfies PlaylistControllerGetPlaylistByIdRequest;
 
   try {
-    const data = await api.playlistsControllerGetPlaylistById(body);
+    const data = await api.playlistControllerGetPlaylistById(body);
     console.log(data);
   } catch (error) {
     console.error(error);

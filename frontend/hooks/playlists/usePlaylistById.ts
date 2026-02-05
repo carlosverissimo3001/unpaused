@@ -14,7 +14,7 @@ export function usePlaylistById(playlistId: string | null | undefined) {
     queryKey: queryKeys.playlists.detail(playlistId!),
     queryFn: async () => {
       if (!playlistId) throw new Error("Playlist ID is required");
-      return api.playlistsControllerGetPlaylistById({
+      return api.playlistControllerGetPlaylistById({
         id: playlistId,
       });
     },

@@ -6,7 +6,6 @@ export * from './GameHistoryDto';
 export * from './GameHistoryEntryDto';
 export * from './GameStateDto';
 export * from './GameStatsDto';
-export * from './GetStatsDto';
 export * from './GuessDto';
 export * from './GuessHistoryDto';
 export * from './GuessResultDto';

@@ -13,7 +13,7 @@ import { GuessHistoryList } from "./GuessHistoryList";
 import { GameHeader } from "./GameHeader";
 import { GameTitle } from "./GameTitle";
 import { GuessInput } from "./GuessInput";
-import { GAME_MODE } from "@/consts/consts";
+import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
 const SHAKE_VARIANTS: Variants = {
   shake: {
@@ -23,7 +23,7 @@ const SHAKE_VARIANTS: Variants = {
 };
 
 interface GamePageProps {
-  mode: GAME_MODE;
+  mode: GameMode;
   playlistId?: string;
 }
 
@@ -85,11 +85,13 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     );
   }
 
-  if (!gameState) return null;
+  if (!gameState) {
+    return null;
+  }
+
 
   return (
     <div className="min-h-screen overflow-hidden" style={{ background: "#121212" }}>
-      {/* Pulsing aura / mesh gradient background */}
       <motion.div
         className="fixed inset-0 -z-10 pointer-events-none"
         animate={{
@@ -144,6 +146,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               currentRound={gameState.currentRound}
               isPlaying={gameAudio.isPlaying}
               onPlay={gameAudio.playSnippet}
+              onPause={gameAudio.pauseSnippet}
             />
           )}
 

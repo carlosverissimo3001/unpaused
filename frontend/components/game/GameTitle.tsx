@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Calendar } from "lucide-react";
 import { ROUND_DURATIONS } from "@/consts/consts";
-import type { GameMode } from "./types";
+import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
 interface GameTitleProps {
   mode: GameMode;
@@ -12,7 +12,7 @@ interface GameTitleProps {
 }
 
 export function GameTitle({ mode, currentRound, isGameOver }: GameTitleProps) {
-  if (mode === "playlist") {
+  if (mode === GameMode.All) {
     return (
       <div className="text-center mb-6 md:mb-8">
         <h1

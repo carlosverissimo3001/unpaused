@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Play } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { ROUND_DURATIONS } from "@/consts/consts";
 
 const SPRING = { type: "spring" as const, stiffness: 100, damping: 15 };
@@ -14,9 +14,10 @@ interface PlaySnippetButtonProps {
   currentRound: number;
   isPlaying: boolean;
   onPlay: () => void;
+  onPause: () => void;
 }
 
-export function PlaySnippetButton({ currentRound, isPlaying, onPlay }: PlaySnippetButtonProps) {
+export function PlaySnippetButton({ currentRound, isPlaying, onPlay, onPause }: PlaySnippetButtonProps) {
   const duration = ROUND_DURATIONS[currentRound];
 
   return (
@@ -70,21 +71,15 @@ export function PlaySnippetButton({ currentRound, isPlaying, onPlay }: PlaySnipp
               ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
               : { type: "spring", stiffness: 100, damping: 15 }
           }
-          onClick={onPlay}
-          disabled={isPlaying}
-          className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] disabled:bg-[#282828] disabled:cursor-not-allowed text-black font-bold py-4 px-8 rounded-full text-lg border border-white/10 shadow-[0_0_30px_-5px_rgba(30,215,96,0.5)]"
+          onClick={isPlaying ? onPause : onPlay}
+          className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-4 px-8 rounded-full text-lg border border-white/10 shadow-[0_0_30px_-5px_rgba(30,215,96,0.5)]"
           style={{
             boxShadow: "0 0 30px -5px rgba(30,215,96,0.5), inset 0 1px 0 rgba(255,255,255,0.15)",
           }}
         >
           {isPlaying ? (
             <span className="flex items-center gap-2">
-              <motion.span
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              >
-                <Play className="w-5 h-5" fill="currentColor" />
-              </motion.span>
+              <Pause className="w-5 h-5" fill="currentColor" />
               Playing {duration}s...
             </span>
           ) : (

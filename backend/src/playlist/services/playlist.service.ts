@@ -5,20 +5,20 @@ import { PlaylistDto } from "../dto/playlist.dto";
 import { GetPlaylistsDto } from "../dto/get-playlists-dto";
 import { applyFilters, mapPlaylistLite } from "../utils/playlist-utils";
 import { SpotifyService } from "../../spotify/services/spotify.service";
-import { mapTrack } from "@tracks/utils.ts/track-utils";
-import { TrackDto } from "@tracks/dto/track.dto";
+import { mapTrack } from "@/track/utils.ts/track-utils";
+import { TrackDto } from "@/track/dto/track.dto";
 import { AppLoggerService } from "../../logger/logger.service";
 import { LIKED_SONGS_ID_SUFFIX } from "../../consts";
 
 @Injectable()
-export class PlaylistsService {
+export class PlaylistService {
   private readonly logger: AppLoggerService;
 
   constructor(
     private spotifyService: SpotifyService,
     appLogger: AppLoggerService
   ) {
-    this.logger = appLogger.child(PlaylistsService.name);
+    this.logger = appLogger.child(PlaylistService.name);
   }
 
   /**

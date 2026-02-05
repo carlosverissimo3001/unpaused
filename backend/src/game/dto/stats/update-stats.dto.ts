@@ -10,9 +10,6 @@ export class UpdateStatsDto {
     @ApiProperty({ description: "The total games" })
     won: boolean;
     
-    @ApiProperty({ description: "The score of this game" })
-    score: number;
-    
-    @ApiProperty({ description: "The score distribution" })
-    scoreDistribution: number[];
+    @ApiProperty({ description: "The round distribution" })
+    roundDistribution: number[];
 }

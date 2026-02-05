@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { SpotifyService } from "./services/spotify.service";
-import { PreviewScraperService } from "../tracks/services/preview-scraper.service";
+import { PreviewScraperService } from "../track/services/preview-scraper.service";
 import { AuthModule } from "../auth/auth.module";
 import { RedisModule } from "../redis/redis.module";
 
@@ -9,4 +9,4 @@ import { RedisModule } from "../redis/redis.module";
   providers: [SpotifyService, PreviewScraperService],
   exports: [SpotifyService, PreviewScraperService],
 })
-export class SpotifyModule {}
+export class SpotifyModule { }

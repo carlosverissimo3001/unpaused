@@ -3,13 +3,10 @@ import { startOfDay } from "date-fns";
 import { PrismaService } from "@prisma/prisma.service";
 import { Prisma, GameSession, GameStatus } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/client";
-import { GuessHistoryDto } from "../dto/guess-history.dto";
+import { GuessHistoryDto } from "../dto/guess/guess-history.dto";
 import { GameSessionEntity } from "../entities/game-session.entity";
 import { mapGuessesFromPrisma } from "../utils/guess-mapper";
-import { FindGameSessionsDto } from "../dto/find-game-sessions.dto";
-
-/** Prisma transaction client (subset used for game session operations) */
-type PrismaTx = Pick<PrismaService, "gameSession">;
+import { FindGameSessionsDto } from "../dto/session/find-game-sessions.dto";
 
 @Injectable()
 export class GameSessionRepository {
@@ -18,14 +15,11 @@ export class GameSessionRepository {
   /**
    * Creates a new game session (optionally inside a transaction).
    * @param data - The game session data to create
-   * @param tx - Optional transaction client for atomic "find or create" flows
    */
   async createSession(
     data: Prisma.GameSessionCreateInput,
-    tx?: PrismaTx
   ): Promise<GameSessionEntity> {
-    const client = tx ?? this.prisma;
-    const createdSession = await client.gameSession.create({ data });
+    const createdSession = await this.prisma.gameSession.create({ data });
     return this.fromPrisma(createdSession);
   }
 
@@ -71,15 +65,10 @@ export class GameSessionRepository {
 
   /**
    * Finds today's daily game session for a user (isDaily true, createdAt >= startOfToday).
-   * @param tx - Optional transaction client for atomic "find or create" flows
    */
-  async findTodayDailySession(
-    userId: string,
-    tx?: PrismaTx
-  ): Promise<GameSessionEntity | null> {
+  async findTodayDailySession(userId: string): Promise<GameSessionEntity | null> {
     const today = startOfDay(new Date());
-    const client = tx ?? this.prisma;
-    const session = await client.gameSession.findFirst({
+    const session = await this.prisma.gameSession.findFirst({
       where: { userId, isDaily: true, createdAt: { gte: today } },
       orderBy: { createdAt: "desc" },
     });

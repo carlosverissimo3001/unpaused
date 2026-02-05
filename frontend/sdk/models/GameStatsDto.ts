@@ -44,17 +44,11 @@ export interface GameStatsDto {
      */
     totalWins: number;
     /**
-     * The total score
-     * @type {number}
-     * @memberof GameStatsDto
-     */
-    totalScore: number;
-    /**
-     * The score distribution
+     * The round distribution
      * @type {Array<number>}
      * @memberof GameStatsDto
      */
-    scoreDistribution: Array<number>;
+    roundDistribution: Array<number>;
     /**
      * The game mode
      * @type {string}
@@ -81,7 +75,7 @@ export interface GameStatsDto {
  */
 export const GameStatsDtoModeEnum = {
     Daily: 'DAILY',
-    Playlist: 'PLAYLIST'
+    All: 'ALL'
 } as const;
 export type GameStatsDtoModeEnum = typeof GameStatsDtoModeEnum[keyof typeof GameStatsDtoModeEnum];
 
@@ -94,8 +88,7 @@ export function instanceOfGameStatsDto(value: object): value is GameStatsDto {
     if (!('bestStreak' in value) || value['bestStreak'] === undefined) return false;
     if (!('totalGames' in value) || value['totalGames'] === undefined) return false;
     if (!('totalWins' in value) || value['totalWins'] === undefined) return false;
-    if (!('totalScore' in value) || value['totalScore'] === undefined) return false;
-    if (!('scoreDistribution' in value) || value['scoreDistribution'] === undefined) return false;
+    if (!('roundDistribution' in value) || value['roundDistribution'] === undefined) return false;
     if (!('mode' in value) || value['mode'] === undefined) return false;
     if (!('winRate' in value) || value['winRate'] === undefined) return false;
     if (!('averageScore' in value) || value['averageScore'] === undefined) return false;
@@ -116,8 +109,7 @@ export function GameStatsDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'bestStreak': json['bestStreak'],
         'totalGames': json['totalGames'],
         'totalWins': json['totalWins'],
-        'totalScore': json['totalScore'],
-        'scoreDistribution': json['scoreDistribution'],
+        'roundDistribution': json['roundDistribution'],
         'mode': json['mode'],
         'winRate': json['winRate'],
         'averageScore': json['averageScore'],
@@ -139,8 +131,7 @@ export function GameStatsDtoToJSONTyped(value?: GameStatsDto | null, ignoreDiscr
         'bestStreak': value['bestStreak'],
         'totalGames': value['totalGames'],
         'totalWins': value['totalWins'],
-        'totalScore': value['totalScore'],
-        'scoreDistribution': value['scoreDistribution'],
+        'roundDistribution': value['roundDistribution'],
         'mode': value['mode'],
         'winRate': value['winRate'],
         'averageScore': value['averageScore'],
