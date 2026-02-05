@@ -5,20 +5,23 @@ import { AdminDashboard } from "./AdminDashboard";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default async function AdminPage() {
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore.toString();
+  let user = null;
 
-  const res = await fetch(`${API_BASE}/auth/me`, {
-    headers: cookieHeader ? { Cookie: cookieHeader } : {},
-    cache: "no-store",
-  });
+  try {
+    const cookieStore = await cookies();
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      headers: { Cookie: cookieStore.toString() },
+      cache: "no-store",
+    });
 
-  if (!res.ok) {
-    redirect("/");
+    if (res.ok) {
+      user = await res.json();
+    }
+  } catch (error) {
+    console.error("Authentication check failed:", error);
   }
 
-  const user = await res.json();
-  if (!user?.isAdmin) {
+  if (!user || !user.isAdmin) {
     redirect("/");
   }
 
