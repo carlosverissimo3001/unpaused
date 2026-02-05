@@ -153,10 +153,13 @@ export class AuthController {
         body.refreshToken,
       );
 
+      const isProd =
+        this.configService.get<string>('NODE_ENV') === 'production';
+
       res.cookie(SESSION_COOKIE_NAME, sessionId, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: isProd,
+        sameSite: isProd ? 'none' : 'lax',
         maxAge: this.sessionMaxAge * 1000,
         path: '/',
       });
