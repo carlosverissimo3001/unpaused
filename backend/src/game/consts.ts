@@ -20,6 +20,6 @@ export const EMOJIS = [
   "🌭",
   "🍫",
   "💐",  
-  "U+1F1E8 U+1F1F1", // Chile Flag
-  "U+1F1F5 U+1F1F9", // Portugal Flag
+  "\u{1F1E8}\u{1F1F1}", // Chile Flag
+  "\u{1F1F5}\u{1F1F9}", // Portugal Flag
 ]
