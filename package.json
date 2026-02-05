@@ -1,6 +1,16 @@
 {
   "name": "unpaused",
   "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@prisma/engines",
+      "prisma",
+      "@scarf/scarf",
+      "sharp",
+      "unrs-resolver"
+    ]
+  },
   "scripts": {
     "dev": "pnpm --parallel -r dev",
     "dev:backend": "pnpm --filter backend dev",

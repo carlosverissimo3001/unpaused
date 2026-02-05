@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -27,6 +28,7 @@ export default function RootLayout({
           <QueryProvider>{children}</QueryProvider>
         </ErrorBoundary>
         <Toaster theme="dark" position="bottom-center" />
+        <Analytics />
       </body>
     </html>
   );
