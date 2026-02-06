@@ -45,6 +45,7 @@ export function useGameAudio({
   const duration = ROUND_DURATIONS[currentRound] * 1000;
   
   audio.currentTime = 0;
+  initAmplitude();
   
   audio.play().then(() => {
     setIsPlaying(true);
@@ -68,7 +69,7 @@ export function useGameAudio({
 
     snippetTimeoutRef.current = requestAnimationFrame(tick);
   });
-}, [currentRound, previewUrl, startAmplitude, stopAmplitude]);
+}, [currentRound, previewUrl, initAmplitude, startAmplitude, stopAmplitude]);
 
   const pauseSnippet = useCallback(() => {
     if (snippetTimeoutRef.current) {
