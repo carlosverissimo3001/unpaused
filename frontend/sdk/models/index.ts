@@ -1,5 +1,5 @@
 /* tslint:disable */
- 
+/* eslint-disable */
 export * from './AuthMeResponseDto';
 export * from './CreateMessageDto';
 export * from './GameHistoryDto';

@@ -11,14 +11,12 @@ interface Guess {
 interface RoundProgressBarProps {
   currentRound: number;
   guesses: Guess[];
-  isGameOver: boolean;
   totalRounds?: number;
 }
 
 export function RoundProgressBar({
   currentRound,
   guesses,
-  isGameOver,
   totalRounds = ROUND_DURATIONS.length,
 }: RoundProgressBarProps) {
   return (
@@ -27,7 +25,7 @@ export function RoundProgressBar({
         const result = guesses[index]?.result;
         const style = result != null ? getGuessResultStyle(result) : null;
         const isCompleted = index < currentRound;
-        const isCurrent = !isGameOver && index === currentRound;
+        const isCurrent = index === currentRound;
 
         return (
           <motion.div

@@ -5,18 +5,11 @@ import { ROUND_DURATIONS } from "@/consts/consts";
 import { useAudioAmplitude } from "./useAudioAmplitude";
 
 interface UseGameAudioOptions {
-  /** Preview URL for the snippet (and full song when game over) */
   previewUrl: string | null | undefined;
-  /** When true, full song can play; snippet is disabled */
   isGameOver: boolean;
-  /** Current round index (for snippet duration) */
   currentRound: number;
 }
 
-/**
- * Handles all game audio: snippet playback (ROUND_DURATIONS), full song when game over,
- * mute/toggle full song. Refs are exposed so the caller can attach <audio> elements.
- */
 export function useGameAudio({
   previewUrl,
   isGameOver,
@@ -28,77 +21,85 @@ export function useGameAudio({
   const [isFullSongPlaying, setIsFullSongPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  const snippetTimeoutRef = useRef<ReturnType<typeof setTimeout> | number | null>(null);
+  // Use a Ref to track the animation frame for high-precision stopping
+  const requestRef = useRef<number | null>(null);
+  // Track if hardware is "warmed up" (mobile specific)
+  const isWarmedUp = useRef(false);
 
   const { amplitude, init: initAmplitude, start: startAmplitude, stop: stopAmplitude } =
     useAudioAmplitude(audioRef);
 
-  const playSnippet = useCallback(() => {
-  if (!audioRef.current || !previewUrl) return;
-  
-  // Clear any previous loops safely
-  if (snippetTimeoutRef.current) {
-    cancelAnimationFrame(snippetTimeoutRef.current as any);
-  }
-  
-  const duration = ROUND_DURATIONS[currentRound] * 1000;
-  
-  audioRef.current.currentTime = 0;
-  initAmplitude();
-  
-  audioRef.current.play().then(() => {
-    setIsPlaying(true);
-    startAmplitude();
-    
-    const startTime = performance.now();
-
-    const tick = () => {
-      // Check if audio element still exists before accessing it
-      if (!audioRef.current) {
-        snippetTimeoutRef.current = null;
-        return;
-      }
-      
-      const elapsed = performance.now() - startTime;
-
-      if (elapsed >= duration) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        setIsPlaying(false);
-        stopAmplitude();
-        snippetTimeoutRef.current = null;
-      } else {
-        snippetTimeoutRef.current = requestAnimationFrame(tick);
-      }
-    };
-
-    snippetTimeoutRef.current = requestAnimationFrame(tick);
-  });
-}, [currentRound, previewUrl, initAmplitude, startAmplitude, stopAmplitude]);
-
-  const pauseSnippet = useCallback(() => {
-    if (snippetTimeoutRef.current) {
-      cancelAnimationFrame(snippetTimeoutRef.current as number);
-      snippetTimeoutRef.current = null;
+  const stopAudioInternal = useCallback(() => {
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      requestRef.current = null;
     }
+    stopAmplitude();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
     setIsPlaying(false);
-    stopAmplitude();
   }, [stopAmplitude]);
 
+  const playSnippet = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !previewUrl) return;
+
+    // 1. Mobile "Warm-up" / Playback unlock
+    // We play and immediately continue our logic to ensure the OS 
+    // doesn't suppress the short snippet.
+    if (!isWarmedUp.current) {
+      audio.play().catch(() => { });
+      isWarmedUp.current = true;
+    }
+
+    if (requestRef.current) cancelAnimationFrame(requestRef.current);
+
+    const durationMs = (ROUND_DURATIONS[currentRound] * 1000) + 100;
+
+    // Add a tiny buffer for mobile (iOS fade-in compensation)
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const adjustedDuration = isMobile ? durationMs + 60 : durationMs;
+
+    audio.currentTime = 0;
+    initAmplitude();
+
+    audio.play().then(() => {
+      startAmplitude();
+      setIsPlaying(true);
+
+      const startTime = performance.now();
+
+      const checkTime = () => {
+        const now = performance.now();
+        const elapsed = now - startTime;
+
+        if (elapsed >= adjustedDuration) {
+          stopAudioInternal();
+        } else {
+          requestRef.current = requestAnimationFrame(checkTime);
+        }
+      };
+
+      requestRef.current = requestAnimationFrame(checkTime);
+    }).catch(console.error);
+  }, [currentRound, previewUrl, initAmplitude, startAmplitude, stopAudioInternal]);
+
+  const pauseSnippet = useCallback(() => {
+    stopAudioInternal();
+  }, [stopAudioInternal]);
+
+  // Clean up on unmount
   useEffect(() => {
     return () => {
-      if (snippetTimeoutRef.current) {
-        cancelAnimationFrame(snippetTimeoutRef.current as number);
-      }
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
   }, []);
 
   const toggleFullSong = useCallback(() => {
     if (!fullAudioRef.current) return;
+
     if (fullAudioRef.current.paused) {
       fullAudioRef.current.play().then(() => setIsFullSongPlaying(true));
     } else {
@@ -115,7 +116,6 @@ export function useGameAudio({
     });
   }, []);
 
-  /** Stop full song and reset state (e.g. before Play Again) */
   const stopFullSong = useCallback(() => {
     if (fullAudioRef.current) {
       fullAudioRef.current.pause();
@@ -125,44 +125,31 @@ export function useGameAudio({
     setIsMuted(false);
   }, []);
 
-  // When game ends, stop snippet and start full song
   useEffect(() => {
-    if (!isGameOver || !previewUrl || !fullAudioRef.current || !audioRef.current) return;
-    
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-    
-    const duration = ROUND_DURATIONS[currentRound] * 1000;
+    if (!isGameOver || !previewUrl) return;
 
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().then(() => {
-      setIsPlaying(true);
-      startAmplitude();
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      requestRef.current = null;
+    }
 
-      const startTime = performance.now();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
 
-      const checkTime = () => {
-        // Check if audio element still exists before accessing it
-        if (!audioRef.current) {
-          snippetTimeoutRef.current = null;
-          return;
-        }
-        
-        const elapsed = performance.now() - startTime;
-        if (elapsed >= duration) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-          setIsPlaying(false);
-          stopAmplitude();
-          snippetTimeoutRef.current = null;
-        } else {
-          snippetTimeoutRef.current = requestAnimationFrame(checkTime);
-        }
-      };
+    // 2. Start the full song
+    const fullAudio = fullAudioRef.current;
+    if (fullAudio) {
+      fullAudio.currentTime = 0;
+      fullAudio.play()
+        .then(() => setIsFullSongPlaying(true))
+        .catch(() => { /* Autoplay block */ });
+    }
 
-      snippetTimeoutRef.current = requestAnimationFrame(checkTime);
-    });
-  }, [isGameOver, previewUrl, currentRound, startAmplitude, stopAmplitude]);
+    setTimeout(() => setIsPlaying(false), 0);
+
+  }, [isGameOver, previewUrl]);
 
   return {
     audioRef,

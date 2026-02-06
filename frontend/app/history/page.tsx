@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/auth/useMe";
 import { useGameStats } from "../../hooks/game/useGameStats";
 import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 
 function HistoryPageContent() {
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -67,7 +68,7 @@ function HistoryPageContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-spotify-green" />
+        <LoadingSpinner size="md" />
       </div>
     );
   }
@@ -156,7 +157,7 @@ export default function HistoryPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-spotify-green" />
+          <LoadingSpinner size="md" />
         </div>
       }
     >

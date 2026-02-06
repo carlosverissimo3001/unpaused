@@ -38,7 +38,7 @@ function PlaylistGridComponent({
         exit="exit"
         className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-4"
       >
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 8 }).map((_, i) => (
           <PlaylistSkeleton key={`skeleton-${i}`} />
         ))}
       </motion.div>

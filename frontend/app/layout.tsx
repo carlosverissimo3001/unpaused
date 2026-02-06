@@ -13,7 +13,28 @@ const quicksand = Quicksand({
 
 export const metadata: Metadata = {
   title: "Unpaused - Music Guessing Game",
-  description: "Test your music knowledge with Unpaused",
+  description: "Test your music knowledge with Unpaused. Guess the song from a snippet of your favorite playlists!",
+  keywords: ["music", "game", "spotify", "guessing game", "music quiz", "unpaused"],
+  authors: [{ name: "Unpaused" }],
+  creator: "Unpaused",
+  publisher: "Unpaused",
+  applicationName: "Unpaused",
+  appleWebApp: {
+    capable: true,
+    title: "Unpaused",
+    statusBarStyle: "black-translucent",
+  },
+  openGraph: {
+    type: "website",
+    title: "Unpaused - Music Guessing Game",
+    description: "Test your music knowledge! Guess the song from a snippet of your favorite playlists.",
+    siteName: "Unpaused",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Unpaused - Music Guessing Game",
+    description: "Test your music knowledge! Guess the song from a snippet of your favorite playlists.",
+  },
 };
 
 export const viewport = {

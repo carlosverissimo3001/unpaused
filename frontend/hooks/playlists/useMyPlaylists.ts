@@ -8,7 +8,7 @@ import type { PlaylistsResponseDto } from "@/sdk";
 interface UseMyPlaylistsParams {
   limit?: number;
   offset?: number;
-  includePrivate?: boolean;
+  onlyPublic?: boolean;
   onlyUserOwned?: boolean;
 }
 

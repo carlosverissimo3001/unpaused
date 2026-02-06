@@ -1099,7 +1099,7 @@ No authorization required
 
 ## playlistControllerGetMyPlaylists
 
-> PlaylistsResponseDto playlistControllerGetMyPlaylists(limit, offset, includePrivate, onlyUserOwned)
+> PlaylistsResponseDto playlistControllerGetMyPlaylists(limit, offset, onlyPublic, onlyUserOwned)
 
 Get current user\&#39;s playlists
 
@@ -1125,10 +1125,10 @@ async function example() {
     limit: 20,
     // number (optional)
     offset: 0,
-    // boolean (optional)
-    includePrivate: false,
-    // boolean (optional)
-    onlyUserOwned: false,
+    // boolean | Include only public playlists (optional)
+    onlyPublic: true,
+    // boolean | Include only playlists owned by the user (optional)
+    onlyUserOwned: true,
   } satisfies PlaylistControllerGetMyPlaylistsRequest;
 
   try {
@@ -1150,8 +1150,8 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **limit** | `number` |  | [Optional] [Defaults to `undefined`] |
 | **offset** | `number` |  | [Optional] [Defaults to `undefined`] |
-| **includePrivate** | `boolean` |  | [Optional] [Defaults to `false`] |
-| **onlyUserOwned** | `boolean` |  | [Optional] [Defaults to `false`] |
+| **onlyPublic** | `boolean` | Include only public playlists | [Optional] [Defaults to `undefined`] |
+| **onlyUserOwned** | `boolean` | Include only playlists owned by the user | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

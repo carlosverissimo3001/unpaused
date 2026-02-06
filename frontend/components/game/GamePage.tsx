@@ -6,6 +6,7 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useGameOrchestrator } from "@/hooks/game/useGameOrchestrator";
 import { useAlbumArtColor } from "@/hooks/misc/useAlbumArtColor";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { RoundProgressBar } from "./RoundProgressBar";
 import { PlaySnippetButton } from "./PlaySnippetButton";
 import { SongRevealCard } from "./SongRevealCard";
@@ -48,14 +49,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
   } = useGameOrchestrator(mode, playlistId);
 
   // Destructure gameAudio to avoid ref access warnings
-  const {
-    audioRef,
-    fullAudioRef,
-    isPlaying,
-    amplitude,
-    playSnippet,
-    pauseSnippet,
-  } = gameAudio;
+  const { audioRef, fullAudioRef, isPlaying, amplitude, playSnippet, pauseSnippet } = gameAudio;
 
   const albumArtColor = useAlbumArtColor(
     isGameOver && gameState?.answer?.albumImageUrl ? gameState.answer.albumImageUrl : null
@@ -67,11 +61,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
         className="h-screen h-[100dvh] flex items-center justify-center"
         style={{ background: "#121212" }}
       >
-        <motion.div
-          className="rounded-full h-14 w-14 border-2 border-[#1DB954] border-t-transparent"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-        />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -98,7 +88,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
   if (!gameState) {
     return null;
   }
-
 
   return (
     <div className="min-h-screen min-h-[100dvh] overflow-y-auto" style={{ background: "#121212" }}>
@@ -133,23 +122,30 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
         <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-3 sm:gap-0">
           <GameHeader mode={mode} playlist={playlist ?? null} stats={stats ?? null} />
 
-          <GameTitle mode={mode} currentRound={gameState.currentRound} isGameOver={!!isGameOver} />
-
-          <audio ref={audioRef} src={gameState.previewUrl ?? undefined} preload="auto" crossOrigin="anonymous" />
-          {isGameOver && gameState.previewUrl && (
-            <audio
-              ref={fullAudioRef}
-              src={gameState.previewUrl}
-              preload="auto"
-              loop={false}
+          {!isGameOver && (
+            <GameTitle
+              mode={mode}
+              currentRound={gameState.currentRound}
             />
           )}
 
-          <RoundProgressBar
-            currentRound={gameState.currentRound}
-            guesses={gameState.guesses}
-            isGameOver={!!isGameOver}
+          <audio
+            ref={audioRef}
+            src={gameState.previewUrl ?? undefined}
+            preload="auto"
+            crossOrigin="anonymous"
           />
+          {isGameOver && gameState.previewUrl && (
+            <audio ref={fullAudioRef} src={gameState.previewUrl} preload="auto" loop={false} />
+          )}
+
+          {!isGameOver && (
+            <RoundProgressBar
+              currentRound={gameState.currentRound}
+              guesses={gameState.guesses}
+            />
+          )}
+
 
           {!isGameOver && (
             <PlaySnippetButton
@@ -185,7 +181,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                   playlistExternalUrl={isPlaylist && playlist ? playlist.externalUrl : null}
                   playlistName={isPlaylist && playlist ? playlist.name : null}
                   playlistTotalTracks={isPlaylist && playlist ? playlist.totalTracks : null}
-                  playlistImageUrl={isPlaylist && playlist ? playlist.imageUrl ?? null : null}
+                  playlistImageUrl={isPlaylist && playlist ? (playlist.imageUrl ?? null) : null}
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   isMuted={gameAudio.isMuted}
                   onToggleFullSong={gameAudio.toggleFullSong}

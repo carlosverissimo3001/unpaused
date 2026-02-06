@@ -20,13 +20,15 @@ export class GetPlaylistsDto {
   @Transform(({ value }) => Number(value))
   offset?: number;
 
-  @ApiPropertyOptional({ example: false, default: false })
+  @ApiPropertyOptional({ description: 'Include only public playlists' })
   @IsNotNullableOptional()
   @IsBoolean()
-  @Transform(({ obj }) => toBoolean(obj.includePrivate))
-  includePrivate?: boolean = false;
+  @Transform(({ obj }) => toBoolean(obj.onlyPublic))
+  onlyPublic?: boolean = false;
 
-  @ApiPropertyOptional({ example: false, default: false })
+  @ApiPropertyOptional({
+    description: 'Include only playlists owned by the user',
+  })
   @IsNotNullableOptional()
   @IsBoolean()
   @Transform(({ obj }) => toBoolean(obj.onlyUserOwned))

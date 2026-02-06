@@ -3,9 +3,9 @@
 import { memo } from "react";
 
 interface PlaylistFiltersProps {
-  includePrivate: boolean;
+  onlyPublic: boolean;
   onlyUserOwned: boolean;
-  onIncludePrivateChange: (value: boolean) => void;
+  onOnlyPublicChange: (value: boolean) => void;
   onOnlyUserOwnedChange: (value: boolean) => void;
   onClearFilters: () => void;
 }
@@ -18,9 +18,7 @@ const FilterPill = ({ active, onClick, label }: { active: boolean, onClick: () =
       px-4 py-1.5 sm:px-5 sm:py-2 
       rounded-full border text-[10px] sm:text-xs font-black
       uppercase tracking-wider transition-all duration-500
-      
       active:scale-90
-      
       ${
         active 
           ? "bg-spotify-green border-white/20 text-black shadow-[0_10px_20px_-10px_rgba(30,215,96,0.5)] scale-105" 
@@ -31,9 +29,7 @@ const FilterPill = ({ active, onClick, label }: { active: boolean, onClick: () =
     {active && (
       <span className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
     )}
-
     <span className="relative z-10">{label}</span>
-
     {active && (
       <span className="absolute inset-0 rounded-full bg-spotify-green blur-md opacity-40 animate-pulse" />
     )}
@@ -41,18 +37,18 @@ const FilterPill = ({ active, onClick, label }: { active: boolean, onClick: () =
 );
 
 function PlaylistFiltersComponent({
-  includePrivate,
+  onlyPublic,
   onlyUserOwned,
-  onIncludePrivateChange,
+  onOnlyPublicChange,
   onOnlyUserOwnedChange,
 }: PlaylistFiltersProps) {
   return (
 
     <div className="flex gap-1.5 sm:gap-3">
       <FilterPill 
-        active={includePrivate} 
-        onClick={() => onIncludePrivateChange(!includePrivate)}
-        label="Private"
+        active={onlyPublic} 
+        onClick={() => onOnlyPublicChange(!onlyPublic)}
+        label="Public"
       />
       <FilterPill 
         active={onlyUserOwned} 

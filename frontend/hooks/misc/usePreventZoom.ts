@@ -4,29 +4,28 @@ import { useEffect } from "react";
 
 export function PreventZoom() {
   useEffect(() => {
-    // Pinch-to-zoom prevention
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length > 1) {
         e.preventDefault();
       }
     };
 
-    // Prevent Double-tap to zoom
-    let lastTouchTime = 0;
-    const handleTouchEnd = (e: TouchEvent) => {
-      const now = Date.now();
-      if (now - lastTouchTime <= 300) {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
         e.preventDefault();
       }
-      lastTouchTime = now;
     };
 
     document.addEventListener("touchstart", handleTouchStart, { passive: false });
-    document.addEventListener("touchend", handleTouchEnd, { passive: false });
+    document.addEventListener("wheel", handleWheel, { passive: false });
+    
+    const handleGesture = (e: any) => e.preventDefault();
+    document.addEventListener("gesturestart", handleGesture, { passive: false });
 
     return () => {
       document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchend", handleTouchEnd);
+      document.removeEventListener("wheel", handleWheel);
+      document.removeEventListener("gesturestart", handleGesture);
     };
   }, []);
 

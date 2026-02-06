@@ -47,7 +47,7 @@ export class PlaylistService {
       sessionId,
       limit = 20,
       offset = 0,
-      includePrivate = false,
+      onlyPublic = false,
       onlyUserOwned = false,
     } = params;
 
@@ -60,7 +60,7 @@ export class PlaylistService {
     );
     const saved = applyFilters(
       response.items,
-      { includePrivate, onlyUserOwned },
+      { onlyPublic, onlyUserOwned },
       session,
     );
     const savedMapped = saved.map((p) => mapPlaylistLite(p as Playlist<Track>));
@@ -159,46 +159,5 @@ export class PlaylistService {
           !!item.track,
       )
       .map((item) => mapTrack(item.track));
-  }
-
-  /**
-   * Get tracks from multiple playlists (first batch of each). Used by daily game for pool/options.
-   * When playlistIds is empty, uses first page of user's playlists.
-   */
-  async getTracksFromPlaylistIds(
-    sessionId: string,
-    playlistIds: string[],
-  ): Promise<TrackDto[]> {
-    let ids = playlistIds;
-    if (ids.length === 0) {
-      const { items } = await this.getMyPlaylists({
-        sessionId,
-        limit: 20,
-        offset: 0,
-        includePrivate: true,
-        onlyUserOwned: false,
-      });
-      ids = items.map((p) => p.id);
-    }
-    const all: TrackDto[] = [];
-    const seen = new Set<string>();
-    for (const id of ids) {
-      try {
-        const tracks = id.endsWith(LIKED_SONGS_ID_SUFFIX)
-          ? await this.getLikedSongsFirstTracks(sessionId)
-          : await this.getPlaylistFirstTracks(sessionId, id);
-        for (const t of tracks) {
-          if (t.id && !seen.has(t.id)) {
-            seen.add(t.id);
-            all.push(t);
-          }
-        }
-      } catch (err) {
-        this.logger.warn(
-          `getTracksFromPlaylistIds: skip playlist ${id}: ${(err as Error).message}`,
-        );
-      }
-    }
-    return all;
   }
 }

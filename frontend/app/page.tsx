@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Disc3 } from "lucide-react";
 import { useMe } from "@/hooks/auth/useMe";
 import { useMyPlaylists } from "@/hooks/playlists/useMyPlaylists";
 import { useLogout } from "@/hooks/auth/useLogout";
@@ -18,6 +17,7 @@ import { PlaylistFilters } from "@/components/features/playlist/PlaylistFilters"
 import { PlaylistGrid } from "@/components/features/playlist/PlaylistGrid";
 import { UnauthenticatedView } from "@/components/features/UnauthenticatedView";
 import { AppFooter } from "@/components/features/AppFooter";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export default function Home() {
   const [tokenInput, setTokenInput] = useState("");
@@ -31,7 +31,7 @@ export default function Home() {
   // Data fetching hooks
   const { data: user, isLoading: isLoadingUser } = useMe();
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } = useMyPlaylists({
-    includePrivate: playlistFilters.includePrivate,
+    onlyPublic: playlistFilters.onlyPublic,
     onlyUserOwned: playlistFilters.onlyUserOwned,
   });
   const logoutMutation = useLogout();
@@ -52,7 +52,7 @@ export default function Home() {
   if (isLoadingUser) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-spotify-black">
-        <Disc3 className="w-12 h-12 text-spotify-green animate-spin" />
+        <LoadingSpinner size="md" />
       </main>
     );
   }
@@ -119,9 +119,9 @@ export default function Home() {
                   <div className="flex items-center min-w-0 overflow-x-auto no-scrollbar -mr-4 pr-4">
                     <div className="flex items-center gap-2 py-1">
                       <PlaylistFilters
-                        includePrivate={playlistFilters.includePrivate}
+                        onlyPublic={playlistFilters.onlyPublic}
                         onlyUserOwned={playlistFilters.onlyUserOwned}
-                        onIncludePrivateChange={playlistFilters.setIncludePrivate}
+                        onOnlyPublicChange={playlistFilters.setOnlyPublic}
                         onOnlyUserOwnedChange={playlistFilters.setOnlyUserOwned}
                         onClearFilters={playlistFilters.clearFilters}
                       />

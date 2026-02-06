@@ -7,18 +7,18 @@ import { useState, useCallback } from "react";
  * Encapsulates includePrivate and onlyUserOwned filter logic
  */
 export function usePlaylistFilters() {
-  const [includePrivate, setIncludePrivate] = useState(false);
+  const [onlyPublic, setOnlyPublic] = useState(false);
   const [onlyUserOwned, setOnlyUserOwned] = useState(false);
 
   const clearFilters = useCallback(() => {
-    setIncludePrivate(false);
+    setOnlyPublic(false);
     setOnlyUserOwned(true);
   }, []);
 
   return {
-    includePrivate,
+    onlyPublic,
     onlyUserOwned,
-    setIncludePrivate,
+    setOnlyPublic,
     setOnlyUserOwned,
     clearFilters,
   };

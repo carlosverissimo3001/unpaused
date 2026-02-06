@@ -18,6 +18,7 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
   const imageUrl = playlist.imageUrl;
   const [isHovered, setIsHovered] = useState(false);
   const ambientColor = usePlaylistColor(imageUrl);
+  const isLikedSongs = playlist.id.endsWith('liked-songs');
 
   const glowColor = ambientColor.replace('0.15', '0.1').replace('0.1', '0.08');
 
@@ -77,10 +78,12 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
                 <span>{playlist.totalTracks} tracks</span>
               </div>
               
-              <div className="flex items-center gap-1.5">
-                {playlist.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                <span>{playlist.isPublic ? "Public" : "Private"}</span>
-              </div>
+              {!isLikedSongs && (
+                <div className="flex items-center gap-1.5">
+                  {playlist.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                  <span>{playlist.isPublic ? "Public" : "Private"}</span>
+                </div>
+                )}
             </div>
           </div>
         </div>

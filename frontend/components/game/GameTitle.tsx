@@ -8,10 +8,9 @@ import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 interface GameTitleProps {
   mode: GameMode;
   currentRound: number;
-  isGameOver: boolean;
 }
 
-export function GameTitle({ mode, currentRound, isGameOver }: GameTitleProps) {
+export function GameTitle({ mode, currentRound }: GameTitleProps) {
   if (mode === GameMode.All) {
     return (
       <div className="text-center mb-6 md:mb-8">
@@ -25,7 +24,7 @@ export function GameTitle({ mode, currentRound, isGameOver }: GameTitleProps) {
           Guess the Song
         </h1>
         <p className="text-[#b3b3b3] text-sm md:text-base font-medium">
-          Round {Math.min(isGameOver ? currentRound : currentRound + 1, ROUND_DURATIONS.length)} of{" "}
+          Round {Math.min(currentRound + 1, ROUND_DURATIONS.length)} of{" "}
           {ROUND_DURATIONS.length}
         </p>
       </div>

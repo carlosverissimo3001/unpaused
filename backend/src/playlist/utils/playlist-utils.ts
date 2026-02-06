@@ -35,7 +35,7 @@ export function applyFilters(
   session: UserSessionDto,
 ): SimplifiedPlaylist[] {
   return playlists.filter((p) => {
-    if (!filters.includePrivate && !p.public) {
+    if (filters.onlyPublic && !p.public) {
       return false;
     }
     if (filters.onlyUserOwned) {

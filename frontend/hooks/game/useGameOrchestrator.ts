@@ -34,8 +34,6 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   const spotifySearch = useSpotifyTrackSearch();
   const { data: stats } = useGameStats( {mode, useCached: false} );
 
-  console.log(stats);
-
   const isGameOver = gameState?.status !== GameStateDtoStatusEnum.Playing;
   const gameAudio = useGameAudio({
     previewUrl: gameState?.previewUrl,
@@ -98,7 +96,9 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
       queryClient.removeQueries({ queryKey: queryKeys.game.state(gameState.sessionId) });
     }
     startGameMutation.reset();
-    if (playlistId) startGameMutation.mutate({ playlistId });
+    if (playlistId) {
+      startGameMutation.mutate({ playlistId });
+    }
   }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
 
   const shouldShake = lastGuessResult === GuessHistoryDtoResultEnum.Wrong;

@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, Flame, Trophy, Target, BarChart3 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useGameStats } from "@/hooks/game/useGameStats";
 import { usePlayedToday } from "@/hooks/game/usePlayedToday";
 import { AnimatedCounter } from "@/components/daily/AnimatedCounter";
 import { ScoreDistributionChart } from "@/components/daily/ScoreDistributionChart";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { GameStatsDtoModeEnum as GameMode } from "@/sdk";
 
 const SPRING = { type: "spring" as const, stiffness: 120, damping: 18 };
@@ -47,11 +47,7 @@ export default function DailyStatsPage() {
         className="min-h-screen flex items-center justify-center"
         style={{ background: "#121212" }}
       >
-        <motion.div
-          className="rounded-full h-12 w-12 border-2 border-[#1DB954] border-t-transparent"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-        />
+        <LoadingSpinner size="md" />
       </div>
     );
   }

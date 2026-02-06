@@ -225,32 +225,11 @@ export class GameService {
     return mapToGameStateDto(game, track, extras);
   }
 
-  /**
-   * Submit a guess. Runs writes in a transaction
-   */
+  @Transactional()
   async submitGuess(
     gameSessionId: string,
     params: GuessDto,
   ): Promise<GuessResultDto> {
-    const { base, isTrusted, gameOver, isWin } = await this.submitGuessTx(
-      gameSessionId,
-      params,
-    );
-    const extras =
-      isTrusted != null ? this.getUserExtras(isTrusted, gameOver, isWin) : {};
-    return { ...base, ...extras };
-  }
-
-  @Transactional()
-  private async submitGuessTx(
-    gameSessionId: string,
-    params: GuessDto,
-  ): Promise<{
-    base: GuessResultDto;
-    isTrusted: boolean | null;
-    gameOver: boolean;
-    isWin: boolean;
-  }> {
     const game = await this.validateGameSession(gameSessionId);
     if (!game.userId) {
       throw new NotFoundException('Game session not found');
@@ -288,18 +267,12 @@ export class GameService {
       completedAt: gameOver ? new Date() : undefined,
     });
 
-    const base: GuessResultDto = {
+    return {
       result,
       gameOver,
       status,
       currentRound: nextRound,
       snippetDuration: ROUND_DURATIONS[Math.min(nextRound, MAX_ROUNDS - 1)],
-    };
-    return {
-      base,
-      isTrusted: game.userId != null ? user.isTrusted : null,
-      gameOver,
-      isWin: status === GameStatus.WON,
     };
   }
 
