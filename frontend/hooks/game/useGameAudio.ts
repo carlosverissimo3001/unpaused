@@ -28,40 +28,59 @@ export function useGameAudio({
   const [isFullSongPlaying, setIsFullSongPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  const snippetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const snippetTimeoutRef = useRef<ReturnType<typeof setTimeout> | number | null>(null);
 
   const { amplitude, init: initAmplitude, start: startAmplitude, stop: stopAmplitude } =
     useAudioAmplitude(audioRef);
 
   const playSnippet = useCallback(() => {
-    if (!audioRef.current || !previewUrl) return;
-    if (snippetTimeoutRef.current) clearTimeout(snippetTimeoutRef.current);
-    const duration = ROUND_DURATIONS[currentRound] * 1000;
-    audioRef.current.currentTime = 0;
-    initAmplitude();
-    audioRef.current.play();
-    startAmplitude();
+  if (!audioRef.current || !previewUrl) return;
+  
+  // Clear any previous loops safely
+  if (snippetTimeoutRef.current) {
+    cancelAnimationFrame(snippetTimeoutRef.current as any);
+  }
+  
+  const audio = audioRef.current;
+  const duration = ROUND_DURATIONS[currentRound] * 1000;
+  
+  audio.currentTime = 0;
+  
+  audio.play().then(() => {
     setIsPlaying(true);
-    snippetTimeoutRef.current = setTimeout(() => {
-      snippetTimeoutRef.current = null;
-      stopAmplitude();
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+    startAmplitude();
+    
+    const startTime = performance.now();
+
+    const tick = () => {
+      const elapsed = performance.now() - startTime;
+
+      if (elapsed >= duration) {
+        audio.pause();
+        audio.currentTime = 0;
+        setIsPlaying(false);
+        stopAmplitude();
+        snippetTimeoutRef.current = null;
+      } else {
+        snippetTimeoutRef.current = requestAnimationFrame(tick);
       }
-      setIsPlaying(false);
-    }, duration);
-  }, [currentRound, previewUrl, initAmplitude, startAmplitude, stopAmplitude]);
+    };
+
+    snippetTimeoutRef.current = requestAnimationFrame(tick);
+  });
+}, [currentRound, previewUrl, startAmplitude, stopAmplitude]);
 
   const pauseSnippet = useCallback(() => {
-    if (snippetTimeoutRef.current) clearTimeout(snippetTimeoutRef.current);
-    snippetTimeoutRef.current = null;
-    stopAmplitude();
+    if (snippetTimeoutRef.current) {
+      cancelAnimationFrame(snippetTimeoutRef.current as number);
+      snippetTimeoutRef.current = null;
+    }
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
     setIsPlaying(false);
+    stopAmplitude();
   }, [stopAmplitude]);
 
   useEffect(() => {
@@ -105,10 +124,29 @@ export function useGameAudio({
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-    const audio = fullAudioRef.current;
+    const audio = audioRef.current;
+    const duration = ROUND_DURATIONS[currentRound] * 1000;
+
     audio.currentTime = 0;
-    audio.play().then(() => setIsFullSongPlaying(true)).catch(() => {
-      // Browser may block autoplay — user can click play manually
+    audio.play().then(() => {
+      setIsPlaying(true);
+      startAmplitude();
+
+      const startTime = performance.now();
+
+      const checkTime = () => {
+        const elapsed = performance.now() - startTime;
+        if (elapsed >= duration) {
+          audio.pause();
+          audio.currentTime = 0;
+          setIsPlaying(false);
+          stopAmplitude();
+        } else {
+          snippetTimeoutRef.current = requestAnimationFrame(checkTime);
+        }
+      };
+
+      snippetTimeoutRef.current = requestAnimationFrame(checkTime);
     });
   }, [isGameOver, previewUrl]);
 

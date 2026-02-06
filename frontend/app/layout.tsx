@@ -14,13 +14,14 @@ const quicksand = Quicksand({
 export const metadata: Metadata = {
   title: "Unpaused - Music Guessing Game",
   description: "Test your music knowledge with Unpaused",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
