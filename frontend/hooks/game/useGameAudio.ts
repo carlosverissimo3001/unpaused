@@ -41,24 +41,29 @@ export function useGameAudio({
     cancelAnimationFrame(snippetTimeoutRef.current as any);
   }
   
-  const audio = audioRef.current;
   const duration = ROUND_DURATIONS[currentRound] * 1000;
   
-  audio.currentTime = 0;
+  audioRef.current.currentTime = 0;
   initAmplitude();
   
-  audio.play().then(() => {
+  audioRef.current.play().then(() => {
     setIsPlaying(true);
     startAmplitude();
     
     const startTime = performance.now();
 
     const tick = () => {
+      // Check if audio element still exists before accessing it
+      if (!audioRef.current) {
+        snippetTimeoutRef.current = null;
+        return;
+      }
+      
       const elapsed = performance.now() - startTime;
 
       if (elapsed >= duration) {
-        audio.pause();
-        audio.currentTime = 0;
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
         setIsPlaying(false);
         stopAmplitude();
         snippetTimeoutRef.current = null;
@@ -86,7 +91,9 @@ export function useGameAudio({
 
   useEffect(() => {
     return () => {
-      if (snippetTimeoutRef.current) clearTimeout(snippetTimeoutRef.current);
+      if (snippetTimeoutRef.current) {
+        cancelAnimationFrame(snippetTimeoutRef.current as number);
+      }
     };
   }, []);
 
@@ -120,28 +127,34 @@ export function useGameAudio({
 
   // When game ends, stop snippet and start full song
   useEffect(() => {
-    if (!isGameOver || !previewUrl || !fullAudioRef.current) return;
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    const audio = audioRef.current;
+    if (!isGameOver || !previewUrl || !fullAudioRef.current || !audioRef.current) return;
+    
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    
     const duration = ROUND_DURATIONS[currentRound] * 1000;
 
-    audio.currentTime = 0;
-    audio.play().then(() => {
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().then(() => {
       setIsPlaying(true);
       startAmplitude();
 
       const startTime = performance.now();
 
       const checkTime = () => {
+        // Check if audio element still exists before accessing it
+        if (!audioRef.current) {
+          snippetTimeoutRef.current = null;
+          return;
+        }
+        
         const elapsed = performance.now() - startTime;
         if (elapsed >= duration) {
-          audio.pause();
-          audio.currentTime = 0;
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
           setIsPlaying(false);
           stopAmplitude();
+          snippetTimeoutRef.current = null;
         } else {
           snippetTimeoutRef.current = requestAnimationFrame(checkTime);
         }
@@ -149,7 +162,7 @@ export function useGameAudio({
 
       snippetTimeoutRef.current = requestAnimationFrame(checkTime);
     });
-  }, [isGameOver, previewUrl]);
+  }, [isGameOver, previewUrl, currentRound, startAmplitude, stopAmplitude]);
 
   return {
     audioRef,
