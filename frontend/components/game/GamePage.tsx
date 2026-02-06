@@ -101,7 +101,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
 
 
   return (
-    <div className="h-screen h-[100dvh] overflow-hidden" style={{ background: "#121212" }}>
+    <div className="min-h-screen min-h-[100dvh] overflow-y-auto" style={{ background: "#121212" }}>
       <motion.div
         className="fixed inset-0 -z-10 pointer-events-none"
         animate={{
@@ -128,7 +128,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
       <motion.div
         variants={SHAKE_VARIANTS}
         animate={shouldShake ? "shake" : ""}
-        className="p-3 sm:p-6 md:p-8 lg:p-10 relative z-10 flex flex-col h-screen h-[100dvh] safe-area-inset"
+        className="p-3 sm:p-6 md:p-8 lg:p-10 relative z-10 flex flex-col min-h-screen min-h-[100dvh] safe-area-inset"
       >
         <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-3 sm:gap-0">
           <GameHeader mode={mode} playlist={playlist ?? null} stats={stats ?? null} />
