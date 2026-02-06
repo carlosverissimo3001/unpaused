@@ -3,12 +3,9 @@
   "paths": {
     "/auth/login": {
       "get": {
-        "operationId": "login",
+        "operationId": "AuthController_login",
         "parameters": [],
         "responses": {
-          "200": {
-            "description": ""
-          },
           "302": {
             "description": "Redirects to Spotify authorization"
           }
@@ -21,7 +18,7 @@
     },
     "/auth/callback": {
       "get": {
-        "operationId": "callback",
+        "operationId": "AuthController_callback",
         "parameters": [
           {
             "name": "code",
@@ -49,9 +46,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": ""
-          },
           "302": {
             "description": "Redirects to frontend after auth"
           }
@@ -64,7 +58,7 @@
     },
     "/auth/me": {
       "get": {
-        "operationId": "me",
+        "operationId": "AuthController_me",
         "parameters": [],
         "responses": {
           "200": {
@@ -94,7 +88,7 @@
     },
     "/auth/logout": {
       "post": {
-        "operationId": "logout",
+        "operationId": "AuthController_logout",
         "parameters": [],
         "responses": {
           "200": {
@@ -115,7 +109,7 @@
     "/auth/token-login": {
       "post": {
         "description": "Use this when you have a Spotify access token but can't use OAuth flow. The token is validated by fetching your Spotify profile.",
-        "operationId": "tokenLogin",
+        "operationId": "AuthController_tokenLogin",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -130,9 +124,6 @@
         "responses": {
           "200": {
             "description": "Successfully logged in"
-          },
-          "201": {
-            "description": ""
           },
           "401": {
             "description": "Invalid token"
@@ -149,7 +140,7 @@
     },
     "/playlists/me": {
       "get": {
-        "operationId": "getMyPlaylists",
+        "operationId": "PlaylistController_getMyPlaylists",
         "parameters": [
           {
             "name": "limit",
@@ -170,12 +161,11 @@
             }
           },
           {
-            "name": "includePrivate",
+            "name": "onlyPublic",
             "required": false,
             "in": "query",
+            "description": "Include only public playlists",
             "schema": {
-              "default": false,
-              "example": false,
               "type": "boolean"
             }
           },
@@ -183,9 +173,8 @@
             "name": "onlyUserOwned",
             "required": false,
             "in": "query",
+            "description": "Include only playlists owned by the user",
             "schema": {
-              "default": false,
-              "example": false,
               "type": "boolean"
             }
           }
@@ -218,7 +207,7 @@
     },
     "/playlists/{id}": {
       "get": {
-        "operationId": "getPlaylistById",
+        "operationId": "PlaylistController_getPlaylistById",
         "parameters": [
           {
             "name": "id",
@@ -260,7 +249,7 @@
     },
     "/game/start": {
       "post": {
-        "operationId": "startGame",
+        "operationId": "GameController_startGame",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -297,7 +286,7 @@
     },
     "/game/history": {
       "get": {
-        "operationId": "getHistory",
+        "operationId": "GameController_getHistory",
         "parameters": [
           {
             "name": "isDaily",
@@ -314,8 +303,6 @@
             "in": "query",
             "description": "The limit of the history",
             "schema": {
-              "minimum": 1,
-              "maximum": 100,
               "type": "number"
             }
           },
@@ -325,7 +312,6 @@
             "in": "query",
             "description": "The offset of the history",
             "schema": {
-              "minimum": 0,
               "type": "number"
             }
           }
@@ -355,7 +341,7 @@
     },
     "/game/stats": {
       "get": {
-        "operationId": "getStats",
+        "operationId": "GameController_getStats",
         "parameters": [
           {
             "name": "mode",
@@ -396,7 +382,7 @@
     },
     "/game/daily/played-today": {
       "get": {
-        "operationId": "getPlayedToday",
+        "operationId": "GameController_getPlayedToday",
         "parameters": [],
         "responses": {
           "200": {
@@ -423,7 +409,7 @@
     },
     "/game/share/{id}": {
       "get": {
-        "operationId": "getShare",
+        "operationId": "GameController_getShare",
         "parameters": [
           {
             "name": "id",
@@ -460,7 +446,7 @@
     },
     "/game/{id}": {
       "get": {
-        "operationId": "getGameState",
+        "operationId": "GameController_getGameState",
         "parameters": [
           {
             "name": "id",
@@ -497,7 +483,7 @@
     },
     "/game/{id}/guess": {
       "post": {
-        "operationId": "submitGuess",
+        "operationId": "GameController_submitGuess",
         "parameters": [
           {
             "name": "id",
@@ -529,16 +515,6 @@
                 }
               }
             }
-          },
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuessResultDto"
-                }
-              }
-            }
           }
         },
         "summary": "Submit a guess for a specific session",
@@ -549,7 +525,7 @@
     },
     "/search/tracks": {
       "get": {
-        "operationId": "searchTracks",
+        "operationId": "SearchController_searchTracks",
         "parameters": [
           {
             "name": "q",
@@ -591,7 +567,7 @@
     },
     "/admin/messages": {
       "get": {
-        "operationId": "getAllMessages",
+        "operationId": "AdminController_getAllMessages",
         "parameters": [],
         "responses": {
           "200": {
@@ -619,7 +595,7 @@
         ]
       },
       "post": {
-        "operationId": "createMessage",
+        "operationId": "AdminController_createMessage",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -656,7 +632,7 @@
     },
     "/admin/messages/{id}": {
       "patch": {
-        "operationId": "updateMessage",
+        "operationId": "AdminController_updateMessage",
         "parameters": [
           {
             "name": "id",
@@ -700,7 +676,7 @@
         ]
       },
       "delete": {
-        "operationId": "deleteMessage",
+        "operationId": "AdminController_deleteMessage",
         "parameters": [
           {
             "name": "id",
@@ -712,9 +688,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": ""
-          },
           "204": {
             "description": ""
           }
@@ -733,7 +706,7 @@
   },
   "info": {
     "title": "Unpaused Spotify API",
-    "description": "The backend for the Spotify guessing game",
+    "description": "",
     "version": "1.0",
     "contact": {}
   },
@@ -897,6 +870,8 @@
             "description": "The artist of the track"
           },
           "result": {
+            "type": "string",
+            "description": "The result of the guess",
             "enum": [
               "CORRECT",
               "ARTIST",
@@ -904,9 +879,7 @@
               "WRONG",
               "SKIP",
               "ARTIST_AND_ALBUM"
-            ],
-            "type": "string",
-            "description": "The result of the guess"
+            ]
           }
         },
         "required": [
@@ -1251,7 +1224,6 @@
           },
           "skip": {
             "type": "boolean",
-            "default": false,
             "description": "Whether the current guess is a skip"
           },
           "trackName": {
@@ -1272,6 +1244,7 @@
         "type": "object",
         "properties": {
           "result": {
+            "type": "string",
             "enum": [
               "CORRECT",
               "ARTIST",
@@ -1280,7 +1253,6 @@
               "SKIP",
               "ARTIST_AND_ALBUM"
             ],
-            "type": "string",
             "description": "The result of the guess"
           },
           "gameOver": {

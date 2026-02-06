@@ -78,7 +78,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
           </p>
           <Link href="/" className="inline-flex items-center gap-2 text-[#1DB954] hover:underline">
             <ArrowLeft className="w-4 h-4" />
-            Back to home
+            Back
           </Link>
         </div>
       </div>
@@ -157,7 +157,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             />
           )}
 
-          {/* Shared layout for seamless GuessInput ↔ SongRevealCard transition */}
           <AnimatePresence mode="wait">
             {isGameOver ? (
               <motion.div
@@ -210,20 +209,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               </motion.div>
             )}
           </AnimatePresence>
-
-          {isPlaylist && isGameOver && (
-            <div className="flex gap-4 justify-center mt-6">
-              <motion.button
-                type="button"
-                onClick={() => router.push("/")}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-6 py-3 rounded-full font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors"
-              >
-                Home
-              </motion.button>
-            </div>
-          )}
 
           <GuessHistoryList guesses={gameState.guesses} isGameOver={!!isGameOver} />
         </div>

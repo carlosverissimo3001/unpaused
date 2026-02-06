@@ -8,7 +8,7 @@ import { GuessHistoryDtoResultEnum } from "@/sdk/models/GuessHistoryDto";
 
 interface SubmitGuessParams {
   sessionId: string;
-  trackId: string | null;
+  trackId?: string;
   skip?: boolean;
   trackName?: string;
   artistName?: string;
@@ -55,7 +55,8 @@ export function useSubmitGuess() {
           trackId: trackId ?? null,
           trackName: trackName ?? null,
           artistName: artistName ?? null,
-          result: skip ? GuessHistoryDtoResultEnum.Skip : GuessHistoryDtoResultEnum.Wrong,
+          // ONLY set a result if it's a skip. Otherwise, leave it null (I know it's f*cking ugly).
+          result: skip ? GuessHistoryDtoResultEnum.Skip : (null as any), 
         };
 
         queryClient.setQueryData<GameStateDto>(
@@ -107,7 +108,6 @@ export function useSubmitGuess() {
       }
     },
     onError: (_error, variables, context) => {
-      // Rollback on error
       if (context?.previousState != null) {
         queryClient.setQueryData<GameStateDto>(
           queryKeys.game.state(variables.sessionId),

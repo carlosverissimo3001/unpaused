@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { GameStateDtoStatusEnum } from "@/sdk/models/GameStateDto";
-import { GuessHistoryDtoResultEnum } from "@/sdk/models/GuessHistoryDto";
+import { GuessHistoryDtoResultEnum as GuessResult } from "@/sdk/models/GuessHistoryDto";
 import { queryKeys } from "@/lib/queryKeys";
 import { useGameSession } from "./useGameSession";
 import { useGameState } from "./useGameState";
@@ -14,6 +14,13 @@ import { useSpotifyTrackSearch } from "@/hooks/spotify/useSpotifyTrackSearch";
 import { usePlaylistById } from "@/hooks/playlists/usePlaylistById";
 import { triggerConfetti } from "@/components/game/confetti";
 import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+
+const ShouldShakeResult: GuessResult[] = [
+  GuessResult.Wrong,
+  GuessResult.Artist,
+  GuessResult.Album,
+  GuessResult.ArtistAndAlbum,
+];
 
 export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   const queryClient = useQueryClient();
@@ -45,14 +52,15 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   const error = sessionError ?? errorState;
   const submitPending = submitGuessMutation.isPending;
 
-  // Confetti on correct guess
   useEffect(() => {
-    if (!gameState?.guesses?.length) return;
+    if (!gameState?.guesses?.length) {
+      return;
+    }
     const last = gameState.guesses[gameState.guesses.length - 1];
     if (last.result !== lastGuessResult) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Tracking last guess result to trigger confetti once
       setLastGuessResult(last.result);
-      if (last.result === GuessHistoryDtoResultEnum.Correct) triggerConfetti();
+      if (last.result === GuessResult.Correct) triggerConfetti();
     }
   }, [gameState?.guesses, lastGuessResult]);
 
@@ -66,8 +74,12 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   }, [isDaily, isGameOver, queryClient]);
 
   const handleSubmit = useCallback(() => {
-    if (!gameState || submitPending) return;
-    if (!spotifySearch.selectedTrack) return;
+    if (!gameState || submitPending) {
+      return;
+    }
+    if (!spotifySearch.selectedTrack) {
+      return;
+    }
     submitGuessMutation.mutate(
       {
         sessionId: gameState.sessionId,
@@ -82,10 +94,11 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   }, [gameState, submitPending, spotifySearch, submitGuessMutation]);
 
   const handleSkip = useCallback(() => {
-    if (!gameState || submitPending) return;
+    if (!gameState || submitPending) {
+      return;
+    }
     submitGuessMutation.mutate({
       sessionId: gameState.sessionId,
-      trackId: null,
       skip: true,
     });
   }, [gameState, submitPending, submitGuessMutation]);
@@ -101,7 +114,10 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     }
   }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
 
-  const shouldShake = lastGuessResult === GuessHistoryDtoResultEnum.Wrong;
+  const lastGuess = gameState?.guesses?.[gameState.guesses.length - 1]
+  const shouldShake = lastGuess 
+  ? ShouldShakeResult.includes(lastGuess.result) 
+  : false;
 
   return {
     // State

@@ -44,7 +44,7 @@ export function GuessHistoryList({
   if (!showSection) return null;
 
   return (
-    <div className="mt-8">
+    <div className="mt-2">
       <h3 className="text-lg font-semibold mb-3 text-white">{title}</h3>
       <motion.div className="space-y-2">
         <AnimatePresence mode="popLayout">
