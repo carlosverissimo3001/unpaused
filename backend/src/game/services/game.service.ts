@@ -272,20 +272,21 @@ export class GameService {
     const nextRound = game.currentRound + 1;
     const { status, gameOver } = this.calculateNextState(result, nextRound);
 
+    if (gameOver && game.userId) {
+      await this.updateGameStats({
+        userId: game.userId,
+        roundWon:
+          result === GuessResult.Correct ? game.currentRound : undefined,
+        isDaily: game.isDaily,
+      });
+    }
+
     await this.gameSessionRepository.updateSessionProgress(gameSessionId, {
       currentRound: nextRound,
       guesses: updatedGuesses,
       status,
       completedAt: gameOver ? new Date() : undefined,
     });
-
-    if (gameOver && game.userId) {
-      await this.updateGameStats({
-        userId: game.userId,
-        roundWon: game.currentRound,
-        isDaily: game.isDaily,
-      });
-    }
 
     const base: GuessResultDto = {
       result,

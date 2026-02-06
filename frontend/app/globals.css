@@ -80,11 +80,3 @@ body {
     padding-right: max(2rem, env(safe-area-inset-right));
   }
 }
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
