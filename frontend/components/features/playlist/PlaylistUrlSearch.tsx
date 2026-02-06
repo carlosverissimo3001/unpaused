@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Loader2 } from "lucide-react"; // Added Loader2 for better UX
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PlaylistUrlSearchProps {
@@ -24,39 +24,47 @@ function PlaylistUrlSearchComponent({
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative mb-6 group"
+      className="relative mb-6 group w-full transform-gpu"
     >
-      <div className="relative flex items-center gap-2 p-2 bg-white/[0.03] backdrop-blur-xl rounded-2xl border border-white/10 focus-within:border-spotify-green/40 focus-within:bg-white/[0.06] transition-all duration-500 shadow-2xl">
+      <div className="relative flex items-center p-1.5 bg-white/[0.03] backdrop-blur-xl rounded-full border border-white/10 focus-within:border-spotify-green/40 focus-within:bg-white/[0.06] transition-all duration-500 shadow-2xl">
         <div className="relative flex-1 flex items-center">
-          <Search className="absolute left-4 w-5 h-5 text-white/20 group-focus-within:text-spotify-green transition-colors" />
+          <Search className="ml-3 w-5 h-5 text-white/20 group-focus-within:text-spotify-green transition-colors shrink-0" />
           <input
             type="text"
             value={playlistUrl}
             onChange={(e) => onPlaylistUrlChange(e.target.value)}
-            placeholder="Paste a Spotify link to challenge yourself..."
-            className="w-full bg-transparent pl-12 pr-4 py-2 text-lg font-medium outline-none placeholder:text-white/10 text-white"
+            placeholder="Paste Spotify playlist link..."
+            className="w-full bg-transparent pl-3 pr-4 py-2 text-sm sm:text-lg font-medium outline-none placeholder:text-white/10 text-white min-w-0"
           />
         </div>
 
         <Button
           onClick={onLoad}
           disabled={!playlistUrl.trim()}
-          className="h-10 px-6 rounded-xl bg-white !text-black hover:bg-spotify-green transition-all shadow-lg active:scale-95 disabled:opacity-50"
+          className={`
+    !h-8 sm:!h-10 
+    px-4 sm:px-8 
+    !rounded-full 
+    bg-white !text-black 
+    hover:bg-spotify-green transition-all duration-300 
+    shadow-lg active:scale-95 disabled:opacity-30 
+    shrink-0 border-none
+  `}
         >
-          <span className="flex items-center gap-2 font-bold text-black">
-             <Search className="w-4 h-4" />
-             Load Playlist
+          <span className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-widest">
+            <span className="sm:hidden">Load</span>
+            <span className="hidden sm:inline">Load Playlist</span>
           </span>
         </Button>
       </div>
 
       <AnimatePresence>
         {urlError && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="text-red-400 text-sm font-medium mt-3 ml-4 flex items-center gap-2"
+            className="text-red-400 text-xs sm:text-sm font-medium mt-3 ml-5 flex items-center gap-2"
           >
             <div className="w-1 h-1 rounded-full bg-red-400" />
             {urlError}

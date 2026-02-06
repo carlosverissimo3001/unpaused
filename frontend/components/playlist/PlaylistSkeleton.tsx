@@ -2,24 +2,25 @@
 
 export function PlaylistSkeleton() {
   return (
-    <div className="group relative bg-white/5 backdrop-blur-md rounded-xl p-4 text-left border border-white/10 overflow-hidden">
-      <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+    <div className="group relative bg-[#181818]/40 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5 overflow-hidden w-full h-full transform-gpu">
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/[0.05] to-transparent z-20" />
       
-      <div className="flex gap-4 relative z-10">
-        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
-          <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5" />
+      <div className="flex flex-col h-full relative z-10">
+        
+        <div className="relative aspect-square w-full rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-5 bg-white/10 shadow-2xl">
+          <div className="w-full h-full bg-gradient-to-br from-white/5 to-transparent" />
         </div>
 
-        <div className="flex-1 min-w-0 space-y-2">
-          <div className="h-4 bg-white/10 rounded w-3/4" />
-          <div className="h-3 bg-white/5 rounded w-1/2" />
-          <div className="h-3 bg-white/5 rounded w-1/3 mt-2" />
-        </div>
-      </div>
+        <div className="flex flex-col flex-1 space-y-3">
+          <div className="h-4 sm:h-6 bg-white/10 rounded-full w-3/4" />
+          
+          <div className="h-3 sm:h-4 bg-white/5 rounded-full w-1/2" />
 
-      <div className="flex gap-2 mt-4 relative z-10">
-        <div className="flex-1 h-9 bg-white/10 rounded-lg" />
-        <div className="flex-1 h-9 bg-white/10 rounded-lg" />
+          <div className="mt-auto pt-2 sm:pt-4 flex items-center justify-between">
+            <div className="h-2 sm:h-3 bg-white/[0.03] rounded-full w-20" />
+            <div className="h-2 sm:h-3 bg-white/[0.03] rounded-full w-12" />
+          </div>
+        </div>
       </div>
     </div>
   );

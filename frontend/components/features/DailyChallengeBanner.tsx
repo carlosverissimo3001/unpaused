@@ -16,71 +16,73 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
     enabled: isTrusted,
   });
   const playedToday = playedTodayData?.playedToday ?? false;
-  // While loading, show neutral CTA so we never flash "Start Guessing" for users who already played
   const showAsPlayed = playedTodayLoading ? true : playedToday;
 
-  if (!isTrusted) {
-    return null;
-  }
+  if (!isTrusted) return null;
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 p-6 shadow-2xl group"
+      className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 p-4 sm:p-6 shadow-2xl group transform-gpu"
     >
+      {/* Background Glow - Slightly dimmed for better mobile performance */}
       <motion.div
         animate={{
           rotate: [0, 360],
-          scale: [1, 1.2, 1],
+          scale: [1, 1.1, 1],
         }}
-        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        className="absolute -top-[150px] -right-[100px] w-[400px] h-[400px] bg-spotify-green/20 rounded-full blur-[100px] pointer-events-none"
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute -top-[150px] -right-[100px] w-[300px] h-[300px] bg-spotify-green/15 rounded-full blur-[80px] pointer-events-none"
       />
 
-      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-spotify-green/10 border border-spotify-green/20 text-spotify-green text-[10px] font-black uppercase tracking-[0.2em]">
+      {/* Main Container: Row layout on mobile, spaced out on desktop */}
+      <div className="relative z-10 flex flex-row md:flex-row items-center justify-between gap-4">
+        
+        <div className="flex flex-col gap-1 sm:gap-3 flex-1 min-w-0">
+          {/* Badge: Hidden or ultra-compact on small mobile to save vertical space */}
+          <div className="hidden sm:inline-flex items-center gap-2 w-fit px-3 py-1 rounded-full bg-spotify-green/10 border border-spotify-green/20 text-spotify-green text-[10px] font-black uppercase tracking-[0.2em]">
             <Sparkles className="w-3 h-3 fill-current" />
-            Limited Daily Event
+            Daily Event
           </div>
 
-          <div className="space-y-1">
-            <h2 className="text-3xl font-black tracking-tighter text-white">
+          <div className="space-y-0.5 sm:space-y-1">
+            <h2 className="text-lg sm:text-3xl font-black tracking-tighter text-white truncate">
               The Daily <span className="text-spotify-green">Mystery.</span>
             </h2>
-            <p className="text-white/50 text-base max-w-md font-medium">
-              One song, six chances. Can you guess it from just the first 1 second?
+            <p className="text-white/50 text-[11px] sm:text-base max-w-md font-medium line-clamp-1 sm:line-clamp-none">
+              One song, six chances. Guess in 1s.
             </p>
           </div>
         </div>
 
+        {/* Action Button: Sized down for mobile thumb-friendliness */}
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="shrink-0">
           <Button
             variant={showAsPlayed ? "outline" : "spotify"}
-            size="lg"
+            size="sm"
             asChild
             className={
               showAsPlayed
-                ? "h-14 px-8 rounded-full text-lg font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
-                : "h-14 px-8 rounded-full text-lg font-bold shadow-[0_0_30px_rgba(30,215,96,0.3)] transition-all duration-300 hover:shadow-spotify-green/40"
+                ? "h-10 sm:h-14 px-4 sm:px-8 rounded-full text-xs sm:text-lg font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
+                : "h-10 sm:h-14 px-4 sm:px-8 rounded-full text-xs sm:text-lg font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]"
             }
           >
             <Link
               href={showAsPlayed ? "/daily/stats" : "/daily"}
-              className="flex items-center gap-3"
+              className="flex items-center gap-2 sm:gap-3"
             >
               {showAsPlayed ? (
                 <>
-                  <BarChart3 className="w-5 h-5" />
-                  View stats
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <BarChart3 className="w-3 h-3 sm:w-5 sm:h-5" />
+                  <span>Stats</span>
+                  <ArrowRight className="hidden sm:block w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </>
               ) : (
                 <>
-                  <Play fill="currentColor" className="w-5 h-5" />
-                  Start Guessing
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <Play fill="currentColor" className="w-3 h-3 sm:w-5 sm:h-5" />
+                  <span>Play</span>
+                  <ArrowRight className="hidden sm:block w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </Link>

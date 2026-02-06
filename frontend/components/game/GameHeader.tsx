@@ -19,7 +19,7 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
   const isDaily = mode === GameMode.Daily;
 
   return (
-    <div className="flex items-center justify-between gap-4 mb-6">
+    <div className="flex items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
       <Link
         href="/"
         className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
@@ -72,7 +72,7 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
             className="flex items-center gap-2 text-white/60 hover:text-white text-sm"
           >
             <History className="w-4 h-4" />
-            History
+            <span className="hidden sm:inline">History</span>
           </Link>
         </div>
       )}

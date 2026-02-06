@@ -36,8 +36,7 @@ function PlaylistGridComponent({
         initial="initial"
         animate="animate"
         exit="exit"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}
+        className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-4"
       >
         {Array.from({ length: 6 }).map((_, i) => (
           <PlaylistSkeleton key={`skeleton-${i}`} />
@@ -81,11 +80,10 @@ function PlaylistGridComponent({
       initial="initial"
       animate="animate"
       exit="exit"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-center"
+      className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6 justify-center"
       style={{
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
         maxWidth: "1200px",
-        margin: "0 auto" 
+        margin: "0 auto"
       }}
     >
       <AnimatePresence mode="popLayout">

@@ -15,7 +15,7 @@ interface AppHeaderProps {
 
 function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 px-6 py-4 bg-spotify-black/40 backdrop-blur-xl border-b border-white/[0.05]">
+    <header className="sticky top-0 z-50 px-4 sm:px-6 py-3 sm:py-4 bg-[#181818]/60 backdrop-blur-xl border-t border-white/10">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         <div className="flex items-center gap-3">
@@ -23,7 +23,7 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
             <div className="bg-spotify-green p-1.5 rounded-lg transform group-hover:rotate-12 transition-transform duration-300">
               <Zap className="w-5 h-5 text-black fill-black" />
             </div>
-            <span className="text-xl font-black tracking-tighter uppercase italic">
+            <span className="text-base sm:text-xl font-black tracking-tighter uppercase italic">
               Unpaused
             </span>
           </Link>

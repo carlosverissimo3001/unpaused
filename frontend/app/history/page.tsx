@@ -87,63 +87,66 @@ function HistoryPageContent() {
     );
   }
 
-  return (
-    <div className="min-h-screen p-6 max-w-2xl mx-auto pb-12 relative">
+return (
+    <div className="min-h-screen p-4 sm:p-8 lg:p-12 max-w-5xl mx-auto pb-12 relative">
       <div
         className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-spotify-green/10 via-transparent to-transparent"
         aria-hidden
       />
 
-      {stats && <HistoryStats stats={stats} />}
       <HistoryFilter dailyOnly={dailyOnly} isTrusted={user?.isTrusted ?? false} onDailyOnlyChange={setDailyOnly} />
 
-      {items.length === 0 ? (
-        <EmptyHistory dailyOnly={dailyOnly} />
-      ) : (
-        <motion.div
-          className="space-y-4"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: {
-              transition: { staggerChildren: 0.06, delayChildren: 0.05 },
-            },
-          }}
-        >
-          {items.map((entry, index) => (
-            <HistoryCard
-              key={entry.id}
-              entry={entry}
-              onShare={handleShare}
-              copied={copiedId === entry.id}
-              showWinnerGlow={
-                entry.status === GameHistoryEntryDtoStatusEnum.Won &&
-                entry.score != null &&
-                (entry.score === 6 || entry.score === 5)
-              }
-              staggerIndex={index}
-            />
-          ))}
+      {/* TWO-COLUMN GRID FOR BROWSER */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <aside className="lg:col-span-4 lg:sticky lg:top-8">
+          {stats && <HistoryStats stats={stats} />}
+          <div className="hidden lg:block mt-6 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+            <p className="text-xs text-white/30 leading-relaxed uppercase tracking-widest font-bold">
+              Your Vault
+            </p>
+            <p className="text-sm text-white/50 mt-2">
+              Viewing {dailyOnly ? "Daily Challenges" : "all games"} across your entire history.
+            </p>
+          </div>
+        </aside>
 
-          {hasNextPage && (
-            <div ref={loadMoreRef} className="flex justify-center py-6">
-              {isFetchingNextPage ? (
-                <Loader2 className="w-6 h-6 text-white/40 animate-spin" />
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="default"
-                  onClick={() => fetchNextPage()}
-                  className="text-sm text-white/50 hover:text-white"
-                >
-                  Load more
-                </Button>
-              )}
-            </div>
+        {/* LIST SECTION */}
+        <main className="lg:col-span-8">
+          {items.length === 0 ? (
+            <EmptyHistory dailyOnly={dailyOnly} />
+          ) : (
+            <motion.div
+              className="space-y-3 sm:space-y-4" // Tighter gap on mobile
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+                },
+              }}
+            >
+              {items.map((entry, index) => (
+                <HistoryCard
+                  key={entry.id}
+                  entry={entry}
+                  onShare={handleShare}
+                  copied={copiedId === entry.id}
+                  showWinnerGlow={
+                    entry.status === GameHistoryEntryDtoStatusEnum.Won &&
+                    entry.score != null &&
+                    (entry.score === 6 || entry.score === 5)
+                  }
+                  staggerIndex={index}
+                />
+              ))}
+              
+              {/* Load More... */}
+            </motion.div>
           )}
-        </motion.div>
-      )}
+        </main>
+      </div>
     </div>
   );
 }

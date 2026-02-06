@@ -22,7 +22,7 @@ export function RoundProgressBar({
   totalRounds = ROUND_DURATIONS.length,
 }: RoundProgressBarProps) {
   return (
-    <div className="flex gap-2 mb-6 md:mb-8">
+    <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 md:mb-8">
       {ROUND_DURATIONS.slice(0, totalRounds).map((_, index) => {
         const result = guesses[index]?.result;
         const style = result != null ? getGuessResultStyle(result) : null;
@@ -33,7 +33,7 @@ export function RoundProgressBar({
           <motion.div
             key={index}
             layout
-            className="flex-1 h-2 rounded-full relative overflow-visible"
+            className="flex-1 h-1.5 sm:h-2 rounded-full relative overflow-visible"
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
             <motion.div

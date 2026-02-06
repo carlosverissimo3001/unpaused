@@ -27,16 +27,17 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
         onMouseEnter={() => { setIsHovered(true); onHover?.(ambientColor); }}
         onMouseLeave={() => { setIsHovered(false); onHover?.(null); }}
         whileHover={{ y: -12 }}
-        className="group relative bg-[#181818]/40 backdrop-blur-md rounded-2xl p-5 border border-white/5 transition-all duration-500 hover:bg-white/[0.08] max-w-[400px] mx-auto w-full"
+        className="group relative bg-[#181818]/40 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5 transition-all duration-500 hover:bg-white/[0.08] max-w-[400px] mx-auto w-full h-full md:h-auto transform-gpu"
         style={{
-          boxShadow: isHovered 
-            ? `0 30px 60px -12px rgba(0,0,0,0.6), 0 0 20px ${glowColor}` 
+          boxShadow: isHovered
+            ? `0 30px 60px -12px rgba(0,0,0,0.6), 0 0 20px ${glowColor}`
             : "0 10px 30px -15px rgba(0,0,0,0.3)",
+          backfaceVisibility: 'hidden',
         }}
       >
-        <div className="flex flex-col relative z-10">
+        <div className="flex flex-col relative z-10 h-full">
           
-          <div className="relative aspect-square w-full rounded-xl overflow-hidden mb-5 shadow-2xl">
+          <div className="relative aspect-square w-full rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-5 shadow-2xl">
             {imageUrl ? (
               <Image 
                 src={imageUrl} 
@@ -61,16 +62,16 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
             </motion.div>
           </div>
 
-          <div className="flex flex-col min-w-0">
-            <h3 className="font-black text-xl text-white truncate leading-tight group-hover:text-spotify-green transition-colors">
+          <div className="flex flex-col min-w-0 flex-1">
+            <h3 className="font-black text-sm sm:text-xl text-white line-clamp-1 leading-tight group-hover:text-spotify-green transition-colors">
               {playlist.name}
             </h3>
             
-            <p className="text-sm text-white/40 font-medium truncate mt-1">
+            <p className="text-xs sm:text-sm text-white/40 font-medium line-clamp-1 mt-0.5 sm:mt-1">
               {playlist.owner}
             </p>
 
-            <div className="mt-4 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.15em] text-white/20">
+            <div className="mt-auto pt-2 sm:pt-4 flex items-center justify-between text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-white/20">
               <div className="flex items-center gap-1.5">
                 <ListMusic className="w-3 h-3" />
                 <span>{playlist.totalTracks} tracks</span>

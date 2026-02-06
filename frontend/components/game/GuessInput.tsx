@@ -52,14 +52,14 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
   } = search;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div ref={searchRef} className="relative">
         {selectedTrack ? (
           <motion.div
             layout
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-4 rounded-xl text-black"
+            className="flex items-center gap-3 p-3 sm:p-4 rounded-xl text-black min-h-[56px]"
             style={{
               background: "#1DB954",
               border: "1px solid rgba(255,255,255,0.2)",
@@ -98,7 +98,7 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                 }}
                 onFocus={() => setShowDropdown(true)}
                 placeholder="Search for a song..."
-                className="w-full pl-12 pr-4 py-4 rounded-xl text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all"
+                className="w-full pl-12 pr-4 py-3.5 sm:py-4 rounded-xl text-base text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all min-h-[48px] touch-manipulation"
                 style={{
                   background: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.08)",
@@ -129,7 +129,7 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                         initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * DROPDOWN_ITEM_STAGGER, duration: 0.2 }}
-                        className="w-full p-4 flex items-center gap-3 text-left hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                        className="w-full p-3 sm:p-4 flex items-center gap-3 text-left hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl min-h-[56px] touch-manipulation active:bg-white/15"
                       >
                         {track.albumImageUrl ? (
                           <Image
@@ -175,7 +175,7 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
           disabled={submitPending}
           whileHover={{ scale: submitPending ? 1 : 1.02 }}
           whileTap={{ scale: submitPending ? 1 : 0.98 }}
-          className="flex-1 py-3.5 rounded-xl font-semibold text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="flex-1 py-3.5 rounded-xl font-semibold text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[48px] touch-manipulation active:scale-95"
         >
           Skip
         </motion.button>
@@ -185,9 +185,9 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
           disabled={!selectedTrack || submitPending}
           whileHover={selectedTrack && !submitPending ? { scale: 1.02 } : {}}
           whileTap={selectedTrack && !submitPending ? { scale: 0.98 } : {}}
-          className={`flex-1 py-3.5 rounded-xl font-semibold transition-all ${
+          className={`flex-1 py-3.5 rounded-xl font-semibold transition-all min-h-[48px] touch-manipulation ${
             selectedTrack && !submitPending
-              ? "bg-[#1DB954] hover:bg-[#1ed760] text-black shadow-lg shadow-[#1DB954]/20"
+              ? "bg-[#1DB954] hover:bg-[#1ed760] text-black shadow-lg shadow-[#1DB954]/20 active:scale-95"
               : "bg-white/10 text-white/50 cursor-not-allowed"
           }`}
         >

@@ -58,26 +58,27 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col relative overflow-hidden bg-spotify-black text-white">
+    <main className="min-h-screen max-w-[100vw] flex flex-col relative overflow-x-hidden bg-spotify-black text-white">
+      {/* Background Ambient Glow */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
         <motion.div
           className="absolute inset-0"
           animate={{
-            background: `radial-gradient(ellipse 80% 50% at 50% 0%, ${ambientColor}, transparent 70%)`,
+            background: `radial-gradient(circle 80% 50% at 50% 0%, ${ambientColor}, transparent 70%)`,
           }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
           style={{
-            filter: "blur(80px)",
-            opacity: 0.5,
+            filter: "blur(60px)",
+            opacity: 0.4,
           }}
         />
       </div>
 
       <AppHeader user={user} onLogout={handleLogout} isLoggingOut={logoutMutation.isPending} />
 
-      <div className="flex-1 px-6 py-8 relative z-10">
-        <div className="max-w-5xl mx-auto space-y-6">
+      <div className="flex-1 px-4 sm:px-6 py-2 sm:py-8 relative z-10">
+        <div className="max-w-5xl mx-auto flex flex-col gap-3 sm:gap-6">
           <ErrorBanner error={error} />
 
           {user ? (
@@ -85,49 +86,49 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
+              className="space-y-4 sm:space-y-6"
             >
               <DailyChallengeBanner isTrusted={user.isTrusted} />
 
-              <div className="relative z-20 mt-4 -mb-2">
-                <PlaylistUrlSearch
-                  playlistUrl={playlistUrlLoader.playlistUrl}
-                  urlError={playlistUrlLoader.urlError}
-                  isSearchFocused={playlistUrlLoader.isSearchFocused}
-                  onPlaylistUrlChange={playlistUrlLoader.setPlaylistUrl}
-                  onSearchFocus={playlistUrlLoader.setIsSearchFocused}
-                  onLoad={playlistUrlLoader.handleLoad}
-                />
-              </div>
+              <PlaylistUrlSearch
+                playlistUrl={playlistUrlLoader.playlistUrl}
+                urlError={playlistUrlLoader.urlError}
+                isSearchFocused={playlistUrlLoader.isSearchFocused}
+                onPlaylistUrlChange={playlistUrlLoader.setPlaylistUrl}
+                onSearchFocus={playlistUrlLoader.setIsSearchFocused}
+                onLoad={playlistUrlLoader.handleLoad}
+              />
 
-              <div className="mb-8 pt-4">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 relative z-10">
+              {/* Main Content Header */}
+              <div className="mt-1 sm:mt-2">
+                <div className="flex flex-row items-center justify-between gap-2 relative z-10">
                   <div className="space-y-1">
-                    <div className="flex items-baseline gap-3">
-                      <h1 className="text-4xl font-black tracking-tighter text-white">
+                    <div className="flex items-baseline gap-2 sm:gap-3">
+                      <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-white whitespace-nowrap">
                         Your Playlists
                       </h1>
+
                       {!isLoadingPlaylists && (
-                        <span className="text-lg font-mono text-spotify-green/40 font-light tracking-tighter">
+                        <span className="text-sm sm:text-lg font-mono text-spotify-green/40 font-light tracking-tighter shrink-0">
                           /{playlists.length.toString().padStart(2, "0")}
                         </span>
                       )}
                     </div>
-                    <p className="text-white/20 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">
-                      Collection Overview
-                    </p>
                   </div>
 
-                  <div className="flex items-center pb-1">
-                    <PlaylistFilters
-                      includePrivate={playlistFilters.includePrivate}
-                      onlyUserOwned={playlistFilters.onlyUserOwned}
-                      onIncludePrivateChange={playlistFilters.setIncludePrivate}
-                      onOnlyUserOwnedChange={playlistFilters.setOnlyUserOwned}
-                      onClearFilters={playlistFilters.clearFilters}
-                    />
+                  <div className="flex items-center min-w-0 overflow-x-auto no-scrollbar -mr-4 pr-4">
+                    <div className="flex items-center gap-2 py-1">
+                      <PlaylistFilters
+                        includePrivate={playlistFilters.includePrivate}
+                        onlyUserOwned={playlistFilters.onlyUserOwned}
+                        onIncludePrivateChange={playlistFilters.setIncludePrivate}
+                        onOnlyUserOwnedChange={playlistFilters.setOnlyUserOwned}
+                        onClearFilters={playlistFilters.clearFilters}
+                      />
+                    </div>
                   </div>
                 </div>
-                
+
                 <motion.div
                   animate={{ borderColor: ambientColor }}
                   className="w-full h-px border-b border-white/5 mt-4 opacity-30"

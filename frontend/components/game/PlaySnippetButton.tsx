@@ -26,7 +26,7 @@ export function PlaySnippetButton({ currentRound, isPlaying, amplitude, onPlay, 
   const ring2Opacity = useTransform(amplitude, [0, 1], [0, 0.4]);
 
   return (
-    <div className="text-center mb-6 md:mb-8">
+    <div className="text-center mb-4 sm:mb-6 md:mb-8">
       <div className="relative inline-flex items-center justify-center">
         {/* Audio-reactive rings — absolute behind button, no layout/scale impact */}
         <div className="absolute inset-0 pointer-events-none rounded-full" aria-hidden>
@@ -51,7 +51,7 @@ export function PlaySnippetButton({ currentRound, isPlaying, amplitude, onPlay, 
               : { type: "spring", stiffness: 100, damping: 15 }
           }
           onClick={isPlaying ? onPause : onPlay}
-          className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-4 px-8 rounded-full text-lg border border-white/10 shadow-[0_0_30px_-5px_rgba(30,215,96,0.5)]"
+          className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-full text-base sm:text-lg border border-white/10 shadow-[0_0_30px_-5px_rgba(30,215,96,0.5)] min-h-[48px] touch-manipulation"
           style={{
             boxShadow: "0 0 30px -5px rgba(30,215,96,0.5), inset 0 1px 0 rgba(255,255,255,0.15)",
           }}

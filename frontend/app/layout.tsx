@@ -14,6 +14,13 @@ const quicksand = Quicksand({
 export const metadata: Metadata = {
   title: "Unpaused - Music Guessing Game",
   description: "Test your music knowledge with Unpaused",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    viewportFit: "cover",
+  },
 };
 
 export default function RootLayout({
@@ -23,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${quicksand.variable} font-sans antialiased`}>
+      <body className={`${quicksand.variable} font-sans antialiased max-w-[100vw] overflow-x-hidden`}>
         <ErrorBoundary>
           <QueryProvider>{children}</QueryProvider>
         </ErrorBoundary>
