@@ -289,12 +289,16 @@
         "operationId": "GameController_getHistory",
         "parameters": [
           {
-            "name": "isDaily",
+            "name": "mode",
             "required": false,
             "in": "query",
-            "description": "Whether the game is daily",
+            "description": "The game mode to filter history by (e.g. daily, playlist)",
             "schema": {
-              "type": "boolean"
+              "enum": [
+                "DAILY",
+                "ALL"
+              ],
+              "type": "string"
             }
           },
           {
@@ -848,11 +852,18 @@
             "type": "string",
             "description": "The ID of the playlist to start the game with"
           },
-          "isDaily": {
-            "type": "boolean",
-            "description": "Whether the game is daily"
+          "mode": {
+            "type": "string",
+            "description": "The game mode to start (all or daily)",
+            "enum": [
+              "DAILY",
+              "ALL"
+            ]
           }
-        }
+        },
+        "required": [
+          "mode"
+        ]
       },
       "GuessHistoryDto": {
         "type": "object",
@@ -967,7 +978,8 @@
             "enum": [
               "PLAYING",
               "WON",
-              "LOST"
+              "LOST",
+              "ABANDONED"
             ]
           },
           "guesses": {
@@ -1032,16 +1044,21 @@
             "enum": [
               "PLAYING",
               "WON",
-              "LOST"
+              "LOST",
+              "ABANDONED"
             ]
           },
           "score": {
             "type": "number",
-            "description": "Score 0-6 if completed"
+            "description": "Score 0-6, may be null if abandoned"
           },
-          "isDaily": {
-            "type": "boolean",
-            "description": "Whether the game was daily"
+          "mode": {
+            "type": "string",
+            "description": "The game mode",
+            "enum": [
+              "DAILY",
+              "ALL"
+            ]
           },
           "guesses": {
             "description": "Guess history",
@@ -1071,7 +1088,7 @@
           "id",
           "date",
           "status",
-          "isDaily",
+          "mode",
           "guesses",
           "trackName",
           "artistName"
@@ -1265,7 +1282,8 @@
             "enum": [
               "PLAYING",
               "WON",
-              "LOST"
+              "LOST",
+              "ABANDONED"
             ]
           },
           "currentRound": {

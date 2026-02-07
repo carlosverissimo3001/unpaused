@@ -688,7 +688,7 @@ example().catch(console.error);
 
 ## gameControllerGetHistory
 
-> GameHistoryDto gameControllerGetHistory(isDaily, limit, offset)
+> GameHistoryDto gameControllerGetHistory(mode, limit, offset)
 
 Get user\&#39;s game session history (paginated)
 
@@ -710,8 +710,8 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // boolean | Whether the game is daily (optional)
-    isDaily: true,
+    // 'DAILY' | 'ALL' | The game mode to filter history by (e.g. daily, playlist) (optional)
+    mode: mode_example,
     // number | The limit of the history (optional)
     limit: 8.14,
     // number | The offset of the history (optional)
@@ -735,7 +735,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **isDaily** | `boolean` | Whether the game is daily | [Optional] [Defaults to `undefined`] |
+| **mode** | `DAILY`, `ALL` | The game mode to filter history by (e.g. daily, playlist) | [Optional] [Defaults to `undefined`] [Enum: DAILY, ALL] |
 | **limit** | `number` | The limit of the history | [Optional] [Defaults to `undefined`] |
 | **offset** | `number` | The offset of the history | [Optional] [Defaults to `undefined`] |
 

@@ -12,7 +12,7 @@ import { TrackRepository } from '@/track/repositories/track.repository';
 import { TrackService } from '@/track/services/track.service';
 import { Transactional } from '@transaction/transactional.decorator';
 import { normalizeText, normalizeTrackNameForMatch } from '@utils/text';
-import { formatDate, startOfDay } from 'date-fns';
+import { formatDate, subHours } from 'date-fns';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 import { AppLoggerService } from '../../logger/logger.service';
 import { MessageService } from '../../message/services/message.service';
@@ -37,6 +37,7 @@ import {
   mapToGameStateDto,
 } from '../utils/game-state-mapper';
 import { GameExtrasVo, MetaGameExtrasVo } from '../vos/game-extras.vo';
+import { gameNumberFromDate } from '../utils/utils';
 
 @Injectable()
 export class GameService {
@@ -61,21 +62,28 @@ export class GameService {
     sessionId: string,
     params: StartGameDto,
   ): Promise<GameStateDto> {
-    const { playlistId, isDaily } = params;
+    const { playlistId, mode } = params;
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
 
-    if (isDaily) {
-      const existing =
-        await this.gameSessionRepository.findTodayDailySession(userId);
-      // Already played today, we'll just return the game state
-      if (existing) {
-        return this.getGameState(existing.id);
-      }
+    const existing =
+      mode === GameMode.DAILY
+        ? await this.gameSessionRepository.findTodayDailySession(userId)
+        : await this.gameSessionRepository.findActiveSession(
+            userId,
+            mode,
+            playlistId,
+          );
+
+    // If there's an active session (or already played daily) for this user and mode,
+    // return it instead of starting a new one
+    if (existing) {
+      return this.getGameState(existing.id);
     }
 
-    const targetPlaylistId = isDaily
-      ? `${userId}-${LIKED_SONGS_ID_SUFFIX}`
-      : playlistId;
+    const targetPlaylistId =
+      mode === GameMode.DAILY
+        ? `${userId}-${LIKED_SONGS_ID_SUFFIX}`
+        : playlistId;
     if (!targetPlaylistId) {
       throw new BadRequestException('Playlist ID is required');
     }
@@ -98,7 +106,7 @@ export class GameService {
     const game = await this.gameSessionRepository.createSession({
       user: { connect: { id: userId } },
       playlistId: targetPlaylistId,
-      isDaily: !!isDaily,
+      mode,
       track: { connect: { id: selectedTrack.id } },
       currentRound: 0,
       guesses: [],
@@ -256,7 +264,7 @@ export class GameService {
         userId: game.userId,
         roundWon:
           result === GuessResult.Correct ? game.currentRound : undefined,
-        isDaily: game.isDaily,
+        mode: game.mode,
       });
     }
 
@@ -282,7 +290,7 @@ export class GameService {
    * Must run within a @Transactional() boundary so it participates in the same transaction.
    */
   private async updateGameStats(params: UpdateGameStatsParams): Promise<void> {
-    const { userId, roundWon, isDaily } = params;
+    const { userId, roundWon, mode } = params;
 
     const stats = await this.gameStatsRepository.upsert(userId, GameMode.ALL);
     const dailyStats = await this.gameStatsRepository.upsert(
@@ -313,7 +321,7 @@ export class GameService {
       GameMode.ALL,
     );
 
-    if (isDaily) {
+    if (mode === GameMode.DAILY) {
       await this.gameStatsRepository.update(
         userId,
         {
@@ -515,7 +523,7 @@ export class GameService {
         date: formatDate(dateSource, 'yyyy-MM-dd'),
         status: s.status,
         score: s.score,
-        isDaily: s.isDaily,
+        mode: s.mode,
         guesses: s.guesses,
         trackName: track?.name ?? '',
         artistName: track?.artistName ?? '',
@@ -575,7 +583,7 @@ export class GameService {
       .join('');
 
     const dateSource = game.completedAt ?? game.createdAt;
-    const gameNum = this.gameNumberFromDate(dateSource);
+    const gameNum = gameNumberFromDate(dateSource);
     const resultEmoji = game.status === GameStatus.WON ? '🎉' : '😢';
     const appUrl = process.env.APP_URL || 'https://unpaused.example.com';
     const shareText = `Unpaused Daily #${gameNum} ${resultEmoji}
@@ -598,11 +606,26 @@ Play at: ${appUrl}/daily`;
     };
   }
 
-  private gameNumberFromDate(date: Date): number {
-    const epoch = new Date('2025-01-01');
-    return Math.floor(
-      (startOfDay(date).getTime() - startOfDay(epoch).getTime()) /
-        (24 * 60 * 60 * 1000),
+  /**
+   * Marks games as abandoned if they've been in PLAYING state for over an hour, to keep the system clean of forgotten sessions.
+   * This is triggered by a scheduled job in GameConsumer.
+   * Daily games should be ignored
+   * @returns
+   */
+  async cleanupAbandonedGames(): Promise<number> {
+    const oneHourAgo = subHours(new Date(), 1);
+
+    const games = await this.gameSessionRepository.updateMany(
+      {
+        status: GameStatus.PLAYING,
+        createdAt: { lt: oneHourAgo },
+        mode: { not: GameMode.DAILY },
+      },
+      {
+        status: GameStatus.ABANDONED,
+      },
     );
+
+    return games;
   }
 }

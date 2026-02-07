@@ -89,7 +89,8 @@ export type GuessResultDtoResultEnum = typeof GuessResultDtoResultEnum[keyof typ
 export const GuessResultDtoStatusEnum = {
     Playing: 'PLAYING',
     Won: 'WON',
-    Lost: 'LOST'
+    Lost: 'LOST',
+    Abandoned: 'ABANDONED'
 } as const;
 export type GuessResultDtoStatusEnum = typeof GuessResultDtoStatusEnum[keyof typeof GuessResultDtoStatusEnum];
 

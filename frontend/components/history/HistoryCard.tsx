@@ -13,6 +13,7 @@ import {
 } from "@/sdk/models/GameHistoryEntryDto";
 import { format } from "date-fns";
 import { toOrdinal } from "../../utils/text-utils";
+import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
 const GUESS_LABEL: Record<string, string> = {
   [GuessHistoryDtoResultEnum.Correct]: "Correct",
@@ -32,6 +33,18 @@ const GUESS_BORDER: Record<string, string> = {
   [GuessHistoryDtoResultEnum.Skip]: "border-l-white/30",
 };
 
+const POINTS_BADGE_CLASSES: Record<string, string> = {
+  [GameHistoryEntryDtoStatusEnum.Won]: "bg-spotify-green/10 border-spotify-green/20 text-spotify-green",
+  [GameHistoryEntryDtoStatusEnum.Lost]: "bg-red-500/10 border-red-500/20 text-red-400",
+  [GameHistoryEntryDtoStatusEnum.Abandoned]: "bg-white/10 border-white/20 text-white/50",
+};
+
+const STATUS_SIDEBAR_CLASSES: Record<string, string> = {
+  [GameHistoryEntryDtoStatusEnum.Won]: "bg-spotify-green",
+  [GameHistoryEntryDtoStatusEnum.Lost]: "bg-red-500",
+  [GameHistoryEntryDtoStatusEnum.Abandoned]: "bg-white/30",
+};
+
 interface HistoryCardProps {
   entry: GameHistoryEntryDto;
   onShare: (id: string) => void;
@@ -49,6 +62,16 @@ const cardVariants = {
   }),
 };
 
+const getPointsInfo = (entry: GameHistoryEntryDto, guessesUsed: number) => {
+  if (entry.status === GameHistoryEntryDtoStatusEnum.Won) {
+    return `${toOrdinal(guessesUsed)} Guess`;
+  }
+  if (entry.status === GameHistoryEntryDtoStatusEnum.Abandoned) {
+    return "Abandoned";
+  }
+  return "Lost";
+};
+
 export function HistoryCard({
   entry,
   onShare,
@@ -59,12 +82,14 @@ export function HistoryCard({
   const [expanded, setExpanded] = useState(false);
   const isWon = entry.status === GameHistoryEntryDtoStatusEnum.Won;
   
+  // Note: maybe simplify this logic in the future
   const guessesUsed =
     isWon && entry.score != null && entry.score >= 1 && entry.score <= 6
       ? 7 - entry.score
       : entry.score ?? 0;
 
   const actualGuesses = entry.guesses.filter((g) => g.result !== GuessHistoryDtoResultEnum.Skip);
+
 
   return (
     <motion.article
@@ -79,7 +104,7 @@ export function HistoryCard({
     >
       <div className="flex">
         {/* Status Side-Bar */}
-        <div className={`w-1 shrink-0 ${isWon ? "bg-spotify-green" : "bg-red-500"}`} />
+        <div className={`w-1 shrink-0 ${STATUS_SIDEBAR_CLASSES[entry.status]}`} />
 
         <div className="p-4 flex-1 min-w-0">
           <div className="flex gap-4 items-start">
@@ -92,15 +117,14 @@ export function HistoryCard({
               )}
             </div>
 
-            {/* Info Section */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-[10px] font-black uppercase tracking-widest ${entry.isDaily ? 'text-spotify-green' : 'text-white/40'}`}>
+                <span className={`text-[10px] font-black uppercase tracking-widest ${entry.mode === GameMode.Daily ? 'text-spotify-green' : 'text-white/40'}`}>
                   {format(new Date(entry.date), "MMM d, yyyy")}
                 </span>
                 <div className="flex items-center gap-2">
-                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${isWon ? 'bg-spotify-green/10 border-spotify-green/20 text-spotify-green' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
-                    {isWon ? `${toOrdinal(guessesUsed)} Guess` : "Lost"}
+                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${POINTS_BADGE_CLASSES[entry.status]}`}>
+                    {getPointsInfo(entry, guessesUsed)}
                   </span>
                 </div>
               </div>

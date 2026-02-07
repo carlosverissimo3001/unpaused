@@ -16,19 +16,25 @@ export function useStartGame() {
   return useMutation<GameStateDto, Error, StartGameDto>({
     mutationFn: async (params: StartGameDto) => {
       try {
-        const startGameDto: StartGameDto = { playlistId: params.playlistId, isDaily: params.isDaily };
+        const startGameDto: StartGameDto = { playlistId: params.playlistId, mode: params.mode };
         return await api.gameControllerStartGame({ startGameDto });
       } catch (e) {
         const message = await getApiErrorMessage(e);
         throw new Error(message);
       }
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       // Set the game state in cache immediately
       queryClient.setQueryData<GameStateDto>(
         queryKeys.game.state(data.sessionId),
         data
       );
+      // Persist sessionId under a predictable key so it survives
+      // Strict Mode double-fires and component remounts
+      const sessionKey = variables.playlistId
+        ? queryKeys.game.startedSessionForPlaylist(variables.playlistId)
+        : queryKeys.game.startedSessionForDaily;
+      queryClient.setQueryData(sessionKey, data.sessionId);
       // Invalidate related queries
       queryClient.invalidateQueries({
         queryKey: queryKeys.game.session(data.sessionId),

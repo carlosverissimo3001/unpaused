@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { GameStatus } from '@prisma/client';
+import { GameMode, GameStatus } from '@prisma/client';
 import { GuessHistoryDto } from './guess/guess-history.dto';
 
 export class GameHistoryEntryDto {
@@ -14,11 +14,14 @@ export class GameHistoryEntryDto {
   @ApiProperty({ description: 'Game status', enum: GameStatus })
   status: GameStatus;
 
-  @ApiPropertyOptional({ description: 'Score 0-6 if completed', type: Number })
+  @ApiPropertyOptional({
+    description: 'Score 0-6, may be null if abandoned',
+    type: Number,
+  })
   score?: number;
 
-  @ApiProperty({ description: 'Whether the game was daily' })
-  isDaily: boolean;
+  @ApiProperty({ description: 'The game mode', enum: GameMode })
+  mode: GameMode;
 
   @ApiProperty({
     description: 'Guess history',

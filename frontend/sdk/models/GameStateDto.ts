@@ -110,7 +110,8 @@ export interface GameStateDto {
 export const GameStateDtoStatusEnum = {
     Playing: 'PLAYING',
     Won: 'WON',
-    Lost: 'LOST'
+    Lost: 'LOST',
+    Abandoned: 'ABANDONED'
 } as const;
 export type GameStateDtoStatusEnum = typeof GameStateDtoStatusEnum[keyof typeof GameStateDtoStatusEnum];
 

@@ -26,17 +26,29 @@ export interface StartGameDto {
      */
     playlistId?: string;
     /**
-     * Whether the game is daily
-     * @type {boolean}
+     * The game mode to start (all or daily)
+     * @type {string}
      * @memberof StartGameDto
      */
-    isDaily?: boolean;
+    mode: StartGameDtoModeEnum;
 }
+
+
+/**
+ * @export
+ */
+export const StartGameDtoModeEnum = {
+    Daily: 'DAILY',
+    All: 'ALL'
+} as const;
+export type StartGameDtoModeEnum = typeof StartGameDtoModeEnum[keyof typeof StartGameDtoModeEnum];
+
 
 /**
  * Check if a given object implements the StartGameDto interface.
  */
 export function instanceOfStartGameDto(value: object): value is StartGameDto {
+    if (!('mode' in value) || value['mode'] === undefined) return false;
     return true;
 }
 
@@ -51,7 +63,7 @@ export function StartGameDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'playlistId': json['playlistId'] == null ? undefined : json['playlistId'],
-        'isDaily': json['isDaily'] == null ? undefined : json['isDaily'],
+        'mode': json['mode'],
     };
 }
 
@@ -67,7 +79,7 @@ export function StartGameDtoToJSONTyped(value?: StartGameDto | null, ignoreDiscr
     return {
         
         'playlistId': value['playlistId'],
-        'isDaily': value['isDaily'],
+        'mode': value['mode'],
     };
 }
 

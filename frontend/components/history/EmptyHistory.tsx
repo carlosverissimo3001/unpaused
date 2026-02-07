@@ -13,7 +13,7 @@ export function EmptyHistory({ dailyOnly }: EmptyHistoryProps) {
       <p className="text-white/60 mb-6">
         {dailyOnly ? "No daily games yet." : "No games yet."}
       </p>
-      <Button variant="spotify" size="lg" asChild>
+      <Button variant="spotify" size="lg" asChild className="!rounded-full">
         <Link href="/daily" className="inline-flex items-center gap-2">
           Play Daily
         </Link>

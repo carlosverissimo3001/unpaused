@@ -1,18 +1,17 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotNullableOptional } from '../../utils/decorators/notNullableOptional.decorator';
 import { Transform } from 'class-transformer';
-import { toBoolean } from '../../utils/transformers/toBoolean.transform';
-import { IsBoolean, IsNumber, Min, Max } from 'class-validator';
+import { IsNumber, Min, Max, IsEnum } from 'class-validator';
+import { GameMode } from '@prisma/client';
 
 export class GetHistoryDto {
   @ApiPropertyOptional({
-    description: 'Whether the game is daily',
-    type: Boolean,
+    description: 'The game mode to filter history by (e.g. daily, all)',
+    enum: GameMode,
   })
   @IsNotNullableOptional()
-  @IsBoolean()
-  @Transform(({ obj }) => toBoolean(obj.isDaily))
-  isDaily?: boolean;
+  @IsEnum(GameMode)
+  mode?: GameMode;
 
   @ApiPropertyOptional({
     description: 'The limit of the history',

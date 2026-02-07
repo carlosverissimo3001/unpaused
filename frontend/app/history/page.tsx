@@ -14,23 +14,23 @@ import { HistoryStats } from "@/components/history/HistoryStats";
 import { HistoryFilter } from "@/components/history/HistoryFilter";
 import { HistoryCard } from "@/components/history/HistoryCard";
 import { EmptyHistory } from "@/components/history/EmptyHistory";
-import { Button } from "@/components/ui/button";
 import { useMe } from "@/hooks/auth/useMe";
 import { useGameStats } from "../../hooks/game/useGameStats";
 import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 
 function HistoryPageContent() {
-  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteGameHistory();
-
   const shareMutation = useGameShare();
   const { data: user } = useMe();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const [dailyOnly, setDailyOnly] = useState(searchParams.get("filter") === "daily");
 
-  const { data: stats } = useGameStats( { mode: dailyOnly ? GameMode.Daily : GameMode.All, useCached: true } );
+  const mode = dailyOnly ? GameMode.Daily : GameMode.All;
+  const { data: stats } = useGameStats( { mode, useCached: true } );
+
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteGameHistory({ mode, enabled: !!user });
 
   const { ref: loadMoreRef } = useInView({
     onChange: (inView) => {
@@ -44,7 +44,7 @@ function HistoryPageContent() {
 
   const items = useMemo(() => {
     if (dailyOnly) {
-      return allItems.filter((e) => e.isDaily);
+      return allItems.filter((e) => e.mode === GameMode.Daily);
     }
     return allItems;
   }, [allItems, dailyOnly]);

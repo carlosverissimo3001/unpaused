@@ -1,5 +1,7 @@
+import { GameMode } from '@prisma/client';
+
 export type UpdateGameStatsParams = {
   userId: string;
   roundWon?: number;
-  isDaily: boolean;
+  mode: GameMode;
 };

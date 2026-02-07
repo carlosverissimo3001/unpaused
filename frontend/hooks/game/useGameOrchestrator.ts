@@ -110,7 +110,7 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     }
     startGameMutation.reset();
     if (playlistId) {
-      startGameMutation.mutate({ playlistId });
+      startGameMutation.mutate({ playlistId, mode: GameMode.All });
     }
   }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
 

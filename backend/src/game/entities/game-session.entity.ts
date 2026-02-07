@@ -1,4 +1,4 @@
-import { GameStatus } from '@prisma/client';
+import { GameMode, GameStatus } from '@prisma/client';
 import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -12,8 +12,8 @@ export class GameSessionEntity {
   @ApiProperty({ description: 'The ID of the playlist' })
   playlistId: string;
 
-  @ApiProperty({ description: 'Whether the game is daily' })
-  isDaily: boolean;
+  @ApiProperty({ description: 'The game mode' })
+  mode: GameMode;
 
   @ApiProperty({ description: 'The ID of the track' })
   trackId: string;

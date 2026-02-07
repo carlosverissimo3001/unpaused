@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from './logger/logger.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { TransactionModule } from './transaction/transaction.module';
@@ -10,6 +10,8 @@ import { GameModule } from './game/game.module';
 import { SpotifyModule } from './spotify/spotify.module';
 import { MessageModule } from './message/message.module';
 import { AdminModule } from './admin/admin.module';
+import { BullModule } from '@nestjs/bullmq';
+import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
 
 @Module({
   imports: [
@@ -26,6 +28,18 @@ import { AdminModule } from './admin/admin.module';
     SpotifyModule,
     MessageModule,
     AdminModule,
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          url: config.get<string>('REDIS_URL'),
+        },
+      }),
+    }),
+    BullModule.registerQueue({
+      name: GAME_CLEANUP_QUEUE,
+      defaultJobOptions: JOB_OPTIONS_WITH_BACKOFF,
+    }),
   ],
 })
 export class AppModule {}

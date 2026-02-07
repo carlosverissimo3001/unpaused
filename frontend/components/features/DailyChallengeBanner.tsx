@@ -56,7 +56,6 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
           </div>
         </div>
 
-        {/* Action Button: Sized down for mobile thumb-friendliness */}
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="shrink-0">
           <Button
             variant={showAsPlayed ? "outline" : "spotify"}
@@ -64,8 +63,8 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
             asChild
             className={
               showAsPlayed
-                ? "h-10 sm:h-14 px-4 sm:px-8 rounded-full text-xs sm:text-lg font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
-                : "h-10 sm:h-14 px-4 sm:px-8 rounded-full text-xs sm:text-lg font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]"
+                ? "h-10 sm:h-14 px-4 sm:px-8 !rounded-full text-xs sm:text-lg font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
+                : "h-10 sm:h-14 px-4 sm:px-8 !rounded-full text-xs sm:text-lg font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]"
             }
           >
             <Link

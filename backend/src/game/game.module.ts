@@ -10,6 +10,9 @@ import { SpotifyModule } from '../spotify/spotify.module';
 import { TrackModule } from '../track/track.module';
 import { MessageModule } from '../message/message.module';
 import { GameStatsRepository } from './repositories/game-stats.repository';
+import { BullModule } from '@nestjs/bullmq';
+import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from '../consts';
+import { GameConsumer } from './consumers/game.consumer';
 
 @Module({
   imports: [
@@ -18,6 +21,10 @@ import { GameStatsRepository } from './repositories/game-stats.repository';
     SpotifyModule,
     TrackModule,
     MessageModule,
+    BullModule.registerQueue({
+      name: GAME_CLEANUP_QUEUE,
+      defaultJobOptions: JOB_OPTIONS_WITH_BACKOFF,
+    }),
   ],
   controllers: [GameController, SearchController],
   providers: [
@@ -25,6 +32,7 @@ import { GameStatsRepository } from './repositories/game-stats.repository';
     SearchService,
     GameSessionRepository,
     GameStatsRepository,
+    GameConsumer,
   ],
 })
 export class GameModule {}

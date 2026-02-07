@@ -10,7 +10,7 @@ Name | Type
 `date` | string
 `status` | string
 `score` | number
-`isDaily` | boolean
+`mode` | string
 `guesses` | [Array&lt;GuessHistoryDto&gt;](GuessHistoryDto.md)
 `trackName` | string
 `artistName` | string
@@ -28,7 +28,7 @@ const example = {
   "date": null,
   "status": null,
   "score": null,
-  "isDaily": null,
+  "mode": null,
   "guesses": null,
   "trackName": null,
   "artistName": null,

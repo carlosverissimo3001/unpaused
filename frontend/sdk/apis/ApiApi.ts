@@ -95,7 +95,7 @@ export interface GameControllerGetGameStateRequest {
 }
 
 export interface GameControllerGetHistoryRequest {
-    isDaily?: boolean;
+    mode?: GameControllerGetHistoryModeEnum;
     limit?: number;
     offset?: number;
 }
@@ -517,8 +517,8 @@ export class ApiApi extends runtime.BaseAPI {
     async gameControllerGetHistoryRaw(requestParameters: GameControllerGetHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GameHistoryDto>> {
         const queryParameters: any = {};
 
-        if (requestParameters['isDaily'] != null) {
-            queryParameters['isDaily'] = requestParameters['isDaily'];
+        if (requestParameters['mode'] != null) {
+            queryParameters['mode'] = requestParameters['mode'];
         }
 
         if (requestParameters['limit'] != null) {
@@ -868,6 +868,14 @@ export class ApiApi extends runtime.BaseAPI {
 
 }
 
+/**
+ * @export
+ */
+export const GameControllerGetHistoryModeEnum = {
+    Daily: 'DAILY',
+    All: 'ALL'
+} as const;
+export type GameControllerGetHistoryModeEnum = typeof GameControllerGetHistoryModeEnum[keyof typeof GameControllerGetHistoryModeEnum];
 /**
  * @export
  */

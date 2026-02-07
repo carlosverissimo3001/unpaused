@@ -46,17 +46,17 @@ export interface GameHistoryEntryDto {
      */
     status: GameHistoryEntryDtoStatusEnum;
     /**
-     * Score 0-6 if completed
+     * Score 0-6, may be null if abandoned
      * @type {number}
      * @memberof GameHistoryEntryDto
      */
     score?: number;
     /**
-     * Whether the game was daily
-     * @type {boolean}
+     * The game mode
+     * @type {string}
      * @memberof GameHistoryEntryDto
      */
-    isDaily: boolean;
+    mode: GameHistoryEntryDtoModeEnum;
     /**
      * Guess history
      * @type {Array<GuessHistoryDto>}
@@ -96,9 +96,19 @@ export interface GameHistoryEntryDto {
 export const GameHistoryEntryDtoStatusEnum = {
     Playing: 'PLAYING',
     Won: 'WON',
-    Lost: 'LOST'
+    Lost: 'LOST',
+    Abandoned: 'ABANDONED'
 } as const;
 export type GameHistoryEntryDtoStatusEnum = typeof GameHistoryEntryDtoStatusEnum[keyof typeof GameHistoryEntryDtoStatusEnum];
+
+/**
+ * @export
+ */
+export const GameHistoryEntryDtoModeEnum = {
+    Daily: 'DAILY',
+    All: 'ALL'
+} as const;
+export type GameHistoryEntryDtoModeEnum = typeof GameHistoryEntryDtoModeEnum[keyof typeof GameHistoryEntryDtoModeEnum];
 
 
 /**
@@ -108,7 +118,7 @@ export function instanceOfGameHistoryEntryDto(value: object): value is GameHisto
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('date' in value) || value['date'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
-    if (!('isDaily' in value) || value['isDaily'] === undefined) return false;
+    if (!('mode' in value) || value['mode'] === undefined) return false;
     if (!('guesses' in value) || value['guesses'] === undefined) return false;
     if (!('trackName' in value) || value['trackName'] === undefined) return false;
     if (!('artistName' in value) || value['artistName'] === undefined) return false;
@@ -129,7 +139,7 @@ export function GameHistoryEntryDtoFromJSONTyped(json: any, ignoreDiscriminator:
         'date': json['date'],
         'status': json['status'],
         'score': json['score'] == null ? undefined : json['score'],
-        'isDaily': json['isDaily'],
+        'mode': json['mode'],
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
         'trackName': json['trackName'],
         'artistName': json['artistName'],
@@ -153,7 +163,7 @@ export function GameHistoryEntryDtoToJSONTyped(value?: GameHistoryEntryDto | nul
         'date': value['date'],
         'status': value['status'],
         'score': value['score'],
-        'isDaily': value['isDaily'],
+        'mode': value['mode'],
         'guesses': ((value['guesses'] as Array<any>).map(GuessHistoryDtoToJSON)),
         'trackName': value['trackName'],
         'artistName': value['artistName'],

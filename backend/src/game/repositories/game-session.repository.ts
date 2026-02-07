@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { startOfDay } from 'date-fns';
 import { PrismaService } from '@prisma/prisma.service';
-import { Prisma, GameSession, GameStatus } from '@prisma/client';
+import { Prisma, GameSession, GameStatus, GameMode } from '@prisma/client';
 import { InputJsonValue } from '@prisma/client/runtime/client';
 import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { GameSessionEntity } from '../entities/game-session.entity';
@@ -21,6 +21,13 @@ export class GameSessionRepository {
   ): Promise<GameSessionEntity> {
     const createdSession = await this.prisma.gameSession.create({ data });
     return this.fromPrisma(createdSession);
+  }
+
+  async findMany(
+    where: Prisma.GameSessionWhereInput,
+  ): Promise<GameSessionEntity[]> {
+    const sessions = await this.prisma.gameSession.findMany({ where });
+    return sessions.map((s) => this.fromPrisma(s));
   }
 
   /**
@@ -63,6 +70,17 @@ export class GameSessionRepository {
     return this.fromPrisma(updatedSession);
   }
 
+  async updateMany(
+    where: Prisma.GameSessionWhereInput,
+    updateData: Partial<Prisma.GameSessionUpdateInput>,
+  ): Promise<number> {
+    const result = await this.prisma.gameSession.updateMany({
+      where,
+      data: updateData,
+    });
+    return result.count;
+  }
+
   /**
    * Finds today's daily game session for a user (isDaily true, createdAt >= startOfToday).
    */
@@ -71,7 +89,26 @@ export class GameSessionRepository {
   ): Promise<GameSessionEntity | null> {
     const today = startOfDay(new Date());
     const session = await this.prisma.gameSession.findFirst({
-      where: { userId, isDaily: true, createdAt: { gte: today } },
+      where: { userId, mode: GameMode.DAILY, createdAt: { gte: today } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return session ? this.fromPrisma(session) : null;
+  }
+
+  /**
+   * For a given user and mode, finds an active game session (status = PLAYING).
+   * This is used to prevent starting multiple sessions at the same time.
+   * @param userId - The ID of the user
+   * @param mode - The game mode (e.g. DAILY, NORMAL)
+   * @returns The active GameSession if found, null otherwise
+   * */
+  async findActiveSession(
+    userId: string,
+    mode: GameMode,
+    playlistId?: string,
+  ): Promise<GameSessionEntity | null> {
+    const session = await this.prisma.gameSession.findFirst({
+      where: { userId, mode, status: GameStatus.PLAYING, playlistId },
       orderBy: { createdAt: 'desc' },
     });
     return session ? this.fromPrisma(session) : null;
@@ -86,12 +123,10 @@ export class GameSessionRepository {
   async findUserGameSessions(
     params: FindGameSessionsDto,
   ): Promise<{ items: GameSessionEntity[]; total: number }> {
-    const { userId, isDaily, onlyCompleted, limit, offset } = params;
+    const { userId, mode, onlyCompleted, limit, offset } = params;
 
     const where: Prisma.GameSessionWhereInput = { userId };
-    if (isDaily) {
-      where.isDaily = true;
-    }
+    where.mode = mode;
     if (onlyCompleted) {
       where.completedAt = { not: null };
     }
@@ -110,6 +145,17 @@ export class GameSessionRepository {
       items: items.map((s) => this.fromPrisma(s)),
       total,
     };
+  }
+
+  async markAsAbandoned(id: string): Promise<GameSessionEntity> {
+    const updatedSession = await this.prisma.gameSession.update({
+      where: { id },
+      data: {
+        status: GameStatus.ABANDONED,
+        completedAt: new Date(),
+      },
+    });
+    return this.fromPrisma(updatedSession);
   }
 
   fromPrisma(prismaEntity: GameSession): GameSessionEntity {

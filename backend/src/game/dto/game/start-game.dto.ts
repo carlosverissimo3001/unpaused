@@ -1,8 +1,7 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
-import { Transform } from 'class-transformer';
-import { toBoolean } from '@utils/transformers/toBoolean.transform';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { IsNotNullableOptional } from '@utils/decorators/notNullableOptional.decorator';
+import { GameMode } from '@prisma/client';
 
 export class StartGameDto {
   @ApiPropertyOptional({
@@ -13,9 +12,10 @@ export class StartGameDto {
   @IsNotEmpty()
   playlistId?: string;
 
-  @ApiPropertyOptional({ description: 'Whether the game is daily' })
-  @IsNotNullableOptional()
-  @IsBoolean()
-  @Transform(({ obj }) => toBoolean(obj.isDaily))
-  isDaily?: boolean;
+  @ApiProperty({
+    description: 'The game mode to start (all or daily)',
+    enum: GameMode,
+  })
+  @IsEnum(GameMode)
+  mode: GameMode;
 }

@@ -25,6 +25,7 @@ enum GameStatus {
   PLAYING
   WON
   LOST
+  ABANDONED
 }
 
 model GameSession {
@@ -34,8 +35,8 @@ model GameSession {
   userId String? @map("user_id")
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  playlistId String  @map("playlist_id")
-  isDaily    Boolean @default(false) @map("is_daily")
+  playlistId String   @map("playlist_id")
+  mode       GameMode @default(ALL)
 
   trackId String @map("track_id")
   track   Track  @relation(fields: [trackId], references: [id])
@@ -45,10 +46,11 @@ model GameSession {
   status       GameStatus @default(PLAYING)
 
   createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at") @default(now())
   completedAt DateTime? @map("completed_at")
 
   @@index([userId])
-  @@index([userId, isDaily])
+  @@index([userId, mode])
   @@index([userId, createdAt])
   @@map("game_sessions")
 }
