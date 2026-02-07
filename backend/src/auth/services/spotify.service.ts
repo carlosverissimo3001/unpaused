@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
@@ -152,10 +153,14 @@ export class SpotifyService {
 
       if (response.status === HttpStatus.TOO_MANY_REQUESTS) {
         const retryAfter = response.headers.get('Retry-After');
-        const waitTime = retryAfter ? parseInt(retryAfter, 10) : 60;
+        const parsedWaitTime = retryAfter ? parseInt(retryAfter, 10) : NaN;
+        const waitTime = !isNaN(parsedWaitTime) ? parsedWaitTime : 60;
 
         this.logger.warn(`Rate limited. Retry after ${waitTime}s`);
-        throw new Error(`Rate limited. Try again in ${waitTime}s`);
+        throw new HttpException(
+          `Rate limited. Try again in ${waitTime}s`,
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
       }
 
       this.logger.error(
