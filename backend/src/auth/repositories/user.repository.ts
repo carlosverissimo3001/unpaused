@@ -33,17 +33,6 @@ export class UserRepository {
   }
 
   /**
-   * Gets all trusted users from the database
-   * @returns The UserEntities
-   */
-  async getTrustedUsers(): Promise<UserEntity[]> {
-    const users = await this.prismaService.user.findMany({
-      where: { isTrusted: true },
-    });
-    return users.map((user) => this.fromPrisma(user));
-  }
-
-  /**
    * Upserts a user
    * @param data - The data to upsert the user with
    * @returns The UserEntity
@@ -63,9 +52,14 @@ export class UserRepository {
    * @returns The UserEntity
    */
   private fromPrisma(user: PrismaUser): UserEntity {
-    // This is a weird syntax, but will allow us to map something like a null to undefined lated
     return {
-      ...user,
+      id: user.id,
+      spotifyUserId: user.spotifyUserId,
+      displayName: user.displayName,
+      isTrusted: user.isTrusted,
+      isAdmin: user.isAdmin,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 
@@ -77,5 +71,29 @@ export class UserRepository {
   async isTrusted(spotifyUserId: string): Promise<boolean> {
     const user = await this.findBySpotifyUserId(spotifyUserId);
     return user?.isTrusted ?? false;
+  }
+
+  /**
+   * Updates the encrypted refresh token for a user
+   */
+  async updateRefreshToken(
+    spotifyUserId: string,
+    encryptedRefreshToken: string,
+  ): Promise<void> {
+    await this.prismaService.user.update({
+      where: { spotifyUserId },
+      data: { encryptedRefreshToken },
+    });
+  }
+
+  /**
+   * Gets the encrypted refresh token for a user
+   */
+  async getRefreshToken(spotifyUserId: string): Promise<string | undefined> {
+    const user = await this.prismaService.user.findUnique({
+      where: { spotifyUserId },
+      select: { encryptedRefreshToken: true },
+    });
+    return user?.encryptedRefreshToken ?? undefined;
   }
 }

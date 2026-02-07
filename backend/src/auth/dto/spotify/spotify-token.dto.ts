@@ -12,6 +12,11 @@ export class SpotifyTokenDto {
   refreshToken: string;
 
   @ApiProperty({
+    description: 'Token lifetime in seconds as returned by Spotify',
+  })
+  expiresIn: number;
+
+  @ApiProperty({
     description: 'Unix timestamp (ms) when the access token expires',
   })
   expiresAt: number;

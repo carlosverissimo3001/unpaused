@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,13 +11,17 @@ import { SpotifyTokenResponseDto } from '../dto/spotify/spotify-token-response.d
 import { SpotifyTokenDto } from '../dto/spotify/spotify-token.dto';
 import { SpotifyUserProfileResponseDto } from '../dto/spotify/spotify-user-profile-response.dto';
 import { SCOPES } from '../consts';
+import { AppLoggerService } from '../../logger/logger.service';
 
 @Injectable()
 export class SpotifyService {
   private readonly clientId: string;
   private readonly redirectUri: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private logger: AppLoggerService,
+  ) {
     this.clientId = this.configService.getOrThrow<string>('SPOTIFY_CLIENT_ID');
     this.redirectUri = this.configService.getOrThrow<string>(
       'SPOTIFY_REDIRECT_URI',
@@ -89,6 +94,7 @@ export class SpotifyService {
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
       expiresAt: Date.now() + data.expires_in * 1000,
     };
   }
@@ -122,6 +128,7 @@ export class SpotifyService {
       accessToken: data.access_token,
       // Spotify may or may not return a new refresh token
       refreshToken: data.refresh_token || refreshToken,
+      expiresIn: data.expires_in,
       expiresAt: Date.now() + data.expires_in * 1000,
     };
   }
@@ -139,9 +146,21 @@ export class SpotifyService {
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
+      if (response.status === HttpStatus.UNAUTHORIZED) {
         throw new UnauthorizedException('Spotify token is invalid or expired');
       }
+
+      if (response.status === HttpStatus.TOO_MANY_REQUESTS) {
+        const retryAfter = response.headers.get('Retry-After');
+        const waitTime = retryAfter ? parseInt(retryAfter, 10) : 60;
+
+        this.logger.warn(`Rate limited. Retry after ${waitTime}s`);
+        throw new Error(`Rate limited. Try again in ${waitTime}s`);
+      }
+
+      this.logger.error(
+        `Spotify API error: ${response.status} ${response.statusText}`,
+      );
       throw new BadRequestException(`Spotify API returned ${response.status}`);
     }
 

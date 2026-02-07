@@ -1,4 +1,4 @@
-import { Track } from '@spotify/web-api-ts-sdk';
+import { Track as SpotifyTrack } from '@spotify/web-api-ts-sdk';
 import { getFirstImage } from '@utils/utils';
 import { normalizeText } from '@utils/text';
 import { TrackDto } from '../dto/track.dto';
@@ -8,14 +8,13 @@ import { TrackDto } from '../dto/track.dto';
  * @param track - The Spotify track
  * @returns The track DTO
  */
-export function mapTrack(track: Track): TrackDto {
+export function mapTrack(track: SpotifyTrack): TrackDto {
   return {
     id: track.id,
     name: track.name,
     normalizedName: normalizeText(track.name),
     artists: track.artists.map((a) => a.name),
     primaryArtist: track.artists[0]?.name || 'Unknown Artist',
-    popularity: track.popularity,
     albumName: track.album.name,
     albumId: track.album.id,
     imageUrl: getFirstImage(track.album.images),
@@ -23,7 +22,6 @@ export function mapTrack(track: Track): TrackDto {
     externalUrl: track.external_urls.spotify,
     previewUrl: track.preview_url ?? undefined,
     isPlayable: track.is_playable ?? false,
-    isExplicit: track.explicit,
     releaseYear: track.album.release_date
       ? new Date(track.album.release_date).getFullYear()
       : undefined,

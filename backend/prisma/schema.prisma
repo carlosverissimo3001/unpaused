@@ -7,14 +7,15 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  spotifyUserId String   @unique @map("spotify_user_id")
-  displayName   String   @map("display_name")
-  isTrusted     Boolean  @default(false) @map("is_trusted")
-  isAdmin       Boolean  @default(false) @map("is_admin")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  stats         Stats[]
+  id                    String   @id @default(uuid())
+  spotifyUserId         String   @unique @map("spotify_user_id")
+  displayName           String   @map("display_name")
+  isTrusted             Boolean  @default(false) @map("is_trusted")
+  isAdmin               Boolean  @default(false) @map("is_admin")
+  createdAt             DateTime @default(now()) @map("created_at")
+  encryptedRefreshToken String?  @map("encrypted_refresh_token")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+  stats                 Stats[]
 
   gameSessions GameSession[]
 
@@ -46,7 +47,7 @@ model GameSession {
   status       GameStatus @default(PLAYING)
 
   createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at") @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
   completedAt DateTime? @map("completed_at")
 
   @@index([userId])

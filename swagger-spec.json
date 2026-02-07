@@ -292,7 +292,7 @@
             "name": "mode",
             "required": false,
             "in": "query",
-            "description": "The game mode to filter history by (e.g. daily, playlist)",
+            "description": "The game mode to filter history by (e.g. daily, all)",
             "schema": {
               "enum": [
                 "DAILY",

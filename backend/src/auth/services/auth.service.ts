@@ -1,12 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SpotifyService } from './spotify.service';
+import { SpotifyAuthService } from './spotify-auth.service';
 import { SessionService } from './session.service';
 import { v4 as uuidv4 } from 'uuid';
 import { LoginStartResult } from '../types';
 import { UserRepository } from '../repositories/user.repository';
 import { AuthMeResponseDto } from '../dto/auth.dto';
-import { MS_IN_HOUR, MS_IN_MINUTE } from '../consts';
+import { MS_IN_HOUR } from '../consts';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { User } from '@prisma/client';
 
@@ -15,6 +16,7 @@ export class AuthService {
   constructor(
     private prismaService: PrismaService,
     private spotifyService: SpotifyService,
+    private spotifyAuthService: SpotifyAuthService,
     private sessionService: SessionService,
     private userRepository: UserRepository,
   ) {}
@@ -67,11 +69,18 @@ export class AuthService {
       },
     });
 
+    // Store tokens via SpotifyAuthService (Redis cache + encrypted DB)
+    await this.spotifyAuthService.storeTokens(
+      user.spotifyUserId,
+      tokens.accessToken,
+      tokens.refreshToken,
+      tokens.expiresIn,
+    );
+
     const sessionId = await this.sessionService.createSession(
       user.spotifyUserId,
       user.displayName,
       user.isTrusted,
-      tokens,
     );
 
     return sessionId;
@@ -104,47 +113,23 @@ export class AuthService {
   }
 
   /**
-   * Get session with valid access token (refresh if needed)
+   * Resolves session to get spotifyUserId, then returns a valid access token.
    * @param sessionId - The session ID
-   * @returns The session
+   * @returns The session and a valid access token
    */
-  async getSessionWithValidToken(sessionId: string): Promise<UserSessionDto> {
+  async getValidAccessToken(
+    sessionId: string,
+  ): Promise<{ session: UserSessionDto; accessToken: string }> {
     const session = await this.sessionService.getSession(sessionId);
     if (!session) {
       throw new UnauthorizedException('Session not found');
     }
 
-    const bufferMs = 5 * MS_IN_MINUTE;
-    const timeUntilExpiry = session.tokens.expiresAt - Date.now();
+    const accessToken = await this.spotifyAuthService.getValidAccessToken(
+      session.spotifyUserId,
+    );
 
-    if (timeUntilExpiry < bufferMs) {
-      if (
-        !session.tokens.refreshToken ||
-        session.tokens.refreshToken.trim() === ''
-      ) {
-        if (timeUntilExpiry <= 0) {
-          await this.sessionService.deleteSession(sessionId);
-          throw new UnauthorizedException(
-            'Session expired and cannot be refreshed',
-          );
-        }
-        return session;
-      }
-
-      try {
-        const newTokens = await this.spotifyService.refreshAccessToken(
-          session.tokens.refreshToken,
-        );
-        session.tokens = newTokens;
-        await this.sessionService.updateSession(session);
-      } catch {
-        // Refresh failed, session is invalid
-        await this.sessionService.deleteSession(sessionId);
-        throw new UnauthorizedException('Session invalid');
-      }
-    }
-
-    return session;
+    return { session, accessToken };
   }
 
   /**
@@ -177,10 +162,17 @@ export class AuthService {
   }
 
   /**
-   * Logout: delete session
+   * Logout: delete session and revoke cached tokens
    * @param sessionId - The session ID
    */
   async logout(sessionId: string): Promise<void> {
+    const session = await this.sessionService.getSession(sessionId);
+
+    if (session) {
+      await this.spotifyAuthService.revokeTokens(session.spotifyUserId);
+    } else {
+      // Session already expired — nothing to revoke
+    }
     await this.sessionService.deleteSession(sessionId);
   }
 
@@ -209,17 +201,27 @@ export class AuthService {
       },
     });
 
-    const tokens = {
-      accessToken,
-      refreshToken: refreshToken ?? '',
-      expiresAt: Date.now() + MS_IN_HOUR,
-    };
+    const expiresInSeconds = MS_IN_HOUR / 1000;
+
+    if (refreshToken) {
+      await this.spotifyAuthService.storeTokens(
+        user.spotifyUserId,
+        accessToken,
+        refreshToken,
+        expiresInSeconds,
+      );
+    } else {
+      await this.spotifyAuthService.storeAccessTokenOnly(
+        user.spotifyUserId,
+        accessToken,
+        expiresInSeconds,
+      );
+    }
 
     return this.sessionService.createSession(
       user.spotifyUserId,
       user.displayName,
       user.isTrusted,
-      tokens,
     );
   }
 }

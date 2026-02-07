@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
-import { SpotifyTokenDto } from './spotify/spotify-token.dto';
 
 export class UserSessionDto {
   @ApiProperty({ description: 'Unique identifier for the user session' })
@@ -22,9 +21,4 @@ export class UserSessionDto {
   @ApiProperty({ description: 'Timestamp when the session was created' })
   @IsNumber()
   createdAt: number;
-
-  @ApiProperty({
-    description: 'Spotify tokens associated with the session',
-  })
-  tokens: SpotifyTokenDto;
 }

@@ -25,6 +25,7 @@ const ShouldShakeResult: GuessResult[] = [
 export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   const queryClient = useQueryClient();
   const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
 
   const isPlaylist = mode === GameMode.All;
   const isDaily = mode === GameMode.Daily;
@@ -41,7 +42,7 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   const spotifySearch = useSpotifyTrackSearch();
   const { data: stats } = useGameStats( {mode, useCached: false} );
 
-  const isGameOver = gameState?.status !== GameStateDtoStatusEnum.Playing;
+  const isGameOver = !isResetting && gameState?.status !== GameStateDtoStatusEnum.Playing;
   const gameAudio = useGameAudio({
     previewUrl: gameState?.previewUrl,
     isGameOver: !!isGameOver,
@@ -105,12 +106,25 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
 
   const handlePlayAgain = useCallback(() => {
     gameAudio.stopFullSong();
+    setIsResetting(true);
+
     if (gameState?.sessionId) {
+      queryClient.setQueryData(queryKeys.game.state(gameState.sessionId), null);
       queryClient.removeQueries({ queryKey: queryKeys.game.state(gameState.sessionId) });
     }
+    if (playlistId) {
+      queryClient.setQueryData(
+        queryKeys.game.startedSessionForPlaylist(playlistId),
+        null
+      );
+    }
+
     startGameMutation.reset();
     if (playlistId) {
-      startGameMutation.mutate({ playlistId, mode: GameMode.All });
+      startGameMutation.mutate(
+        { playlistId, mode: GameMode.All },
+        { onSuccess: () => setIsResetting(false) }
+      );
     }
   }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
 

@@ -123,39 +123,62 @@ export class GameService {
     return this.pickPlaylistTrackWithPreview(sessionId, playlistId);
   }
 
-  /** Liked Songs: random offset, fetch 1 track, try until we find one with preview. */
+  /**
+   * Liked Songs: batch-first approach.
+   * Fetches 50 tracks at a random offset (cached for 5 hours), shuffles, and picks one with preview.
+   * Falls back to a second batch if the first yields nothing (very rare).
+   */
   private async pickLikedTrackWithPreview(
     sessionId: string,
   ): Promise<{ selectedTrack: TrackDto; previewUrl: string }> {
-    const total = await this.playlistService.getLikedSongsTotal(sessionId);
+    const { totalTracks: total } =
+      await this.playlistService.getLikedSongsMetadata(sessionId);
     if (!total) {
       throw new BadRequestException('Liked Songs is empty');
     }
 
-    const maxAttempts = 20;
-    for (let i = 0; i < maxAttempts; i++) {
-      const offset = Math.floor(Math.random() * total);
-      const track = await this.playlistService.getOneLikedTrackAtOffset(
+    const maxBatches = 2;
+    for (let batch = 0; batch < maxBatches; batch++) {
+      const batchOffset = Math.floor(Math.random() * Math.max(1, total - 49));
+      const tracks = await this.playlistService.getLikedTracksBatch(
         sessionId,
-        offset,
+        batchOffset,
       );
-      if (!track?.id) {
-        continue;
-      }
-      try {
-        const withPreview = await this.trackService.getTrackWithPreview(
-          track.id,
-          track,
-        );
-        if (withPreview?.previewUrl) {
-          return { selectedTrack: track, previewUrl: withPreview.previewUrl };
+
+      const playable = tracks.filter((t) => t.id);
+      if (!playable.length) continue;
+
+      const shuffleInPlace = <T>(array: T[]): void => {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = array[i];
+          array[i] = array[j];
+          array[j] = temp;
         }
-      } catch (err) {
-        this.logger.warn(
-          `Preview failed for ${track.id}: ${(err as Error).message}`,
-        );
+      };
+
+      const shuffled = [...playable];
+      shuffleInPlace(shuffled);
+      const maxAttempts = Math.min(10, shuffled.length);
+
+      for (let i = 0; i < maxAttempts; i++) {
+        const track = shuffled[i];
+        try {
+          const withPreview = await this.trackService.getTrackWithPreview(
+            track.id,
+            track,
+          );
+          if (withPreview?.previewUrl) {
+            return { selectedTrack: track, previewUrl: withPreview.previewUrl };
+          }
+        } catch (err) {
+          this.logger.warn(
+            `Preview failed for ${track.id}: ${(err as Error).message}`,
+          );
+        }
       }
     }
+
     throw new BadRequestException(
       'No tracks with preview audio in Liked Songs.',
     );
