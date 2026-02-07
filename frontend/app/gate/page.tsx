@@ -17,21 +17,25 @@ export default function GatePage() {
     setError(false);
     setPending(true);
 
-    const res = await fetch("/api/auth/gate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      const res = await fetch("/api/auth/gate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
 
-    
-    if (res.status === 401) {
-      setPending(false);
+      if (!res.ok) {
+        setError(true);
+        return;
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch (error) {
       setError(true);
-      return;
+    } finally {
+      setPending(false);
     }
-
-    router.push("/");
-    router.refresh();
   }
 
   return (
