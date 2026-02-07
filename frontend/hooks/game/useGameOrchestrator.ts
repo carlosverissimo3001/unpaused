@@ -123,8 +123,10 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     if (playlistId) {
       startGameMutation.mutate(
         { playlistId, mode: GameMode.All },
-        { onSuccess: () => setIsResetting(false) }
+        { onSettled: () => setIsResetting(false) }
       );
+    } else {
+      setIsResetting(false);
     }
   }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
 
