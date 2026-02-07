@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { GameStateDtoStatusEnum } from "@/sdk/models/GameStateDto";
 import { GuessHistoryDtoResultEnum as GuessResult } from "@/sdk/models/GuessHistoryDto";
@@ -24,7 +24,8 @@ const ShouldShakeResult: GuessResult[] = [
 
 export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   const queryClient = useQueryClient();
-  const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
+  
+  const processedResultIdRef = useRef<string | null>(null);
 
   const isPlaylist = mode === GameMode.All;
   const isDaily = mode === GameMode.Daily;
@@ -36,10 +37,17 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     error: sessionError,
     startGameMutation,
   } = useGameSession(mode, playlistId);
-  const { data: gameState, isLoading: loadingState, error: errorState } = useGameState(sessionId);
+  
+  const { 
+    data: gameState, 
+    isLoading: loadingState, 
+    error: errorState, 
+    isFetching: isFetchingGameState 
+  } = useGameState(sessionId);
+  
   const submitGuessMutation = useSubmitGuess();
   const spotifySearch = useSpotifyTrackSearch();
-  const { data: stats } = useGameStats( {mode, useCached: false} );
+  const { data: stats } = useGameStats({ mode, useCached: false });
 
   const isGameOver = gameState?.status !== GameStateDtoStatusEnum.Playing;
   const gameAudio = useGameAudio({
@@ -50,19 +58,26 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
 
   const isLoading = isPlaylist || isDaily ? sessionLoading || loadingState : false;
   const error = sessionError ?? errorState;
-  const submitPending = submitGuessMutation.isPending;
+  
+  const isGuessLoading = submitGuessMutation.isPending || (submitGuessMutation.isSuccess && isFetchingGameState);
+
+  const currentGuesses = gameState?.guesses ?? [];
+  const lastGuess = currentGuesses[currentGuesses.length - 1];
+  const currentResult = lastGuess?.result ?? null;
+  
+  const currentGuessKey = lastGuess ? `${gameState?.currentRound}-${currentResult}` : null;
 
   useEffect(() => {
-    if (!gameState?.guesses?.length) {
+    if (isGuessLoading || !currentResult || currentGuessKey === processedResultIdRef.current) {
       return;
     }
-    const last = gameState.guesses[gameState.guesses.length - 1];
-    if (last.result !== lastGuessResult) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Tracking last guess result to trigger confetti once
-      setLastGuessResult(last.result);
-      if (last.result === GuessResult.Correct) triggerConfetti();
+
+    processedResultIdRef.current = currentGuessKey;
+
+    if (currentResult === GuessResult.Correct) {
+      triggerConfetti();
     }
-  }, [gameState?.guesses, lastGuessResult]);
+  }, [currentResult, currentGuessKey, isGuessLoading]);
 
   useEffect(() => {
     if (isGameOver) {
@@ -74,12 +89,9 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   }, [isDaily, isGameOver, queryClient]);
 
   const handleSubmit = useCallback(() => {
-    if (!gameState || submitPending) {
-      return;
-    }
-    if (!spotifySearch.selectedTrack) {
-      return;
-    }
+    if (!gameState || isGuessLoading) return;
+    if (!spotifySearch.selectedTrack) return;
+
     submitGuessMutation.mutate(
       {
         sessionId: gameState.sessionId,
@@ -91,36 +103,33 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
       },
       { onSuccess: () => spotifySearch.handleClearSelection() },
     );
-  }, [gameState, submitPending, spotifySearch, submitGuessMutation]);
+  }, [gameState, isGuessLoading, spotifySearch, submitGuessMutation]);
 
   const handleSkip = useCallback(() => {
-    if (!gameState || submitPending) {
-      return;
-    }
+    if (!gameState || isGuessLoading) return;
     submitGuessMutation.mutate({
       sessionId: gameState.sessionId,
       skip: true,
     });
-  }, [gameState, submitPending, submitGuessMutation]);
+  }, [gameState, isGuessLoading, submitGuessMutation]);
 
   const handlePlayAgain = useCallback(() => {
     gameAudio.stopFullSong();
     if (gameState?.sessionId) {
       queryClient.removeQueries({ queryKey: queryKeys.game.state(gameState.sessionId) });
     }
+    processedResultIdRef.current = null;
     startGameMutation.reset();
     if (playlistId) {
       startGameMutation.mutate({ playlistId, mode: GameMode.All });
     }
   }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
 
-  const lastGuess = gameState?.guesses?.[gameState.guesses.length - 1]
-  const shouldShake = lastGuess 
-  ? ShouldShakeResult.includes(lastGuess.result) 
-  : false;
+  const shouldShake = lastGuess && !isGuessLoading
+    ? ShouldShakeResult.includes(lastGuess.result) 
+    : false;
 
   return {
-    // State
     playlist,
     gameState,
     stats,
@@ -129,12 +138,11 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     isGameOver,
     isPlaylist,
     isDaily,
-    submitPending,
+    submitPending: isGuessLoading,
     shouldShake,
-    // Sub-systems
+    isGuessLoading,
     gameAudio,
     spotifySearch,
-    // Handlers
     handleSubmit,
     handleSkip,
     handlePlayAgain,
