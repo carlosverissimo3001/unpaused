@@ -1,23 +1,22 @@
 "use client";
 
-import { useState, useMemo, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { EmptyHistory } from "@/components/history/EmptyHistory";
+import { HistoryCard } from "@/components/history/HistoryCard";
+import { HistoryFilter } from "@/components/history/HistoryFilter";
+import { HistoryStats } from "@/components/history/HistoryStats";
+import { useMe } from "@/hooks/auth/useMe";
+import { useGameShare } from "@/hooks/game/useGameShare";
+import { useInfiniteGameHistory } from "@/hooks/game/useInfiniteGameHistory";
+import { GameHistoryEntryDtoStatusEnum } from "@/sdk/models/GameHistoryEntryDto";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { toast } from "sonner";
-import { useInfiniteGameHistory } from "@/hooks/game/useInfiniteGameHistory";
-import { useGameShare } from "@/hooks/game/useGameShare";
-import { GameHistoryEntryDtoStatusEnum } from "@/sdk/models/GameHistoryEntryDto";
-import { HistoryStats } from "@/components/history/HistoryStats";
-import { HistoryFilter } from "@/components/history/HistoryFilter";
-import { HistoryCard } from "@/components/history/HistoryCard";
-import { EmptyHistory } from "@/components/history/EmptyHistory";
-import { useMe } from "@/hooks/auth/useMe";
+import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import { useGameStats } from "../../hooks/game/useGameStats";
 import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
-import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 
 function HistoryPageContent() {
   const shareMutation = useGameShare();
@@ -30,7 +29,8 @@ function HistoryPageContent() {
   const { data: stats } = useGameStats( { mode, useCached: true } );
 
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteGameHistory({ mode, enabled: !!user });
+    // Two game modes: ALL and DAILY, but here, in the ALL tab, let's also show the daily games, hence undefinde
+    useInfiniteGameHistory({ mode: dailyOnly ? GameMode.Daily : undefined, enabled: !!user });
 
   const { ref: loadMoreRef } = useInView({
     onChange: (inView) => {
@@ -40,14 +40,7 @@ function HistoryPageContent() {
     },
   });
 
-  const allItems = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data?.pages]);
-
-  const items = useMemo(() => {
-    if (dailyOnly) {
-      return allItems.filter((e) => e.mode === GameMode.Daily);
-    }
-    return allItems;
-  }, [allItems, dailyOnly]);
+  const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data?.pages]);
 
   const handleShare = useCallback(
     async (id: string) => {
@@ -97,7 +90,6 @@ return (
 
       <HistoryFilter dailyOnly={dailyOnly} isTrusted={user?.isTrusted ?? false} onDailyOnlyChange={setDailyOnly} />
 
-      {/* TWO-COLUMN GRID FOR BROWSER */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         <aside className="lg:col-span-4 lg:sticky lg:top-8">
@@ -112,7 +104,6 @@ return (
           </div>
         </aside>
 
-        {/* LIST SECTION */}
         <main className="lg:col-span-8">
           {items.length === 0 ? (
             <EmptyHistory dailyOnly={dailyOnly} />
