@@ -1,10 +1,8 @@
 "use client";
 
-import { memo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock } from "lucide-react";
-import { toZonedTime } from "date-fns-tz";
-import { startOfDay, addDays, differenceInSeconds } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function DailyChallengeCountdown() {
@@ -15,10 +13,9 @@ export function DailyChallengeCountdown() {
   useEffect(() => {
     const calculateTime = () => {
       const now = new Date();
-      const nowUtc = toZonedTime(now, "UTC");
-      const nextReset = startOfDay(addDays(nowUtc, 1));
-      
-      const totalSeconds = differenceInSeconds(nextReset, nowUtc);
+      const targetUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0);
+      const currentUtc = now.getTime();
+      const totalSeconds = Math.max(0, Math.floor((targetUtc - currentUtc) / 1000));
 
       if (totalSeconds <= 0) {
         queryClient.invalidateQueries({ queryKey: ["playedToday"] });
@@ -35,29 +32,30 @@ export function DailyChallengeCountdown() {
     calculateTime();
     const timer = setInterval(calculateTime, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [queryClient]);
 
   if (!isLoaded) return null;
 
   return (
-    <div className="flex items-center gap-3 py-1">
-      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-spotify-green/10 rounded-lg border border-spotify-green/20 backdrop-blur-md">
+    <div className="flex items-center justify-end w-fit">
+      <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-2 bg-spotify-green/10 rounded-full border border-spotify-green/30 backdrop-blur-md shadow-[0_0_15px_rgba(30,215,96,0.1)]">
         <motion.div
-          animate={{ opacity: [0.5, 1, 0.5] }}
+          animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 2, repeat: Infinity }}
+          className="shrink-0 hidden min-[350px]:inline"
         >
-          <Clock className="w-4 h-4 text-spotify-green" />
+          <Clock className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-spotify-green" />
         </motion.div>
         
-        <span className="text-[10px] font-black uppercase tracking-widest text-spotify-green/80 mr-1">
+        <span className="hidden min-[425px]:inline text-[9px] font-black uppercase tracking-widest text-spotify-green/90 mr-0.5 whitespace-nowrap">
           Next Drop:
         </span>
 
-        <div className="flex items-center font-mono font-bold text-white text-sm sm:text-lg">
+        <div className="flex items-center font-mono font-bold text-white text-[11px] sm:text-lg tabular-nums">
           <RollingDigit value={timeLeft.h} label="h" />
-          <span className="mx-0.5 opacity-30">:</span>
+          <span className="mx-0.5 opacity-20">:</span>
           <RollingDigit value={timeLeft.m} label="m" />
-          <span className="mx-0.5 opacity-30">:</span>
+          <span className="mx-0.5 opacity-20">:</span>
           <RollingDigit value={timeLeft.s} label="s" />
         </div>
       </div>
@@ -69,22 +67,29 @@ function RollingDigit({ value, label }: { value: number; label: string }) {
   const displayValue = value.toString().padStart(2, "0");
 
   return (
-    <div className="flex items-baseline">
-      <div className="relative h-[24px] overflow-hidden flex">
+    <div className="flex items-baseline shrink-0">
+      <div className="relative h-[1.2em] overflow-hidden flex items-center justify-center min-w-[2.2ch] sm:min-w-[1.2ch]">
         <AnimatePresence mode="popLayout">
           <motion.span
             key={displayValue}
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            exit={{ y: "-100%", opacity: 0 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 400, 
+              damping: 35,
+              mass: 0.8
+            }}
             className="inline-block"
           >
             {displayValue}
           </motion.span>
         </AnimatePresence>
       </div>
-      <span className="text-[10px] ml-0.5 opacity-40 font-sans">{label}</span>
+      <span className="text-[7px] sm:text-[10px] ml-0.5 opacity-40 font-sans font-normal uppercase">
+        {label}
+      </span>
     </div>
   );
 }

@@ -34,24 +34,23 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
         className="absolute -top-[150px] -right-[100px] w-[300px] h-[300px] bg-spotify-green/15 rounded-full blur-[80px] pointer-events-none"
       />
 
-      <div className="relative z-10 flex flex-row items-center justify-between gap-4">
+      <div className="relative z-10 flex flex-row items-center justify-between gap-2 sm:gap-4">
         <div className="flex flex-col gap-1 sm:gap-3 flex-1 min-w-0">
-          <div className="hidden sm:inline-flex items-center gap-2 w-fit px-3 py-1 rounded-full bg-spotify-green/10 border border-spotify-green/20 text-spotify-green text-[10px] font-black uppercase tracking-[0.2em]">
+          <div className="hidden sm:inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10 w-fit text-[10px] uppercase tracking-wider font-bold text-white/70">
             <Sparkles className="w-3 h-3 fill-current" />
             Daily Event
           </div>
-
-          <div className="space-y-0.5 sm:space-y-1">
-            <h2 className="text-lg sm:text-3xl font-black tracking-tighter text-white truncate">
+          <div className="space-y-0.5 sm:space-y-1 min-w-0">
+            <h2 className="text-lg sm:text-3xl font-black tracking-tighter text-white truncate leading-tight">
               The Daily <span className="text-spotify-green">Mystery.</span>
             </h2>
-            <p className="text-white/50 text-[11px] sm:text-base font-medium line-clamp-1 sm:line-clamp-none">
+            <p className="text-white/50 text-[10px] sm:text-base font-medium truncate sm:line-clamp-none">
               One song, six chances. Guess in 1s.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-3 shrink-0">
+        <div className="flex flex-col items-end gap-2 sm:gap-3 shrink-0">
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant={showAsPlayed ? "outline" : "spotify"}
@@ -59,8 +58,8 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
               asChild
               className={
                 showAsPlayed
-                  ? "h-10 sm:h-14 px-4 sm:px-8 !rounded-full text-xs sm:text-lg font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
-                  : "h-10 sm:h-14 px-4 sm:px-8 !rounded-full text-xs sm:text-lg font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]"
+                  ? "h-9 sm:h-14 px-4 sm:px-8 !rounded-full text-[11px] sm:text-lg font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
+                  : "h-9 sm:h-14 px-4 sm:px-8 !rounded-full text-[11px] sm:text-lg font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]"
               }
             >
               <Link
@@ -88,7 +87,7 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mr-2"
+              className="w-full flex justify-end"
             >
               <DailyChallengeCountdown />
             </motion.div>
