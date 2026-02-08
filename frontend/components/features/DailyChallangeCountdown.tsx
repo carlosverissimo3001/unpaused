@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
 import { startOfDay, addDays, differenceInSeconds } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function DailyChallengeCountdown() {
   const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const calculateTime = () => {
@@ -17,6 +19,10 @@ export function DailyChallengeCountdown() {
       const nextReset = startOfDay(addDays(nowUtc, 1));
       
       const totalSeconds = differenceInSeconds(nextReset, nowUtc);
+
+      if (totalSeconds <= 0) {
+        queryClient.invalidateQueries({ queryKey: ["playedToday"] });
+      }
       
       setTimeLeft({
         h: Math.floor(totalSeconds / 3600),
