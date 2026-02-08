@@ -49,13 +49,13 @@ export class PlaylistService {
       return this.getLikedSongsMetadata(sessionId);
     }
 
-    const cacheKey = `${PLAYLIST_META_CACHE_PREFIX}${playlistId}`;
+    const { sdk, session } = await this.spotifyService.getClient(sessionId);
+    const cacheKey = `${PLAYLIST_META_CACHE_PREFIX}${session.spotifyUserId}:${playlistId}`;
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
     }
 
-    const { sdk } = await this.spotifyService.getClient(sessionId);
     const playlist = await this.spotifyService.safeCall(
       () =>
         sdk.playlists.getPlaylist(
