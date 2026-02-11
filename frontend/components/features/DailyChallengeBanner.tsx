@@ -58,25 +58,25 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
               asChild
               className={
                 showAsPlayed
-                  ? "h-9 sm:h-14 px-4 sm:px-8 !rounded-full text-[11px] sm:text-lg font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
-                  : "h-9 sm:h-14 px-4 sm:px-8 !rounded-full text-[11px] sm:text-lg font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]"
+                  ? "h-9 sm:h-11 px-4 sm:px-6 !rounded-full text-[11px] sm:text-base font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
+                  : "h-9 sm:h-11 px-4 sm:px-6 !rounded-full text-[11px] sm:text-base font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]"
               }
             >
               <Link
                 href={showAsPlayed ? "/daily/stats" : "/daily"}
-                className="flex items-center gap-2 sm:gap-3"
+                className="flex items-center gap-2"
               >
                 {showAsPlayed ? (
                   <>
-                    <BarChart3 className="w-3 h-3 sm:w-5 sm:h-5" />
+                    <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>Stats</span>
-                    <ArrowRight className="hidden sm:block w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="hidden sm:block w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </>
                 ) : (
                   <>
-                    <Play fill="currentColor" className="w-3 h-3 sm:w-5 sm:h-5" />
+                    <Play fill="currentColor" className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>Play</span>
-                    <ArrowRight className="hidden sm:block w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="hidden sm:block w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </Link>

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, Disc3 } from "lucide-react";
 import type { TrackOptionDto } from "@/sdk";
+import { MIN_QUERY_LENGTH } from "@/consts/consts";
 
 export interface GuessSearchState {
   searchQuery: string;
@@ -156,8 +157,8 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                     <div className="p-4 text-[#b3b3b3] text-center text-sm">
                       {isLoading
                         ? "Searching..."
-                        : searchQuery.trim().length < 2
-                        ? "Type at least 2 characters"
+                        : searchQuery.trim().length < MIN_QUERY_LENGTH
+                        ? `Type at least ${MIN_QUERY_LENGTH} characters`
                         : "No songs found"}
                     </div>
                   )}

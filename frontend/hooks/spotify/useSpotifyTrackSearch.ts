@@ -4,9 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import type { TrackOptionDto } from "@/sdk";
 import { api } from "@/sdk/client";
+import { MIN_QUERY_LENGTH, DEBOUNCE_MS } from "../../consts/consts";
 
-const DEBOUNCE_MS = 350;
-const MIN_QUERY_LENGTH = 2;
 
 /**
  * Hook for Spotify track search (game guess dropdown).

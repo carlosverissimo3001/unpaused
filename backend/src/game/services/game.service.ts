@@ -15,7 +15,6 @@ import { normalizeText, normalizeTrackNameForMatch } from '@utils/text';
 import { formatDate, subHours } from 'date-fns';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 import { AppLoggerService } from '../../logger/logger.service';
-import { MessageService } from '../../message/services/message.service';
 import { EMOJIS, GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
 import { PlayedTodayDto } from '../dto/daily/played-today.dto';
 import { ShareResultDto } from '../dto/daily/share-result.dto';
@@ -48,7 +47,6 @@ export class GameService {
     private readonly trackService: TrackService,
     private readonly trackRepository: TrackRepository,
     private readonly gameSessionRepository: GameSessionRepository,
-    private readonly messageService: MessageService,
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
     private readonly gameStatsRepository: GameStatsRepository,
@@ -84,6 +82,7 @@ export class GameService {
       mode === GameMode.DAILY
         ? `${userId}-${LIKED_SONGS_ID_SUFFIX}`
         : playlistId;
+
     if (!targetPlaylistId) {
       throw new BadRequestException('Playlist ID is required');
     }
