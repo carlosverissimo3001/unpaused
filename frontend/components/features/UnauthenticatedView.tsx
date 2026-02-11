@@ -4,7 +4,8 @@ import { memo } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+const isDev = process.env.NODE_ENV === "development";
 
 interface UnauthenticatedViewProps {
   onTokenLogin: (token: string) => Promise<void>;
@@ -51,95 +52,80 @@ function UnauthenticatedViewComponent({
         </div>
 
         <div className="flex flex-col items-center gap-4 sm:gap-6">
-          <TooltipProvider>
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <div className="relative group cursor-not-allowed">
-                  <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
-                  <Button
-                    variant="spotify"
-                    className="relative !h-12 sm:!h-16 px-8 sm:px-10 !rounded-full text-sm sm:text-base font-bold transition-all duration-500 opacity-40 grayscale w-fit min-w-[240px] shadow-xl"
-                  >
-                    <Image
-                      src="/spotify-icon.svg"
-                      alt="Spotify"
-                      width={24}
-                      height={24}
-                      className="mr-3 shrink-0"
-                    />
-                    Continue with Spotify
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className="bg-zinc-950 border border-white/10 text-white p-3 rounded-xl shadow-2xl backdrop-blur-xl"
-              >
-                <p className="text-[11px] leading-snug text-center">
-                  Spotify API is currently restricted. <br />
-                  <span className="text-spotify-green font-bold">
-                    Use the Access Token method below!
-                  </span>
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <div className="w-full max-w-sm flex flex-col gap-4 pt-4 sm:pt-8 border-t border-white/5">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold text-center">
-              Developer Access
-            </p>
-
-            <div className="relative flex items-center p-1.5 bg-white/[0.03] backdrop-blur-xl rounded-full border border-white/10 focus-within:border-spotify-green/40 focus-within:bg-white/[0.06] transition-all duration-500 shadow-2xl">
-              <input
-                autoFocus
-                inputMode="text"
-                type="text"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck="false"
-                value={tokenInput}
-                onChange={(e) => setTokenInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleTokenLogin();
-                }}
-                placeholder="Paste access token..."
-                className="flex-1 bg-transparent pl-4 pr-2 py-2 text-sm outline-none placeholder:text-white/10 text-white min-w-0"
+          <a href="/api/auth/login" className="relative group">
+            <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
+            <Button
+              variant="spotify"
+              className="relative !h-12 sm:!h-16 px-8 sm:px-10 !rounded-full text-sm sm:text-base font-bold transition-all duration-500 w-fit min-w-[240px] shadow-xl"
+            >
+              <Image
+                src="/spotify-icon.svg"
+                alt="Spotify"
+                width={24}
+                height={24}
+                className="mr-3 shrink-0"
               />
+              Continue with Spotify
+            </Button>
+          </a>
 
-              <Button
-                onClick={handleTokenLogin}
-                disabled={!tokenInput.trim() || isTokenLoginPending}
-                className={`
-                  !h-8 sm:!h-10 
-                  px-5 sm:px-8 
-                  !rounded-full 
-                  bg-white !text-black 
-                  hover:bg-spotify-green transition-all duration-300 
-                  shadow-lg active:scale-95 disabled:opacity-30 
-                  shrink-0 border-none
-                `}
-              >
-                <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest">
-                  {isTokenLoginPending ? "..." : "Login"}
-                </span>
-              </Button>
-            </div>
+          {isDev && (
+            <div className="w-full max-w-sm flex flex-col gap-4 pt-4 sm:pt-8 border-t border-white/5">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold text-center">
+                Developer Access
+              </p>
 
-            <AnimatePresence>
-              {tokenLoginError && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="text-red-400 text-[10px] sm:text-xs font-medium mt-1 flex items-center justify-center gap-2"
+              <div className="relative flex items-center p-1.5 bg-white/[0.03] backdrop-blur-xl rounded-full border border-white/10 focus-within:border-spotify-green/40 focus-within:bg-white/[0.06] transition-all duration-500 shadow-2xl">
+                <input
+                  autoFocus
+                  inputMode="text"
+                  type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleTokenLogin();
+                  }}
+                  placeholder="Paste access token..."
+                  className="flex-1 bg-transparent pl-4 pr-2 py-2 text-sm outline-none placeholder:text-white/10 text-white min-w-0"
+                />
+
+                <Button
+                  onClick={handleTokenLogin}
+                  disabled={!tokenInput.trim() || isTokenLoginPending}
+                  className={`
+                    !h-8 sm:!h-10
+                    px-5 sm:px-8
+                    !rounded-full
+                    bg-white !text-black
+                    hover:bg-spotify-green transition-all duration-300
+                    shadow-lg active:scale-95 disabled:opacity-30
+                    shrink-0 border-none
+                  `}
                 >
-                  <div className="w-1 h-1 rounded-full bg-red-400" />
-                  {tokenLoginError.message || "Invalid or expired token"}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest">
+                    {isTokenLoginPending ? "..." : "Login"}
+                  </span>
+                </Button>
+              </div>
+
+              <AnimatePresence>
+                {tokenLoginError && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-red-400 text-[10px] sm:text-xs font-medium mt-1 flex items-center justify-center gap-2"
+                  >
+                    <div className="w-1 h-1 rounded-full bg-red-400" />
+                    {tokenLoginError.message || "Invalid or expired token"}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

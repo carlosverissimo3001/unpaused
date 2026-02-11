@@ -57,16 +57,9 @@ export class AuthService {
     );
     const displayName = profile.displayName || profile.id;
 
-    // fyi: Move this to repo later
-    const user = await this.prismaService.user.upsert({
-      where: { spotifyUserId: profile.id },
-      create: {
-        spotifyUserId: profile.id,
-        displayName,
-      },
-      update: {
-        displayName,
-      },
+    const user = await this.userRepository.upsert({
+      spotifyUserId: profile.id,
+      displayName,
     });
 
     // Store tokens via SpotifyAuthService (Redis cache + encrypted DB)

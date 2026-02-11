@@ -23,16 +23,15 @@ export default function Home() {
   const [tokenInput, setTokenInput] = useState("");
   const [ambientColor, setAmbientColor] = useState<string>("rgba(30, 215, 96, 0.1)");
 
-  // Custom hooks
   const playlistFilters = usePlaylistFilters();
   const playlistUrlLoader = usePlaylistUrlLoader();
   const { error } = useAuthError();
 
-  // Data fetching hooks
   const { data: user, isLoading: isLoadingUser } = useMe();
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } = useMyPlaylists({
     onlyPublic: playlistFilters.onlyPublic,
     onlyUserOwned: playlistFilters.onlyUserOwned,
+    enabled: !!user,
   });
   const logoutMutation = useLogout();
   const tokenLoginMutation = useTokenLogin();

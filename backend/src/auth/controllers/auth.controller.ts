@@ -25,6 +25,8 @@ import { AuthService } from '../services/auth.service';
 import { TokenLoginDto } from '../dto/token-login.dto';
 import { AppLoggerService } from '../../logger/logger.service';
 import { SessionId } from '../../utils/decorators/sessionId.decorator';
+import { SpotifyOAuthCallbackDto } from '../dto/spotify/spotify-oauth-callback.dto';
+import { buildErrorRedirect, getCookieOptions } from '../utils/http-helpers';
 
 @ApiTags('Api')
 @Controller('auth')
@@ -61,36 +63,26 @@ export class AuthController {
   @ApiOperation({ summary: 'Handle Spotify OAuth callback' })
   @ApiResponse({ status: 302, description: 'Redirects to frontend after auth' })
   async callback(
-    @Query('code') code: string,
-    @Query('state') state: string,
-    @Query('error') error: string,
+    @Query() params: SpotifyOAuthCallbackDto,
     @Res() res: Response,
   ) {
-    if (error) {
-      return res.redirect(
-        `${this.frontendUrl}?error=${encodeURIComponent(error)}`,
-      );
-    }
+    const { code, state, error } = params;
 
-    if (!code || !state) {
-      return res.redirect(`${this.frontendUrl}?error=missing_params`);
+    if (error) {
+      return res.redirect(buildErrorRedirect(this.frontendUrl, error));
     }
 
     try {
       const sessionId = await this.authService.handleCallback(code, state);
-
-      res.cookie(SESSION_COOKIE_NAME, sessionId, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: this.sessionMaxAge * 1000,
-        path: '/',
-      });
-
+      res.cookie(
+        SESSION_COOKIE_NAME,
+        sessionId,
+        getCookieOptions({ sessionMaxAge: this.sessionMaxAge }),
+      );
       res.redirect(this.frontendUrl);
     } catch (err) {
       this.logger.error('OAuth callback error:', err);
-      res.redirect(`${this.frontendUrl}?error=auth_failed`);
+      res.redirect(buildErrorRedirect(this.frontendUrl, 'auth_failed'));
     }
   }
 
@@ -98,7 +90,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current authenticated user' })
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: AuthMeResponseDto })
-  @ApiResponse({ status: 401, description: 'Not authenticated' })
   async me(@SessionId() sessionId: string): Promise<AuthMeResponseDto> {
     const user = await this.authService.getCurrentUser(sessionId);
     if (!user) {
@@ -119,12 +110,10 @@ export class AuthController {
       await this.authService.logout(sessionId);
     }
 
-    res.clearCookie(SESSION_COOKIE_NAME, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-    });
+    res.clearCookie(
+      SESSION_COOKIE_NAME,
+      getCookieOptions({ sessionMaxAge: this.sessionMaxAge }),
+    );
 
     res.json({ success: true });
   }
@@ -138,8 +127,6 @@ export class AuthController {
   })
   @ApiBody({ type: TokenLoginDto })
   @ApiResponse({ status: 200, description: 'Successfully logged in' })
-  @ApiResponse({ status: 401, description: 'Invalid token' })
-  @ApiResponse({ status: 403, description: 'Not available in production' })
   async tokenLogin(@Body() body: TokenLoginDto, @Res() res: Response) {
     if (this.configService.get<string>('ENABLE_TOKEN_LOGIN') !== 'true') {
       throw new ForbiddenException(
@@ -155,14 +142,16 @@ export class AuthController {
 
       const isProd =
         this.configService.get<string>('NODE_ENV') === 'production';
+      const sameSite = isProd ? 'none' : 'lax';
 
-      res.cookie(SESSION_COOKIE_NAME, sessionId, {
-        httpOnly: true,
-        secure: isProd,
-        sameSite: isProd ? 'none' : 'lax',
-        maxAge: this.sessionMaxAge * 1000,
-        path: '/',
-      });
+      res.cookie(
+        SESSION_COOKIE_NAME,
+        sessionId,
+        getCookieOptions({
+          sessionMaxAge: this.sessionMaxAge,
+          sameSiteOverride: sameSite,
+        }),
+      );
 
       res.json({ success: true });
     } catch (err) {
