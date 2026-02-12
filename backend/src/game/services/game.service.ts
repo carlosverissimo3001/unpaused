@@ -542,10 +542,15 @@ export class GameService {
     dto: GetHistoryDto,
   ): Promise<GameHistoryDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const limit = dto.limit ?? 10;
+    const page = dto.page ?? 1;
+
     const { items, total } =
       await this.gameSessionRepository.findUserGameSessions({
         userId,
         ...dto,
+        limit,
+        page,
         // In the history tab, we don't care about incomplete games
         onlyCompleted: true,
       });
@@ -570,11 +575,20 @@ export class GameService {
       };
     });
 
-    // For DAILY mode, include streak freeze usages in the response
+    // For DAILY mode, include streak freeze usages scoped to the page date range
     let streakFreezeUsages: StreakFreezeUsageDto[] | undefined;
-    if (dto.mode === GameMode.DAILY) {
+    if (dto.mode === GameMode.DAILY && entries.length > 0) {
+      const pageDates = entries.map((e) => e.date);
+      const oldestDate = pageDates[pageDates.length - 1]; // sorted desc, last = oldest
+      const newestDate = pageDates[0];
+
+      // TODO: move to StreakService, create a repo there
       const usages = await this.prisma.streakFreezeUsage.findMany({
-        where: { userId },
+        where: {
+          userId,
+          coveredFrom: { gte: new Date(oldestDate) },
+          coveredTo: { lte: new Date(newestDate + 'T23:59:59.999Z') },
+        },
         orderBy: { createdAt: 'desc' },
       });
       streakFreezeUsages = usages.map((u) => ({
@@ -587,7 +601,19 @@ export class GameService {
       }));
     }
 
-    return { items: entries, total, streakFreezeUsages };
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: entries,
+      meta: {
+        totalItems: total,
+        itemCount: entries.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+      streakFreezeUsages,
+    };
   }
 
   async getStats(

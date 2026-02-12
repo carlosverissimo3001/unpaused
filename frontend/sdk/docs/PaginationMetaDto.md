@@ -1,26 +1,30 @@
 
-# GameHistoryDto
+# PaginationMetaDto
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`items` | [Array&lt;GameHistoryEntryDto&gt;](GameHistoryEntryDto.md)
-`meta` | [PaginationMetaDto](PaginationMetaDto.md)
-`streakFreezeUsages` | [Array&lt;StreakFreezeUsageDto&gt;](StreakFreezeUsageDto.md)
+`totalItems` | number
+`itemCount` | number
+`itemsPerPage` | number
+`totalPages` | number
+`currentPage` | number
 
 ## Example
 
 ```typescript
-import type { GameHistoryDto } from ''
+import type { PaginationMetaDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "items": null,
-  "meta": null,
-  "streakFreezeUsages": null,
-} satisfies GameHistoryDto
+  "totalItems": null,
+  "itemCount": null,
+  "itemsPerPage": null,
+  "totalPages": null,
+  "currentPage": null,
+} satisfies PaginationMetaDto
 
 console.log(example)
 
@@ -29,7 +33,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as GameHistoryDto
+const exampleParsed = JSON.parse(exampleJSON) as PaginationMetaDto
 console.log(exampleParsed)
 ```
 

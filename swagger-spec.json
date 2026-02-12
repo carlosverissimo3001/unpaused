@@ -296,21 +296,67 @@
             }
           },
           {
-            "name": "limit",
+            "name": "page",
             "required": false,
             "in": "query",
-            "description": "The limit of the history",
+            "description": "Page number (1-indexed)",
             "schema": {
+              "default": 1,
               "type": "number"
             }
           },
           {
-            "name": "offset",
+            "name": "limit",
             "required": false,
             "in": "query",
-            "description": "The offset of the history",
+            "description": "Items per page",
             "schema": {
+              "default": 10,
               "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by track name, artist name, or album name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by game status",
+            "schema": {
+              "enum": [
+                "PLAYING",
+                "WON",
+                "LOST",
+                "ABANDONED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Filter from date (ISO 8601)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Filter to date (ISO 8601)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
             }
           }
         ],
@@ -1336,10 +1382,6 @@
           "albumImageUrl": {
             "type": "string",
             "description": "Album image URL"
-          },
-          "playlistName": {
-            "type": "string",
-            "description": "Playlist/source name e.g. Liked Songs"
           }
         },
         "required": [
@@ -1350,6 +1392,38 @@
           "guesses",
           "trackName",
           "artistName"
+        ]
+      },
+      "PaginationMetaDto": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "number",
+            "description": "Total number of items across all pages"
+          },
+          "itemCount": {
+            "type": "number",
+            "description": "Number of items on the current page"
+          },
+          "itemsPerPage": {
+            "type": "number",
+            "description": "Number of items per page"
+          },
+          "totalPages": {
+            "type": "number",
+            "description": "Total number of pages"
+          },
+          "currentPage": {
+            "type": "number",
+            "description": "Current page number (1-indexed)"
+          }
+        },
+        "required": [
+          "totalItems",
+          "itemCount",
+          "itemsPerPage",
+          "totalPages",
+          "currentPage"
         ]
       },
       "StreakFreezeUsageDto": {
@@ -1398,9 +1472,13 @@
               "$ref": "#/components/schemas/GameHistoryEntryDto"
             }
           },
-          "total": {
-            "type": "number",
-            "description": "Total count"
+          "meta": {
+            "description": "Pagination metadata",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMetaDto"
+              }
+            ]
           },
           "streakFreezeUsages": {
             "description": "Streak freeze usages within the date range (only for DAILY mode)",
@@ -1412,7 +1490,7 @@
         },
         "required": [
           "items",
-          "total"
+          "meta"
         ]
       },
       "GameStatsDto": {

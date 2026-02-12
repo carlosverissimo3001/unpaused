@@ -7,6 +7,7 @@ import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { GameSessionEntity } from '../entities/game-session.entity';
 import { mapGuessesFromPrisma } from '../utils/guess-mapper';
 import { FindGameSessionsDto } from '../dto/session/find-game-sessions.dto';
+import { GAME_HISTORY_DEFAULT_PAGE_SIZE } from '../consts';
 
 @Injectable()
 export class GameSessionRepository {
@@ -124,20 +125,56 @@ export class GameSessionRepository {
   async findUserGameSessions(
     params: FindGameSessionsDto,
   ): Promise<{ items: GameSessionEntity[]; total: number }> {
-    const { userId, mode, onlyCompleted, limit, offset } = params;
+    const {
+      userId,
+      mode,
+      onlyCompleted,
+      limit = GAME_HISTORY_DEFAULT_PAGE_SIZE,
+      page = 1,
+      search,
+      status,
+      from,
+      to,
+    } = params;
 
     const where: Prisma.GameSessionWhereInput = { userId };
-    where.mode = mode;
+    if (mode) {
+      where.mode = mode;
+    }
+    if (status) {
+      where.status = status;
+    }
     if (onlyCompleted) {
       where.completedAt = { not: null };
     }
+
+    // Date range filter on completedAt
+    if (from || to) {
+      where.completedAt = {
+        ...(from ? { gte: from } : {}),
+        ...(to ? { lte: to } : {}),
+      };
+    }
+
+    // Search across track name, artist name, and album name
+    if (search) {
+      where.track = {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { artistName: { contains: search, mode: 'insensitive' } },
+          { albumName: { contains: search, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
       this.prisma.gameSession.findMany({
         where,
         orderBy: { completedAt: 'desc' },
         take: limit,
-        skip: offset,
+        skip,
       }),
       this.prisma.gameSession.count({ where }),
     ]);

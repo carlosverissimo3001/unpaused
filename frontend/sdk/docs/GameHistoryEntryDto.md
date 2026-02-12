@@ -15,7 +15,6 @@ Name | Type
 `trackName` | string
 `artistName` | string
 `albumImageUrl` | string
-`playlistName` | string
 
 ## Example
 
@@ -33,7 +32,6 @@ const example = {
   "trackName": null,
   "artistName": null,
   "albumImageUrl": null,
-  "playlistName": null,
 } satisfies GameHistoryEntryDto
 
 console.log(example)

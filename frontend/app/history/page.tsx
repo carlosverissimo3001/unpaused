@@ -1,17 +1,23 @@
 'use client';
 
 import { EmptyHistory } from '@/components/history/EmptyHistory';
+import { FloatingPaginationPill } from '@/components/history/FloatingPaginationPill';
 import { FreezeHistoryCard } from '@/components/history/FreezeHistoryCard';
 import { HistoryCard } from '@/components/history/HistoryCard';
 import { StreakLostCard } from '@/components/history/StreakLostCard';
 import { HistoryFilter } from '@/components/history/HistoryFilter';
 import { HistoryStats } from '@/components/history/HistoryStats';
-import { Pagination } from '@/components/history/Pagination';
+import { SearchHeader } from '@/components/history/SearchHeader';
 import { useMe } from '@/hooks/auth/useMe';
 import { useGameShare } from '@/hooks/game/useGameShare';
-import { useGameHistory, PAGE_SIZE } from '@/hooks/game/useGameHistory';
+import {
+  useGameHistory,
+  DEFAULT_PAGE_SIZE,
+  type PageSize,
+} from '@/hooks/game/useGameHistory';
 import { usePlayedToday } from '@/hooks/game/usePlayedToday';
 import { GameHistoryEntryDtoStatusEnum } from '@/sdk/models/GameHistoryEntryDto';
+import { GameControllerGetHistoryStatusEnum as GameStatusFilter } from '@/sdk/apis/ApiApi';
 import type { GameHistoryEntryDto } from '@/sdk/models/GameHistoryEntryDto';
 import type { StreakFreezeUsageDto } from '@/sdk/models/StreakFreezeUsageDto';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -19,7 +25,7 @@ import { differenceInCalendarDays, parseISO, format, addDays } from 'date-fns';
 import { BarChart3, Play } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { useGameStats } from '../../hooks/game/useGameStats';
@@ -32,16 +38,26 @@ type TimelineEntry =
   | { type: 'freeze'; data: StreakFreezeUsageDto }
   | { type: 'streak-lost'; data: StreakLostEntry };
 
+function getEntryDate(e: TimelineEntry): string {
+  if (e.type === 'game') return e.data.date;
+  if (e.type === 'freeze') return e.data.coveredTo;
+  return e.data.to;
+}
+
 function HistoryPageContent() {
   const shareMutation = useGameShare();
-  const { data: user } = useMe();
+  const { data: user, isLoading: isAuthLoading } = useMe();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const [dailyOnly, setDailyOnly] = useState(
     searchParams.get('filter') === 'daily',
   );
   const [page, setPage] = useState(1);
-  const mainRef = useRef<HTMLElement>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<
+    GameStatusFilter | undefined
+  >(undefined);
+  const [pageSize, setPageSize] = useState<PageSize>(DEFAULT_PAGE_SIZE);
 
   const mode = dailyOnly ? GameMode.Daily : GameMode.All;
   const { data: stats } = useGameStats({ mode, useCached: true });
@@ -49,50 +65,73 @@ function HistoryPageContent() {
     enabled: dailyOnly && !!user,
   });
 
-  const { data, isLoading, isPlaceholderData, error } = useGameHistory({
-    mode: dailyOnly ? GameMode.Daily : undefined,
-    page,
-    enabled: !!user,
-  });
+  const isFiltered = !!search || !!statusFilter;
 
-  const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 0;
+  const { data, isLoading, isPlaceholderData, error } = useGameHistory(
+    {
+      mode: dailyOnly ? GameMode.Daily : undefined,
+      page,
+      pageSize,
+      search: search || undefined,
+      status: statusFilter,
+    },
+    !!user,
+  );
+
+  const totalPages = data?.meta.totalPages ?? 0;
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
-    // Scroll the main column to the top so the sticky pagination stays in view
-    mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleFilterChange = useCallback((daily: boolean) => {
     setDailyOnly(daily);
-    setPage(1); // reset to first page on filter change
+    setPage(1);
+  }, []);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
+
+  const handleStatusChange = useCallback(
+    (value: GameStatusFilter | undefined) => {
+      setStatusFilter(value);
+      setPage(1);
+    },
+    [],
+  );
+
+  const handlePageSizeChange = useCallback((size: PageSize) => {
+    setPageSize(size);
+    setPage(1);
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setSearch('');
+    setStatusFilter(undefined);
+    setPage(1);
   }, []);
 
   const timeline = useMemo(() => {
     const gameItems = data?.items ?? [];
     const freezeUsages = data?.streakFreezeUsages ?? [];
 
-    // Merge game + freeze entries, sorted by date descending
     const entries: TimelineEntry[] = [
       ...gameItems.map((data) => ({ type: 'game' as const, data })),
       ...freezeUsages.map((data) => ({ type: 'freeze' as const, data })),
     ];
-    const getSortDate = (e: TimelineEntry) =>
-      e.type === 'game'
-        ? e.data.date
-        : e.type === 'freeze'
-          ? e.data.coveredTo
-          : e.data.to;
-    entries.sort((a, b) => getSortDate(b).localeCompare(getSortDate(a)));
+    entries.sort((a, b) => getEntryDate(b).localeCompare(getEntryDate(a)));
 
-    // For daily mode, detect gaps not covered by freezes and insert "streak lost" markers
-    if (!dailyOnly || entries.length < 2) return entries;
+    // For daily mode, detect gaps not covered by freezes and insert "streak lost" markers.
+    // Skip when filters are active — filtered-out games create artificial gaps.
+    if (!dailyOnly || isFiltered || entries.length < 2) return entries;
 
     const result: TimelineEntry[] = [entries[0]];
     for (let i = 1; i < entries.length; i++) {
-      const newerDate = parseISO(getSortDate(entries[i - 1]));
-      const olderDate = parseISO(getSortDate(entries[i]));
+      const newerDate = parseISO(getEntryDate(entries[i - 1]));
+      const olderDate = parseISO(getEntryDate(entries[i]));
       const gap = differenceInCalendarDays(newerDate, olderDate);
       if (gap > 1) {
         const gapFrom = addDays(olderDate, 1);
@@ -109,7 +148,7 @@ function HistoryPageContent() {
       result.push(entries[i]);
     }
     return result;
-  }, [data?.items, data?.streakFreezeUsages, dailyOnly]);
+  }, [data?.items, data?.streakFreezeUsages, dailyOnly, isFiltered]);
 
   const handleShare = useCallback(
     async (id: string) => {
@@ -127,7 +166,8 @@ function HistoryPageContent() {
     [shareMutation],
   );
 
-  if (isLoading) {
+  // Show spinner while auth is resolving to prevent flash of empty state
+  if (isAuthLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="md" />
@@ -151,7 +191,7 @@ function HistoryPageContent() {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-8 lg:p-12 max-w-5xl mx-auto pb-12 relative">
+    <div className="min-h-screen p-4 sm:p-8 lg:p-12 max-w-5xl mx-auto pb-24 relative">
       <div
         className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-spotify-green/10 via-transparent to-transparent"
         aria-hidden
@@ -163,7 +203,7 @@ function HistoryPageContent() {
         onDailyOnlyChange={handleFilterChange}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-8 items-start">
         <aside className="lg:col-span-4 lg:sticky lg:top-8">
           {stats && <HistoryStats stats={stats} />}
           <div className="hidden lg:block mt-6 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
@@ -195,11 +235,15 @@ function HistoryPageContent() {
           </div>
         </aside>
 
-        <main ref={mainRef} className="lg:col-span-8">
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
+        <main className="lg:col-span-8">
+          <SearchHeader
+            search={search}
+            onSearchChange={handleSearchChange}
+            status={statusFilter}
+            onStatusChange={handleStatusChange}
+            totalItems={data?.meta.totalItems ?? 0}
+            isFiltered={isFiltered}
+            onClearFilters={handleClearFilters}
           />
 
           {timeline.length === 0 && !isPlaceholderData ? (
@@ -207,7 +251,7 @@ function HistoryPageContent() {
           ) : isPlaceholderData ? (
             /* Skeleton placeholders while the next page loads */
             <div className="space-y-3 sm:space-y-4">
-              {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+              {Array.from({ length: pageSize }).map((_, i) => (
                 <div
                   key={i}
                   className="animate-pulse rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden"
@@ -224,7 +268,7 @@ function HistoryPageContent() {
                           {Array.from({ length: 6 }).map((_, j) => (
                             <div
                               key={j}
-                              className="w-4 h-4 rounded-sm bg-white/[0.06]"
+                              className="w-1.5 h-5 rounded-full bg-white/[0.06]"
                             />
                           ))}
                         </div>
@@ -237,55 +281,65 @@ function HistoryPageContent() {
           ) : (
             <AnimatePresence mode="wait">
               <motion.div
-                key={page}
-                className="space-y-3 sm:space-y-4"
+                key={`${page}-${search}-${statusFilter}`}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.25, ease: 'easeOut' }}
               >
-                {timeline.map((entry, index) => {
-                  if (entry.type === 'freeze') {
+                <div className="space-y-3 sm:space-y-4">
+                  {timeline.map((entry, index) => {
+                    if (entry.type === 'freeze') {
+                      return (
+                        <FreezeHistoryCard
+                          key={`freeze-${entry.data.id}`}
+                          usage={entry.data}
+                          staggerIndex={index}
+                        />
+                      );
+                    }
+                    if (entry.type === 'streak-lost') {
+                      return (
+                        <StreakLostCard
+                          key={`lost-${entry.data.from}`}
+                          from={entry.data.from}
+                          to={entry.data.to}
+                          gapDays={entry.data.gapDays}
+                          staggerIndex={index}
+                        />
+                      );
+                    }
                     return (
-                      <FreezeHistoryCard
-                        key={`freeze-${entry.data.id}`}
-                        usage={entry.data}
+                      <HistoryCard
+                        key={entry.data.id}
+                        entry={entry.data}
+                        onShare={handleShare}
+                        copied={copiedId === entry.data.id}
+                        showWinnerGlow={
+                          entry.data.status ===
+                            GameHistoryEntryDtoStatusEnum.Won &&
+                          entry.data.score != null &&
+                          (entry.data.score === 6 || entry.data.score === 5)
+                        }
                         staggerIndex={index}
                       />
                     );
-                  }
-                  if (entry.type === 'streak-lost') {
-                    return (
-                      <StreakLostCard
-                        key={`lost-${entry.data.from}`}
-                        from={entry.data.from}
-                        to={entry.data.to}
-                        gapDays={entry.data.gapDays}
-                        staggerIndex={index}
-                      />
-                    );
-                  }
-                  return (
-                    <HistoryCard
-                      key={entry.data.id}
-                      entry={entry.data}
-                      onShare={handleShare}
-                      copied={copiedId === entry.data.id}
-                      showWinnerGlow={
-                        entry.data.status ===
-                          GameHistoryEntryDtoStatusEnum.Won &&
-                        entry.data.score != null &&
-                        (entry.data.score === 6 || entry.data.score === 5)
-                      }
-                      staggerIndex={index}
-                    />
-                  );
-                })}
+                  })}
+                </div>
               </motion.div>
             </AnimatePresence>
           )}
         </main>
       </div>
+
+      {/* Floating Pagination Pill — fixed HUD at bottom */}
+      <FloatingPaginationPill
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 }

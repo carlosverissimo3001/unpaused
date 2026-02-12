@@ -13,8 +13,15 @@ export const queryKeys = {
     session: (sessionId: string) => ['game', 'session', sessionId] as const,
     state: (sessionId: string) =>
       ['game', 'session', sessionId, 'state'] as const,
-    history: (params?: { mode?: string; limit?: number; offset?: number }) =>
-      ['game', 'history', params] as const,
+    history: (params?: {
+      mode?: string;
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+      from?: string;
+      to?: string;
+    }) => ['game', 'history', params] as const,
     stats: ['game', 'stats'] as const,
     playedToday: ['game', 'playedToday'] as const,
     share: (gameId: string) => ['game', 'share', gameId] as const,

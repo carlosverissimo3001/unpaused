@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, ChevronDown, ChevronUp, Check, Music2 } from 'lucide-react';
-import { GuessPattern } from '@/components/daily/GuessPattern';
+import { GuessWave } from '@/components/history/GuessWave';
 import { Button } from '@/components/ui/button';
 import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 import {
@@ -101,8 +101,9 @@ export function HistoryCard({
       variants={cardVariants}
       initial="hidden"
       animate="visible"
+      whileTap={{ scale: 0.97 }}
       custom={staggerIndex}
-      className={`group rounded-2xl bg-white/[0.03] border overflow-hidden backdrop-blur-sm transition-all duration-300 ${
+      className={`group rounded-2xl bg-white/[0.03] border overflow-hidden backdrop-blur-sm transition-all duration-300 cursor-pointer ${
         showWinnerGlow
           ? 'border-amber-400/30 shadow-[0_0_15px_rgba(30,215,96,0.1)]'
           : 'border-white/10'
@@ -157,10 +158,7 @@ export function HistoryCard({
               </p>
 
               <div className="flex items-center justify-between gap-2">
-                <GuessPattern
-                  results={entry.guesses.map((g) => g.result)}
-                  className="text-base"
-                />
+                <GuessWave results={entry.guesses.map((g) => g.result)} />
 
                 <div className="flex items-center gap-1">
                   {actualGuesses.length > 0 && (

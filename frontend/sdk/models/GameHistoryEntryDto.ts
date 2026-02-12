@@ -81,12 +81,6 @@ export interface GameHistoryEntryDto {
      * @memberof GameHistoryEntryDto
      */
     albumImageUrl?: string;
-    /**
-     * Playlist/source name e.g. Liked Songs
-     * @type {string}
-     * @memberof GameHistoryEntryDto
-     */
-    playlistName?: string;
 }
 
 
@@ -144,7 +138,6 @@ export function GameHistoryEntryDtoFromJSONTyped(json: any, ignoreDiscriminator:
         'trackName': json['trackName'],
         'artistName': json['artistName'],
         'albumImageUrl': json['albumImageUrl'] == null ? undefined : json['albumImageUrl'],
-        'playlistName': json['playlistName'] == null ? undefined : json['playlistName'],
     };
 }
 
@@ -168,7 +161,6 @@ export function GameHistoryEntryDtoToJSONTyped(value?: GameHistoryEntryDto | nul
         'trackName': value['trackName'],
         'artistName': value['artistName'],
         'albumImageUrl': value['albumImageUrl'],
-        'playlistName': value['playlistName'],
     };
 }
 

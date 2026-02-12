@@ -12,17 +12,17 @@ export function useInfiniteGameHistory(params?: {
   enabled?: boolean;
 }) {
   return useInfiniteQuery({
-    queryKey: queryKeys.game.history({ ...params, limit: PAGE_SIZE }),
-    queryFn: ({ pageParam = 0 }) =>
+    queryKey: queryKeys.game.history({ mode: params?.mode, limit: PAGE_SIZE }),
+    queryFn: ({ pageParam = 1 }) =>
       api.gameControllerGetHistory({
         mode: params?.mode,
         limit: PAGE_SIZE,
-        offset: pageParam,
+        page: pageParam,
       }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      const loaded = allPages.reduce((sum, p) => sum + p.items.length, 0);
-      return loaded < lastPage.total ? loaded : undefined;
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage.meta;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     placeholderData: keepPreviousData,
     enabled: params?.enabled ?? true,

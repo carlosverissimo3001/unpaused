@@ -130,8 +130,12 @@ export interface GameControllerGetGameStateRequest {
 
 export interface GameControllerGetHistoryRequest {
     mode?: GameControllerGetHistoryModeEnum;
+    page?: number;
     limit?: number;
-    offset?: number;
+    search?: string;
+    status?: GameControllerGetHistoryStatusEnum;
+    from?: Date;
+    to?: Date;
 }
 
 export interface GameControllerGetShareRequest {
@@ -703,12 +707,28 @@ export class ApiApi extends runtime.BaseAPI {
             queryParameters['mode'] = requestParameters['mode'];
         }
 
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
         if (requestParameters['limit'] != null) {
             queryParameters['limit'] = requestParameters['limit'];
         }
 
-        if (requestParameters['offset'] != null) {
-            queryParameters['offset'] = requestParameters['offset'];
+        if (requestParameters['search'] != null) {
+            queryParameters['search'] = requestParameters['search'];
+        }
+
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
+        }
+
+        if (requestParameters['from'] != null) {
+            queryParameters['from'] = (requestParameters['from'] as any).toISOString();
+        }
+
+        if (requestParameters['to'] != null) {
+            queryParameters['to'] = (requestParameters['to'] as any).toISOString();
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1184,6 +1204,16 @@ export const GameControllerGetHistoryModeEnum = {
     All: 'ALL'
 } as const;
 export type GameControllerGetHistoryModeEnum = typeof GameControllerGetHistoryModeEnum[keyof typeof GameControllerGetHistoryModeEnum];
+/**
+ * @export
+ */
+export const GameControllerGetHistoryStatusEnum = {
+    Playing: 'PLAYING',
+    Won: 'WON',
+    Lost: 'LOST',
+    Abandoned: 'ABANDONED'
+} as const;
+export type GameControllerGetHistoryStatusEnum = typeof GameControllerGetHistoryStatusEnum[keyof typeof GameControllerGetHistoryStatusEnum];
 /**
  * @export
  */

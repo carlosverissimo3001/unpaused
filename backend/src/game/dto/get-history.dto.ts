@@ -1,8 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotNullableOptional } from '../../utils/decorators/notNullableOptional.decorator';
 import { Transform } from 'class-transformer';
-import { IsNumber, Min, Max, IsEnum } from 'class-validator';
-import { GameMode } from '@prisma/client';
+import { IsNumber, Min, Max, IsEnum, IsString, IsDate } from 'class-validator';
+import { GameMode, GameStatus } from '@prisma/client';
 
 export class GetHistoryDto {
   @ApiPropertyOptional({
@@ -14,8 +14,20 @@ export class GetHistoryDto {
   mode?: GameMode;
 
   @ApiPropertyOptional({
-    description: 'The limit of the history',
+    description: 'Page number (1-indexed)',
     type: Number,
+    default: 1,
+  })
+  @IsNotNullableOptional()
+  @IsNumber()
+  @Min(1)
+  @Transform(({ value }) => Number(value))
+  page?: number;
+
+  @ApiPropertyOptional({
+    description: 'Items per page',
+    type: Number,
+    default: 10,
   })
   @IsNotNullableOptional()
   @IsNumber()
@@ -25,12 +37,37 @@ export class GetHistoryDto {
   limit?: number;
 
   @ApiPropertyOptional({
-    description: 'The offset of the history',
-    type: Number,
+    description: 'Search by track name, artist name, or album name',
+    type: String,
   })
   @IsNotNullableOptional()
-  @IsNumber()
-  @Min(0)
-  @Transform(({ value }) => Number(value))
-  offset?: number;
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by game status',
+    enum: GameStatus,
+  })
+  @IsNotNullableOptional()
+  @IsEnum(GameStatus)
+  status?: GameStatus;
+
+  @ApiPropertyOptional({
+    description: 'Filter from date (ISO 8601)',
+    type: Date,
+  })
+  @IsNotNullableOptional()
+  @IsDate()
+  // Not sure if this is necessary, better safe than sorry to ensure we get a Date object
+  @Transform(({ value }) => new Date(value))
+  from?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Filter to date (ISO 8601)',
+    type: Date,
+  })
+  @IsNotNullableOptional()
+  @IsDate()
+  @Transform(({ value }) => new Date(value))
+  to?: Date;
 }

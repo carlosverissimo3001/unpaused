@@ -27,6 +27,13 @@ import {
     GameHistoryEntryDtoToJSON,
     GameHistoryEntryDtoToJSONTyped,
 } from './GameHistoryEntryDto';
+import type { PaginationMetaDto } from './PaginationMetaDto';
+import {
+    PaginationMetaDtoFromJSON,
+    PaginationMetaDtoFromJSONTyped,
+    PaginationMetaDtoToJSON,
+    PaginationMetaDtoToJSONTyped,
+} from './PaginationMetaDto';
 
 /**
  * 
@@ -41,11 +48,11 @@ export interface GameHistoryDto {
      */
     items: Array<GameHistoryEntryDto>;
     /**
-     * Total count
-     * @type {number}
+     * Pagination metadata
+     * @type {PaginationMetaDto}
      * @memberof GameHistoryDto
      */
-    total: number;
+    meta: PaginationMetaDto;
     /**
      * Streak freeze usages within the date range (only for DAILY mode)
      * @type {Array<StreakFreezeUsageDto>}
@@ -59,7 +66,7 @@ export interface GameHistoryDto {
  */
 export function instanceOfGameHistoryDto(value: object): value is GameHistoryDto {
     if (!('items' in value) || value['items'] === undefined) return false;
-    if (!('total' in value) || value['total'] === undefined) return false;
+    if (!('meta' in value) || value['meta'] === undefined) return false;
     return true;
 }
 
@@ -74,7 +81,7 @@ export function GameHistoryDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'items': ((json['items'] as Array<any>).map(GameHistoryEntryDtoFromJSON)),
-        'total': json['total'],
+        'meta': PaginationMetaDtoFromJSON(json['meta']),
         'streakFreezeUsages': json['streakFreezeUsages'] == null ? undefined : ((json['streakFreezeUsages'] as Array<any>).map(StreakFreezeUsageDtoFromJSON)),
     };
 }
@@ -91,7 +98,7 @@ export function GameHistoryDtoToJSONTyped(value?: GameHistoryDto | null, ignoreD
     return {
         
         'items': ((value['items'] as Array<any>).map(GameHistoryEntryDtoToJSON)),
-        'total': value['total'],
+        'meta': PaginationMetaDtoToJSON(value['meta']),
         'streakFreezeUsages': value['streakFreezeUsages'] == null ? undefined : ((value['streakFreezeUsages'] as Array<any>).map(StreakFreezeUsageDtoToJSON)),
     };
 }

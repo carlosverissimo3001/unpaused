@@ -964,7 +964,7 @@ example().catch(console.error);
 
 ## gameControllerGetHistory
 
-> GameHistoryDto gameControllerGetHistory(mode, limit, offset)
+> GameHistoryDto gameControllerGetHistory(mode, page, limit, search, status, from, to)
 
 Get user\&#39;s game session history (paginated)
 
@@ -988,10 +988,18 @@ async function example() {
   const body = {
     // 'DAILY' | 'ALL' | The game mode to filter history by (e.g. daily, all) (optional)
     mode: mode_example,
-    // number | The limit of the history (optional)
+    // number | Page number (1-indexed) (optional)
+    page: 8.14,
+    // number | Items per page (optional)
     limit: 8.14,
-    // number | The offset of the history (optional)
-    offset: 8.14,
+    // string | Search by track name, artist name, or album name (optional)
+    search: search_example,
+    // 'PLAYING' | 'WON' | 'LOST' | 'ABANDONED' | Filter by game status (optional)
+    status: status_example,
+    // Date | Filter from date (ISO 8601) (optional)
+    from: 2013-10-20T19:20:30+01:00,
+    // Date | Filter to date (ISO 8601) (optional)
+    to: 2013-10-20T19:20:30+01:00,
   } satisfies GameControllerGetHistoryRequest;
 
   try {
@@ -1012,8 +1020,12 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **mode** | `DAILY`, `ALL` | The game mode to filter history by (e.g. daily, all) | [Optional] [Defaults to `undefined`] [Enum: DAILY, ALL] |
-| **limit** | `number` | The limit of the history | [Optional] [Defaults to `undefined`] |
-| **offset** | `number` | The offset of the history | [Optional] [Defaults to `undefined`] |
+| **page** | `number` | Page number (1-indexed) | [Optional] [Defaults to `1`] |
+| **limit** | `number` | Items per page | [Optional] [Defaults to `10`] |
+| **search** | `string` | Search by track name, artist name, or album name | [Optional] [Defaults to `undefined`] |
+| **status** | `PLAYING`, `WON`, `LOST`, `ABANDONED` | Filter by game status | [Optional] [Defaults to `undefined`] [Enum: PLAYING, WON, LOST, ABANDONED] |
+| **from** | `Date` | Filter from date (ISO 8601) | [Optional] [Defaults to `undefined`] |
+| **to** | `Date` | Filter to date (ISO 8601) | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
