@@ -13,12 +13,8 @@ export const queryKeys = {
     session: (sessionId: string) => ['game', 'session', sessionId] as const,
     state: (sessionId: string) =>
       ['game', 'session', sessionId, 'state'] as const,
-    history: (params?: {
-      limit?: number;
-      offset?: number;
-      isDaily?: boolean;
-      isCompleted?: boolean;
-    }) => ['game', 'history', params] as const,
+    history: (params?: { mode?: string; limit?: number; offset?: number }) =>
+      ['game', 'history', params] as const,
     stats: ['game', 'stats'] as const,
     playedToday: ['game', 'playedToday'] as const,
     share: (gameId: string) => ['game', 'share', gameId] as const,
@@ -29,7 +25,7 @@ export const queryKeys = {
     me: (params?: {
       limit?: number;
       offset?: number;
-      includePrivate?: boolean;
+      onlyPublic?: boolean;
       onlyUserOwned?: boolean;
     }) => ['playlists', 'me', params] as const,
     detail: (playlistId: string) => ['playlists', playlistId] as const,

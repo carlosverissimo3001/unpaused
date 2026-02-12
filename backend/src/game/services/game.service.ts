@@ -551,40 +551,12 @@ export class GameService {
       });
 
     const trackIds = [...new Set(items.map((s) => s.trackId))];
-    const tracks = await this.prisma.track.findMany({
-      where: { id: { in: trackIds } },
-    });
+    const tracks = await this.trackRepository.findMany(trackIds);
     const trackMap = new Map(tracks.map((t) => [t.id, t]));
-
-    // Resolve playlist names for non–Liked-Songs playlists (batch by unique ID)
-    const playlistIdsToResolve = [
-      ...new Set(
-        items
-          .map((s) => s.playlistId)
-          .filter((id) => !id.endsWith(LIKED_SONGS_ID_SUFFIX)),
-      ),
-    ];
-    const playlistNameMap = new Map<string, string>();
-    await Promise.all(
-      playlistIdsToResolve.map(async (playlistId) => {
-        try {
-          const playlist = await this.playlistService.getPlaylistById(
-            sessionId,
-            playlistId,
-          );
-          playlistNameMap.set(playlistId, playlist.name);
-        } catch {
-          // Playlist may have been deleted or access revoked; leave name unset
-        }
-      }),
-    );
 
     const entries: GameHistoryEntryDto[] = items.map((s) => {
       const track = trackMap.get(s.trackId);
       const dateSource = s.completedAt ?? s.createdAt;
-      const playlistName = s.playlistId.endsWith(LIKED_SONGS_ID_SUFFIX)
-        ? 'Liked Songs'
-        : playlistNameMap.get(s.playlistId);
       return {
         id: s.id,
         date: formatDate(dateSource, 'yyyy-MM-dd'),
@@ -595,7 +567,6 @@ export class GameService {
         trackName: track?.name ?? '',
         artistName: track?.artistName ?? '',
         albumImageUrl: track?.albumImageUrl ?? undefined,
-        playlistName,
       };
     });
 

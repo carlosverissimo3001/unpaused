@@ -120,9 +120,6 @@ export class GameSessionRepository {
 
   /**
    * Finds game sessions for a user with optional filters and pagination.
-   * @param userId - The ID of the user
-   * @param options - isDaily?, isCompleted? (completedAt != null), limit?, offset?
-   * @returns { items, total }
    */
   async findUserGameSessions(
     params: FindGameSessionsDto,

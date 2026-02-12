@@ -58,12 +58,6 @@ export class GameHistoryEntryDto {
 
   @ApiPropertyOptional({ description: 'Album image URL', type: String })
   albumImageUrl?: string;
-
-  @ApiPropertyOptional({
-    description: 'Playlist/source name e.g. Liked Songs',
-    type: String,
-  })
-  playlistName?: string;
 }
 
 export class GameHistoryDto {

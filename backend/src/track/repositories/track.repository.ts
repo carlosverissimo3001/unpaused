@@ -17,6 +17,12 @@ export class TrackRepository {
     });
   }
 
+  async findMany(ids: string[]): Promise<Track[]> {
+    return await this.prisma.track.findMany({
+      where: { id: { in: ids } },
+    });
+  }
+
   /**
    * Upserts a track (creates if it doesn't exist, updates if it does)
    * Automatically updates lastScrapedAt when the track is updated
