@@ -1,18 +1,22 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Share2, Check } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { useGameShare } from "@/hooks/game/useGameShare";
+import { useState } from 'react';
+import { Share2, Check } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { useGameShare } from '@/hooks/game/useGameShare';
 
 interface ShareButtonProps {
   gameId: string;
   className?: string;
-  variant?: "default" | "outline" | "ghost" | "spotify";
+  variant?: 'default' | 'outline' | 'ghost' | 'spotify';
 }
 
-export function ShareButton({ gameId, className = "", variant = "outline" }: ShareButtonProps) {
+export function ShareButton({
+  gameId,
+  className = '',
+  variant = 'outline',
+}: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const shareMutation = useGameShare();
 
@@ -25,7 +29,7 @@ export function ShareButton({ gameId, className = "", variant = "outline" }: Sha
         setTimeout(() => setCopied(false), 2000);
       }
     } catch {
-      toast.error("Failed to copy share text");
+      toast.error('Failed to copy share text');
     }
   };
 
@@ -36,7 +40,7 @@ export function ShareButton({ gameId, className = "", variant = "outline" }: Sha
       onClick={handleShare}
       disabled={shareMutation.isPending}
       className={className}
-      aria-label={copied ? "Copied!" : "Copy share text"}
+      aria-label={copied ? 'Copied!' : 'Copy share text'}
     >
       {copied ? (
         <>
@@ -44,7 +48,7 @@ export function ShareButton({ gameId, className = "", variant = "outline" }: Sha
           Copied!
         </>
       ) : shareMutation.isPending ? (
-        "Copying..."
+        'Copying...'
       ) : (
         <>
           <Share2 className="w-4 h-4 mr-2" />

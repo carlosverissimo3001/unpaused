@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { memo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface PlaylistUrlSearchProps {
   playlistUrl: string;
@@ -62,7 +62,7 @@ function PlaylistUrlSearchComponent({
         {urlError && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
+            animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="text-red-400 text-xs sm:text-sm font-medium mt-3 ml-5 flex items-center gap-2"
           >

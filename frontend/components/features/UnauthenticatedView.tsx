@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { memo } from "react";
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { memo } from 'react';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === 'development';
 
 interface UnauthenticatedViewProps {
   onTokenLogin: (token: string) => Promise<void>;
@@ -26,8 +26,10 @@ function UnauthenticatedViewComponent({
     if (!tokenInput.trim()) return;
     try {
       await onTokenLogin(tokenInput.trim());
-      setTokenInput("");
-    } catch (error) {}
+      setTokenInput('');
+    } catch {
+      // Token login failed - error is handled by onTokenLogin
+    }
   };
 
   return (
@@ -35,7 +37,7 @@ function UnauthenticatedViewComponent({
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
         className="relative z-10 text-center flex flex-col gap-8 sm:gap-12 max-w-2xl px-6"
       >
         <div className="flex flex-col gap-4 sm:gap-6">
@@ -47,7 +49,8 @@ function UnauthenticatedViewComponent({
             </span>
           </h1>
           <p className="text-sm sm:text-base md:text-lg text-white/50 max-w-[280px] sm:max-w-md mx-auto leading-relaxed font-medium">
-            Test your musical ear. Connect your Spotify account and start the challenge.
+            Test your musical ear. Connect your Spotify account and start the
+            challenge.
           </p>
         </div>
 
@@ -86,7 +89,7 @@ function UnauthenticatedViewComponent({
                   value={tokenInput}
                   onChange={(e) => setTokenInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") handleTokenLogin();
+                    if (e.key === 'Enter') void handleTokenLogin();
                   }}
                   placeholder="Paste access token..."
                   className="flex-1 bg-transparent pl-4 pr-2 py-2 text-sm outline-none placeholder:text-white/10 text-white min-w-0"
@@ -106,7 +109,7 @@ function UnauthenticatedViewComponent({
                   `}
                 >
                   <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest">
-                    {isTokenLoginPending ? "..." : "Login"}
+                    {isTokenLoginPending ? '...' : 'Login'}
                   </span>
                 </Button>
               </div>
@@ -115,12 +118,12 @@ function UnauthenticatedViewComponent({
                 {tokenLoginError && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
+                    animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     className="text-red-400 text-[10px] sm:text-xs font-medium mt-1 flex items-center justify-center gap-2"
                   >
                     <div className="w-1 h-1 rounded-full bg-red-400" />
-                    {tokenLoginError.message || "Invalid or expired token"}
+                    {tokenLoginError.message || 'Invalid or expired token'}
                   </motion.div>
                 )}
               </AnimatePresence>

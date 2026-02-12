@@ -1,4 +1,4 @@
-import { ResponseError } from "@/sdk/runtime";
+import { ResponseError } from '@/sdk/runtime';
 
 /**
  * NestJS (and many backends) return error bodies like:
@@ -13,13 +13,13 @@ export async function getApiErrorMessage(error: unknown): Promise<string> {
     try {
       const body = await error.response.clone().json();
       const msg = body.message;
-      if (typeof msg === "string") return msg;
-      if (Array.isArray(msg)) return msg.join(", ");
+      if (typeof msg === 'string') return msg;
+      if (Array.isArray(msg)) return msg.join(', ');
       if (body.error) return String(body.error);
     } catch {
       // ignore JSON parse / clone errors
     }
   }
   if (error instanceof Error) return error.message;
-  return "An error occurred";
+  return 'An error occurred';
 }

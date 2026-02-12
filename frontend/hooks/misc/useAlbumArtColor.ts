@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { FastAverageColor } from "fast-average-color";
+import { useState, useEffect } from 'react';
+import { FastAverageColor } from 'fast-average-color';
 
 const fac = new FastAverageColor();
 
-const SPOTIFY_GREEN_RGBA = "rgba(29, 185, 84, 0.15)";
+const SPOTIFY_GREEN_RGBA = 'rgba(29, 185, 84, 0.15)';
 
 export function useAlbumArtColor(imageUrl: string | null | undefined) {
   const [color, setColor] = useState(SPOTIFY_GREEN_RGBA);

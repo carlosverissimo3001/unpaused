@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, Snowflake } from "lucide-react";
-import { toast } from "sonner";
-import { useAdminStreakQuestions } from "@/hooks/admin/useAdminStreakQuestions";
-import { useAdminCreateStreakQuestion } from "@/hooks/admin/useAdminCreateStreakQuestion";
-import { useAdminUpdateStreakQuestion } from "@/hooks/admin/useAdminUpdateStreakQuestion";
-import { useAdminDeleteStreakQuestion } from "@/hooks/admin/useAdminDeleteStreakQuestion";
-import { Button } from "@/components/ui/button";
-import type { StreakQuestionDto, CreateStreakQuestionDto } from "@/sdk";
+import { useState } from 'react';
+import { Loader2, Plus, Pencil, Trash2, Snowflake } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAdminStreakQuestions } from '@/hooks/admin/useAdminStreakQuestions';
+import { useAdminCreateStreakQuestion } from '@/hooks/admin/useAdminCreateStreakQuestion';
+import { useAdminUpdateStreakQuestion } from '@/hooks/admin/useAdminUpdateStreakQuestion';
+import { useAdminDeleteStreakQuestion } from '@/hooks/admin/useAdminDeleteStreakQuestion';
+import { Button } from '@/components/ui/button';
+import type { StreakQuestionDto, CreateStreakQuestionDto } from '@/sdk';
 
 const EMPTY_FORM: CreateStreakQuestionDto = {
-  question: "",
-  options: ["", "", "", ""],
+  question: '',
+  options: ['', '', '', ''],
   correctAnswerIndex: 0,
-  category: "general",
-  context: "",
+  category: 'general',
+  context: '',
 };
 
 export function StreakQuestionsAdmin() {
@@ -31,16 +31,16 @@ export function StreakQuestionsAdmin() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.question.trim() || form.options.some((o) => !o.trim())) {
-      toast.error("Question and all 4 options are required");
+      toast.error('Question and all 4 options are required');
       return;
     }
     try {
       await createMutation.mutateAsync(form);
-      toast.success("Question created");
+      toast.success('Question created');
       setCreateOpen(false);
       setForm({ ...EMPTY_FORM });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create");
+      toast.error(err instanceof Error ? err.message : 'Failed to create');
     }
   };
 
@@ -51,7 +51,7 @@ export function StreakQuestionsAdmin() {
       options: [...q.options],
       correctAnswerIndex: q.correctAnswerIndex,
       category: q.category,
-      context: q.context ?? "",
+      context: q.context ?? '',
     });
   };
 
@@ -60,21 +60,21 @@ export function StreakQuestionsAdmin() {
     if (!editing) return;
     try {
       await updateMutation.mutateAsync({ id: editing.id, dto: form });
-      toast.success("Question updated");
+      toast.success('Question updated');
       setEditing(null);
       setForm({ ...EMPTY_FORM });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update");
+      toast.error(err instanceof Error ? err.message : 'Failed to update');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Deactivate this question?")) return;
+    if (!confirm('Deactivate this question?')) return;
     try {
       await deleteMutation.mutateAsync(id);
-      toast.success("Question deactivated");
+      toast.success('Question deactivated');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      toast.error(err instanceof Error ? err.message : 'Failed to delete');
     }
   };
 
@@ -89,7 +89,9 @@ export function StreakQuestionsAdmin() {
   const formUI = (
     <form onSubmit={editing ? handleEdit : handleCreate} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-white/80 mb-1">Question</label>
+        <label className="block text-sm font-medium text-white/80 mb-1">
+          Question
+        </label>
         <input
           type="text"
           value={form.question}
@@ -100,16 +102,20 @@ export function StreakQuestionsAdmin() {
         />
       </div>
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-white/80">Options (select correct answer)</label>
+        <label className="block text-sm font-medium text-white/80">
+          Options (select correct answer)
+        </label>
         {form.options.map((opt, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setForm((p) => ({ ...p, correctAnswerIndex: idx }))}
+              onClick={() =>
+                setForm((p) => ({ ...p, correctAnswerIndex: idx }))
+              }
               className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
                 form.correctAnswerIndex === idx
-                  ? "bg-spotify-green/20 border-spotify-green text-spotify-green"
-                  : "border-white/20 text-white/40 hover:border-white/40"
+                  ? 'bg-spotify-green/20 border-spotify-green text-spotify-green'
+                  : 'border-white/20 text-white/40 hover:border-white/40'
               }`}
             >
               {String.fromCharCode(65 + idx)}
@@ -127,21 +133,29 @@ export function StreakQuestionsAdmin() {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Category</label>
+          <label className="block text-sm font-medium text-white/80 mb-1">
+            Category
+          </label>
           <input
             type="text"
-            value={form.category ?? ""}
-            onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+            value={form.category ?? ''}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, category: e.target.value }))
+            }
             className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-white text-sm placeholder-white/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
             placeholder="e.g. classic-moments"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Context (private note)</label>
+          <label className="block text-sm font-medium text-white/80 mb-1">
+            Context (private note)
+          </label>
           <input
             type="text"
-            value={form.context ?? ""}
-            onChange={(e) => setForm((p) => ({ ...p, context: e.target.value }))}
+            value={form.context ?? ''}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, context: e.target.value }))
+            }
             className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-white text-sm placeholder-white/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
             placeholder="Inside joke context"
           />
@@ -167,9 +181,9 @@ export function StreakQuestionsAdmin() {
           {createMutation.isPending || updateMutation.isPending ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : editing ? (
-            "Save"
+            'Save'
           ) : (
-            "Create"
+            'Create'
           )}
         </Button>
       </div>
@@ -181,7 +195,9 @@ export function StreakQuestionsAdmin() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Snowflake className="w-5 h-5 text-cyan-400" />
-          <h2 className="text-lg font-semibold text-white">Streak Quiz Questions</h2>
+          <h2 className="text-lg font-semibold text-white">
+            Streak Quiz Questions
+          </h2>
         </div>
         {!createOpen && !editing && (
           <Button
@@ -198,7 +214,7 @@ export function StreakQuestionsAdmin() {
       {(createOpen || editing) && (
         <div className="mb-6 p-4 rounded-xl border border-white/10 bg-white/5">
           <h3 className="text-sm font-medium text-white/70 mb-3">
-            {editing ? "Edit Question" : "New Question"}
+            {editing ? 'Edit Question' : 'New Question'}
           </h3>
           {formUI}
         </div>
@@ -228,21 +244,23 @@ export function StreakQuestionsAdmin() {
                 key={q.id}
                 className={`p-4 rounded-xl border ${
                   q.isActive
-                    ? "border-white/10 bg-white/5"
-                    : "border-white/5 bg-white/2 opacity-50"
+                    ? 'border-white/10 bg-white/5'
+                    : 'border-white/5 bg-white/2 opacity-50'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium text-sm">{q.question}</p>
+                    <p className="text-white font-medium text-sm">
+                      {q.question}
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {q.options.map((opt, idx) => (
                         <span
                           key={idx}
                           className={`text-xs px-2 py-1 rounded ${
                             idx === q.correctAnswerIndex
-                              ? "bg-green-400/15 text-green-400 border border-green-400/20"
-                              : "bg-white/5 text-white/60 border border-white/10"
+                              ? 'bg-green-400/15 text-green-400 border border-green-400/20'
+                              : 'bg-white/5 text-white/60 border border-white/10'
                           }`}
                         >
                           {String.fromCharCode(65 + idx)}: {opt}
@@ -250,7 +268,9 @@ export function StreakQuestionsAdmin() {
                       ))}
                     </div>
                     {q.context && (
-                      <p className="mt-1.5 text-xs text-white/40 italic">{q.context}</p>
+                      <p className="mt-1.5 text-xs text-white/40 italic">
+                        {q.context}
+                      </p>
                     )}
                     <div className="mt-1.5 flex items-center gap-2">
                       <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded">

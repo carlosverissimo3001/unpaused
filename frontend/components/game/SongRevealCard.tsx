@@ -1,24 +1,31 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Play, Pause, Volume2, VolumeX, ExternalLink, Disc3 } from "lucide-react";
-import { GameStateDtoStatusEnum } from "@/sdk/models/GameStateDto";
-import type { MetaGameExtrasVo, TrackOptionDto } from "@/sdk";
-import { GuessPattern } from "./GuessPattern";
-import { ShareButton } from "@/components/daily/ShareButton";
-import { triggerRevealConfetti } from "./confetti";
-import { useAlbumArtColor } from "@/hooks/misc/useAlbumArtColor";
+import { useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import {
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  ExternalLink,
+  Disc3,
+} from 'lucide-react';
+import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
+import type { MetaGameExtrasVo, TrackOptionDto } from '@/sdk';
+import { GuessPattern } from './GuessPattern';
+import { ShareButton } from '@/components/daily/ShareButton';
+import { triggerRevealConfetti } from './confetti';
+import { useAlbumArtColor } from '@/hooks/misc/useAlbumArtColor';
 
 const GLASS_STYLE = {
-  background: "rgba(18, 18, 18, 0.6)",
-  backdropFilter: "blur(24px)",
-  WebkitBackdropFilter: "blur(24px)" as const,
-  border: "1px solid rgba(255,255,255,0.12)",
+  background: 'rgba(18, 18, 18, 0.6)',
+  backdropFilter: 'blur(24px)',
+  WebkitBackdropFilter: 'blur(24px)' as const,
+  border: '1px solid rgba(255,255,255,0.12)',
   boxShadow:
-    "0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(29,185,84,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+    '0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(29,185,84,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
 };
 
 interface SongRevealCardProps {
@@ -43,7 +50,7 @@ interface SongRevealCardProps {
   /** Easter egg: personalized note for special users */
   specialNote?: string | null;
   /** easter eggs for win celebration */
-  meta?: MetaGameExtrasVo
+  meta?: MetaGameExtrasVo;
 }
 
 export function SongRevealCard({
@@ -67,10 +74,12 @@ export function SongRevealCard({
   specialNote,
   meta,
 }: SongRevealCardProps) {
-  const songSpotifyUrl = answer ? `https://open.spotify.com/track/${answer.id}` : undefined;
+  const songSpotifyUrl = answer
+    ? `https://open.spotify.com/track/${answer.id}`
+    : undefined;
   const isWon = status === GameStateDtoStatusEnum.Won;
   const albumColor = useAlbumArtColor(answer?.albumImageUrl ?? null);
-  const albumGlowColor = albumColor.replace(/[\d.]+\)$/, "0.5)");
+  const albumGlowColor = albumColor.replace(/[\d.]+\)$/, '0.5)');
 
   useEffect(() => {
     if (isWon) triggerRevealConfetti();
@@ -88,14 +97,14 @@ export function SongRevealCard({
         <span
           style={{
             background: isWon
-              ? "linear-gradient(135deg, #1DB954 0%, #1ed760 50%, #91ed91 100%)"
-              : "linear-gradient(135deg, #b3b3b3 0%, #535353 50%, #282828 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
+              ? 'linear-gradient(135deg, #1DB954 0%, #1ed760 50%, #91ed91 100%)'
+              : 'linear-gradient(135deg, #b3b3b3 0%, #535353 50%, #282828 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
           }}
         >
-          {isWon ? "You Won" : "Game Over"}
+          {isWon ? 'You Won' : 'Game Over'}
         </span>
         {isWon && (
           <motion.span
@@ -103,7 +112,7 @@ export function SongRevealCard({
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-           {meta?.winEmoji}
+            {meta?.winEmoji}
           </motion.span>
         )}
       </h2>
@@ -114,8 +123,12 @@ export function SongRevealCard({
           transition={{ delay: 0.15, duration: 0.3 }}
           className="mb-4 md:mb-6 space-y-1"
         >
-          {rankTitle && <p className="text-sm font-medium text-[#b3b3b3]">{rankTitle}</p>}
-          {specialNote && <p className="text-xs text-[#737373] italic">{specialNote}</p>}
+          {rankTitle && (
+            <p className="text-sm font-medium text-[#b3b3b3]">{rankTitle}</p>
+          )}
+          {specialNote && (
+            <p className="text-xs text-[#737373] italic">{specialNote}</p>
+          )}
         </motion.div>
       )}
       {answer && (
@@ -125,7 +138,7 @@ export function SongRevealCard({
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{
-                scale: { type: "spring", stiffness: 260, damping: 20 },
+                scale: { type: 'spring', stiffness: 260, damping: 20 },
                 opacity: { duration: 0.35 },
               }}
               className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-3 md:mb-4 rounded-xl overflow-visible"
@@ -170,7 +183,10 @@ export function SongRevealCard({
           </motion.p>
         </div>
       )}
-      <GuessPattern results={guesses.map((g) => g.result)} className="justify-center mb-4" />
+      <GuessPattern
+        results={guesses.map((g) => g.result)}
+        className="justify-center mb-4"
+      />
       <div className="flex flex-wrap justify-center gap-3">
         {shareGameId && <ShareButton gameId={shareGameId} variant="default" />}
         {showViewStats && (
@@ -202,7 +218,7 @@ export function SongRevealCard({
             type="button"
             onClick={onToggleFullSong}
             className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-colors"
-            aria-label={isFullSongPlaying ? "Pause" : "Play"}
+            aria-label={isFullSongPlaying ? 'Pause' : 'Play'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -220,7 +236,7 @@ export function SongRevealCard({
             type="button"
             onClick={onToggleMute}
             className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-colors"
-            aria-label={isMuted ? "Unmute" : "Mute"}
+            aria-label={isMuted ? 'Unmute' : 'Mute'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -277,9 +293,14 @@ export function SongRevealCard({
                     SONG
                   </span>
                 </div>
-                <p className="text-xs text-[#b3b3b3] truncate">by {answer.artist}</p>
+                <p className="text-xs text-[#b3b3b3] truncate">
+                  by {answer.artist}
+                </p>
               </div>
-              <motion.span className="flex-shrink-0" whileHover={{ rotate: 15 }}>
+              <motion.span
+                className="flex-shrink-0"
+                whileHover={{ rotate: 15 }}
+              >
                 <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
               </motion.span>
             </a>
@@ -296,7 +317,7 @@ export function SongRevealCard({
                 {answer.albumImageUrl ? (
                   <Image
                     src={answer.albumImageUrl}
-                    alt={answer.albumName || "Album"}
+                    alt={answer.albumName || 'Album'}
                     width={40}
                     height={40}
                     className="object-cover"
@@ -311,14 +332,21 @@ export function SongRevealCard({
               </div>
               <div className="text-left flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-sm truncate">{answer.albumName || "Album"}</p>
+                  <p className="font-medium text-sm truncate">
+                    {answer.albumName || 'Album'}
+                  </p>
                   <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
                     ALBUM
                   </span>
                 </div>
-                <p className="text-xs text-[#b3b3b3] truncate">{answer.artist}</p>
+                <p className="text-xs text-[#b3b3b3] truncate">
+                  {answer.artist}
+                </p>
               </div>
-              <motion.span className="flex-shrink-0" whileHover={{ rotate: 15 }}>
+              <motion.span
+                className="flex-shrink-0"
+                whileHover={{ rotate: 15 }}
+              >
                 <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
               </motion.span>
             </a>
@@ -333,7 +361,9 @@ export function SongRevealCard({
           transition={{ delay: 0.3 }}
           className="mt-6 pt-6 border-t border-white/10"
         >
-          <p className="text-sm text-[#b3b3b3] mb-3">Listen to the full playlist:</p>
+          <p className="text-sm text-[#b3b3b3] mb-3">
+            Listen to the full playlist:
+          </p>
           <a
             href={playlistExternalUrl}
             target="_blank"
@@ -360,10 +390,15 @@ export function SongRevealCard({
             <div className="text-left min-w-0 flex-1">
               <p className="font-medium text-sm truncate">{playlistName}</p>
               {playlistTotalTracks != null && (
-                <p className="text-xs text-[#b3b3b3]">{playlistTotalTracks} tracks</p>
+                <p className="text-xs text-[#b3b3b3]">
+                  {playlistTotalTracks} tracks
+                </p>
               )}
             </div>
-            <motion.span className="ml-auto flex-shrink-0" whileHover={{ rotate: 15 }}>
+            <motion.span
+              className="ml-auto flex-shrink-0"
+              whileHover={{ rotate: 15 }}
+            >
               <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
             </motion.span>
           </a>

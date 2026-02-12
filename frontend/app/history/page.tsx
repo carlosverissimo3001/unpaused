@@ -1,59 +1,57 @@
-"use client";
+'use client';
 
-import { EmptyHistory } from "@/components/history/EmptyHistory";
-import { FreezeHistoryCard } from "@/components/history/FreezeHistoryCard";
-import { HistoryCard } from "@/components/history/HistoryCard";
-import { StreakLostCard } from "@/components/history/StreakLostCard";
-import { HistoryFilter } from "@/components/history/HistoryFilter";
-import { HistoryStats } from "@/components/history/HistoryStats";
-import { useMe } from "@/hooks/auth/useMe";
-import { useGameShare } from "@/hooks/game/useGameShare";
-import { useInfiniteGameHistory } from "@/hooks/game/useInfiniteGameHistory";
-import { usePlayedToday } from "@/hooks/game/usePlayedToday";
-import { GameHistoryEntryDtoStatusEnum } from "@/sdk/models/GameHistoryEntryDto";
-import type { GameHistoryEntryDto } from "@/sdk/models/GameHistoryEntryDto";
-import type { StreakFreezeUsageDto } from "@/sdk/models/StreakFreezeUsageDto";
-import { motion } from "framer-motion";
-import { differenceInCalendarDays, parseISO, format, addDays } from "date-fns";
-import { BarChart3, Play } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useMemo, useState } from "react";
-import { useInView } from "react-intersection-observer";
-import { toast } from "sonner";
-import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
-import { useGameStats } from "../../hooks/game/useGameStats";
-import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+import { EmptyHistory } from '@/components/history/EmptyHistory';
+import { FreezeHistoryCard } from '@/components/history/FreezeHistoryCard';
+import { HistoryCard } from '@/components/history/HistoryCard';
+import { StreakLostCard } from '@/components/history/StreakLostCard';
+import { HistoryFilter } from '@/components/history/HistoryFilter';
+import { HistoryStats } from '@/components/history/HistoryStats';
+import { useMe } from '@/hooks/auth/useMe';
+import { useGameShare } from '@/hooks/game/useGameShare';
+import { useInfiniteGameHistory } from '@/hooks/game/useInfiniteGameHistory';
+import { usePlayedToday } from '@/hooks/game/usePlayedToday';
+import { GameHistoryEntryDtoStatusEnum } from '@/sdk/models/GameHistoryEntryDto';
+import type { GameHistoryEntryDto } from '@/sdk/models/GameHistoryEntryDto';
+import type { StreakFreezeUsageDto } from '@/sdk/models/StreakFreezeUsageDto';
+import { motion } from 'framer-motion';
+import { differenceInCalendarDays, parseISO, format, addDays } from 'date-fns';
+import { BarChart3, Play } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { useGameStats } from '../../hooks/game/useGameStats';
+import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 type StreakLostEntry = { from: string; to: string; gapDays: number };
 
 type TimelineEntry =
-  | { type: "game"; data: GameHistoryEntryDto }
-  | { type: "freeze"; data: StreakFreezeUsageDto }
-  | { type: "streak-lost"; data: StreakLostEntry };
+  | { type: 'game'; data: GameHistoryEntryDto }
+  | { type: 'freeze'; data: StreakFreezeUsageDto }
+  | { type: 'streak-lost'; data: StreakLostEntry };
 
 function HistoryPageContent() {
   const shareMutation = useGameShare();
   const { data: user } = useMe();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const [dailyOnly, setDailyOnly] = useState(searchParams.get("filter") === "daily");
+  const [dailyOnly, setDailyOnly] = useState(
+    searchParams.get('filter') === 'daily',
+  );
 
   const mode = dailyOnly ? GameMode.Daily : GameMode.All;
-  const { data: stats } = useGameStats( { mode, useCached: true } );
-  const { data: playedTodayData } = usePlayedToday({ enabled: dailyOnly && !!user });
-
-  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    // Two game modes: ALL and DAILY, but here, in the ALL tab, let's also show the daily games, hence undefinde
-    useInfiniteGameHistory({ mode: dailyOnly ? GameMode.Daily : undefined, enabled: !!user });
-
-  const { ref: loadMoreRef } = useInView({
-    onChange: (inView) => {
-      if (inView && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    },
+  const { data: stats } = useGameStats({ mode, useCached: true });
+  const { data: playedTodayData } = usePlayedToday({
+    enabled: dailyOnly && !!user,
   });
+
+  const { data, isLoading, error } =
+    // Two game modes: ALL and DAILY, but here, in the ALL tab, let's also show the daily games, hence undefinde
+    useInfiniteGameHistory({
+      mode: dailyOnly ? GameMode.Daily : undefined,
+      enabled: !!user,
+    });
 
   const timeline = useMemo(() => {
     const gameItems = data?.pages.flatMap((p) => p.items) ?? [];
@@ -68,11 +66,15 @@ function HistoryPageContent() {
 
     // Merge game + freeze entries, sorted by date descending
     const entries: TimelineEntry[] = [
-      ...gameItems.map((data) => ({ type: "game" as const, data })),
-      ...freezeUsages.map((data) => ({ type: "freeze" as const, data })),
+      ...gameItems.map((data) => ({ type: 'game' as const, data })),
+      ...freezeUsages.map((data) => ({ type: 'freeze' as const, data })),
     ];
     const getSortDate = (e: TimelineEntry) =>
-      e.type === "game" ? e.data.date : e.type === "freeze" ? e.data.coveredTo : e.data.to;
+      e.type === 'game'
+        ? e.data.date
+        : e.type === 'freeze'
+          ? e.data.coveredTo
+          : e.data.to;
     entries.sort((a, b) => getSortDate(b).localeCompare(getSortDate(a)));
 
     // For daily mode, detect gaps not covered by freezes and insert "streak lost" markers
@@ -88,10 +90,10 @@ function HistoryPageContent() {
         const gapFrom = addDays(olderDate, 1);
         const gapTo = addDays(newerDate, -1);
         result.push({
-          type: "streak-lost",
+          type: 'streak-lost',
           data: {
-            from: format(gapFrom, "yyyy-MM-dd"),
-            to: format(gapTo, "yyyy-MM-dd"),
+            from: format(gapFrom, 'yyyy-MM-dd'),
+            to: format(gapTo, 'yyyy-MM-dd'),
             gapDays: gap - 1,
           },
         });
@@ -111,10 +113,10 @@ function HistoryPageContent() {
           setTimeout(() => setCopiedId(null), 2000);
         }
       } catch {
-        toast.error("Failed to copy share text");
+        toast.error('Failed to copy share text');
       }
     },
-    [shareMutation]
+    [shareMutation],
   );
 
   if (isLoading) {
@@ -130,7 +132,7 @@ function HistoryPageContent() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="text-center">
           <p className="text-red-400 mb-4">
-            {error instanceof Error ? error.message : "Something went wrong"}
+            {error instanceof Error ? error.message : 'Something went wrong'}
           </p>
           <Link href="/" className="text-spotify-green hover:underline">
             Back to Home
@@ -140,17 +142,20 @@ function HistoryPageContent() {
     );
   }
 
-return (
+  return (
     <div className="min-h-screen p-4 sm:p-8 lg:p-12 max-w-5xl mx-auto pb-12 relative">
       <div
         className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-spotify-green/10 via-transparent to-transparent"
         aria-hidden
       />
 
-      <HistoryFilter dailyOnly={dailyOnly} isTrusted={user?.isTrusted ?? false} onDailyOnlyChange={setDailyOnly} />
+      <HistoryFilter
+        dailyOnly={dailyOnly}
+        isTrusted={user?.isTrusted ?? false}
+        onDailyOnlyChange={setDailyOnly}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
         <aside className="lg:col-span-4 lg:sticky lg:top-8">
           {stats && <HistoryStats stats={stats} />}
           <div className="hidden lg:block mt-6 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
@@ -158,11 +163,12 @@ return (
               Your Vault
             </p>
             <p className="text-sm text-white/50 mt-2">
-              Viewing {dailyOnly ? "Daily Challenges" : "all games"} across your entire history.
+              Viewing {dailyOnly ? 'Daily Challenges' : 'all games'} across your
+              entire history.
             </p>
             {dailyOnly && playedTodayData && (
               <Link
-                href={playedTodayData.playedToday ? "/daily/stats" : "/daily"}
+                href={playedTodayData.playedToday ? '/daily/stats' : '/daily'}
                 className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.97] bg-spotify-green/10 border border-spotify-green/20 text-spotify-green hover:bg-spotify-green/15"
               >
                 {playedTodayData.playedToday ? (
@@ -197,7 +203,7 @@ return (
               }}
             >
               {timeline.map((entry, index) => {
-                if (entry.type === "freeze") {
+                if (entry.type === 'freeze') {
                   return (
                     <FreezeHistoryCard
                       key={`freeze-${entry.data.id}`}
@@ -206,7 +212,7 @@ return (
                     />
                   );
                 }
-                if (entry.type === "streak-lost") {
+                if (entry.type === 'streak-lost') {
                   return (
                     <StreakLostCard
                       key={`lost-${entry.data.from}`}

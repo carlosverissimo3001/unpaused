@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Snowflake } from "lucide-react";
-import type { StreakFreezeUsageDto } from "@/sdk/models/StreakFreezeUsageDto";
-import { formatDateRange } from "@/utils/date-utils";
+import { motion } from 'framer-motion';
+import { Snowflake } from 'lucide-react';
+import type { StreakFreezeUsageDto } from '@/sdk/models/StreakFreezeUsageDto';
+import { formatDateRange } from '@/utils/date-utils';
 
 interface FreezeHistoryCardProps {
   usage: StreakFreezeUsageDto;
@@ -15,7 +15,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: "easeOut" as const },
+    transition: { delay: i * 0.06, duration: 0.35, ease: 'easeOut' as const },
   }),
 };
 
@@ -45,9 +45,12 @@ export function FreezeHistoryCard({
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-white/80">Streak saved</span>
+              <span className="text-[13px] font-semibold text-white/80">
+                Streak saved
+              </span>
               <span className="text-[10px] text-cyan-400/40">
-                {usage.freezesUsed} {usage.freezesUsed === 1 ? "freeze" : "freezes"} used
+                {usage.freezesUsed}{' '}
+                {usage.freezesUsed === 1 ? 'freeze' : 'freezes'} used
               </span>
             </div>
             <p className="text-[11px] text-white/30">

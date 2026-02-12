@@ -1,21 +1,24 @@
-"use client";
+'use client';
 
-import { memo } from "react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Sparkles, Play, ArrowRight, BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { usePlayedToday } from "@/hooks/game/usePlayedToday";
-import { DailyChallengeCountdown } from "./DailyChallangeCountdown";
+import { memo } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Sparkles, Play, ArrowRight, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { usePlayedToday } from '@/hooks/game/usePlayedToday';
+import { DailyChallengeCountdown } from './DailyChallangeCountdown';
 
 interface DailyChallengeBannerProps {
   isTrusted: boolean;
 }
 
-function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps) {
-  const { data: playedTodayData, isLoading: playedTodayLoading } = usePlayedToday({
-    enabled: isTrusted,
-  });
+function DailyChallengeBannerComponent({
+  isTrusted,
+}: DailyChallengeBannerProps) {
+  const { data: playedTodayData, isLoading: playedTodayLoading } =
+    usePlayedToday({
+      enabled: isTrusted,
+    });
 
   const playedToday = playedTodayData?.playedToday ?? false;
   const showAsPlayed = playedTodayLoading ? true : playedToday;
@@ -30,7 +33,7 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
     >
       <motion.div
         animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
         className="absolute -top-[150px] -right-[100px] w-[300px] h-[300px] bg-spotify-green/15 rounded-full blur-[80px] pointer-events-none"
       />
 
@@ -53,17 +56,17 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
         <div className="flex flex-col items-end gap-2 sm:gap-3 shrink-0">
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
-              variant={showAsPlayed ? "outline" : "spotify"}
+              variant={showAsPlayed ? 'outline' : 'spotify'}
               size="sm"
               asChild
               className={
                 showAsPlayed
-                  ? "h-9 sm:h-11 px-4 sm:px-6 !rounded-full text-[11px] sm:text-base font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white"
-                  : "h-9 sm:h-11 px-4 sm:px-6 !rounded-full text-[11px] sm:text-base font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]"
+                  ? 'h-9 sm:h-11 px-4 sm:px-6 !rounded-full text-[11px] sm:text-base font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white'
+                  : 'h-9 sm:h-11 px-4 sm:px-6 !rounded-full text-[11px] sm:text-base font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]'
               }
             >
               <Link
-                href={showAsPlayed ? "/daily/stats" : "/daily"}
+                href={showAsPlayed ? '/daily/stats' : '/daily'}
                 className="flex items-center gap-2"
               >
                 {showAsPlayed ? (
@@ -74,7 +77,10 @@ function DailyChallengeBannerComponent({ isTrusted }: DailyChallengeBannerProps)
                   </>
                 ) : (
                   <>
-                    <Play fill="currentColor" className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Play
+                      fill="currentColor"
+                      className="w-3 h-3 sm:w-4 sm:h-4"
+                    />
                     <span>Play</span>
                     <ArrowRight className="hidden sm:block w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </>

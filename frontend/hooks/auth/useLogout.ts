@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { api } from "@/sdk/client";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@/sdk/client';
 
 /**
  * Mutation hook to logout
@@ -17,11 +17,11 @@ export function useLogout() {
     },
     onSuccess: () => {
       // Invalidate all auth queries
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.auth.all,
       });
       // Invalidate playlists (user-specific)
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.playlists.all,
       });
       // Clear all queries

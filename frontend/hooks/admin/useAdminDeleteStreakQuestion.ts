@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { api } from "@/sdk/client";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { getApiErrorMessage } from '@/lib/api-error';
+import { api } from '@/sdk/client';
 
 export function useAdminDeleteStreakQuestion() {
   const queryClient = useQueryClient();
@@ -18,7 +18,9 @@ export function useAdminDeleteStreakQuestion() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.streakQuestions });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.admin.streakQuestions,
+      });
     },
   });
 }

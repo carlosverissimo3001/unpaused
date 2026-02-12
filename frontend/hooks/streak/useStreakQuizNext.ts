@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { api } from "@/sdk/client";
-import type { QuizNextResponseDto } from "@/sdk";
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@/sdk/client';
+import type { QuizNextResponseDto } from '@/sdk';
 
 export function useStreakQuizNext(opts?: { enabled?: boolean }) {
   return useQuery<QuizNextResponseDto>({

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { parsePlaylistUrl } from "@/utils/playlist-utils";
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { parsePlaylistUrl } from '@/utils/playlist-utils';
 
 /**
  * Hook to manage playlist URL input, validation, and navigation
@@ -10,7 +10,7 @@ import { parsePlaylistUrl } from "@/utils/playlist-utils";
  */
 export function usePlaylistUrlLoader() {
   const router = useRouter();
-  const [playlistUrl, setPlaylistUrl] = useState("");
+  const [playlistUrl, setPlaylistUrl] = useState('');
   const [urlError, setUrlError] = useState<string | null>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
@@ -19,7 +19,7 @@ export function usePlaylistUrlLoader() {
     const playlistId = parsePlaylistUrl(playlistUrl);
 
     if (!playlistId) {
-      setUrlError("Invalid Spotify playlist URL or ID");
+      setUrlError('Invalid Spotify playlist URL or ID');
       return;
     }
 
@@ -29,17 +29,19 @@ export function usePlaylistUrlLoader() {
   // Handle Cmd/Ctrl+K keyboard shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        const searchInput = document.querySelector('input[placeholder*="Spotify playlist"]');
+        const searchInput = document.querySelector(
+          'input[placeholder*="Spotify playlist"]',
+        );
         if (searchInput instanceof HTMLInputElement) {
           searchInput.focus();
         }
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleUrlChange = useCallback((url: string) => {

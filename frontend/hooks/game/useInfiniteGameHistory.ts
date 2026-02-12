@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { api } from "@/sdk/client";
-import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@/sdk/client';
+import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 const PAGE_SIZE = 20;
 

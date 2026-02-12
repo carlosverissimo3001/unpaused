@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { api } from "@/sdk/client";
-import type { AuthMeResponseDto } from "@/sdk";
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@/sdk/client';
+import type { AuthMeResponseDto } from '@/sdk';
 
 /**
  * Fetch current authenticated user
@@ -16,9 +16,12 @@ export function useMe() {
       try {
         const response = await api.authControllerMe();
         return response ?? null;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // If unauthorized, return null instead of throwing
-        if (error?.status === 401 || error?.status === 403) {
+        if (
+          (error as { status?: number })?.status === 401 ||
+          (error as { status?: number })?.status === 403
+        ) {
           return null;
         }
         // Re-throw other errors

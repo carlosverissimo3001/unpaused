@@ -1,9 +1,9 @@
-import { format, parseISO, isSameDay } from "date-fns";
+import { format, parseISO, isSameDay } from 'date-fns';
 
 /**
  * Format a YYYY-MM-DD date string to a display string (e.g., "Feb 10, 2026")
  */
-export function formatDate(dateStr: string, pattern = "MMM d, yyyy"): string {
+export function formatDate(dateStr: string, pattern = 'MMM d, yyyy'): string {
   return format(new Date(dateStr), pattern);
 }
 
@@ -17,13 +17,13 @@ export function formatDateRange(from: string, to: string): string {
   const fromDate = parseISO(from);
   const toDate = parseISO(to);
   if (isSameDay(fromDate, toDate)) {
-    return format(fromDate, "MMM d, yyyy");
+    return format(fromDate, 'MMM d, yyyy');
   }
   if (
     fromDate.getMonth() === toDate.getMonth() &&
     fromDate.getFullYear() === toDate.getFullYear()
   ) {
-    return `${format(fromDate, "MMM d")}–${format(toDate, "d, yyyy")}`;
+    return `${format(fromDate, 'MMM d')}–${format(toDate, 'd, yyyy')}`;
   }
-  return `${format(fromDate, "MMM d")} – ${format(toDate, "MMM d, yyyy")}`;
+  return `${format(fromDate, 'MMM d')} – ${format(toDate, 'MMM d, yyyy')}`;
 }

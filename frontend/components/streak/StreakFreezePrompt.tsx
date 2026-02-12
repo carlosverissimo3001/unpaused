@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Snowflake, X } from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
-import { useStreakStatus } from "@/hooks/streak/useStreakStatus";
-import { useStreakFreeze } from "@/hooks/streak/useStreakFreeze";
-import { useState } from "react";
+import { motion } from 'framer-motion';
+import { Snowflake, X } from 'lucide-react';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { useStreakStatus } from '@/hooks/streak/useStreakStatus';
+import { useStreakFreeze } from '@/hooks/streak/useStreakFreeze';
+import { useState } from 'react';
 
 interface StreakFreezePromptProps {
   onResolved: () => void;
@@ -19,8 +19,8 @@ function getDismissKey(streak: number, gap: number) {
 }
 
 function wasDismissed(streak: number, gap: number) {
-  if (typeof window === "undefined") return false;
-  return sessionStorage.getItem(getDismissKey(streak, gap)) === "1";
+  if (typeof window === 'undefined') return false;
+  return sessionStorage.getItem(getDismissKey(streak, gap)) === '1';
 }
 
 export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
@@ -38,18 +38,21 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
     freezeMutation.mutate(undefined, {
       onSuccess: () => {
         toast.success(
-          `Streak saved! Used ${status.freezeCost} ${status.freezeCost === 1 ? "freeze" : "freezes"}`
+          `Streak saved! Used ${status.freezeCost} ${status.freezeCost === 1 ? 'freeze' : 'freezes'}`,
         );
         onResolved();
       },
       onError: (error) => {
-        toast.error(error.message || "Failed to save streak");
+        toast.error(error.message || 'Failed to save streak');
       },
     });
   };
 
   const handleDismiss = () => {
-    sessionStorage.setItem(getDismissKey(status.currentStreak, status.gapDays), "1");
+    sessionStorage.setItem(
+      getDismissKey(status.currentStreak, status.gapDays),
+      '1',
+    );
     setManuallyDismissed(true);
     onResolved();
   };
@@ -132,10 +135,10 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
                 Don&apos;t let it die
               </h2>
               <p className="text-white/45 text-[13px] leading-relaxed">
-                You missed{" "}
+                You missed{' '}
                 <span className="text-amber-400/90 font-semibold">
-                  {status.gapDays} {status.gapDays === 1 ? "day" : "days"}
-                </span>{" "}
+                  {status.gapDays} {status.gapDays === 1 ? 'day' : 'days'}
+                </span>{' '}
                 - use a freeze to keep it alive.
               </p>
             </motion.div>
@@ -149,7 +152,8 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
               {Array.from({ length: 5 }).map((_, i) => {
                 const filled = i < status.freezesAvailable;
                 const spending =
-                  i >= status.freezesAvailable - status.freezeCost && i < status.freezesAvailable;
+                  i >= status.freezesAvailable - status.freezeCost &&
+                  i < status.freezesAvailable;
 
                 return (
                   <motion.div
@@ -165,19 +169,19 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
                     <div
                       className={`relative w-10 h-10 rounded-lg flex items-center justify-center ${
                         spending
-                          ? "bg-cyan-400/15 border border-cyan-400/50"
+                          ? 'bg-cyan-400/15 border border-cyan-400/50'
                           : filled
-                            ? "bg-cyan-500/10 border border-cyan-400/20"
-                            : "bg-white/[0.02] border border-white/[0.06]"
+                            ? 'bg-cyan-500/10 border border-cyan-400/20'
+                            : 'bg-white/[0.02] border border-white/[0.06]'
                       }`}
                     >
                       <Snowflake
                         className={`w-[18px] h-[18px] ${
                           spending
-                            ? "text-cyan-300"
+                            ? 'text-cyan-300'
                             : filled
-                              ? "text-cyan-400/50"
-                              : "text-white/[0.08]"
+                              ? 'text-cyan-400/50'
+                              : 'text-white/[0.08]'
                         }`}
                       />
                     </div>
@@ -204,8 +208,8 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
                 <span className="relative z-10 flex items-center justify-center gap-2.5 text-[#071520]">
                   <Snowflake className="w-[16px] h-[16px]" />
                   {freezeMutation.isPending
-                    ? "Saving..."
-                    : `Use ${status.freezeCost} ${status.freezeCost === 1 ? "freeze" : "freezes"} to save streak`}
+                    ? 'Saving...'
+                    : `Use ${status.freezeCost} ${status.freezeCost === 1 ? 'freeze' : 'freezes'} to save streak`}
                 </span>
               </button>
 
@@ -299,13 +303,15 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
               Streak lost
             </h2>
             <p className="text-white/35 text-[13px] leading-relaxed">
-              {status.gapDays} {status.gapDays === 1 ? "day" : "days"} missed.
-              {status.isTrusted && status.freezesAvailable < status.freezeCost && (
-                <span className="block mt-1 text-white/20">
-                  Needed {status.freezeCost} {status.freezeCost === 1 ? "freeze" : "freezes"}, had{" "}
-                  {status.freezesAvailable}.
-                </span>
-              )}
+              {status.gapDays} {status.gapDays === 1 ? 'day' : 'days'} missed.
+              {status.isTrusted &&
+                status.freezesAvailable < status.freezeCost && (
+                  <span className="block mt-1 text-white/20">
+                    Needed {status.freezeCost}{' '}
+                    {status.freezeCost === 1 ? 'freeze' : 'freezes'}, had{' '}
+                    {status.freezesAvailable}.
+                  </span>
+                )}
             </p>
           </motion.div>
 

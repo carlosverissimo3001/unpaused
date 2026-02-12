@@ -1,5 +1,5 @@
-import type { TrackOptionDto } from "@/sdk";
-import type { GuessHistoryDto } from "@/sdk";
+import type { TrackOptionDto } from '@/sdk';
+import type { GuessHistoryDto } from '@/sdk';
 
 /**
  * Normalized game state used by the shared GamePage UI.

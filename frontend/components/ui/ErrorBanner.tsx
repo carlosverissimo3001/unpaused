@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { memo } from "react";
-import { motion } from "framer-motion";
+import { memo } from 'react';
+import { motion } from 'framer-motion';
 
 interface ErrorBannerProps {
   error: string | null;
   onDismiss?: () => void;
 }
 
-function ErrorBannerComponent({ error, onDismiss }: ErrorBannerProps) {
+function ErrorBannerComponent({ error }: ErrorBannerProps) {
   if (!error) return null;
 
   return (

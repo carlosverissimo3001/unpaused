@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { Check, Music2 } from "lucide-react";
-import type { PlaylistDto } from "@/sdk";
+import Image from 'next/image';
+import { Check, Music2 } from 'lucide-react';
+import type { PlaylistDto } from '@/sdk';
 
 interface DailyPlaylistSelectorProps {
   playlists: PlaylistDto[];
@@ -25,7 +25,6 @@ export function DailyPlaylistSelector({
   saved,
   onSave,
 }: DailyPlaylistSelectorProps) {
-  const allSelected = playlists.length > 0 && selectedIds.length === playlists.length;
   const noneSelected = selectedIds.length === 0;
 
   return (
@@ -36,8 +35,8 @@ export function DailyPlaylistSelector({
           Daily playlists
         </h3>
         <p className="text-white/60 text-sm mt-1.5">
-          Pick playlists to draw your daily song from. Select none to use your first playlists by
-          default.
+          Pick playlists to draw your daily song from. Select none to use your
+          first playlists by default.
         </p>
         <div className="flex flex-wrap gap-2 mt-3">
           <button
@@ -55,7 +54,9 @@ export function DailyPlaylistSelector({
             Clear
           </button>
           {!noneSelected && (
-            <span className="text-xs text-white/50 self-center">{selectedIds.length} selected</span>
+            <span className="text-xs text-white/50 self-center">
+              {selectedIds.length} selected
+            </span>
           )}
         </div>
       </div>
@@ -70,13 +71,19 @@ export function DailyPlaylistSelector({
                 onClick={() => onToggle(p.id)}
                 className={`relative rounded-xl overflow-hidden text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-spotify-green/50 focus:ring-offset-2 focus:ring-offset-[#121212] ${
                   isSelected
-                    ? "ring-2 ring-spotify-green shadow-[0_0_0_1px_rgba(30,215,96,0.4)]"
-                    : "hover:bg-white/5"
+                    ? 'ring-2 ring-spotify-green shadow-[0_0_0_1px_rgba(30,215,96,0.4)]'
+                    : 'hover:bg-white/5'
                 }`}
               >
                 <div className="aspect-square relative bg-white/10">
                   {p.imageUrl?.trim() ? (
-                    <Image src={p.imageUrl} alt="" fill className="object-cover" sizes="120px" />
+                    <Image
+                      src={p.imageUrl}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="120px"
+                    />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Music2 className="w-8 h-8 text-white/30" />
@@ -104,7 +111,7 @@ export function DailyPlaylistSelector({
           disabled={saving}
           className="w-full py-2.5 rounded-xl bg-spotify-green text-black font-semibold hover:bg-green-400 disabled:opacity-50 transition-colors text-sm"
         >
-          {saving ? "Saving…" : saved ? "Saved!" : "Save playlists"}
+          {saving ? 'Saving…' : saved ? 'Saved!' : 'Save playlists'}
         </button>
       </div>
     </div>

@@ -1,12 +1,17 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowLeft, Play, ExternalLink, BarChart3, History } from "lucide-react";
-import { StreakBadge } from "@/components/daily/StreakBadge";
-import type { PlaylistDto, GameStatsDto } from "@/sdk";
-import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
-
+import Link from 'next/link';
+import Image from 'next/image';
+import {
+  ArrowLeft,
+  Play,
+  ExternalLink,
+  BarChart3,
+  History,
+} from 'lucide-react';
+import { StreakBadge } from '@/components/daily/StreakBadge';
+import type { PlaylistDto, GameStatsDto } from '@/sdk';
+import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 interface GameHeaderProps {
   mode: GameMode;
@@ -58,7 +63,10 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
       {isDaily && (
         <div className="flex items-center gap-4">
           {stats && (
-            <StreakBadge currentStreak={stats.currentStreak} bestStreak={stats.bestStreak} />
+            <StreakBadge
+              currentStreak={stats.currentStreak}
+              bestStreak={stats.bestStreak}
+            />
           )}
           <Link
             href="/daily/stats"
@@ -77,5 +85,5 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
         </div>
       )}
     </div>
-    );
-  }
+  );
+}

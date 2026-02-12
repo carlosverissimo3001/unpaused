@@ -1,39 +1,42 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useMe } from "@/hooks/auth/useMe";
-import { StreakFreezePrompt } from "@/components/streak/StreakFreezePrompt";
-import { useMyPlaylists } from "@/hooks/playlists/useMyPlaylists";
-import { useLogout } from "@/hooks/auth/useLogout";
-import { useTokenLogin } from "@/hooks/auth/useTokenLogin";
-import { usePlaylistFilters } from "@/hooks/playlists/usePlaylistFilters";
-import { usePlaylistUrlLoader } from "@/hooks/playlists/usePlaylistUrlLoader";
-import { useAuthError } from "@/hooks/auth/useAuthError";
-import { ErrorBanner } from "@/components/ui/ErrorBanner";
-import { AppHeader } from "@/components/features/AppHeader";
-import { DailyChallengeBanner } from "@/components/features/DailyChallengeBanner";
-import { PlaylistUrlSearch } from "@/components/features/playlist/PlaylistUrlSearch";
-import { PlaylistFilters } from "@/components/features/playlist/PlaylistFilters";
-import { PlaylistGrid } from "@/components/features/playlist/PlaylistGrid";
-import { UnauthenticatedView } from "@/components/features/UnauthenticatedView";
-import { AppFooter } from "@/components/features/AppFooter";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useMe } from '@/hooks/auth/useMe';
+import { StreakFreezePrompt } from '@/components/streak/StreakFreezePrompt';
+import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
+import { useLogout } from '@/hooks/auth/useLogout';
+import { useTokenLogin } from '@/hooks/auth/useTokenLogin';
+import { usePlaylistFilters } from '@/hooks/playlists/usePlaylistFilters';
+import { usePlaylistUrlLoader } from '@/hooks/playlists/usePlaylistUrlLoader';
+import { useAuthError } from '@/hooks/auth/useAuthError';
+import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { AppHeader } from '@/components/features/AppHeader';
+import { DailyChallengeBanner } from '@/components/features/DailyChallengeBanner';
+import { PlaylistUrlSearch } from '@/components/features/playlist/PlaylistUrlSearch';
+import { PlaylistFilters } from '@/components/features/playlist/PlaylistFilters';
+import { PlaylistGrid } from '@/components/features/playlist/PlaylistGrid';
+import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
+import { AppFooter } from '@/components/features/AppFooter';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function Home() {
-  const [tokenInput, setTokenInput] = useState("");
-  const [ambientColor, setAmbientColor] = useState<string>("rgba(30, 215, 96, 0.1)");
+  const [tokenInput, setTokenInput] = useState('');
+  const [ambientColor, setAmbientColor] = useState<string>(
+    'rgba(30, 215, 96, 0.1)',
+  );
 
   const playlistFilters = usePlaylistFilters();
   const playlistUrlLoader = usePlaylistUrlLoader();
   const { error } = useAuthError();
 
   const { data: user, isLoading: isLoadingUser } = useMe();
-  const { data: playlistsResponse, isLoading: isLoadingPlaylists } = useMyPlaylists({
-    onlyPublic: playlistFilters.onlyPublic,
-    onlyUserOwned: playlistFilters.onlyUserOwned,
-    enabled: !!user,
-  });
+  const { data: playlistsResponse, isLoading: isLoadingPlaylists } =
+    useMyPlaylists({
+      onlyPublic: playlistFilters.onlyPublic,
+      onlyUserOwned: playlistFilters.onlyUserOwned,
+      enabled: !!user,
+    });
   const logoutMutation = useLogout();
   const tokenLoginMutation = useTokenLogin();
   const [streakDismissed, setStreakDismissed] = useState(false);
@@ -68,15 +71,19 @@ export default function Home() {
           animate={{
             background: `radial-gradient(circle 80% 50% at 50% 0%, ${ambientColor}, transparent 70%)`,
           }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
           style={{
-            filter: "blur(60px)",
+            filter: 'blur(60px)',
             opacity: 0.4,
           }}
         />
       </div>
 
-      <AppHeader user={user} onLogout={handleLogout} isLoggingOut={logoutMutation.isPending} />
+      <AppHeader
+        user={user}
+        onLogout={handleLogout}
+        isLoggingOut={logoutMutation.isPending}
+      />
 
       <div className="flex-1 px-4 sm:px-6 py-2 sm:py-8 relative z-10">
         <div className="max-w-5xl mx-auto flex flex-col gap-3 sm:gap-6">
@@ -111,7 +118,7 @@ export default function Home() {
 
                       {!isLoadingPlaylists && (
                         <span className="text-sm sm:text-lg font-mono text-spotify-green/40 font-light tracking-tighter shrink-0">
-                          /{playlists.length.toString().padStart(2, "0")}
+                          /{playlists.length.toString().padStart(2, '0')}
                         </span>
                       )}
                     </div>
@@ -158,7 +165,9 @@ export default function Home() {
       <AppFooter />
 
       {/* Streak at risk overlay */}
-      {!streakDismissed && <StreakFreezePrompt onResolved={() => setStreakDismissed(true)} />}
+      {!streakDismissed && (
+        <StreakFreezePrompt onResolved={() => setStreakDismissed(true)} />
+      )}
     </main>
   );
 }

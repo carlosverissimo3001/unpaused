@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient } from '@tanstack/react-query';
 
 /**
  * Create a QueryClient with production-ready defaults
@@ -29,7 +29,7 @@ export function makeQueryClient() {
 let browserQueryClient: QueryClient | undefined = undefined;
 
 export function getQueryClient() {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     // Server: always make a new query client
     return makeQueryClient();
   } else {

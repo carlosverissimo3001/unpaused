@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ListMusic, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { PlaylistCard } from "@/components/playlist/PlaylistCard";
-import { PlaylistSkeleton } from "@/components/playlist/PlaylistSkeleton";
-import type { PlaylistDto } from "@/sdk";
+import { memo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ListMusic, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PlaylistCard } from '@/components/playlist/PlaylistCard';
+import { PlaylistSkeleton } from '@/components/playlist/PlaylistSkeleton';
+import type { PlaylistDto } from '@/sdk';
 
 interface PlaylistGridProps {
   playlists: PlaylistDto[];
@@ -58,9 +58,9 @@ function PlaylistGridComponent({
         <ListMusic className="w-12 h-12 mb-4 opacity-20" />
         <p className="text-lg font-medium">No playlists found</p>
         {onClearFilters && (
-          <Button 
-            variant="outline" 
-            onClick={onClearFilters} 
+          <Button
+            variant="outline"
+            onClick={onClearFilters}
             className="mt-4 gap-2"
           >
             <X className="w-4 h-4" />
@@ -82,8 +82,8 @@ function PlaylistGridComponent({
       exit="exit"
       className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6 justify-center"
       style={{
-        maxWidth: "1200px",
-        margin: "0 auto"
+        maxWidth: '1200px',
+        margin: '0 auto',
       }}
     >
       <AnimatePresence mode="popLayout">

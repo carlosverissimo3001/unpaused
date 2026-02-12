@@ -20,7 +20,7 @@ class RateLimiter {
   constructor(
     maxAttempts: number = 5,
     windowMs: number = 15 * 60 * 1000, // 15 minutes
-    blockDurationMs: number = 15 * 60 * 1000 // 15 minutes
+    blockDurationMs: number = 15 * 60 * 1000, // 15 minutes
   ) {
     this.maxAttempts = maxAttempts;
     this.windowMs = windowMs;
@@ -126,15 +126,18 @@ class RateLimiter {
   private cleanup(): void {
     const now = Date.now();
     const keysToDelete: string[] = [];
-    
+
     this.attempts.forEach((entry, key) => {
       // Remove if reset time has passed and not currently blocked
-      if (entry.resetTime < now && (!entry.blockedUntil || entry.blockedUntil < now)) {
+      if (
+        entry.resetTime < now &&
+        (!entry.blockedUntil || entry.blockedUntil < now)
+      ) {
         keysToDelete.push(key);
       }
     });
-    
-    keysToDelete.forEach(key => this.attempts.delete(key));
+
+    keysToDelete.forEach((key) => this.attempts.delete(key));
   }
 }
 
@@ -142,5 +145,5 @@ class RateLimiter {
 export const authGateRateLimiter = new RateLimiter(
   5, // Max 5 attempts
   15 * 60 * 1000, // Within 15 minutes
-  15 * 60 * 1000 // Block for 15 minutes
+  15 * 60 * 1000, // Block for 15 minutes
 );

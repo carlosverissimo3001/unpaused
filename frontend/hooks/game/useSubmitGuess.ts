@@ -1,10 +1,15 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { api } from "@/sdk/client";
-import type { GuessResultDto, GuessDto, GameStateDto, GuessHistoryDto } from "@/sdk";
-import { GuessHistoryDtoResultEnum } from "@/sdk/models/GuessHistoryDto";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@/sdk/client';
+import type {
+  GuessResultDto,
+  GuessDto,
+  GameStateDto,
+  GuessHistoryDto,
+} from '@/sdk';
+import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 
 interface SubmitGuessParams {
   sessionId: string;
@@ -28,7 +33,14 @@ export function useSubmitGuess() {
     SubmitGuessParams,
     { previousState?: GameStateDto }
   >({
-    mutationFn: async ({ sessionId, trackId, skip = false, trackName, artistName, albumName }) => {
+    mutationFn: async ({
+      sessionId,
+      trackId,
+      skip = false,
+      trackName,
+      artistName,
+      albumName,
+    }) => {
       const guessDto: GuessDto = {
         trackId: trackId || undefined,
         skip,
@@ -46,7 +58,7 @@ export function useSubmitGuess() {
 
       // Snapshot the previous value
       const previousState = queryClient.getQueryData<GameStateDto>(
-        queryKeys.game.state(sessionId)
+        queryKeys.game.state(sessionId),
       );
 
       // Optimistically update the game state (trackName/artistName from search selection)
@@ -56,7 +68,9 @@ export function useSubmitGuess() {
           trackName: trackName ?? null,
           artistName: artistName ?? null,
           // ONLY set a result if it's a skip. Otherwise, leave it null (I know it's f*cking ugly).
-          result: skip ? GuessHistoryDtoResultEnum.Skip : (null as any), 
+          result: skip
+            ? GuessHistoryDtoResultEnum.Skip
+            : (null as unknown as GuessHistoryDtoResultEnum),
         };
 
         queryClient.setQueryData<GameStateDto>(
@@ -64,7 +78,7 @@ export function useSubmitGuess() {
           {
             ...previousState,
             guesses: [...previousState.guesses, optimisticGuess],
-          }
+          },
         );
       }
 
@@ -73,7 +87,7 @@ export function useSubmitGuess() {
     onSuccess: (result, variables) => {
       // Update the game state with the actual result
       const currentState = queryClient.getQueryData<GameStateDto>(
-        queryKeys.game.state(variables.sessionId)
+        queryKeys.game.state(variables.sessionId),
       );
 
       if (currentState) {
@@ -96,12 +110,12 @@ export function useSubmitGuess() {
 
         queryClient.setQueryData<GameStateDto>(
           queryKeys.game.state(variables.sessionId),
-          updatedState
+          updatedState,
         );
 
         // If game is over, refetch to get the answer
         if (result.gameOver) {
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: queryKeys.game.state(variables.sessionId),
           });
         }
@@ -111,7 +125,7 @@ export function useSubmitGuess() {
       if (context?.previousState != null) {
         queryClient.setQueryData<GameStateDto>(
           queryKeys.game.state(variables.sessionId),
-          context.previousState
+          context.previousState,
         );
       }
     },

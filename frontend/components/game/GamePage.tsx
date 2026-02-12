@@ -1,25 +1,24 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence, Variants } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import { useGameOrchestrator } from "@/hooks/game/useGameOrchestrator";
-import { useAlbumArtColor } from "@/hooks/misc/useAlbumArtColor";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { RoundProgressBar } from "./RoundProgressBar";
-import { PlaySnippetButton } from "./PlaySnippetButton";
-import { SongRevealCard } from "./SongRevealCard";
-import { GuessHistoryList } from "./GuessHistoryList";
-import { GameHeader } from "./GameHeader";
-import { GameTitle } from "./GameTitle";
-import { GuessInput } from "./GuessInput";
-import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+import Link from 'next/link';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import { useGameOrchestrator } from '@/hooks/game/useGameOrchestrator';
+import { useAlbumArtColor } from '@/hooks/misc/useAlbumArtColor';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { RoundProgressBar } from './RoundProgressBar';
+import { PlaySnippetButton } from './PlaySnippetButton';
+import { SongRevealCard } from './SongRevealCard';
+import { GuessHistoryList } from './GuessHistoryList';
+import { GameHeader } from './GameHeader';
+import { GameTitle } from './GameTitle';
+import { GuessInput } from './GuessInput';
+import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 const SHAKE_VARIANTS: Variants = {
   shake: {
     x: [0, -12, 12, -12, 12, -6, 6, 0],
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: { duration: 0.5, ease: 'easeOut' },
   },
 };
 
@@ -29,7 +28,6 @@ interface GamePageProps {
 }
 
 export function GamePage({ mode, playlistId }: GamePageProps) {
-  const router = useRouter();
   const {
     playlist,
     gameState,
@@ -49,17 +47,26 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
   } = useGameOrchestrator(mode, playlistId);
 
   // Destructure gameAudio to avoid ref access warnings
-  const { audioRef, fullAudioRef, isPlaying, amplitude, playSnippet, pauseSnippet } = gameAudio;
+  const {
+    audioRef,
+    fullAudioRef,
+    isPlaying,
+    amplitude,
+    playSnippet,
+    pauseSnippet,
+  } = gameAudio;
 
   const albumArtColor = useAlbumArtColor(
-    isGameOver && gameState?.answer?.albumImageUrl ? gameState.answer.albumImageUrl : null
+    isGameOver && gameState?.answer?.albumImageUrl
+      ? gameState.answer.albumImageUrl
+      : null,
   );
 
   if (isLoading) {
     return (
       <div
         className="h-screen h-[100dvh] flex items-center justify-center"
-        style={{ background: "#121212" }}
+        style={{ background: '#121212' }}
       >
         <LoadingSpinner size="lg" />
       </div>
@@ -70,13 +77,16 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     return (
       <div
         className="h-screen h-[100dvh] flex items-center justify-center p-4 sm:p-6"
-        style={{ background: "#121212" }}
+        style={{ background: '#121212' }}
       >
         <div className="text-center max-w-md">
           <p className="text-red-400 mb-4">
-            {error instanceof Error ? error.message : "Something went wrong"}
+            {error instanceof Error ? error.message : 'Something went wrong'}
           </p>
-          <Link href="/" className="inline-flex items-center gap-2 text-[#1DB954] hover:underline">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-[#1DB954] hover:underline"
+          >
             <ArrowLeft className="w-4 h-4" />
             Back
           </Link>
@@ -90,7 +100,10 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] overflow-y-auto" style={{ background: "#121212" }}>
+    <div
+      className="min-h-screen min-h-[100dvh] overflow-y-auto"
+      style={{ background: '#121212' }}
+    >
       <motion.div
         className="fixed inset-0 -z-10 pointer-events-none"
         animate={{
@@ -110,23 +123,24 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
         transition={{
           duration: 4,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       />
 
       <motion.div
         variants={SHAKE_VARIANTS}
-        animate={shouldShake ? "shake" : ""}
+        animate={shouldShake ? 'shake' : ''}
         className="p-3 sm:p-6 md:p-8 lg:p-10 relative z-10 flex flex-col min-h-screen min-h-[100dvh] safe-area-inset"
       >
         <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-3 sm:gap-0">
-          <GameHeader mode={mode} playlist={playlist ?? null} stats={stats ?? null} />
+          <GameHeader
+            mode={mode}
+            playlist={playlist ?? null}
+            stats={stats ?? null}
+          />
 
           {!isGameOver && (
-            <GameTitle
-              mode={mode}
-              currentRound={gameState.currentRound}
-            />
+            <GameTitle mode={mode} currentRound={gameState.currentRound} />
           )}
 
           <audio
@@ -136,7 +150,12 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             crossOrigin="anonymous"
           />
           {isGameOver && gameState.previewUrl && (
-            <audio ref={fullAudioRef} src={gameState.previewUrl} preload="auto" loop={false} />
+            <audio
+              ref={fullAudioRef}
+              src={gameState.previewUrl}
+              preload="auto"
+              loop={false}
+            />
           )}
 
           {!isGameOver && (
@@ -145,7 +164,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               guesses={gameState.guesses}
             />
           )}
-
 
           {!isGameOver && (
             <PlaySnippetButton
@@ -177,10 +195,16 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                   showViewStats={isDaily}
                   showPlayAgain={isPlaylist}
                   onPlayAgain={isPlaylist ? handlePlayAgain : undefined}
-                  playlistExternalUrl={isPlaylist && playlist ? playlist.externalUrl : null}
+                  playlistExternalUrl={
+                    isPlaylist && playlist ? playlist.externalUrl : null
+                  }
                   playlistName={isPlaylist && playlist ? playlist.name : null}
-                  playlistTotalTracks={isPlaylist && playlist ? playlist.totalTracks : null}
-                  playlistImageUrl={isPlaylist && playlist ? (playlist.imageUrl ?? null) : null}
+                  playlistTotalTracks={
+                    isPlaylist && playlist ? playlist.totalTracks : null
+                  }
+                  playlistImageUrl={
+                    isPlaylist && playlist ? (playlist.imageUrl ?? null) : null
+                  }
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   isMuted={gameAudio.isMuted}
                   onToggleFullSong={gameAudio.toggleFullSong}
@@ -210,7 +234,10 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             )}
           </AnimatePresence>
 
-          <GuessHistoryList guesses={gameState.guesses} isGameOver={!!isGameOver} />
+          <GuessHistoryList
+            guesses={gameState.guesses}
+            isGameOver={!!isGameOver}
+          />
         </div>
       </motion.div>
     </div>

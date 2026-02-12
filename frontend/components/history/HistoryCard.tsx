@@ -1,48 +1,51 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { Share2, ChevronDown, ChevronUp, Check, Music2 } from "lucide-react";
-import { GuessPattern } from "@/components/daily/GuessPattern";
-import { Button } from "@/components/ui/button";
-import { GuessHistoryDtoResultEnum } from "@/sdk/models/GuessHistoryDto";
+import { useState } from 'react';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Share2, ChevronDown, ChevronUp, Check, Music2 } from 'lucide-react';
+import { GuessPattern } from '@/components/daily/GuessPattern';
+import { Button } from '@/components/ui/button';
+import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 import {
   GameHistoryEntryDtoStatusEnum,
   type GameHistoryEntryDto,
-} from "@/sdk/models/GameHistoryEntryDto";
-import { formatDate } from "@/utils/date-utils";
-import { toOrdinal } from "../../utils/text-utils";
-import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+} from '@/sdk/models/GameHistoryEntryDto';
+import { formatDate } from '@/utils/date-utils';
+import { toOrdinal } from '../../utils/text-utils';
+import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 const GUESS_LABEL: Record<string, string> = {
-  [GuessHistoryDtoResultEnum.Correct]: "Correct",
-  [GuessHistoryDtoResultEnum.Artist]: "Same artist",
-  [GuessHistoryDtoResultEnum.ArtistAndAlbum]: "Same artist & album",
-  [GuessHistoryDtoResultEnum.Album]: "Same album",
-  [GuessHistoryDtoResultEnum.Wrong]: "Wrong",
-  [GuessHistoryDtoResultEnum.Skip]: "Skipped",
+  [GuessHistoryDtoResultEnum.Correct]: 'Correct',
+  [GuessHistoryDtoResultEnum.Artist]: 'Same artist',
+  [GuessHistoryDtoResultEnum.ArtistAndAlbum]: 'Same artist & album',
+  [GuessHistoryDtoResultEnum.Album]: 'Same album',
+  [GuessHistoryDtoResultEnum.Wrong]: 'Wrong',
+  [GuessHistoryDtoResultEnum.Skip]: 'Skipped',
 };
 
 const GUESS_BORDER: Record<string, string> = {
-  [GuessHistoryDtoResultEnum.Correct]: "border-l-green-500",
-  [GuessHistoryDtoResultEnum.Artist]: "border-l-yellow-500",
-  [GuessHistoryDtoResultEnum.ArtistAndAlbum]: "border-l-yellow-500",
-  [GuessHistoryDtoResultEnum.Album]: "border-l-yellow-500",
-  [GuessHistoryDtoResultEnum.Wrong]: "border-l-red-500",
-  [GuessHistoryDtoResultEnum.Skip]: "border-l-white/30",
+  [GuessHistoryDtoResultEnum.Correct]: 'border-l-green-500',
+  [GuessHistoryDtoResultEnum.Artist]: 'border-l-yellow-500',
+  [GuessHistoryDtoResultEnum.ArtistAndAlbum]: 'border-l-yellow-500',
+  [GuessHistoryDtoResultEnum.Album]: 'border-l-yellow-500',
+  [GuessHistoryDtoResultEnum.Wrong]: 'border-l-red-500',
+  [GuessHistoryDtoResultEnum.Skip]: 'border-l-white/30',
 };
 
 const POINTS_BADGE_CLASSES: Record<string, string> = {
-  [GameHistoryEntryDtoStatusEnum.Won]: "bg-spotify-green/10 border-spotify-green/20 text-spotify-green",
-  [GameHistoryEntryDtoStatusEnum.Lost]: "bg-red-500/10 border-red-500/20 text-red-400",
-  [GameHistoryEntryDtoStatusEnum.Abandoned]: "bg-white/10 border-white/20 text-white/50",
+  [GameHistoryEntryDtoStatusEnum.Won]:
+    'bg-spotify-green/10 border-spotify-green/20 text-spotify-green',
+  [GameHistoryEntryDtoStatusEnum.Lost]:
+    'bg-red-500/10 border-red-500/20 text-red-400',
+  [GameHistoryEntryDtoStatusEnum.Abandoned]:
+    'bg-white/10 border-white/20 text-white/50',
 };
 
 const STATUS_SIDEBAR_CLASSES: Record<string, string> = {
-  [GameHistoryEntryDtoStatusEnum.Won]: "bg-spotify-green",
-  [GameHistoryEntryDtoStatusEnum.Lost]: "bg-red-500",
-  [GameHistoryEntryDtoStatusEnum.Abandoned]: "bg-white/30",
+  [GameHistoryEntryDtoStatusEnum.Won]: 'bg-spotify-green',
+  [GameHistoryEntryDtoStatusEnum.Lost]: 'bg-red-500',
+  [GameHistoryEntryDtoStatusEnum.Abandoned]: 'bg-white/30',
 };
 
 interface HistoryCardProps {
@@ -58,7 +61,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: "easeOut" as const },
+    transition: { delay: i * 0.06, duration: 0.35, ease: 'easeOut' as const },
   }),
 };
 
@@ -67,9 +70,9 @@ const getPointsInfo = (entry: GameHistoryEntryDto, guessesUsed: number) => {
     return `${toOrdinal(guessesUsed)} Guess`;
   }
   if (entry.status === GameHistoryEntryDtoStatusEnum.Abandoned) {
-    return "Abandoned";
+    return 'Abandoned';
   }
-  return "Lost";
+  return 'Lost';
 };
 
 export function HistoryCard({
@@ -81,15 +84,16 @@ export function HistoryCard({
 }: HistoryCardProps) {
   const [expanded, setExpanded] = useState(false);
   const isWon = entry.status === GameHistoryEntryDtoStatusEnum.Won;
-  
+
   // Note: maybe simplify this logic in the future
   const guessesUsed =
     isWon && entry.score != null && entry.score >= 1 && entry.score <= 6
       ? 7 - entry.score
-      : entry.score ?? 0;
+      : (entry.score ?? 0);
 
-  const actualGuesses = entry.guesses.filter((g) => g.result !== GuessHistoryDtoResultEnum.Skip);
-
+  const actualGuesses = entry.guesses.filter(
+    (g) => g.result !== GuessHistoryDtoResultEnum.Skip,
+  );
 
   return (
     <motion.article
@@ -99,61 +103,92 @@ export function HistoryCard({
       animate="visible"
       custom={staggerIndex}
       className={`group rounded-2xl bg-white/[0.03] border overflow-hidden backdrop-blur-sm transition-all duration-300 ${
-        showWinnerGlow ? "border-amber-400/30 shadow-[0_0_15px_rgba(30,215,96,0.1)]" : "border-white/10"
+        showWinnerGlow
+          ? 'border-amber-400/30 shadow-[0_0_15px_rgba(30,215,96,0.1)]'
+          : 'border-white/10'
       }`}
     >
       <div className="flex">
         {/* Status Side-Bar */}
-        <div className={`w-1 shrink-0 ${STATUS_SIDEBAR_CLASSES[entry.status]}`} />
+        <div
+          className={`w-1 shrink-0 ${STATUS_SIDEBAR_CLASSES[entry.status]}`}
+        />
 
         <div className="p-4 flex-1 min-w-0">
           <div className="flex gap-4 items-start">
             {/* Album Art */}
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-white/10 shrink-0 shadow-lg">
               {entry.albumImageUrl ? (
-                <Image src={entry.albumImageUrl} alt="" fill className="object-cover" sizes="80px" />
+                <Image
+                  src={entry.albumImageUrl}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="80px"
+                />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center"><Music2 className="w-6 h-6 text-white/20" /></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Music2 className="w-6 h-6 text-white/20" />
+                </div>
               )}
             </div>
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-[10px] font-black uppercase tracking-widest ${entry.mode === GameMode.Daily ? 'text-spotify-green' : 'text-white/40'}`}>
+                <span
+                  className={`text-[10px] font-black uppercase tracking-widest ${entry.mode === GameMode.Daily ? 'text-spotify-green' : 'text-white/40'}`}
+                >
                   {formatDate(entry.date)}
                 </span>
                 <div className="flex items-center gap-2">
-                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${POINTS_BADGE_CLASSES[entry.status]}`}>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${POINTS_BADGE_CLASSES[entry.status]}`}
+                  >
                     {getPointsInfo(entry, guessesUsed)}
                   </span>
                 </div>
               </div>
-              
-              <h3 className="font-bold text-white truncate text-sm sm:text-base">{entry.trackName}</h3>
-              <p className="text-xs sm:text-sm text-white/50 truncate mb-3">by {entry.artistName}</p>
-              
+
+              <h3 className="font-bold text-white truncate text-sm sm:text-base">
+                {entry.trackName}
+              </h3>
+              <p className="text-xs sm:text-sm text-white/50 truncate mb-3">
+                by {entry.artistName}
+              </p>
+
               <div className="flex items-center justify-between gap-2">
-                <GuessPattern results={entry.guesses.map((g) => g.result)} className="text-base" />
-                
+                <GuessPattern
+                  results={entry.guesses.map((g) => g.result)}
+                  className="text-base"
+                />
+
                 <div className="flex items-center gap-1">
                   {actualGuesses.length > 0 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setExpanded(!expanded)}
                       className="h-8 px-2 text-xs text-white/40 hover:text-white"
                     >
-                      {expanded ? <ChevronUp className="w-3 h-3 mr-1" /> : <ChevronDown className="w-3 h-3 mr-1" />}
-                      {expanded ? "Hide" : "Guesses"}
+                      {expanded ? (
+                        <ChevronUp className="w-3 h-3 mr-1" />
+                      ) : (
+                        <ChevronDown className="w-3 h-3 mr-1" />
+                      )}
+                      {expanded ? 'Hide' : 'Guesses'}
                     </Button>
                   )}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 transition-colors ${copied ? "text-spotify-green" : "text-white/40"}`}
+                    className={`h-8 w-8 transition-colors ${copied ? 'text-spotify-green' : 'text-white/40'}`}
                     onClick={() => onShare(entry.id)}
                   >
-                    {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                    {copied ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <Share2 className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -165,7 +200,7 @@ export function HistoryCard({
             {expanded && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
+                animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
@@ -176,8 +211,12 @@ export function HistoryCard({
                       className={`flex items-center justify-between gap-3 py-2 px-3 rounded-xl bg-white/[0.02] border-l-2 ${GUESS_BORDER[g.result]}`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-white/90 truncate font-medium">{g.trackName}</p>
-                        <p className="text-[10px] text-white/40 truncate">by {g.artistName}</p>
+                        <p className="text-xs text-white/90 truncate font-medium">
+                          {g.trackName}
+                        </p>
+                        <p className="text-[10px] text-white/40 truncate">
+                          by {g.artistName}
+                        </p>
                       </div>
                       <span className="text-[9px] font-black uppercase tracking-tighter text-white/30 whitespace-nowrap">
                         {GUESS_LABEL[g.result]}

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Disc3 } from "lucide-react";
-import type { TrackOptionDto } from "@/sdk";
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, X, Disc3 } from 'lucide-react';
+import type { TrackOptionDto } from '@/sdk';
 
 interface TrackSelectOptionsProps {
   trackOptions: TrackOptionDto[];
@@ -22,17 +22,16 @@ export function TrackSelectOptions({
   onSearchChange,
   onSelectTrack,
   onClearSelection,
-  placeholder = "Search from your tracks...",
+  placeholder = 'Search from your tracks...',
 }: TrackSelectOptionsProps) {
   const query = searchQuery.trim().toLowerCase();
-  const filtered =
-    !query
-      ? trackOptions
-      : trackOptions.filter(
-          (t) =>
-            t.name.toLowerCase().includes(query) ||
-            t.artist.toLowerCase().includes(query)
-        );
+  const filtered = !query
+    ? trackOptions
+    : trackOptions.filter(
+        (t) =>
+          t.name.toLowerCase().includes(query) ||
+          t.artist.toLowerCase().includes(query),
+      );
 
   return (
     <div className="mb-4">

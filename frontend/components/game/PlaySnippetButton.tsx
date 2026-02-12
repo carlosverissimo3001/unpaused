@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { motion, useTransform, type MotionValue } from "framer-motion";
-import { Play, Pause } from "lucide-react";
-import { ROUND_DURATIONS } from "@/consts/consts";
+import { motion, useTransform, type MotionValue } from 'framer-motion';
+import { Play, Pause } from 'lucide-react';
+import { ROUND_DURATIONS } from '@/consts/consts';
 
-const SPRING = { type: "spring" as const, stiffness: 100, damping: 15 };
+const SPRING = { type: 'spring' as const, stiffness: 100, damping: 15 };
 
 interface PlaySnippetButtonProps {
   currentRound: number;
@@ -14,7 +14,13 @@ interface PlaySnippetButtonProps {
   onPause: () => void;
 }
 
-export function PlaySnippetButton({ currentRound, isPlaying, amplitude, onPlay, onPause }: PlaySnippetButtonProps) {
+export function PlaySnippetButton({
+  currentRound,
+  isPlaying,
+  amplitude,
+  onPlay,
+  onPause,
+}: PlaySnippetButtonProps) {
   const duration = ROUND_DURATIONS[currentRound];
 
   // Ring 1 — larger, more opaque
@@ -29,7 +35,10 @@ export function PlaySnippetButton({ currentRound, isPlaying, amplitude, onPlay, 
     <div className="text-center mb-4 sm:mb-6 md:mb-8">
       <div className="relative inline-flex items-center justify-center">
         {/* Audio-reactive rings — absolute behind button, no layout/scale impact */}
-        <div className="absolute inset-0 pointer-events-none rounded-full" aria-hidden>
+        <div
+          className="absolute inset-0 pointer-events-none rounded-full"
+          aria-hidden
+        >
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-[#1DB954]/30"
             style={{ scale: ring1Scale, opacity: ring1Opacity }}
@@ -47,13 +56,14 @@ export function PlaySnippetButton({ currentRound, isPlaying, amplitude, onPlay, 
           animate={isPlaying ? { scale: [1, 1.02, 1] } : { scale: 1 }}
           transition={
             isPlaying
-              ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
-              : { type: "spring", stiffness: 100, damping: 15 }
+              ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }
+              : { type: 'spring', stiffness: 100, damping: 15 }
           }
           onClick={isPlaying ? onPause : onPlay}
           className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-full text-base sm:text-lg border border-white/10 shadow-[0_0_30px_-5px_rgba(30,215,96,0.5)] min-h-[48px] touch-manipulation"
           style={{
-            boxShadow: "0 0 30px -5px rgba(30,215,96,0.5), inset 0 1px 0 rgba(255,255,255,0.15)",
+            boxShadow:
+              '0 0 30px -5px rgba(30,215,96,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
           }}
         >
           {isPlaying ? (

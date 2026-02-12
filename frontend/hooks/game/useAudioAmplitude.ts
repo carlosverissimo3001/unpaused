@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useRef, useCallback, useEffect } from "react";
-import { useMotionValue, type MotionValue } from "framer-motion";
+import { useRef, useCallback, useEffect } from 'react';
+import { useMotionValue, type MotionValue } from 'framer-motion';
 
 interface UseAudioAmplitudeReturn {
   amplitude: MotionValue<number>;
@@ -16,7 +16,7 @@ interface UseAudioAmplitudeReturn {
  * without causing React re-renders.
  */
 export function useAudioAmplitude(
-  audioRef: React.RefObject<HTMLAudioElement | null>
+  audioRef: React.RefObject<HTMLAudioElement | null>,
 ): UseAudioAmplitudeReturn {
   const amplitude = useMotionValue(0);
 
@@ -41,10 +41,11 @@ export function useAudioAmplitude(
     ctxRef.current = ctx;
     analyserRef.current = analyser;
     sourceRef.current = source;
-    dataRef.current = new Uint8Array(analyser.fftSize) as Uint8Array<ArrayBuffer>;
+    dataRef.current = new Uint8Array(
+      analyser.fftSize,
+    ) as Uint8Array<ArrayBuffer>;
   }, [audioRef]);
 
-   
   const tick = useCallback(() => {
     const analyser = analyserRef.current;
     const data = dataRef.current;
@@ -67,8 +68,8 @@ export function useAudioAmplitude(
   const start = useCallback(() => {
     if (rafRef.current !== null) return; // already running
     // Resume AudioContext if suspended (browser autoplay policy)
-    if (ctxRef.current?.state === "suspended") {
-      ctxRef.current.resume();
+    if (ctxRef.current?.state === 'suspended') {
+      void ctxRef.current.resume();
     }
     rafRef.current = requestAnimationFrame(tick);
   }, [tick]);
@@ -89,7 +90,7 @@ export function useAudioAmplitude(
         rafRef.current = null;
       }
       if (ctxRef.current) {
-        ctxRef.current.close();
+        void ctxRef.current.close();
         ctxRef.current = null;
       }
     };

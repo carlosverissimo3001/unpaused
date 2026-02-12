@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { api } from "@/sdk/client";
-import type { PlaylistsResponseDto } from "@/sdk";
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@/sdk/client';
+import type { PlaylistsResponseDto } from '@/sdk';
 
-// TODO: Move to a consts 
+// TODO: Move to a consts
 // Also, playlist don't change a lot, so we can have higher stale time and gc time
 const THIRTY_MINUTES = 30 * 60 * 1000;
 
@@ -30,6 +30,6 @@ export function useMyPlaylists(params?: UseMyPlaylistsParams) {
     },
     staleTime: THIRTY_MINUTES,
     gcTime: THIRTY_MINUTES,
-    enabled
+    enabled,
   });
 }

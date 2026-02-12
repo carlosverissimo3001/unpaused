@@ -1,20 +1,27 @@
-"use client";
+'use client';
 
-import { Suspense, useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Flame, Trophy, Target, BarChart3, Snowflake } from "lucide-react";
-import { useGameStats } from "@/hooks/game/useGameStats";
-import { usePlayedToday } from "@/hooks/game/usePlayedToday";
-import { useStreakStatus } from "@/hooks/streak/useStreakStatus";
-import { AnimatedCounter } from "@/components/daily/AnimatedCounter";
-import { ScoreDistributionChart } from "@/components/daily/ScoreDistributionChart";
-import { EarnFreezesFlow } from "@/components/streak/EarnFreezesFlow";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { GameStatsDtoModeEnum as GameMode } from "@/sdk";
+import { Suspense, useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ArrowLeft,
+  Flame,
+  Trophy,
+  Target,
+  BarChart3,
+  Snowflake,
+} from 'lucide-react';
+import { useGameStats } from '@/hooks/game/useGameStats';
+import { usePlayedToday } from '@/hooks/game/usePlayedToday';
+import { useStreakStatus } from '@/hooks/streak/useStreakStatus';
+import { AnimatedCounter } from '@/components/daily/AnimatedCounter';
+import { ScoreDistributionChart } from '@/components/daily/ScoreDistributionChart';
+import { EarnFreezesFlow } from '@/components/streak/EarnFreezesFlow';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { GameStatsDtoModeEnum as GameMode } from '@/sdk';
 
-const SPRING = { type: "spring" as const, stiffness: 120, damping: 18 };
+const SPRING = { type: 'spring' as const, stiffness: 120, damping: 18 };
 const STAGGER_DELAY = 0.12;
 
 const containerVariants = {
@@ -42,19 +49,30 @@ const RING_DELAY = 0.25;
 
 function DailyStatsContent() {
   const searchParams = useSearchParams();
-  const { data: stats, isLoading, error } = useGameStats({ mode: GameMode.Daily });
+  const {
+    data: stats,
+    isLoading,
+    error,
+  } = useGameStats({ mode: GameMode.Daily });
   const { data: playedTodayData } = usePlayedToday();
   const { data: streakStatus } = useStreakStatus();
   const [showEarnFreezes, setShowEarnFreezes] = useState(
-    searchParams.get("earnFreezes") === "1",
+    searchParams.get('earnFreezes') === '1',
   );
   const freezeSectionRef = useRef<HTMLDivElement>(null);
   const playedToday = playedTodayData?.playedToday ?? false;
 
   // Auto-scroll to the freeze section when opened via query param
   useEffect(() => {
-    if (searchParams.get("earnFreezes") === "1" && streakStatus?.isTrusted && freezeSectionRef.current) {
-      freezeSectionRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (
+      searchParams.get('earnFreezes') === '1' &&
+      streakStatus?.isTrusted &&
+      freezeSectionRef.current
+    ) {
+      freezeSectionRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
     }
   }, [searchParams, streakStatus?.isTrusted]);
 
@@ -62,7 +80,7 @@ function DailyStatsContent() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: "#121212" }}
+        style={{ background: '#121212' }}
       >
         <LoadingSpinner size="md" />
       </div>
@@ -73,11 +91,11 @@ function DailyStatsContent() {
     return (
       <div
         className="min-h-screen flex items-center justify-center p-6"
-        style={{ background: "#121212" }}
+        style={{ background: '#121212' }}
       >
         <div className="text-center">
           <p className="text-red-400 mb-4">
-            {error instanceof Error ? error.message : "Something went wrong"}
+            {error instanceof Error ? error.message : 'Something went wrong'}
           </p>
           <Link href="/" className="text-spotify-green hover:underline">
             Back
@@ -90,7 +108,10 @@ function DailyStatsContent() {
   if (!stats) return null;
 
   return (
-    <div className="min-h-screen overflow-hidden pb-24 relative" style={{ background: "#121212" }}>
+    <div
+      className="min-h-screen overflow-hidden pb-24 relative"
+      style={{ background: '#121212' }}
+    >
       <motion.div
         className="fixed inset-0 -z-10 pointer-events-none"
         animate={{
@@ -110,7 +131,7 @@ function DailyStatsContent() {
         transition={{
           duration: 5,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
       />
 
@@ -121,7 +142,10 @@ function DailyStatsContent() {
         animate="visible"
       >
         {/* Header */}
-        <motion.div className="flex items-center gap-4 mb-6" variants={itemVariants}>
+        <motion.div
+          className="flex items-center gap-4 mb-6"
+          variants={itemVariants}
+        >
           <Link
             href="/"
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
@@ -141,15 +165,15 @@ function DailyStatsContent() {
             animate={{
               opacity: [0.4, 0.7, 0.4],
               background: [
-                "radial-gradient(ellipse 100% 80% at 30% 50%, rgba(29, 185, 84, 0.35) 0%, transparent 60%)",
-                "radial-gradient(ellipse 100% 80% at 70% 50%, rgba(29, 185, 84, 0.35) 0%, transparent 60%)",
-                "radial-gradient(ellipse 100% 80% at 30% 50%, rgba(29, 185, 84, 0.35) 0%, transparent 60%)",
+                'radial-gradient(ellipse 100% 80% at 30% 50%, rgba(29, 185, 84, 0.35) 0%, transparent 60%)',
+                'radial-gradient(ellipse 100% 80% at 70% 50%, rgba(29, 185, 84, 0.35) 0%, transparent 60%)',
+                'radial-gradient(ellipse 100% 80% at 30% 50%, rgba(29, 185, 84, 0.35) 0%, transparent 60%)',
               ],
             }}
             transition={{
               duration: 6,
               repeat: Infinity,
-              ease: "easeInOut",
+              ease: 'easeInOut',
             }}
           />
           <div className="relative z-10">
@@ -165,19 +189,26 @@ function DailyStatsContent() {
                   duration={1.4}
                   className="tabular-nums"
                 />
-                <span className="text-lg text-white/70 font-normal">day streak</span>
+                <span className="text-lg text-white/70 font-normal">
+                  day streak
+                </span>
               </span>
               {stats.bestStreak != null && stats.bestStreak > 0 && (
-                <span className="text-white/50 text-sm">Best: {stats.bestStreak}</span>
+                <span className="text-white/50 text-sm">
+                  Best: {stats.bestStreak}
+                </span>
               )}
             </div>
           </div>
         </motion.div>
 
-        <motion.div className="grid grid-cols-2 gap-3 mb-6" variants={itemVariants}>
+        <motion.div
+          className="grid grid-cols-2 gap-3 mb-6"
+          variants={itemVariants}
+        >
           <motion.div
             className="p-4 rounded-xl backdrop-blur-md border border-white/20 flex items-center gap-3 bg-white/5"
-            whileHover={{ y: -5, backgroundColor: "rgba(255,255,255,0.08)" }}
+            whileHover={{ y: -5, backgroundColor: 'rgba(255,255,255,0.08)' }}
             transition={SPRING}
           >
             <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
@@ -185,12 +216,14 @@ function DailyStatsContent() {
             </div>
             <div className="min-w-0">
               <p className="text-white/50 text-xs">Best streak</p>
-              <p className="text-xl font-bold tabular-nums text-white">{stats.bestStreak}</p>
+              <p className="text-xl font-bold tabular-nums text-white">
+                {stats.bestStreak}
+              </p>
             </div>
           </motion.div>
           <motion.div
             className="p-4 rounded-xl backdrop-blur-md border border-white/20 flex items-center gap-3 bg-white/5"
-            whileHover={{ y: -5, backgroundColor: "rgba(255,255,255,0.08)" }}
+            whileHover={{ y: -5, backgroundColor: 'rgba(255,255,255,0.08)' }}
             transition={SPRING}
           >
             <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
@@ -199,13 +232,15 @@ function DailyStatsContent() {
             <div className="min-w-0">
               <p className="text-white/50 text-xs">Win rate</p>
               <p className="text-xl font-bold tabular-nums text-white">
-                {stats.totalGames > 0 ? `${Math.round(stats.winRate * 100)}%` : "—"}
+                {stats.totalGames > 0
+                  ? `${Math.round(stats.winRate * 100)}%`
+                  : '—'}
               </p>
             </div>
           </motion.div>
           <motion.div
             className="p-4 rounded-xl backdrop-blur-md border border-white/20 flex items-center gap-3 col-span-2 bg-white/5"
-            whileHover={{ y: -5, backgroundColor: "rgba(255,255,255,0.08)" }}
+            whileHover={{ y: -5, backgroundColor: 'rgba(255,255,255,0.08)' }}
             transition={SPRING}
           >
             <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
@@ -213,12 +248,14 @@ function DailyStatsContent() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-white/50 text-xs">Games played</p>
-              <p className="text-xl font-bold tabular-nums text-white">{stats.totalGames}</p>
+              <p className="text-xl font-bold tabular-nums text-white">
+                {stats.totalGames}
+              </p>
             </div>
             <div className="text-right">
               <p className="text-white/50 text-xs">Avg score</p>
               <p className="text-xl font-bold tabular-nums text-white">
-                {stats.totalGames > 0 ? stats.averageScore.toFixed(1) : "—"}
+                {stats.totalGames > 0 ? stats.averageScore.toFixed(1) : '—'}
               </p>
             </div>
           </motion.div>
@@ -233,7 +270,11 @@ function DailyStatsContent() {
 
         {/* Streak Freezes — only for trusted users */}
         {streakStatus?.isTrusted && (
-          <motion.div ref={freezeSectionRef} variants={itemVariants} className="mb-8">
+          <motion.div
+            ref={freezeSectionRef}
+            variants={itemVariants}
+            className="mb-8"
+          >
             <AnimatePresence mode="wait">
               {showEarnFreezes ? (
                 <motion.div
@@ -261,8 +302,12 @@ function DailyStatsContent() {
                     <Snowflake className="w-5 h-5 text-cyan-400" />
                   </div>
                   <div className="text-left flex-1">
-                    <p className="text-sm font-medium text-white">Streak Freezes</p>
-                    <p className="text-xs text-white/50">Answer trivia to earn freezes</p>
+                    <p className="text-sm font-medium text-white">
+                      Streak Freezes
+                    </p>
+                    <p className="text-xs text-white/50">
+                      Answer trivia to earn freezes
+                    </p>
                   </div>
                   <div className="text-right">
                     <span className="text-lg font-bold text-cyan-400 tabular-nums">
@@ -275,7 +320,10 @@ function DailyStatsContent() {
           </motion.div>
         )}
 
-        <motion.div className="mt-8 flex justify-center" variants={itemVariants}>
+        <motion.div
+          className="mt-8 flex justify-center"
+          variants={itemVariants}
+        >
           <Link
             href="/daily"
             className="relative inline-flex items-center justify-center rounded-full overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-spotify-green focus-visible:ring-offset-2 focus-visible:ring-offset-[#121212]"
@@ -296,7 +344,7 @@ function DailyStatsContent() {
                     transition={{
                       duration: RING_DURATION,
                       repeat: Infinity,
-                      ease: "easeOut",
+                      ease: 'easeOut',
                       delay: 0,
                     }}
                   />
@@ -309,7 +357,7 @@ function DailyStatsContent() {
                     transition={{
                       duration: RING_DURATION,
                       repeat: Infinity,
-                      ease: "easeOut",
+                      ease: 'easeOut',
                       delay: RING_DELAY,
                     }}
                   />
@@ -320,14 +368,14 @@ function DailyStatsContent() {
                   className="absolute inset-y-0 w-1/3 rounded-full"
                   style={{
                     background:
-                      "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                      'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
                   }}
-                  animate={{ x: ["0%", "400%"] }}
+                  animate={{ x: ['0%', '400%'] }}
                   transition={{
                     duration: 2.2,
                     repeat: Infinity,
                     repeatDelay: 4,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                   }}
                 />
               )}
@@ -335,8 +383,8 @@ function DailyStatsContent() {
             <motion.span
               className={`relative z-10 inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold transition-colors ${
                 playedToday
-                  ? "bg-white/10 text-white/70 shadow-none"
-                  : "bg-spotify-green text-black shadow-lg shadow-spotify-green/25"
+                  ? 'bg-white/10 text-white/70 shadow-none'
+                  : 'bg-spotify-green text-black shadow-lg shadow-spotify-green/25'
               }`}
               whileHover={playedToday ? undefined : { scale: 1.03 }}
               whileTap={playedToday ? undefined : { scale: 0.98 }}
@@ -355,7 +403,10 @@ export default function DailyStatsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center" style={{ background: "#121212" }}>
+        <div
+          className="min-h-screen flex items-center justify-center"
+          style={{ background: '#121212' }}
+        >
           <LoadingSpinner size="md" />
         </div>
       }

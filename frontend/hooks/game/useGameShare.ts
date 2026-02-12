@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useMutation } from "@tanstack/react-query";
-import { api } from "@/sdk/client";
-import type { ShareResultDto } from "@/sdk";
+import { useMutation } from '@tanstack/react-query';
+import { api } from '@/sdk/client';
+import type { ShareResultDto } from '@/sdk';
 
 export function useGameShare() {
   return useMutation<ShareResultDto, Error, string>({

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 export function PreventZoom() {
   useEffect(() => {
@@ -16,16 +16,20 @@ export function PreventZoom() {
       }
     };
 
-    document.addEventListener("touchstart", handleTouchStart, { passive: false });
-    document.addEventListener("wheel", handleWheel, { passive: false });
-    
-    const handleGesture = (e: any) => e.preventDefault();
-    document.addEventListener("gesturestart", handleGesture, { passive: false });
+    document.addEventListener('touchstart', handleTouchStart, {
+      passive: false,
+    });
+    document.addEventListener('wheel', handleWheel, { passive: false });
+
+    const handleGesture = (e: Event) => e.preventDefault();
+    document.addEventListener('gesturestart', handleGesture, {
+      passive: false,
+    });
 
     return () => {
-      document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("wheel", handleWheel);
-      document.removeEventListener("gesturestart", handleGesture);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('gesturestart', handleGesture);
     };
   }, []);
 

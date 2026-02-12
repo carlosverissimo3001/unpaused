@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { memo } from "react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { LogOut, History, Zap } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { AuthMeResponseDto } from "@/sdk";
+import { memo } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { LogOut, History, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { AuthMeResponseDto } from '@/sdk';
 
 interface AppHeaderProps {
   user: AuthMeResponseDto | undefined;
@@ -17,7 +17,6 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-50 px-4 sm:px-6 py-3 sm:py-4 bg-[#181818]/60 backdrop-blur-xl border-t border-white/10">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        
         <div className="flex items-center gap-3">
           <Link href="/" className="group flex items-center gap-2.5">
             <div className="bg-spotify-green p-1.5 rounded-lg transform group-hover:rotate-12 transition-transform duration-300">
@@ -47,22 +46,24 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
                   {user.displayName}
                 </span>
                 <span className="text-[9px] font-bold text-spotify-green uppercase tracking-wider opacity-80">
-                  {user.isTrusted ? "Pro Member" : "Player"}
+                  {user.isTrusted ? 'Pro Member' : 'Player'}
                 </span>
               </div>
-              
+
               <div className="relative group">
                 <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm font-black text-white group-hover:border-spotify-green transition-colors overflow-hidden">
-                   <div className="absolute inset-0 bg-gradient-to-br from-spotify-green/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                   <span className="relative z-10">{user.displayName[0]?.toUpperCase()}</span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-spotify-green/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <span className="relative z-10">
+                    {user.displayName[0]?.toUpperCase()}
+                  </span>
                 </div>
               </div>
 
               <motion.div whileTap={{ scale: 0.9 }}>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={onLogout} 
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onLogout}
                   disabled={isLoggingOut}
                   className="text-white/30 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
                 >

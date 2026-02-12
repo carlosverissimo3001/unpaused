@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Clock } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Clock } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function DailyChallengeCountdown() {
   const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
@@ -13,14 +13,24 @@ export function DailyChallengeCountdown() {
   useEffect(() => {
     const calculateTime = () => {
       const now = new Date();
-      const targetUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0);
+      const targetUtc = Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1,
+        0,
+        0,
+        0,
+      );
       const currentUtc = now.getTime();
-      const totalSeconds = Math.max(0, Math.floor((targetUtc - currentUtc) / 1000));
+      const totalSeconds = Math.max(
+        0,
+        Math.floor((targetUtc - currentUtc) / 1000),
+      );
 
       if (totalSeconds <= 0) {
-        queryClient.invalidateQueries({ queryKey: ["playedToday"] });
+        void queryClient.invalidateQueries({ queryKey: ['playedToday'] });
       }
-      
+
       setTimeLeft({
         h: Math.floor(totalSeconds / 3600),
         m: Math.floor((totalSeconds % 3600) / 60),
@@ -46,7 +56,7 @@ export function DailyChallengeCountdown() {
         >
           <Clock className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-spotify-green" />
         </motion.div>
-        
+
         <span className="hidden min-[425px]:inline text-[9px] font-black uppercase tracking-widest text-spotify-green/90 mr-0.5 whitespace-nowrap">
           Next Drop:
         </span>
@@ -64,7 +74,7 @@ export function DailyChallengeCountdown() {
 }
 
 function RollingDigit({ value, label }: { value: number; label: string }) {
-  const displayValue = value.toString().padStart(2, "0");
+  const displayValue = value.toString().padStart(2, '0');
 
   return (
     <div className="flex items-baseline shrink-0">
@@ -72,14 +82,14 @@ function RollingDigit({ value, label }: { value: number; label: string }) {
         <AnimatePresence mode="popLayout">
           <motion.span
             key={displayValue}
-            initial={{ y: "100%", opacity: 0 }}
+            initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "-100%", opacity: 0 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 400, 
+            exit={{ y: '-100%', opacity: 0 }}
+            transition={{
+              type: 'spring',
+              stiffness: 400,
               damping: 35,
-              mass: 0.8
+              mass: 0.8,
             }}
             className="inline-block"
           >

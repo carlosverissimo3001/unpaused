@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { api } from "@/sdk/client";
-import type { TokenLoginDto } from "@/sdk";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@/sdk/client';
+import type { TokenLoginDto } from '@/sdk';
 
 interface TokenLoginParams {
   accessToken: string;
@@ -23,10 +23,10 @@ export function useTokenLogin() {
       return api.authControllerTokenLogin({ tokenLoginDto });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.auth.all,
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.playlists.all,
       });
     },

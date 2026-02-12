@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { GameStateDtoStatusEnum } from "@/sdk/models/GameStateDto";
-import { GuessHistoryDtoResultEnum as GuessResult } from "@/sdk/models/GuessHistoryDto";
-import { queryKeys } from "@/lib/queryKeys";
-import { useGameSession } from "./useGameSession";
-import { useGameState } from "./useGameState";
-import { useSubmitGuess } from "./useSubmitGuess";
-import { useGameAudio } from "./useGameAudio";
-import { useGameStats } from "./useGameStats";
-import { useSpotifyTrackSearch } from "@/hooks/spotify/useSpotifyTrackSearch";
-import { usePlaylistById } from "@/hooks/playlists/usePlaylistById";
-import { triggerConfetti } from "@/components/game/confetti";
-import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+import { useEffect, useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
+import { GuessHistoryDtoResultEnum as GuessResult } from '@/sdk/models/GuessHistoryDto';
+import { queryKeys } from '@/lib/queryKeys';
+import { useGameSession } from './useGameSession';
+import { useGameState } from './useGameState';
+import { useSubmitGuess } from './useSubmitGuess';
+import { useGameAudio } from './useGameAudio';
+import { useGameStats } from './useGameStats';
+import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
+import { usePlaylistById } from '@/hooks/playlists/usePlaylistById';
+import { triggerConfetti } from '@/components/game/confetti';
+import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 const ShouldShakeResult: GuessResult[] = [
   GuessResult.Wrong,
@@ -30,26 +30,32 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
   const isPlaylist = mode === GameMode.All;
   const isDaily = mode === GameMode.Daily;
 
-  const { data: playlist } = usePlaylistById(playlistId ?? "");
+  const { data: playlist } = usePlaylistById(playlistId ?? '');
   const {
     sessionId,
     isLoading: sessionLoading,
     error: sessionError,
     startGameMutation,
   } = useGameSession(mode, playlistId);
-  const { data: gameState, isLoading: loadingState, error: errorState } = useGameState(sessionId);
+  const {
+    data: gameState,
+    isLoading: loadingState,
+    error: errorState,
+  } = useGameState(sessionId);
   const submitGuessMutation = useSubmitGuess();
   const spotifySearch = useSpotifyTrackSearch();
-  const { data: stats } = useGameStats( {mode, useCached: false} );
+  const { data: stats } = useGameStats({ mode, useCached: false });
 
-  const isGameOver = !isResetting && gameState?.status !== GameStateDtoStatusEnum.Playing;
+  const isGameOver =
+    !isResetting && gameState?.status !== GameStateDtoStatusEnum.Playing;
   const gameAudio = useGameAudio({
     previewUrl: gameState?.previewUrl,
     isGameOver: !!isGameOver,
     currentRound: gameState?.currentRound ?? 0,
   });
 
-  const isLoading = isPlaylist || isDaily ? sessionLoading || loadingState : false;
+  const isLoading =
+    isPlaylist || isDaily ? sessionLoading || loadingState : false;
   const error = sessionError ?? errorState;
   const submitPending = submitGuessMutation.isPending;
 
@@ -67,12 +73,16 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
 
   useEffect(() => {
     if (isGameOver) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.game.stats });
-      queryClient.invalidateQueries({ queryKey: queryKeys.game.playedToday });
-      queryClient.invalidateQueries({ queryKey: ["game", "history"] });
-      queryClient.invalidateQueries({ queryKey: ["daily", "history"] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.game.stats });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.game.playedToday,
+      });
+      void queryClient.invalidateQueries({ queryKey: ['game', 'history'] });
+      void queryClient.invalidateQueries({ queryKey: ['daily', 'history'] });
       if (isDaily) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.streak.status });
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.streak.status,
+        });
       }
     }
   }, [isDaily, isGameOver, queryClient]);
@@ -113,12 +123,14 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
 
     if (gameState?.sessionId) {
       queryClient.setQueryData(queryKeys.game.state(gameState.sessionId), null);
-      queryClient.removeQueries({ queryKey: queryKeys.game.state(gameState.sessionId) });
+      queryClient.removeQueries({
+        queryKey: queryKeys.game.state(gameState.sessionId),
+      });
     }
     if (playlistId) {
       queryClient.setQueryData(
         queryKeys.game.startedSessionForPlaylist(playlistId),
-        null
+        null,
       );
     }
 
@@ -126,17 +138,17 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     if (playlistId) {
       startGameMutation.mutate(
         { playlistId, mode: GameMode.All },
-        { onSettled: () => setIsResetting(false) }
+        { onSettled: () => setIsResetting(false) },
       );
     } else {
       setIsResetting(false);
     }
   }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
 
-  const lastGuess = gameState?.guesses?.[gameState.guesses.length - 1]
-  const shouldShake = lastGuess 
-  ? ShouldShakeResult.includes(lastGuess.result) 
-  : false;
+  const lastGuess = gameState?.guesses?.[gameState.guesses.length - 1];
+  const shouldShake = lastGuess
+    ? ShouldShakeResult.includes(lastGuess.result)
+    : false;
 
   return {
     // State

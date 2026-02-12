@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { animate } from "framer-motion";
+import { useEffect, useState } from 'react';
+import { animate } from 'framer-motion';
 
 interface AnimatedCounterProps {
   value: number;
@@ -9,7 +9,11 @@ interface AnimatedCounterProps {
   className?: string;
 }
 
-export function AnimatedCounter({ value, duration = 1.2, className = "" }: AnimatedCounterProps) {
+export function AnimatedCounter({
+  value,
+  duration = 1.2,
+  className = '',
+}: AnimatedCounterProps) {
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {

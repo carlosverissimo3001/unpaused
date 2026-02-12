@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { useStartGame } from "./useStartGame";
-import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
+import { useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { useStartGame } from './useStartGame';
+import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 /**
  * Handles game session initialization: starts playlist or daily game once on mount.
@@ -24,15 +24,16 @@ export function useGameSession(mode: GameMode, playlistId?: string) {
   const shouldStart = (isPlaylist && !!playlistId) || isDaily;
 
   // Predictable cache key — known before the mutation completes
-  const sessionCacheKey = isPlaylist && playlistId
-    ? queryKeys.game.startedSessionForPlaylist(playlistId)
-    : queryKeys.game.startedSessionForDaily;
+  const sessionCacheKey =
+    isPlaylist && playlistId
+      ? queryKeys.game.startedSessionForPlaylist(playlistId)
+      : queryKeys.game.startedSessionForDaily;
 
   // Subscribe to the cache key. `enabled: false` → never fetches, but the
   // observer still re-renders when setQueryData writes to this key.
   const { data: cachedSessionId } = useQuery<string>({
     queryKey: sessionCacheKey,
-    queryFn: () => Promise.reject(new Error("cache-only")),
+    queryFn: () => Promise.reject(new Error('cache-only')),
     enabled: false,
     retry: false,
   });
@@ -42,12 +43,13 @@ export function useGameSession(mode: GameMode, playlistId?: string) {
     hasStarted.current = true;
 
     startGameMutation.mutate(
-      isPlaylist && playlistId ? { playlistId, mode } : { mode }
+      isPlaylist && playlistId ? { playlistId, mode } : { mode },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldStart]);
 
-  const sessionId = startGameMutation.data?.sessionId ?? cachedSessionId ?? undefined;
+  const sessionId =
+    startGameMutation.data?.sessionId ?? cachedSessionId ?? undefined;
   const isLoading = shouldStart && !sessionId;
   const error = startGameMutation.error;
 

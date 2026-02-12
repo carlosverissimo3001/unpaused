@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { memo } from "react";
+import { memo } from 'react';
 
 interface PlaylistFiltersProps {
   onlyPublic: boolean;
@@ -10,7 +10,15 @@ interface PlaylistFiltersProps {
   onClearFilters: () => void;
 }
 
-const FilterPill = ({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) => (
+const FilterPill = ({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) => (
   <button
     onClick={onClick}
     className={`
@@ -20,9 +28,9 @@ const FilterPill = ({ active, onClick, label }: { active: boolean, onClick: () =
       uppercase tracking-wider transition-all duration-500
       active:scale-90
       ${
-        active 
-          ? "bg-spotify-green border-white/20 text-black shadow-[0_10px_20px_-10px_rgba(30,215,96,0.5)] scale-105" 
-          : "bg-white/[0.03] border-white/10 text-white/40 hover:bg-white/[0.08] hover:border-white/20"
+        active
+          ? 'bg-spotify-green border-white/20 text-black shadow-[0_10px_20px_-10px_rgba(30,215,96,0.5)] scale-105'
+          : 'bg-white/[0.03] border-white/10 text-white/40 hover:bg-white/[0.08] hover:border-white/20'
       }
     `}
   >
@@ -43,15 +51,14 @@ function PlaylistFiltersComponent({
   onOnlyUserOwnedChange,
 }: PlaylistFiltersProps) {
   return (
-
     <div className="flex gap-1.5 sm:gap-3">
-      <FilterPill 
-        active={onlyPublic} 
+      <FilterPill
+        active={onlyPublic}
         onClick={() => onOnlyPublicChange(!onlyPublic)}
         label="Public"
       />
-      <FilterPill 
-        active={onlyUserOwned} 
+      <FilterPill
+        active={onlyUserOwned}
         onClick={() => onOnlyUserOwnedChange(!onlyUserOwned)}
         label="Owned"
       />

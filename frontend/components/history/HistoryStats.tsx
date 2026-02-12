@@ -1,10 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Flame, Star } from "lucide-react";
-import { motion, animate } from "framer-motion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { GameStatsDto } from "../../sdk";
+import { useEffect, useState } from 'react';
+import { Flame, Star } from 'lucide-react';
+import { motion, animate } from 'framer-motion';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { GameStatsDto } from '../../sdk';
 
 const SIZE = 64;
 const STROKE = 6;
@@ -20,7 +25,7 @@ function WinRateCircle({ wins, total }: { wins: number; total: number }) {
   useEffect(() => {
     const ring = animate(CIRCUMFERENCE, targetOffset, {
       duration: RING_DURATION,
-      ease: "easeOut",
+      ease: 'easeOut',
       onUpdate: (latestOffset) => {
         const fillRatio = 1 - latestOffset / CIRCUMFERENCE;
         setDisplayRate(Math.min(rate, Math.round(fillRatio * 100)));
@@ -37,7 +42,12 @@ function WinRateCircle({ wins, total }: { wins: number; total: number }) {
             className="relative cursor-default"
             aria-label={`Win rate: ${rate}%. ${wins} wins of ${total} games.`}
           >
-            <svg width={SIZE} height={SIZE} className="rotate-[-90deg]" aria-hidden>
+            <svg
+              width={SIZE}
+              height={SIZE}
+              className="rotate-[-90deg]"
+              aria-hidden
+            >
               <circle
                 cx={SIZE / 2}
                 cy={SIZE / 2}
@@ -58,7 +68,7 @@ function WinRateCircle({ wins, total }: { wins: number; total: number }) {
                 strokeDasharray={CIRCUMFERENCE}
                 initial={{ strokeDashoffset: CIRCUMFERENCE }}
                 animate={{ strokeDashoffset: targetOffset }}
-                transition={{ duration: RING_DURATION, ease: "easeOut" }}
+                transition={{ duration: RING_DURATION, ease: 'easeOut' }}
                 className="text-spotify-green"
               />
             </svg>
@@ -82,10 +92,8 @@ function WinRateCircle({ wins, total }: { wins: number; total: number }) {
   );
 }
 
-
-
 export interface HistoryStatsProps {
-  stats: GameStatsDto
+  stats: GameStatsDto;
 }
 
 export function HistoryStats({ stats }: HistoryStatsProps) {
@@ -121,7 +129,9 @@ export function HistoryStats({ stats }: HistoryStatsProps) {
           >
             <Flame className="w-8 h-8 text-spotify-green" strokeWidth={2} />
           </motion.div>
-          <span className="text-lg font-bold text-white/90 tabular-nums">{streak}</span>
+          <span className="text-lg font-bold text-white/90 tabular-nums">
+            {streak}
+          </span>
         </div>
         <span className="font-black text-[10px] uppercase tracking-widest text-white/40">
           Current streak
@@ -141,7 +151,11 @@ export function HistoryStats({ stats }: HistoryStatsProps) {
                 className="flex flex-col items-center justify-center h-[64px] gap-0.5 cursor-default"
                 aria-label={`${perfectScores} perfect scores. A perfect score is winning on the first guess.`}
               >
-                <Star className="w-8 h-8 text-amber-400/90" strokeWidth={2} fill="currentColor" />
+                <Star
+                  className="w-8 h-8 text-amber-400/90"
+                  strokeWidth={2}
+                  fill="currentColor"
+                />
                 <span className="text-lg font-bold text-white/90 tabular-nums">
                   {perfectScores}
                 </span>

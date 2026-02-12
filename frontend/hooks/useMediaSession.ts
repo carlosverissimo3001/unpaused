@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 interface MediaMetadata {
   title: string;
@@ -33,7 +33,7 @@ export function useMediaSession({
   }, [metadata]);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) {
       return; // Media Session API not supported
     }
 
@@ -50,16 +50,16 @@ export function useMediaSession({
     }
 
     // Set action handlers
-    mediaSession.setActionHandler("play", () => {
+    mediaSession.setActionHandler('play', () => {
       if (audioElement && audioElement.paused) {
         audioElement.play().catch((err) => {
-          console.error("Failed to play via media session:", err);
+          console.error('Failed to play via media session:', err);
         });
       }
       onPlay?.();
     });
 
-    mediaSession.setActionHandler("pause", () => {
+    mediaSession.setActionHandler('pause', () => {
       if (audioElement && !audioElement.paused) {
         audioElement.pause();
       }
@@ -69,30 +69,30 @@ export function useMediaSession({
     // Sync playback state with audio element
     const updatePlaybackState = () => {
       if (audioElement) {
-        mediaSession.playbackState = audioElement.paused ? "paused" : "playing";
+        mediaSession.playbackState = audioElement.paused ? 'paused' : 'playing';
       }
     };
 
     // Listen to audio events to sync state
     if (audioElement) {
-      audioElement.addEventListener("play", updatePlaybackState);
-      audioElement.addEventListener("pause", updatePlaybackState);
-      audioElement.addEventListener("ended", updatePlaybackState);
+      audioElement.addEventListener('play', updatePlaybackState);
+      audioElement.addEventListener('pause', updatePlaybackState);
+      audioElement.addEventListener('ended', updatePlaybackState);
       updatePlaybackState(); // Set initial state
     }
 
     // Cleanup
     return () => {
       if (audioElement) {
-        audioElement.removeEventListener("play", updatePlaybackState);
-        audioElement.removeEventListener("pause", updatePlaybackState);
-        audioElement.removeEventListener("ended", updatePlaybackState);
+        audioElement.removeEventListener('play', updatePlaybackState);
+        audioElement.removeEventListener('pause', updatePlaybackState);
+        audioElement.removeEventListener('ended', updatePlaybackState);
       }
       // Clear action handlers
       try {
-        mediaSession.setActionHandler("play", null);
-        mediaSession.setActionHandler("pause", null);
-      } catch (e) {
+        mediaSession.setActionHandler('play', null);
+        mediaSession.setActionHandler('pause', null);
+      } catch {
         // Some browsers may not support clearing handlers
       }
     };

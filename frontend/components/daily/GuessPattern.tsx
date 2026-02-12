@@ -1,3 +1,3 @@
-"use client";
+'use client';
 
-export { GuessPattern } from "@/components/game/GuessPattern";
+export { GuessPattern } from '@/components/game/GuessPattern';

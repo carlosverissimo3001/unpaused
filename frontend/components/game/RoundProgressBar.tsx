@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { getGuessResultStyle } from "./guess-result-styles";
-import { ROUND_DURATIONS } from "@/consts/consts";
+import { motion } from 'framer-motion';
+import { getGuessResultStyle } from './guess-result-styles';
+import { ROUND_DURATIONS } from '@/consts/consts';
 
 interface Guess {
   result: string;
@@ -32,25 +32,29 @@ export function RoundProgressBar({
             key={index}
             layout
             className="flex-1 h-1.5 sm:h-2 rounded-full relative overflow-visible"
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
           >
             <motion.div
               className={`absolute inset-0 rounded-full transition-colors duration-300 ${
                 isCompleted
-                  ? style?.barClass ?? "bg-red-500"
+                  ? (style?.barClass ?? 'bg-red-500')
                   : isCurrent
-                  ? "bg-[#1DB954]"
-                  : "bg-white/20"
+                    ? 'bg-[#1DB954]'
+                    : 'bg-white/20'
               }`}
               {...(isCurrent && {
                 animate: {
                   boxShadow: [
-                    "0 0 8px rgba(29, 185, 84, 0.4)",
-                    "0 0 16px rgba(29, 185, 84, 0.6)",
-                    "0 0 8px rgba(29, 185, 84, 0.4)",
+                    '0 0 8px rgba(29, 185, 84, 0.4)',
+                    '0 0 16px rgba(29, 185, 84, 0.6)',
+                    '0 0 8px rgba(29, 185, 84, 0.4)',
                   ],
                 },
-                transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" as const },
+                transition: {
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: 'easeInOut' as const,
+                },
               })}
             />
           </motion.div>

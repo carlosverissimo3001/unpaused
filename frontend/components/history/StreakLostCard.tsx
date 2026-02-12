@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Flame } from "lucide-react";
-import { formatDateRange } from "@/utils/date-utils";
+import { motion } from 'framer-motion';
+import { Flame } from 'lucide-react';
+import { formatDateRange } from '@/utils/date-utils';
 
 interface StreakLostCardProps {
   from: string;
@@ -16,7 +16,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: "easeOut" as const },
+    transition: { delay: i * 0.06, duration: 0.35, ease: 'easeOut' as const },
   }),
 };
 
@@ -46,11 +46,13 @@ export function StreakLostCard({
           </div>
 
           <div className="min-w-0 flex-1">
-            <span className="text-[13px] font-semibold text-white/40">Streak lost</span>
+            <span className="text-[13px] font-semibold text-white/40">
+              Streak lost
+            </span>
             <p className="text-[11px] text-white/25">
               {formatDateRange(from, to)}
               <span className="ml-1.5">
-                · {gapDays === 1 ? "1 day missed" : `${gapDays} days missed`}
+                · {gapDays === 1 ? '1 day missed' : `${gapDays} days missed`}
               </span>
             </p>
           </div>

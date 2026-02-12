@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Disc3 } from "lucide-react";
-import type { TrackOptionDto } from "@/sdk";
-import { MIN_QUERY_LENGTH } from "@/consts/consts";
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, X, Disc3 } from 'lucide-react';
+import type { TrackOptionDto } from '@/sdk';
+import { MIN_QUERY_LENGTH } from '@/consts/consts';
 
 export interface GuessSearchState {
   searchQuery: string;
@@ -27,17 +27,22 @@ interface GuessInputProps {
 }
 
 const GLASS_STYLE = {
-  background: "rgba(18, 18, 18, 0.5)",
-  backdropFilter: "blur(24px)",
-  WebkitBackdropFilter: "blur(24px)" as const,
-  border: "1px solid rgba(255,255,255,0.1)",
+  background: 'rgba(18, 18, 18, 0.5)',
+  backdropFilter: 'blur(24px)',
+  WebkitBackdropFilter: 'blur(24px)' as const,
+  border: '1px solid rgba(255,255,255,0.1)',
   boxShadow:
-    "0 0 0 1px rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.3), 0 0 24px rgba(29,185,84,0.04), inset 0 1px 0 rgba(255,255,255,0.03)",
+    '0 0 0 1px rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.3), 0 0 24px rgba(29,185,84,0.04), inset 0 1px 0 rgba(255,255,255,0.03)',
 };
 
 const DROPDOWN_ITEM_STAGGER = 0.03;
 
-export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInputProps) {
+export function GuessInput({
+  search,
+  onSubmit,
+  onSkip,
+  submitPending,
+}: GuessInputProps) {
   // Destructure search to avoid ref access warnings
   const {
     searchQuery,
@@ -62,14 +67,16 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 p-3 sm:p-4 rounded-xl text-black min-h-[56px]"
             style={{
-              background: "#1DB954",
-              border: "1px solid rgba(255,255,255,0.2)",
-              boxShadow: "0 0 20px rgba(29,185,84,0.3)",
+              background: '#1DB954',
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 0 20px rgba(29,185,84,0.3)',
             }}
           >
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate">{selectedTrack.name}</p>
-              <p className="text-sm text-black/70 truncate">{selectedTrack.artist}</p>
+              <p className="text-sm text-black/70 truncate">
+                {selectedTrack.artist}
+              </p>
             </div>
             <motion.button
               type="button"
@@ -101,8 +108,8 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                 placeholder="Search for a song..."
                 className="w-full pl-12 pr-4 py-3.5 sm:py-4 rounded-xl text-base text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all min-h-[48px] touch-manipulation"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.08)',
                 }}
               />
             </div>
@@ -115,10 +122,11 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                   transition={{ duration: 0.2 }}
                   className="absolute z-20 w-full mt-2 max-h-80 overflow-y-auto rounded-xl shadow-2xl border border-white/10"
                   style={{
-                    background: "rgba(24, 24, 24, 0.95)",
-                    backdropFilter: "blur(20px)",
-                    WebkitBackdropFilter: "blur(20px)",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)",
+                    background: 'rgba(24, 24, 24, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    boxShadow:
+                      '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)',
                   }}
                 >
                   {filteredTracks.length > 0 ? (
@@ -129,7 +137,10 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                         onClick={() => handleSelectTrack(track)}
                         initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * DROPDOWN_ITEM_STAGGER, duration: 0.2 }}
+                        transition={{
+                          delay: index * DROPDOWN_ITEM_STAGGER,
+                          duration: 0.2,
+                        }}
                         className="w-full p-3 sm:p-4 flex items-center gap-3 text-left hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl min-h-[56px] touch-manipulation active:bg-white/15"
                       >
                         {track.albumImageUrl ? (
@@ -148,18 +159,22 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-white truncate">{track.name}</p>
-                          <p className="text-sm text-[#b3b3b3] truncate">{track.artist}</p>
+                          <p className="font-medium text-white truncate">
+                            {track.name}
+                          </p>
+                          <p className="text-sm text-[#b3b3b3] truncate">
+                            {track.artist}
+                          </p>
                         </div>
                       </motion.button>
                     ))
                   ) : (
                     <div className="p-4 text-[#b3b3b3] text-center text-sm">
                       {isLoading
-                        ? "Searching..."
+                        ? 'Searching...'
                         : searchQuery.trim().length < MIN_QUERY_LENGTH
-                        ? `Type at least ${MIN_QUERY_LENGTH} characters`
-                        : "No songs found"}
+                          ? `Type at least ${MIN_QUERY_LENGTH} characters`
+                          : 'No songs found'}
                     </div>
                   )}
                 </motion.div>
@@ -169,7 +184,11 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
         )}
       </div>
 
-      <motion.div layout className="rounded-xl p-1 flex gap-3" style={GLASS_STYLE}>
+      <motion.div
+        layout
+        className="rounded-xl p-1 flex gap-3"
+        style={GLASS_STYLE}
+      >
         <motion.button
           type="button"
           onClick={onSkip}
@@ -188,8 +207,8 @@ export function GuessInput({ search, onSubmit, onSkip, submitPending }: GuessInp
           whileTap={selectedTrack && !submitPending ? { scale: 0.98 } : {}}
           className={`flex-1 py-3.5 rounded-xl font-semibold transition-all min-h-[48px] touch-manipulation ${
             selectedTrack && !submitPending
-              ? "bg-[#1DB954] hover:bg-[#1ed760] text-black shadow-lg shadow-[#1DB954]/20 active:scale-95"
-              : "bg-white/10 text-white/50 cursor-not-allowed"
+              ? 'bg-[#1DB954] hover:bg-[#1ed760] text-black shadow-lg shadow-[#1DB954]/20 active:scale-95'
+              : 'bg-white/10 text-white/50 cursor-not-allowed'
           }`}
         >
           Submit

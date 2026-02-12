@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
 const SITE_PASSWORD = process.env.SITE_PASSWORD;
 
 export function proxy(request: NextRequest) {
-  const cookie = request.cookies.get("site-access");
+  const cookie = request.cookies.get('site-access');
   const hasAccess =
     SITE_PASSWORD && cookie?.value && cookie.value === SITE_PASSWORD;
 
@@ -11,9 +11,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  return NextResponse.redirect(new URL("/gate", request.url));
+  return NextResponse.redirect(new URL('/gate', request.url));
 }
 
 export const config = {
-  matcher: ["/((?!_next|api/auth/gate|gate|.*\\.).*)"],
+  matcher: ['/((?!_next|api/auth/gate|gate|.*\\.).*)'],
 };

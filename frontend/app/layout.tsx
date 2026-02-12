@@ -1,49 +1,59 @@
-import type { Metadata } from "next";
-import { Quicksand } from "next/font/google";
-import { Toaster } from "sonner";
-import { Analytics } from "@vercel/analytics/react";
-import "./globals.css";
-import { QueryProvider } from "@/components/providers/QueryProvider";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import type { Metadata } from 'next';
+import { Quicksand } from 'next/font/google';
+import { Toaster } from 'sonner';
+import { Analytics } from '@vercel/analytics/react';
+import './globals.css';
+import { QueryProvider } from '@/components/providers/QueryProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const quicksand = Quicksand({
-  subsets: ["latin"],
-  variable: "--font-quicksand",
+  subsets: ['latin'],
+  variable: '--font-quicksand',
 });
 
 export const metadata: Metadata = {
-  title: "Unpaused - Music Guessing Game",
-  description: "Test your music knowledge with Unpaused. Guess the song from a snippet of your favorite playlists!",
-  keywords: ["music", "game", "spotify", "guessing game", "music quiz", "unpaused"],
-  authors: [{ name: "Unpaused" }],
-  creator: "Unpaused",
-  publisher: "Unpaused",
-  applicationName: "Unpaused",
+  title: 'Unpaused - Music Guessing Game',
+  description:
+    'Test your music knowledge with Unpaused. Guess the song from a snippet of your favorite playlists!',
+  keywords: [
+    'music',
+    'game',
+    'spotify',
+    'guessing game',
+    'music quiz',
+    'unpaused',
+  ],
+  authors: [{ name: 'Unpaused' }],
+  creator: 'Unpaused',
+  publisher: 'Unpaused',
+  applicationName: 'Unpaused',
   appleWebApp: {
     capable: true,
-    title: "Unpaused",
-    statusBarStyle: "black-translucent",
+    title: 'Unpaused',
+    statusBarStyle: 'black-translucent',
   },
   openGraph: {
-    type: "website",
-    title: "Unpaused - Music Guessing Game",
-    description: "Test your music knowledge! Guess the song from a snippet of your favorite playlists.",
-    siteName: "Unpaused",
+    type: 'website',
+    title: 'Unpaused - Music Guessing Game',
+    description:
+      'Test your music knowledge! Guess the song from a snippet of your favorite playlists.',
+    siteName: 'Unpaused',
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Unpaused - Music Guessing Game",
-    description: "Test your music knowledge! Guess the song from a snippet of your favorite playlists.",
+    card: 'summary_large_image',
+    title: 'Unpaused - Music Guessing Game',
+    description:
+      'Test your music knowledge! Guess the song from a snippet of your favorite playlists.',
   },
 };
 
 export const viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover",
-  interactiveWidget: "resizes-content",
+  viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
 };
 
 export default function RootLayout({
@@ -53,7 +63,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${quicksand.variable} font-sans antialiased max-w-[100vw] overflow-x-hidden`}>
+      <body
+        className={`${quicksand.variable} font-sans antialiased max-w-[100vw] overflow-x-hidden`}
+      >
         <ErrorBoundary>
           <QueryProvider>{children}</QueryProvider>
         </ErrorBoundary>

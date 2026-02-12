@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { api } from "@/sdk/client";
-import { GameStatsDtoModeEnum as GameMode } from "@sdk";
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@/sdk/client';
+import { GameStatsDtoModeEnum as GameMode } from '@sdk';
 
 type UseGameStatsOptions = {
   mode: GameMode;

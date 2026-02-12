@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { AdminDashboard } from "./AdminDashboard";
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { AdminDashboard } from './AdminDashboard';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default async function AdminPage() {
   let user = null;
@@ -11,18 +11,18 @@ export default async function AdminPage() {
     const cookieStore = await cookies();
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: { Cookie: cookieStore.toString() },
-      cache: "no-store",
+      cache: 'no-store',
     });
 
     if (res.ok) {
       user = await res.json();
     }
   } catch (error) {
-    console.error("Authentication check failed:", error);
+    console.error('Authentication check failed:', error);
   }
 
   if (!user || !user.isAdmin) {
-    redirect("/");
+    redirect('/');
   }
 
   return (

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion, AnimatePresence } from "framer-motion";
-import { getGuessResultStyle } from "./guess-result-styles";
-import { GuessHistoryDtoResultEnum } from "@/sdk/models/GuessHistoryDto";
+import { motion, AnimatePresence } from 'framer-motion';
+import { getGuessResultStyle } from './guess-result-styles';
+import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 
 interface Guess {
   trackId?: string | null;
@@ -26,7 +26,7 @@ const ITEM_VARIANTS = {
     opacity: 1,
     y: 0,
     transition: {
-      type: "spring" as const,
+      type: 'spring' as const,
       stiffness: 400,
       damping: 30,
       delay: i * STAGGER_DELAY, // i = 0 for newest (last item), so it pops first
@@ -37,7 +37,7 @@ const ITEM_VARIANTS = {
 
 export function GuessHistoryList({
   guesses,
-  title = "Previous guesses",
+  title = 'Previous guesses',
   isGameOver = false,
 }: GuessHistoryListProps) {
   const showSection = guesses.length > 0 || !isGameOver;
@@ -60,17 +60,17 @@ export function GuessHistoryList({
                 key={i}
                 variants={ITEM_VARIANTS}
                 initial="initial"
-                animate={"animate"}
+                animate={'animate'}
                 custom={staggerIndex}
                 exit="exit"
                 layout
                 className={`p-3 rounded-lg border ${style.cardClass} ${
-                  isSkip ? "opacity-50" : ""
-                } ${isWrong ? "border-l-[2px] border-l-red-500/60" : ""}`}
+                  isSkip ? 'opacity-50' : ''
+                } ${isWrong ? 'border-l-[2px] border-l-red-500/60' : ''}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-medium min-w-0 text-white">
-                    {isSkip ? "Skipped" : guess.trackName ?? "—"}
+                    {isSkip ? 'Skipped' : (guess.trackName ?? '—')}
                   </p>
                   {!isSkip && (
                     <span
@@ -81,7 +81,9 @@ export function GuessHistoryList({
                   )}
                 </div>
                 {!isSkip && guess.artistName && (
-                  <p className="text-sm text-white/60 mt-0.5">{guess.artistName}</p>
+                  <p className="text-sm text-white/60 mt-0.5">
+                    {guess.artistName}
+                  </p>
                 )}
               </motion.div>
             );
@@ -95,9 +97,9 @@ export function GuessHistoryList({
               animate={{
                 opacity: 1,
                 borderColor: [
-                  "rgba(255,255,255,0.08)",
-                  "rgba(29,185,84,0.25)",
-                  "rgba(255,255,255,0.08)",
+                  'rgba(255,255,255,0.08)',
+                  'rgba(29,185,84,0.25)',
+                  'rgba(255,255,255,0.08)',
                 ],
               }}
               transition={{
@@ -105,7 +107,7 @@ export function GuessHistoryList({
                 borderColor: {
                   duration: 2,
                   repeat: Infinity,
-                  ease: "easeInOut",
+                  ease: 'easeInOut',
                 },
               }}
               className="min-h-[52px] rounded-lg border-2 border-dashed border-white/10 bg-white/[0.02]"

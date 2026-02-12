@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
-import { getApiErrorMessage } from "@/lib/api-error";
-import { api } from "@/sdk/client";
-import type { StreakStatusDto } from "@/sdk";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
+import { getApiErrorMessage } from '@/lib/api-error';
+import { api } from '@/sdk/client';
+import type { StreakStatusDto } from '@/sdk';
 
 export function useStreakFreeze() {
   const queryClient = useQueryClient();
@@ -20,8 +20,8 @@ export function useStreakFreeze() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.streak.status, data);
-      queryClient.invalidateQueries({ queryKey: queryKeys.game.stats });
-      queryClient.invalidateQueries({ queryKey: ["game", "history"] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.game.stats });
+      void queryClient.invalidateQueries({ queryKey: ['game', 'history'] });
     },
   });
 }
