@@ -5,18 +5,31 @@ import { PlaylistDto } from '../dto/playlist.dto';
 import { getFirstImage } from '../../utils/utils';
 
 /**
+ * Type for Spotify API response that may use either old (tracks) or new (items) field names.
+ * Spotify renamed tracks -> items in February 2026, but SDK types haven't been updated yet.
+ */
+type PlaylistWithItems = (Playlist<Track> | SimplifiedPlaylist) & {
+  items?: { total?: number };
+};
+
+/**
  * Lite Version: For browsing lists of playlists
  */
 export function mapPlaylistLite(
   playlist: Playlist<Track> | SimplifiedPlaylist,
 ): PlaylistDto {
+  // Handle both new API (items) and old SDK types (tracks) for Feb 2026 API change
+  const playlistWithItems = playlist as PlaylistWithItems;
+  const totalTracks =
+    playlistWithItems.items?.total ?? playlist.tracks?.total ?? 0;
+
   return {
     id: playlist.id,
     name: playlist.name,
     description: playlist.description || '',
     imageUrl: getFirstImage(playlist.images),
     owner: playlist.owner?.display_name || 'Unknown',
-    totalTracks: playlist.tracks?.total || 0,
+    totalTracks,
     isPublic: playlist.public ?? true,
     externalUrl: playlist.external_urls?.spotify || '',
   };

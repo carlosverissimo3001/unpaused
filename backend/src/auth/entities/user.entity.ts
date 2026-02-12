@@ -1,24 +1,27 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserEntity {
-  @ApiProperty({ example: '123' })
+  @ApiProperty({ description: 'Unique identifier for the user' })
   id: string;
 
-  @ApiProperty({ example: 'spotify_user_123' })
+  @ApiProperty({ description: 'Unique identifier for the user on Spotify' })
   spotifyUserId: string;
 
-  @ApiProperty({ example: 'John Doe' })
+  @ApiProperty({ description: 'John Doe' })
   displayName: string;
 
-  @ApiProperty({ example: false })
+  @ApiPropertyOptional({ description: 'https://example.com/avatar.jpg' })
+  avatarUrl?: string;
+
+  @ApiProperty({ description: 'Indicates if the user is trusted' })
   isTrusted: boolean;
 
-  @ApiProperty({ example: false })
+  @ApiProperty({ description: 'Indicates if the user is an admin' })
   isAdmin: boolean;
 
-  @ApiProperty({ example: '2021-01-01' })
+  @ApiProperty({ description: 'Date when the user was created' })
   createdAt: Date;
 
-  @ApiProperty({ example: '2021-01-01' })
+  @ApiProperty({ description: 'Date when the user was last updated' })
   updatedAt: Date;
 }

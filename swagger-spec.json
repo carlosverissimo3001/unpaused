@@ -984,11 +984,15 @@
         "properties": {
           "spotifyUserId": {
             "type": "string",
-            "example": "spotify_user_123"
+            "description": "Unique identifier for the user"
           },
           "displayName": {
             "type": "string",
-            "example": "John Doe"
+            "description": "John Doe"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Avatar URL, if available"
           },
           "isTrusted": {
             "type": "boolean",

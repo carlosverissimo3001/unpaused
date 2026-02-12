@@ -1,15 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserProfileDto {
-  @ApiProperty({ example: '31yi2gea663ygabtxv6ibrw5cwxa' })
+  @ApiProperty({ description: 'The Spotify user ID' })
   id: string;
 
-  @ApiProperty({ example: 'Carlos Veríssimo' })
+  @ApiProperty({ description: 'Display name of the user' })
   displayName: string;
 
-  @ApiProperty({
-    example: 'https://i.scdn.co/image/...',
-    description: 'The primary profile image',
+  @ApiPropertyOptional({
+    description: 'URL of the user avatar',
   })
-  avatarUrl: string;
+  avatarUrl?: string;
 }

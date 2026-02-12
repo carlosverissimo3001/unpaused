@@ -61,7 +61,8 @@ export class PlaylistService {
         sdk.playlists.getPlaylist(
           playlistId,
           undefined,
-          'id,name,description,images,owner(display_name),tracks(total),public,external_urls',
+          // Use items(total) for new API (Feb 2026), fallback handled in mapPlaylistLite
+          'id,name,description,images,owner(display_name),items(total),public,external_urls',
         ),
       'getPlaylistById',
     );

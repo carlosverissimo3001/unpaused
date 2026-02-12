@@ -53,13 +53,8 @@ export class UserRepository {
    */
   private fromPrisma(user: PrismaUser): UserEntity {
     return {
-      id: user.id,
-      spotifyUserId: user.spotifyUserId,
-      displayName: user.displayName,
-      isTrusted: user.isTrusted,
-      isAdmin: user.isAdmin,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      ...user,
+      avatarUrl: user.avatarUrl ?? undefined,
     };
   }
 

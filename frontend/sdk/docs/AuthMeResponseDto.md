@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `spotifyUserId` | string
 `displayName` | string
+`avatarUrl` | string
 `isTrusted` | boolean
 `isAdmin` | boolean
 
@@ -18,8 +19,9 @@ import type { AuthMeResponseDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "spotifyUserId": spotify_user_123,
-  "displayName": John Doe,
+  "spotifyUserId": null,
+  "displayName": null,
+  "avatarUrl": null,
   "isTrusted": false,
   "isAdmin": false,
 } satisfies AuthMeResponseDto

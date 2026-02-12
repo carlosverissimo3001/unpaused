@@ -175,7 +175,7 @@ export class SpotifyService {
     return {
       id: profileResponse.id,
       displayName: profileResponse.display_name,
-      avatarUrl: profileResponse.images?.[0]?.url ?? '/default-avatar.png',
+      avatarUrl: profileResponse.images?.[0]?.url ?? undefined,
     };
   }
 }

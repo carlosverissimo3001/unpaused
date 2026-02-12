@@ -1,18 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsBoolean } from 'class-validator';
-import { IsNotNullableOptional } from '../../utils/decorators/notNullableOptional.decorator';
 
 export class UpsertUserDto {
-  @ApiProperty({ example: 'spotify_user_123' })
-  @IsString()
+  @ApiProperty({ description: 'Unique identifier for the user on Spotify' })
   spotifyUserId: string;
 
-  @ApiProperty({ example: 'John Doe' })
-  @IsString()
+  @ApiProperty({ description: 'Display name of the user' })
   displayName: string;
 
-  @ApiPropertyOptional({ example: false })
-  @IsNotNullableOptional()
-  @IsBoolean()
+  @ApiPropertyOptional({ description: 'Indicates if the user is trusted' })
   isTrusted?: boolean;
+
+  @ApiPropertyOptional({ description: 'URL of the user avatar' })
+  avatarUrl?: string;
 }

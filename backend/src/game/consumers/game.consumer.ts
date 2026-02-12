@@ -24,7 +24,7 @@ export class GameConsumer extends WorkerHost implements OnModuleInit {
       {},
       {
         repeat: {
-          pattern: '0 * * * *', // Every hour
+          pattern: '0 */6 * * *', // Every 6 hours
         },
         jobId: CLEAN_UP_ABANDONED_GAMES_JOB,
       },

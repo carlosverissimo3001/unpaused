@@ -60,6 +60,7 @@ export class AuthService {
     const user = await this.userRepository.upsert({
       spotifyUserId: profile.id,
       displayName,
+      avatarUrl: profile.avatarUrl,
     });
 
     // Store tokens via SpotifyAuthService (Redis cache + encrypted DB)
@@ -102,6 +103,7 @@ export class AuthService {
       displayName: session.displayName,
       isTrusted: session.isTrusted,
       isAdmin: user.isAdmin,
+      avatarUrl: user.avatarUrl,
     };
   }
 

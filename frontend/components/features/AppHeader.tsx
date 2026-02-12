@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { LogOut, History, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -50,14 +51,39 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
                 </span>
               </div>
 
-              <div className="relative group">
-                <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm font-black text-white group-hover:border-spotify-green transition-colors overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-spotify-green/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="relative z-10">
-                    {user.displayName[0]?.toUpperCase()}
-                  </span>
+              <motion.div
+                className="relative group"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              >
+                <div className="absolute inset-0 rounded-xl bg-spotify-green/20 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-300" />
+
+                <div className="relative w-9 h-9 rounded-xl bg-white/5 border border-white/10 group-hover:border-spotify-green transition-all duration-300 overflow-hidden">
+                  {user.avatarUrl ? (
+                    <>
+                      <Image
+                        src={user.avatarUrl}
+                        alt={user.displayName}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="36px"
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-br from-spotify-green/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-overlay" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-spotify-green/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative z-10 w-full h-full flex items-center justify-center text-sm font-black text-white">
+                        {user.displayName[0]?.toUpperCase()}
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
+
+                <div className="absolute inset-0 rounded-xl border border-spotify-green/0 group-hover:border-spotify-green/40 transition-all duration-500 animate-pulse" />
+              </motion.div>
 
               <motion.div whileTap={{ scale: 0.9 }}>
                 <Button
