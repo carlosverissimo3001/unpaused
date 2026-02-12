@@ -103,7 +103,7 @@ export function SongRevealCard({
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-           {meta.winEmoji}
+           {meta?.winEmoji}
           </motion.span>
         )}
       </h2>

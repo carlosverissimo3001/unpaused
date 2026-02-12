@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../../redis/redis.service';
 import { v4 as uuidv4 } from 'uuid';
-import { SpotifyTokenDto } from '../dto/spotify/spotify-token.dto';
 import { PkceStateDto } from '../dto/pcke-state.dto';
 import { UserSessionDto } from '../dto/user-session.dto';
 
@@ -61,14 +60,12 @@ export class SessionService {
    * @param spotifyUserId - The Spotify user ID
    * @param displayName - The display name
    * @param isTrusted - Whether the user is trusted
-   * @param tokens - The Spotify tokens
    * @returns The session ID
    */
   async createSession(
     spotifyUserId: string,
     displayName: string,
     isTrusted: boolean,
-    tokens: SpotifyTokenDto,
   ): Promise<string> {
     const sessionId = uuidv4();
 
@@ -77,7 +74,6 @@ export class SessionService {
       spotifyUserId,
       displayName,
       isTrusted,
-      tokens,
       createdAt: Date.now(),
     };
 
@@ -105,18 +101,6 @@ export class SessionService {
     } catch {
       throw new UnauthorizedException('Corrupted session data');
     }
-  }
-
-  /**
-   * Update session (e.g., after token refresh)
-   * @param session - The session
-   */
-  async updateSession(session: UserSessionDto): Promise<void> {
-    await this.redisService.set(
-      `session:${session.sessionId}`,
-      JSON.stringify(session),
-      this.sessionMaxAge,
-    );
   }
 
   /**

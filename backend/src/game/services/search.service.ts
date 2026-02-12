@@ -5,8 +5,6 @@ import { normalizeText } from '@utils/text';
 import { getFirstImage } from '@utils/utils';
 import { Track } from '@spotify/web-api-ts-sdk';
 
-const SEARCH_LIMIT = 20 as const;
-
 @Injectable()
 export class SearchService {
   constructor(private readonly spotifyService: SpotifyService) {}
@@ -25,13 +23,10 @@ export class SearchService {
     }
 
     const { sdk } = await this.spotifyService.getClient(sessionId);
-    const result = await sdk.search(
-      trimmed,
-      ['track'],
-      undefined,
-      SEARCH_LIMIT,
-      0,
-    );
+    // NOTE: Limit capped at 10 due to SDK/API quirk - values >10 throw "Invalid limit"
+    // despite official docs stating 0-50 is valid. Possibly SDK v1.2.0 bug or account limit.
+    // See: https://developer.spotify.com/documentation/web-api/reference/search
+    const result = await sdk.search(trimmed, ['track'], undefined, 10);
 
     const items = result.tracks?.items ?? [];
     return items.map((track: Track) => this.mapTrackToOption(track));

@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   AuthMeResponseDto,
   CreateMessageDto,
+  CreateStreakQuestionDto,
   GameHistoryDto,
   GameStateDto,
   GameStatsDto,
@@ -26,17 +27,25 @@ import type {
   PlayedTodayDto,
   PlaylistDto,
   PlaylistsResponseDto,
+  QuizNextResponseDto,
+  QuizResultDto,
   ShareResultDto,
   StartGameDto,
+  StreakQuestionDto,
+  StreakStatusDto,
+  SubmitQuizAnswerDto,
   TokenLoginDto,
   TrackOptionDto,
   UpdateMessageDto,
+  UpdateStreakQuestionDto,
 } from '../models/index';
 import {
     AuthMeResponseDtoFromJSON,
     AuthMeResponseDtoToJSON,
     CreateMessageDtoFromJSON,
     CreateMessageDtoToJSON,
+    CreateStreakQuestionDtoFromJSON,
+    CreateStreakQuestionDtoToJSON,
     GameHistoryDtoFromJSON,
     GameHistoryDtoToJSON,
     GameStateDtoFromJSON,
@@ -55,23 +64,43 @@ import {
     PlaylistDtoToJSON,
     PlaylistsResponseDtoFromJSON,
     PlaylistsResponseDtoToJSON,
+    QuizNextResponseDtoFromJSON,
+    QuizNextResponseDtoToJSON,
+    QuizResultDtoFromJSON,
+    QuizResultDtoToJSON,
     ShareResultDtoFromJSON,
     ShareResultDtoToJSON,
     StartGameDtoFromJSON,
     StartGameDtoToJSON,
+    StreakQuestionDtoFromJSON,
+    StreakQuestionDtoToJSON,
+    StreakStatusDtoFromJSON,
+    StreakStatusDtoToJSON,
+    SubmitQuizAnswerDtoFromJSON,
+    SubmitQuizAnswerDtoToJSON,
     TokenLoginDtoFromJSON,
     TokenLoginDtoToJSON,
     TrackOptionDtoFromJSON,
     TrackOptionDtoToJSON,
     UpdateMessageDtoFromJSON,
     UpdateMessageDtoToJSON,
+    UpdateStreakQuestionDtoFromJSON,
+    UpdateStreakQuestionDtoToJSON,
 } from '../models/index';
 
 export interface AdminControllerCreateMessageRequest {
     createMessageDto: CreateMessageDto;
 }
 
+export interface AdminControllerCreateStreakQuestionRequest {
+    createStreakQuestionDto: CreateStreakQuestionDto;
+}
+
 export interface AdminControllerDeleteMessageRequest {
+    id: string;
+}
+
+export interface AdminControllerDeleteStreakQuestionRequest {
     id: string;
 }
 
@@ -80,10 +109,15 @@ export interface AdminControllerUpdateMessageRequest {
     updateMessageDto: UpdateMessageDto;
 }
 
+export interface AdminControllerUpdateStreakQuestionRequest {
+    id: string;
+    updateStreakQuestionDto: UpdateStreakQuestionDto;
+}
+
 export interface AuthControllerCallbackRequest {
     code: string;
     state: string;
-    error: string;
+    error?: object;
 }
 
 export interface AuthControllerTokenLoginRequest {
@@ -132,6 +166,10 @@ export interface SearchControllerSearchTracksRequest {
     q: string;
 }
 
+export interface StreakControllerSubmitAnswerRequest {
+    submitQuizAnswerDto: SubmitQuizAnswerDto;
+}
+
 /**
  * 
  */
@@ -177,6 +215,45 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Create a streak quiz question (admin only)
+     */
+    async adminControllerCreateStreakQuestionRaw(requestParameters: AdminControllerCreateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StreakQuestionDto>> {
+        if (requestParameters['createStreakQuestionDto'] == null) {
+            throw new runtime.RequiredError(
+                'createStreakQuestionDto',
+                'Required parameter "createStreakQuestionDto" was null or undefined when calling adminControllerCreateStreakQuestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/admin/streak-questions`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateStreakQuestionDtoToJSON(requestParameters['createStreakQuestionDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StreakQuestionDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Create a streak quiz question (admin only)
+     */
+    async adminControllerCreateStreakQuestion(requestParameters: AdminControllerCreateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakQuestionDto> {
+        const response = await this.adminControllerCreateStreakQuestionRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Delete a message (admin only)
      */
     async adminControllerDeleteMessageRaw(requestParameters: AdminControllerDeleteMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -213,6 +290,42 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Soft-delete a streak quiz question (admin only)
+     */
+    async adminControllerDeleteStreakQuestionRaw(requestParameters: AdminControllerDeleteStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling adminControllerDeleteStreakQuestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/admin/streak-questions/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Soft-delete a streak quiz question (admin only)
+     */
+    async adminControllerDeleteStreakQuestion(requestParameters: AdminControllerDeleteStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.adminControllerDeleteStreakQuestionRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * Get all messages (admin only)
      */
     async adminControllerGetAllMessagesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<MessageDto>>> {
@@ -238,6 +351,35 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async adminControllerGetAllMessages(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<MessageDto>> {
         const response = await this.adminControllerGetAllMessagesRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List all streak quiz questions (admin only)
+     */
+    async adminControllerListStreakQuestionsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<StreakQuestionDto>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/admin/streak-questions`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(StreakQuestionDtoFromJSON));
+    }
+
+    /**
+     * List all streak quiz questions (admin only)
+     */
+    async adminControllerListStreakQuestions(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<StreakQuestionDto>> {
+        const response = await this.adminControllerListStreakQuestionsRaw(initOverrides);
         return await response.value();
     }
 
@@ -289,6 +431,53 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Update a streak quiz question (admin only)
+     */
+    async adminControllerUpdateStreakQuestionRaw(requestParameters: AdminControllerUpdateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StreakQuestionDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling adminControllerUpdateStreakQuestion().'
+            );
+        }
+
+        if (requestParameters['updateStreakQuestionDto'] == null) {
+            throw new runtime.RequiredError(
+                'updateStreakQuestionDto',
+                'Required parameter "updateStreakQuestionDto" was null or undefined when calling adminControllerUpdateStreakQuestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/admin/streak-questions/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateStreakQuestionDtoToJSON(requestParameters['updateStreakQuestionDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StreakQuestionDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Update a streak quiz question (admin only)
+     */
+    async adminControllerUpdateStreakQuestion(requestParameters: AdminControllerUpdateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakQuestionDto> {
+        const response = await this.adminControllerUpdateStreakQuestionRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Handle Spotify OAuth callback
      */
     async authControllerCallbackRaw(requestParameters: AuthControllerCallbackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -303,13 +492,6 @@ export class ApiApi extends runtime.BaseAPI {
             throw new runtime.RequiredError(
                 'state',
                 'Required parameter "state" was null or undefined when calling authControllerCallback().'
-            );
-        }
-
-        if (requestParameters['error'] == null) {
-            throw new runtime.RequiredError(
-                'error',
-                'Required parameter "error" was null or undefined when calling authControllerCallback().'
             );
         }
 
@@ -863,6 +1045,132 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async searchControllerSearchTracks(requestParameters: SearchControllerSearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TrackOptionDto>> {
         const response = await this.searchControllerSearchTracksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get the next unanswered quiz question
+     */
+    async streakControllerGetNextQuestionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<QuizNextResponseDto>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/streak/quiz/next`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => QuizNextResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the next unanswered quiz question
+     */
+    async streakControllerGetNextQuestion(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<QuizNextResponseDto> {
+        const response = await this.streakControllerGetNextQuestionRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get streak status including freeze info
+     */
+    async streakControllerGetStatusRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StreakStatusDto>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/streak/status`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StreakStatusDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get streak status including freeze info
+     */
+    async streakControllerGetStatus(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakStatusDto> {
+        const response = await this.streakControllerGetStatusRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Submit a quiz answer to earn a streak freeze
+     */
+    async streakControllerSubmitAnswerRaw(requestParameters: StreakControllerSubmitAnswerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<QuizResultDto>> {
+        if (requestParameters['submitQuizAnswerDto'] == null) {
+            throw new runtime.RequiredError(
+                'submitQuizAnswerDto',
+                'Required parameter "submitQuizAnswerDto" was null or undefined when calling streakControllerSubmitAnswer().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/streak/quiz/answer`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SubmitQuizAnswerDtoToJSON(requestParameters['submitQuizAnswerDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => QuizResultDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Submit a quiz answer to earn a streak freeze
+     */
+    async streakControllerSubmitAnswer(requestParameters: StreakControllerSubmitAnswerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<QuizResultDto> {
+        const response = await this.streakControllerSubmitAnswerRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Apply streak freezes to bridge a gap
+     */
+    async streakControllerUseFreezeRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StreakStatusDto>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/streak/use-freeze`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StreakStatusDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Apply streak freezes to bridge a gap
+     */
+    async streakControllerUseFreeze(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakStatusDto> {
+        const response = await this.streakControllerUseFreezeRaw(initOverrides);
         return await response.value();
     }
 

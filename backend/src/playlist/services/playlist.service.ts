@@ -8,7 +8,21 @@ import { SpotifyService } from '../../spotify/services/spotify.service';
 import { mapTrack } from '@/track/utils.ts/track-utils';
 import { TrackDto } from '@/track/dto/track.dto';
 import { AppLoggerService } from '../../logger/logger.service';
+import { RedisService } from '../../redis/redis.service';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
+import { LIKED_SONGS_COVER, LIKED_SONGS_URL } from '../consts';
+import {
+  PLAYLIST_CACHE_PREFIX,
+  PLAYLIST_META_CACHE_PREFIX,
+  LIKED_META_CACHE_PREFIX,
+  PLAYLIST_TRACKS_CACHE_PREFIX,
+  LIKED_TRACKS_CACHE_PREFIX,
+  PLAYLIST_CACHE_TTL,
+  TRACK_BATCH_CACHE_TTL,
+} from '../../consts';
+
+const TRACK_FIELDS =
+  'items(track(id,name,artists(name),album(id,name,images,release_date),duration_ms,external_urls,preview_url,is_playable))';
 
 @Injectable()
 export class PlaylistService {
@@ -16,6 +30,7 @@ export class PlaylistService {
 
   constructor(
     private spotifyService: SpotifyService,
+    private readonly redis: RedisService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(PlaylistService.name);
@@ -24,21 +39,39 @@ export class PlaylistService {
   /**
    * Get playlist by ID (metadata only, no tracks).
    * Handles Liked Songs via getLikedSongs; regular playlists via Spotify getPlaylist.
+   * Results are cached for 5 hours.
    */
   async getPlaylistById(
     sessionId: string,
     playlistId: string,
   ): Promise<PlaylistDto> {
     if (playlistId.endsWith(LIKED_SONGS_ID_SUFFIX)) {
-      return this.getLikedSongs(sessionId);
+      return this.getLikedSongsMetadata(sessionId);
     }
-    const { sdk } = await this.spotifyService.getClient(sessionId);
-    const playlist = await sdk.playlists.getPlaylist(playlistId);
-    return mapPlaylistLite(playlist);
+
+    const { sdk, session } = await this.spotifyService.getClient(sessionId);
+    const cacheKey = `${PLAYLIST_META_CACHE_PREFIX}${session.spotifyUserId}:${playlistId}`;
+    const cached = await this.redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    const playlist = await this.spotifyService.safeCall(
+      () =>
+        sdk.playlists.getPlaylist(
+          playlistId,
+          undefined,
+          'id,name,description,images,owner(display_name),tracks(total),public,external_urls',
+        ),
+      'getPlaylistById',
+    );
+    const dto = mapPlaylistLite(playlist);
+    await this.redis.set(cacheKey, JSON.stringify(dto), PLAYLIST_CACHE_TTL);
+    return dto;
   }
 
   /**
-   * Get current user's playlists
+   * Get current user's playlists. Cached per-user for 5 hours.
    */
   async getMyPlaylists(
     params: GetPlaylistsDto & { sessionId: string },
@@ -53,23 +86,52 @@ export class PlaylistService {
 
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
 
-    // 1. Fetch playlists from Spotify
-    const response = await sdk.currentUser.playlists.playlists(
-      limit as 0 | 20 | 50,
-      offset,
-    );
-    const saved = applyFilters(
-      response.items,
-      { onlyPublic, onlyUserOwned },
-      session,
-    );
-    const savedMapped = saved.map((p) => mapPlaylistLite(p as Playlist<Track>));
+    const cacheKey = `${PLAYLIST_CACHE_PREFIX}${session.spotifyUserId}:${limit}:${offset}:${onlyPublic}:${onlyUserOwned}`;
+    const cached = await this.redis.get(cacheKey);
+
+    let savedMapped: PlaylistDto[];
+    let total: number;
+    let responseLimit: number;
+    let responseOffset: number;
+
+    if (cached) {
+      const data = JSON.parse(cached);
+      savedMapped = data.items;
+      total = data.total;
+      responseLimit = data.limit;
+      responseOffset = data.offset;
+    } else {
+      const response = await this.spotifyService.safeCall(
+        () => sdk.currentUser.playlists.playlists(limit as 0 | 20 | 50, offset),
+        'getMyPlaylists',
+      );
+      const saved = applyFilters(
+        response.items,
+        { onlyPublic, onlyUserOwned },
+        session,
+      );
+      savedMapped = saved.map((p) => mapPlaylistLite(p as Playlist<Track>));
+      total = response.total ?? 0;
+      responseLimit = response.limit ?? limit;
+      responseOffset = response.offset ?? offset;
+
+      await this.redis.set(
+        cacheKey,
+        JSON.stringify({
+          items: savedMapped,
+          total,
+          limit: responseLimit,
+          offset: responseOffset,
+        }),
+        PLAYLIST_CACHE_TTL,
+      );
+    }
 
     const playlists: PlaylistDto[] = [];
 
-    // 2. Only inject "Liked Songs" on the very first page
+    // Only inject "Liked Songs" on the very first page
     if (offset === 0) {
-      const likedSongs = await this.getLikedSongs(sessionId);
+      const likedSongs = await this.getLikedSongsMetadata(sessionId);
       playlists.push(likedSongs);
     }
 
@@ -77,87 +139,113 @@ export class PlaylistService {
 
     return {
       items: playlists,
-      total: (response.total ?? 0) + 1,
-      limit: response.limit ?? limit,
-      offset: response.offset ?? offset,
+      total: total + 1,
+      limit: responseLimit,
+      offset: responseOffset,
     };
   }
 
   /**
-   * Get liked songs collection
-   * @param sessionId - The session ID
+   * Get liked songs metadata (total count). Cached for 5 hours.
    */
-  async getLikedSongs(sessionId: string): Promise<PlaylistDto> {
+  async getLikedSongsMetadata(sessionId: string): Promise<PlaylistDto> {
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
+    const cacheKey = `${LIKED_META_CACHE_PREFIX}${session.spotifyUserId}`;
+    const cached = await this.redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
 
-    const collection = await sdk.currentUser.tracks.savedTracks(1, 0);
+    const collection = await this.spotifyService.safeCall(
+      () => sdk.currentUser.tracks.savedTracks(1, 0),
+      'getLikedSongsMetadata',
+    );
 
-    return {
+    const dto: PlaylistDto = {
       id: `${session.spotifyUserId}${LIKED_SONGS_ID_SUFFIX}`,
       name: 'Liked Songs',
       description: 'Your Saved Songs',
-      imageUrl: 'https://misc.scdn.co/liked-songs/liked-songs-300.jpg',
+      imageUrl: LIKED_SONGS_COVER,
       owner: session.displayName,
       totalTracks: collection.total ?? 0,
       isPublic: false,
-      externalUrl: 'https://open.spotify.com/collection/tracks',
+      externalUrl: LIKED_SONGS_URL,
     };
+
+    await this.redis.set(cacheKey, JSON.stringify(dto), PLAYLIST_CACHE_TTL);
+    return dto;
   }
 
   /**
-   * Get total count of liked tracks (for random offset sampling).
+   * Get a batch of liked tracks at a random offset. Cached for 5 hours.
+   * Used by game service for batch-first track selection.
    */
-  async getLikedSongsTotal(sessionId: string): Promise<number> {
-    const { sdk } = await this.spotifyService.getClient(sessionId);
-    const meta = await sdk.currentUser.tracks.savedTracks(1, 0);
-    return meta.total ?? 0;
-  }
-
-  /**
-   * Get one liked track at a given offset (for game: pick random offset until we find one with preview).
-   */
-  async getOneLikedTrackAtOffset(
+  async getLikedTracksBatch(
     sessionId: string,
     offset: number,
-  ): Promise<TrackDto | null> {
-    const { sdk } = await this.spotifyService.getClient(sessionId);
-    const page = await sdk.currentUser.tracks.savedTracks(1, offset);
-    const item = page.items?.[0];
-
-    if (!item?.track) {
-      return null;
+  ): Promise<TrackDto[]> {
+    const { sdk, session } = await this.spotifyService.getClient(sessionId);
+    const cacheKey = `${LIKED_TRACKS_CACHE_PREFIX}${session.spotifyUserId}:${offset}`;
+    const cached = await this.redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
     }
 
-    return mapTrack(item.track);
-  }
-
-  /**
-   * Get first batch of liked (saved) tracks. Used when aggregating pool for daily game.
-   */
-  async getLikedSongsFirstTracks(sessionId: string): Promise<TrackDto[]> {
-    const { sdk } = await this.spotifyService.getClient(sessionId);
-    const page = await sdk.currentUser.tracks.savedTracks(50, 0);
-    const items = page.items ?? [];
-    return items
+    const page = await this.spotifyService.safeCall(
+      () => sdk.currentUser.tracks.savedTracks(50, offset),
+      'getLikedTracksBatch',
+    );
+    const tracks = (page.items ?? [])
       .filter((item) => !!item.track)
       .map((item) => mapTrack(item.track));
+
+    await this.redis.set(
+      cacheKey,
+      JSON.stringify(tracks),
+      TRACK_BATCH_CACHE_TTL,
+    );
+    return tracks;
   }
 
   /**
-   * Get first batch of playlist tracks only (no pagination). Used by game to pick one track with preview.
+   * Get first batch of playlist tracks using fields filtering. Cached for 5 hours.
+   * Uses getPlaylistItems with fields parameter to minimize payload.
    */
   async getPlaylistFirstTracks(
     sessionId: string,
     playlistId: string,
   ): Promise<TrackDto[]> {
-    const { sdk } = await this.spotifyService.getClient(sessionId);
-    const playlist = await sdk.playlists.getPlaylist(playlistId);
-    const items = playlist.tracks?.items ?? [];
-    return items
+    const { sdk, session } = await this.spotifyService.getClient(sessionId);
+    const cacheKey = `${PLAYLIST_TRACKS_CACHE_PREFIX}${session.spotifyUserId}:${playlistId}`;
+    const cached = await this.redis.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+    const response = await this.spotifyService.safeCall(
+      () =>
+        sdk.playlists.getPlaylistItems(
+          playlistId,
+          undefined,
+          TRACK_FIELDS,
+          50,
+          0,
+        ),
+      'getPlaylistFirstTracks',
+    );
+
+    const items = response.items ?? [];
+    const tracks = items
       .filter(
         (item): item is PlaylistedTrack<Track> & { track: Track } =>
           !!item.track,
       )
       .map((item) => mapTrack(item.track));
+
+    await this.redis.set(
+      cacheKey,
+      JSON.stringify(tracks),
+      TRACK_BATCH_CACHE_TTL,
+    );
+    return tracks;
   }
 }

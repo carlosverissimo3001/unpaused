@@ -45,15 +45,6 @@ export class TrackDto {
   primaryArtist: string;
 
   @ApiPropertyOptional({
-    description: 'Popularity score 0-100 for game balancing',
-    type: Number,
-  })
-  popularity?: number;
-
-  @ApiProperty({ description: 'Is the track explicit' })
-  isExplicit: boolean;
-
-  @ApiPropertyOptional({
     description: 'The release year of the track',
     nullable: true,
   })

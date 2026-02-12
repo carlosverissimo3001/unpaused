@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useMe } from "@/hooks/auth/useMe";
+import { StreakFreezePrompt } from "@/components/streak/StreakFreezePrompt";
 import { useMyPlaylists } from "@/hooks/playlists/useMyPlaylists";
 import { useLogout } from "@/hooks/auth/useLogout";
 import { useTokenLogin } from "@/hooks/auth/useTokenLogin";
@@ -23,19 +24,19 @@ export default function Home() {
   const [tokenInput, setTokenInput] = useState("");
   const [ambientColor, setAmbientColor] = useState<string>("rgba(30, 215, 96, 0.1)");
 
-  // Custom hooks
   const playlistFilters = usePlaylistFilters();
   const playlistUrlLoader = usePlaylistUrlLoader();
   const { error } = useAuthError();
 
-  // Data fetching hooks
   const { data: user, isLoading: isLoadingUser } = useMe();
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } = useMyPlaylists({
     onlyPublic: playlistFilters.onlyPublic,
     onlyUserOwned: playlistFilters.onlyUserOwned,
+    enabled: !!user,
   });
   const logoutMutation = useLogout();
   const tokenLoginMutation = useTokenLogin();
+  const [streakDismissed, setStreakDismissed] = useState(false);
 
   const handleLogout = async () => {
     logoutMutation.mutate();
@@ -116,7 +117,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="flex items-center min-w-0 overflow-x-auto no-scrollbar -mr-4 pr-4">
+                  <div className="flex items-center min-w-0 overflow-x-auto no-scrollbar -mr-4 pr-4 -ml-2 pl-2">
                     <div className="flex items-center gap-2 py-1">
                       <PlaylistFilters
                         onlyPublic={playlistFilters.onlyPublic}
@@ -155,6 +156,9 @@ export default function Home() {
       </div>
 
       <AppFooter />
+
+      {/* Streak at risk overlay */}
+      {!streakDismissed && <StreakFreezePrompt onResolved={() => setStreakDismissed(true)} />}
     </main>
   );
 }

@@ -3,12 +3,8 @@ export const MS_IN_MINUTE = 60 * MS_IN_SECOND;
 export const MS_IN_HOUR = 60 * MS_IN_MINUTE;
 
 export const SCOPES = [
-  'user-read-private',
-  'user-read-email',
-  'playlist-read-private',
-  'playlist-read-collaborative',
-  'user-library-read',
-  'streaming',
-  'user-read-playback-state',
-  'user-modify-playback-state',
+  'user-read-private', // User profile info
+  'playlist-read-private', // Access user's playlists
+  'playlist-read-collaborative', // Access collaborative playlists
+  'user-library-read', // Access liked songs
 ];

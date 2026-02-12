@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsBoolean } from 'class-validator';
+import { IsNotNullableOptional } from '../../utils/decorators/notNullableOptional.decorator';
 
 export class UpsertUserDto {
   @ApiProperty({ example: 'spotify_user_123' })
@@ -10,7 +11,8 @@ export class UpsertUserDto {
   @IsString()
   displayName: string;
 
-  @ApiProperty({ example: false })
+  @ApiPropertyOptional({ example: false })
+  @IsNotNullableOptional()
   @IsBoolean()
-  isTrusted: boolean;
+  isTrusted?: boolean;
 }

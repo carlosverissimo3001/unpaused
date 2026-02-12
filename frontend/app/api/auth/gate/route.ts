@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    sameSite: "strict",
+    sameSite: "lax", // Need to be lax to allow OAuth redirects
     maxAge: COOKIE_MAX_AGE,
   });
 

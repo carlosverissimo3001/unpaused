@@ -1,12 +1,16 @@
 "use client";
 
+import { Suspense, useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowLeft, Flame, Trophy, Target, BarChart3 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Flame, Trophy, Target, BarChart3, Snowflake } from "lucide-react";
 import { useGameStats } from "@/hooks/game/useGameStats";
 import { usePlayedToday } from "@/hooks/game/usePlayedToday";
+import { useStreakStatus } from "@/hooks/streak/useStreakStatus";
 import { AnimatedCounter } from "@/components/daily/AnimatedCounter";
 import { ScoreDistributionChart } from "@/components/daily/ScoreDistributionChart";
+import { EarnFreezesFlow } from "@/components/streak/EarnFreezesFlow";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { GameStatsDtoModeEnum as GameMode } from "@/sdk";
 
@@ -36,10 +40,23 @@ const itemVariants = {
 const RING_DURATION = 0.5;
 const RING_DELAY = 0.25;
 
-export default function DailyStatsPage() {
+function DailyStatsContent() {
+  const searchParams = useSearchParams();
   const { data: stats, isLoading, error } = useGameStats({ mode: GameMode.Daily });
   const { data: playedTodayData } = usePlayedToday();
+  const { data: streakStatus } = useStreakStatus();
+  const [showEarnFreezes, setShowEarnFreezes] = useState(
+    searchParams.get("earnFreezes") === "1",
+  );
+  const freezeSectionRef = useRef<HTMLDivElement>(null);
   const playedToday = playedTodayData?.playedToday ?? false;
+
+  // Auto-scroll to the freeze section when opened via query param
+  useEffect(() => {
+    if (searchParams.get("earnFreezes") === "1" && streakStatus?.isTrusted && freezeSectionRef.current) {
+      freezeSectionRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [searchParams, streakStatus?.isTrusted]);
 
   if (isLoading) {
     return (
@@ -214,6 +231,50 @@ export default function DailyStatsPage() {
           <ScoreDistributionChart distribution={stats.roundDistribution} />
         </motion.div>
 
+        {/* Streak Freezes — only for trusted users */}
+        {streakStatus?.isTrusted && (
+          <motion.div ref={freezeSectionRef} variants={itemVariants} className="mb-8">
+            <AnimatePresence mode="wait">
+              {showEarnFreezes ? (
+                <motion.div
+                  key="quiz"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="p-5 rounded-2xl backdrop-blur-md border border-cyan-400/20 bg-cyan-500/5"
+                >
+                  <EarnFreezesFlow
+                    freezesAvailable={streakStatus.freezesAvailable}
+                    onClose={() => setShowEarnFreezes(false)}
+                  />
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="button"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  onClick={() => setShowEarnFreezes(true)}
+                  className="w-full p-4 rounded-2xl backdrop-blur-md border border-cyan-400/20 bg-cyan-500/5 hover:bg-cyan-500/10 transition-colors flex items-center gap-4"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-cyan-400/10 flex items-center justify-center shrink-0">
+                    <Snowflake className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <p className="text-sm font-medium text-white">Streak Freezes</p>
+                    <p className="text-xs text-white/50">Answer trivia to earn freezes</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-cyan-400 tabular-nums">
+                      {streakStatus.freezesAvailable}/5
+                    </span>
+                  </div>
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
         <motion.div className="mt-8 flex justify-center" variants={itemVariants}>
           <Link
             href="/daily"
@@ -287,5 +348,19 @@ export default function DailyStatsPage() {
         </motion.div>
       </motion.div>
     </div>
+  );
+}
+
+export default function DailyStatsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center" style={{ background: "#121212" }}>
+          <LoadingSpinner size="md" />
+        </div>
+      }
+    >
+      <DailyStatsContent />
+    </Suspense>
   );
 }

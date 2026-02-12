@@ -5,6 +5,15 @@ export const TRACK_PREVIEW_CACHE_TTL = 86400; // 24 hours in seconds
 export const TRACK_PREVIEW_CACHE_PREFIX = 'track_preview:';
 export const LIKED_SONGS_ID_SUFFIX = '-liked-songs';
 
+// Playlist & Spotify caching
+export const PLAYLIST_CACHE_PREFIX = 'playlists:';
+export const PLAYLIST_META_CACHE_PREFIX = 'playlist_meta:';
+export const LIKED_META_CACHE_PREFIX = 'liked_meta:';
+export const PLAYLIST_TRACKS_CACHE_PREFIX = 'playlist_tracks:';
+export const LIKED_TRACKS_CACHE_PREFIX = 'liked_tracks:';
+export const PLAYLIST_CACHE_TTL = 5 * 60 * 60; // 5 hours
+export const TRACK_BATCH_CACHE_TTL = 5 * 60 * 60;
+
 // Job Constants
 export const AGE_TO_KEEP_JOBS = 3 * 24 * 60 * 60; // 3 days in seconds
 export const MAX_JOB_HISTORY = 500; // Max number of completed/failed jobs to keep in Redis

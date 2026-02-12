@@ -27,12 +27,12 @@ const FilterPill = ({ active, onClick, label }: { active: boolean, onClick: () =
     `}
   >
     {active && (
-      <span className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
+      <span className="absolute inset-1 rounded-full bg-spotify-green blur-md opacity-40 animate-pulse -z-10" />
+    )}
+    {active && (
+      <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
     )}
     <span className="relative z-10">{label}</span>
-    {active && (
-      <span className="absolute inset-0 rounded-full bg-spotify-green blur-md opacity-40 animate-pulse" />
-    )}
   </button>
 );
 

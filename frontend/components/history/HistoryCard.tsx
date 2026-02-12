@@ -11,7 +11,7 @@ import {
   GameHistoryEntryDtoStatusEnum,
   type GameHistoryEntryDto,
 } from "@/sdk/models/GameHistoryEntryDto";
-import { format } from "date-fns";
+import { formatDate } from "@/utils/date-utils";
 import { toOrdinal } from "../../utils/text-utils";
 import { GameStatsDtoModeEnum as GameMode } from "../../sdk";
 
@@ -120,7 +120,7 @@ export function HistoryCard({
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between mb-1">
                 <span className={`text-[10px] font-black uppercase tracking-widest ${entry.mode === GameMode.Daily ? 'text-spotify-green' : 'text-white/40'}`}>
-                  {format(new Date(entry.date), "MMM d, yyyy")}
+                  {formatDate(entry.date)}
                 </span>
                 <div className="flex items-center gap-2">
                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${POINTS_BADGE_CLASSES[entry.status]}`}>

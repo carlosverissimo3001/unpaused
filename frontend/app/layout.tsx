@@ -43,6 +43,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
@@ -56,7 +57,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <QueryProvider>{children}</QueryProvider>
         </ErrorBoundary>
-        <Toaster theme="dark" position="bottom-center" />
+        <Toaster theme="dark" position="bottom-right" />
         <Analytics />
       </body>
     </html>
