@@ -1,7 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './AuthMeResponseDto';
-export * from './CreateMessageDto';
 export * from './CreateStreakQuestionDto';
 export * from './GameHistoryDto';
 export * from './GameHistoryEntryDto';
@@ -10,7 +9,6 @@ export * from './GameStatsDto';
 export * from './GuessDto';
 export * from './GuessHistoryDto';
 export * from './GuessResultDto';
-export * from './MessageDto';
 export * from './MetaGameExtrasVo';
 export * from './PaginationMetaDto';
 export * from './PlayedTodayDto';
@@ -27,5 +25,4 @@ export * from './StreakStatusDto';
 export * from './SubmitQuizAnswerDto';
 export * from './TokenLoginDto';
 export * from './TrackOptionDto';
-export * from './UpdateMessageDto';
 export * from './UpdateStreakQuestionDto';

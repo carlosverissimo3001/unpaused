@@ -4,13 +4,9 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**adminControllerCreateMessage**](ApiApi.md#admincontrollercreatemessage) | **POST** /admin/messages | Create a new message (admin only) |
 | [**adminControllerCreateStreakQuestion**](ApiApi.md#admincontrollercreatestreakquestion) | **POST** /admin/streak-questions | Create a streak quiz question (admin only) |
-| [**adminControllerDeleteMessage**](ApiApi.md#admincontrollerdeletemessage) | **DELETE** /admin/messages/{id} | Delete a message (admin only) |
 | [**adminControllerDeleteStreakQuestion**](ApiApi.md#admincontrollerdeletestreakquestion) | **DELETE** /admin/streak-questions/{id} | Soft-delete a streak quiz question (admin only) |
-| [**adminControllerGetAllMessages**](ApiApi.md#admincontrollergetallmessages) | **GET** /admin/messages | Get all messages (admin only) |
 | [**adminControllerListStreakQuestions**](ApiApi.md#admincontrollerliststreakquestions) | **GET** /admin/streak-questions | List all streak quiz questions (admin only) |
-| [**adminControllerUpdateMessage**](ApiApi.md#admincontrollerupdatemessage) | **PATCH** /admin/messages/{id} | Update a message (admin only) |
 | [**adminControllerUpdateStreakQuestion**](ApiApi.md#admincontrollerupdatestreakquestion) | **PATCH** /admin/streak-questions/{id} | Update a streak quiz question (admin only) |
 | [**authControllerCallback**](ApiApi.md#authcontrollercallback) | **GET** /auth/callback | Handle Spotify OAuth callback |
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
@@ -32,75 +28,6 @@ All URIs are relative to *http://localhost*
 | [**streakControllerSubmitAnswer**](ApiApi.md#streakcontrollersubmitanswer) | **POST** /streak/quiz/answer | Submit a quiz answer to earn a streak freeze |
 | [**streakControllerUseFreeze**](ApiApi.md#streakcontrollerusefreeze) | **POST** /streak/use-freeze | Apply streak freezes to bridge a gap |
 
-
-
-## adminControllerCreateMessage
-
-> MessageDto adminControllerCreateMessage(createMessageDto)
-
-Create a new message (admin only)
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { AdminControllerCreateMessageRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
-    // To configure API key authorization: cookie
-    apiKey: "YOUR API KEY",
-  });
-  const api = new ApiApi(config);
-
-  const body = {
-    // CreateMessageDto
-    createMessageDto: ...,
-  } satisfies AdminControllerCreateMessageRequest;
-
-  try {
-    const data = await api.adminControllerCreateMessage(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **createMessageDto** | [CreateMessageDto](CreateMessageDto.md) |  | |
-
-### Return type
-
-[**MessageDto**](MessageDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie)
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## adminControllerCreateStreakQuestion
@@ -168,75 +95,6 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **201** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## adminControllerDeleteMessage
-
-> adminControllerDeleteMessage(id)
-
-Delete a message (admin only)
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { AdminControllerDeleteMessageRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
-    // To configure API key authorization: cookie
-    apiKey: "YOUR API KEY",
-  });
-  const api = new ApiApi(config);
-
-  const body = {
-    // string
-    id: id_example,
-  } satisfies AdminControllerDeleteMessageRequest;
-
-  try {
-    const data = await api.adminControllerDeleteMessage(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
-
-### Return type
-
-`void` (Empty response body)
-
-### Authorization
-
-[cookie](../README.md#cookie)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -310,67 +168,6 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## adminControllerGetAllMessages
-
-> Array&lt;MessageDto&gt; adminControllerGetAllMessages()
-
-Get all messages (admin only)
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { AdminControllerGetAllMessagesRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
-    // To configure API key authorization: cookie
-    apiKey: "YOUR API KEY",
-  });
-  const api = new ApiApi(config);
-
-  try {
-    const data = await api.adminControllerGetAllMessages();
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-This endpoint does not need any parameter.
-
-### Return type
-
-[**Array&lt;MessageDto&gt;**](MessageDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
 ## adminControllerListStreakQuestions
 
 > Array&lt;StreakQuestionDto&gt; adminControllerListStreakQuestions()
@@ -421,78 +218,6 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## adminControllerUpdateMessage
-
-> MessageDto adminControllerUpdateMessage(id, updateMessageDto)
-
-Update a message (admin only)
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { AdminControllerUpdateMessageRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
-    // To configure API key authorization: cookie
-    apiKey: "YOUR API KEY",
-  });
-  const api = new ApiApi(config);
-
-  const body = {
-    // string
-    id: id_example,
-    // UpdateMessageDto
-    updateMessageDto: ...,
-  } satisfies AdminControllerUpdateMessageRequest;
-
-  try {
-    const data = await api.adminControllerUpdateMessage(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
-| **updateMessageDto** | [UpdateMessageDto](UpdateMessageDto.md) |  | |
-
-### Return type
-
-[**MessageDto**](MessageDto.md)
-
-### Authorization
-
-[cookie](../README.md#cookie)
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

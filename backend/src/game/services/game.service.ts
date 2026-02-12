@@ -505,15 +505,6 @@ export class GameService {
 
     const extras: GameExtrasVo = {};
 
-    /* if (isGameOver) {
-      const messages = await this.messageService.findAll();
-      const dailyIndex = new Date().getDate() % messages.length;
-      const { title, note } = messages[dailyIndex];
-      
-      extras.rankTitle = title;
-      extras.specialNote = note;
-    } */
-
     if (isWin) {
       const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
       extras.meta = new MetaGameExtrasVo(emoji);
