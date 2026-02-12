@@ -37,19 +37,22 @@ export class GameStatsRepository {
   }
 
   private mapUpdateData(params: UpdateStatsDto) {
-    const { currentStreak, bestStreak, roundDistribution, won } = params;
+    const { currentStreak, bestStreak, roundDistribution, won, lastWinDate } =
+      params;
     return {
       currentStreak,
       bestStreak,
       roundDistribution,
       totalGames: { increment: 1 },
       totalWins: won ? { increment: 1 } : undefined,
+      ...(lastWinDate !== undefined ? { lastWinDate } : {}),
     };
   }
 
   fromPrisma(prisma: Stats): GameStatsEntity {
     return {
       ...prisma,
+      lastWinDate: prisma.lastWinDate ?? undefined,
     };
   }
 
@@ -62,6 +65,8 @@ export class GameStatsRepository {
       // Index 0-5 for rounds 1-6, index 6 for failures
       roundDistribution: [0, 0, 0, 0, 0, 0, 0],
       mode,
-    } as GameStatsEntity;
+      lastWinDate: undefined,
+      userId: '',
+    };
   }
 }

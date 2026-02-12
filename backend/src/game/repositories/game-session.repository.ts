@@ -89,7 +89,11 @@ export class GameSessionRepository {
   ): Promise<GameSessionEntity | null> {
     const today = startOfDay(new Date());
     const session = await this.prisma.gameSession.findFirst({
-      where: { userId, mode: GameMode.DAILY, createdAt: { gte: today } },
+      where: {
+        userId,
+        mode: GameMode.DAILY,
+        createdAt: { gte: today },
+      },
       orderBy: { createdAt: 'desc' },
     });
     return session ? this.fromPrisma(session) : null;

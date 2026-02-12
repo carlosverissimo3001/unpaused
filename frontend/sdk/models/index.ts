@@ -2,6 +2,7 @@
 /* eslint-disable */
 export * from './AuthMeResponseDto';
 export * from './CreateMessageDto';
+export * from './CreateStreakQuestionDto';
 export * from './GameHistoryDto';
 export * from './GameHistoryEntryDto';
 export * from './GameStateDto';
@@ -14,8 +15,16 @@ export * from './MetaGameExtrasVo';
 export * from './PlayedTodayDto';
 export * from './PlaylistDto';
 export * from './PlaylistsResponseDto';
+export * from './QuizNextResponseDto';
+export * from './QuizQuestionDto';
+export * from './QuizResultDto';
 export * from './ShareResultDto';
 export * from './StartGameDto';
+export * from './StreakFreezeUsageDto';
+export * from './StreakQuestionDto';
+export * from './StreakStatusDto';
+export * from './SubmitQuizAnswerDto';
 export * from './TokenLoginDto';
 export * from './TrackOptionDto';
 export * from './UpdateMessageDto';
+export * from './UpdateStreakQuestionDto';

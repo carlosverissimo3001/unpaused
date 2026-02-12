@@ -12,13 +12,22 @@ import { TrackRepository } from '@/track/repositories/track.repository';
 import { TrackService } from '@/track/services/track.service';
 import { Transactional } from '@transaction/transactional.decorator';
 import { normalizeText, normalizeTrackNameForMatch } from '@utils/text';
-import { formatDate, subHours } from 'date-fns';
+import {
+  formatDate,
+  subHours,
+  startOfDay,
+  differenceInCalendarDays,
+} from 'date-fns';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 import { AppLoggerService } from '../../logger/logger.service';
 import { EMOJIS, GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
 import { PlayedTodayDto } from '../dto/daily/played-today.dto';
 import { ShareResultDto } from '../dto/daily/share-result.dto';
-import { GameHistoryDto, GameHistoryEntryDto } from '../dto/game-history.dto';
+import {
+  GameHistoryDto,
+  GameHistoryEntryDto,
+  StreakFreezeUsageDto,
+} from '../dto/game-history.dto';
 import { GameStateDto } from '../dto/game-state.dto';
 import { StartGameDto } from '../dto/game/start-game.dto';
 import { GetHistoryDto } from '../dto/get-history.dto';
@@ -314,23 +323,13 @@ export class GameService {
   private async updateGameStats(params: UpdateGameStatsParams): Promise<void> {
     const { userId, roundWon, mode } = params;
 
+    // --- ALL mode: unchanged (win = increment, lose = reset) ---
     const stats = await this.gameStatsRepository.upsert(userId, GameMode.ALL);
-    const dailyStats = await this.gameStatsRepository.upsert(
-      userId,
-      GameMode.DAILY,
-    );
-
     const newStreak = roundWon ? stats.currentStreak + 1 : 0;
-    const newDailyStreak = roundWon ? dailyStats.currentStreak + 1 : 0;
 
     const dist = [...(stats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0])];
-    const dailyDist = [
-      ...(dailyStats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0]),
-    ];
-
     const index = roundWon ? roundWon : 6; // Failures go to index 6
     dist[index] = (dist[index] ?? 0) + 1;
-    dailyDist[index] = (dailyDist[index] ?? 0) + 1;
 
     await this.gameStatsRepository.update(
       userId,
@@ -343,17 +342,63 @@ export class GameService {
       GameMode.ALL,
     );
 
+    // --- DAILY mode: date-aware streak logic ---
     if (mode === GameMode.DAILY) {
-      await this.gameStatsRepository.update(
+      const dailyStats = await this.gameStatsRepository.upsert(
         userId,
-        {
-          currentStreak: newDailyStreak,
-          bestStreak: Math.max(dailyStats.bestStreak, newDailyStreak),
-          roundDistribution: dailyDist,
-          won: !!roundWon,
-        },
         GameMode.DAILY,
       );
+
+      const dailyDist = [
+        ...(dailyStats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0]),
+      ];
+      dailyDist[index] = (dailyDist[index] ?? 0) + 1;
+
+      if (roundWon) {
+        // Date-aware streak: only winning counts toward daily streak
+        const today = startOfDay(new Date());
+        const lastWin = dailyStats.lastWinDate
+          ? startOfDay(dailyStats.lastWinDate)
+          : null;
+
+        let newDailyStreak: number;
+
+        if (lastWin && differenceInCalendarDays(today, lastWin) === 0) {
+          // Already won today — don't double-count, only update distribution
+          newDailyStreak = dailyStats.currentStreak;
+        } else if (lastWin && differenceInCalendarDays(today, lastWin) === 1) {
+          // Won yesterday → consecutive day
+          newDailyStreak = dailyStats.currentStreak + 1;
+        } else {
+          // First win ever, or gap exists (freeze not applied → reset)
+          // If freeze was used, lastWinDate was set to yesterday by StreakService.useFreeze()
+          newDailyStreak = 1;
+        }
+
+        await this.gameStatsRepository.update(
+          userId,
+          {
+            currentStreak: newDailyStreak,
+            bestStreak: Math.max(dailyStats.bestStreak, newDailyStreak),
+            roundDistribution: dailyDist,
+            won: true,
+            lastWinDate: today,
+          },
+          GameMode.DAILY,
+        );
+      } else {
+        // Lost: reset streak to 0 (daily is one-shot, so a loss guarantees the streak is broken)
+        await this.gameStatsRepository.update(
+          userId,
+          {
+            currentStreak: 0,
+            bestStreak: dailyStats.bestStreak,
+            roundDistribution: dailyDist,
+            won: false,
+          },
+          GameMode.DAILY,
+        );
+      }
     }
   }
 
@@ -554,7 +599,24 @@ export class GameService {
       };
     });
 
-    return { items: entries, total };
+    // For DAILY mode, include streak freeze usages in the response
+    let streakFreezeUsages: StreakFreezeUsageDto[] | undefined;
+    if (dto.mode === GameMode.DAILY) {
+      const usages = await this.prisma.streakFreezeUsage.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+      streakFreezeUsages = usages.map((u) => ({
+        id: u.id,
+        coveredFrom: formatDate(u.coveredFrom, 'yyyy-MM-dd'),
+        coveredTo: formatDate(u.coveredTo, 'yyyy-MM-dd'),
+        freezesUsed: u.freezesUsed,
+        gapDays: u.gapDays,
+        streakAtTime: u.streakAtTime,
+      }));
+    }
+
+    return { items: entries, total, streakFreezeUsages };
   }
 
   async getStats(
@@ -574,7 +636,7 @@ export class GameService {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
     const todaySession =
       await this.gameSessionRepository.findTodayDailySession(userId);
-    return { playedToday: !!todaySession };
+    return { playedToday: !!todaySession?.completedAt };
   }
 
   async getShare(sessionId: string, gameId: string): Promise<ShareResultDto> {

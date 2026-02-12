@@ -2,6 +2,26 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GameMode, GameStatus } from '@prisma/client';
 import { GuessHistoryDto } from './guess/guess-history.dto';
 
+export class StreakFreezeUsageDto {
+  @ApiProperty({ description: 'Freeze usage ID' })
+  id: string;
+
+  @ApiProperty({ description: 'First covered day (YYYY-MM-DD)' })
+  coveredFrom: string;
+
+  @ApiProperty({ description: 'Last covered day (YYYY-MM-DD)' })
+  coveredTo: string;
+
+  @ApiProperty({ description: 'Number of freezes consumed' })
+  freezesUsed: number;
+
+  @ApiProperty({ description: 'Number of gap days bridged' })
+  gapDays: number;
+
+  @ApiProperty({ description: 'Streak count at the time of freeze usage' })
+  streakAtTime: number;
+}
+
 export class GameHistoryEntryDto {
   @ApiProperty({ description: 'Game session ID' })
   id: string;
@@ -52,4 +72,12 @@ export class GameHistoryDto {
 
   @ApiProperty({ description: 'Total count' })
   total: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Streak freeze usages within the date range (only for DAILY mode)',
+    type: StreakFreezeUsageDto,
+    isArray: true,
+  })
+  streakFreezeUsages?: StreakFreezeUsageDto[];
 }

@@ -5,9 +5,13 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**adminControllerCreateMessage**](ApiApi.md#admincontrollercreatemessage) | **POST** /admin/messages | Create a new message (admin only) |
+| [**adminControllerCreateStreakQuestion**](ApiApi.md#admincontrollercreatestreakquestion) | **POST** /admin/streak-questions | Create a streak quiz question (admin only) |
 | [**adminControllerDeleteMessage**](ApiApi.md#admincontrollerdeletemessage) | **DELETE** /admin/messages/{id} | Delete a message (admin only) |
+| [**adminControllerDeleteStreakQuestion**](ApiApi.md#admincontrollerdeletestreakquestion) | **DELETE** /admin/streak-questions/{id} | Soft-delete a streak quiz question (admin only) |
 | [**adminControllerGetAllMessages**](ApiApi.md#admincontrollergetallmessages) | **GET** /admin/messages | Get all messages (admin only) |
+| [**adminControllerListStreakQuestions**](ApiApi.md#admincontrollerliststreakquestions) | **GET** /admin/streak-questions | List all streak quiz questions (admin only) |
 | [**adminControllerUpdateMessage**](ApiApi.md#admincontrollerupdatemessage) | **PATCH** /admin/messages/{id} | Update a message (admin only) |
+| [**adminControllerUpdateStreakQuestion**](ApiApi.md#admincontrollerupdatestreakquestion) | **PATCH** /admin/streak-questions/{id} | Update a streak quiz question (admin only) |
 | [**authControllerCallback**](ApiApi.md#authcontrollercallback) | **GET** /auth/callback | Handle Spotify OAuth callback |
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
 | [**authControllerLogout**](ApiApi.md#authcontrollerlogout) | **POST** /auth/logout | Logout and clear session |
@@ -23,6 +27,10 @@ All URIs are relative to *http://localhost*
 | [**playlistControllerGetMyPlaylists**](ApiApi.md#playlistcontrollergetmyplaylists) | **GET** /playlists/me | Get current user\&#39;s playlists |
 | [**playlistControllerGetPlaylistById**](ApiApi.md#playlistcontrollergetplaylistbyid) | **GET** /playlists/{id} | Get playlist by ID |
 | [**searchControllerSearchTracks**](ApiApi.md#searchcontrollersearchtracks) | **GET** /search/tracks | Search Spotify tracks (for game guess options) |
+| [**streakControllerGetNextQuestion**](ApiApi.md#streakcontrollergetnextquestion) | **GET** /streak/quiz/next | Get the next unanswered quiz question |
+| [**streakControllerGetStatus**](ApiApi.md#streakcontrollergetstatus) | **GET** /streak/status | Get streak status including freeze info |
+| [**streakControllerSubmitAnswer**](ApiApi.md#streakcontrollersubmitanswer) | **POST** /streak/quiz/answer | Submit a quiz answer to earn a streak freeze |
+| [**streakControllerUseFreeze**](ApiApi.md#streakcontrollerusefreeze) | **POST** /streak/use-freeze | Apply streak freezes to bridge a gap |
 
 
 
@@ -95,6 +103,75 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## adminControllerCreateStreakQuestion
+
+> StreakQuestionDto adminControllerCreateStreakQuestion(createStreakQuestionDto)
+
+Create a streak quiz question (admin only)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AdminControllerCreateStreakQuestionRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // CreateStreakQuestionDto
+    createStreakQuestionDto: ...,
+  } satisfies AdminControllerCreateStreakQuestionRequest;
+
+  try {
+    const data = await api.adminControllerCreateStreakQuestion(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **createStreakQuestionDto** | [CreateStreakQuestionDto](CreateStreakQuestionDto.md) |  | |
+
+### Return type
+
+[**StreakQuestionDto**](StreakQuestionDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## adminControllerDeleteMessage
 
 > adminControllerDeleteMessage(id)
@@ -125,6 +202,75 @@ async function example() {
 
   try {
     const data = await api.adminControllerDeleteMessage(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## adminControllerDeleteStreakQuestion
+
+> adminControllerDeleteStreakQuestion(id)
+
+Soft-delete a streak quiz question (admin only)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AdminControllerDeleteStreakQuestionRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string
+    id: id_example,
+  } satisfies AdminControllerDeleteStreakQuestionRequest;
+
+  try {
+    const data = await api.adminControllerDeleteStreakQuestion(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -225,6 +371,67 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## adminControllerListStreakQuestions
+
+> Array&lt;StreakQuestionDto&gt; adminControllerListStreakQuestions()
+
+List all streak quiz questions (admin only)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AdminControllerListStreakQuestionsRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.adminControllerListStreakQuestions();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**Array&lt;StreakQuestionDto&gt;**](StreakQuestionDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## adminControllerUpdateMessage
 
 > MessageDto adminControllerUpdateMessage(id, updateMessageDto)
@@ -297,6 +504,78 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## adminControllerUpdateStreakQuestion
+
+> StreakQuestionDto adminControllerUpdateStreakQuestion(id, updateStreakQuestionDto)
+
+Update a streak quiz question (admin only)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AdminControllerUpdateStreakQuestionRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string
+    id: id_example,
+    // UpdateStreakQuestionDto
+    updateStreakQuestionDto: ...,
+  } satisfies AdminControllerUpdateStreakQuestionRequest;
+
+  try {
+    const data = await api.adminControllerUpdateStreakQuestion(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` |  | [Defaults to `undefined`] |
+| **updateStreakQuestionDto** | [UpdateStreakQuestionDto](UpdateStreakQuestionDto.md) |  | |
+
+### Return type
+
+[**StreakQuestionDto**](StreakQuestionDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## authControllerCallback
 
 > authControllerCallback(code, state, error)
@@ -317,12 +596,12 @@ async function example() {
   const api = new ApiApi();
 
   const body = {
-    // string
+    // string | Authorization code from Spotify
     code: code_example,
-    // string
+    // string | State parameter for CSRF protection
     state: state_example,
-    // string
-    error: error_example,
+    // object | Error message if authorization failed. (optional)
+    error: Object,
   } satisfies AuthControllerCallbackRequest;
 
   try {
@@ -342,9 +621,9 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **code** | `string` |  | [Defaults to `undefined`] |
-| **state** | `string` |  | [Defaults to `undefined`] |
-| **error** | `string` |  | [Defaults to `undefined`] |
+| **code** | `string` | Authorization code from Spotify | [Defaults to `undefined`] |
+| **state** | `string` | State parameter for CSRF protection | [Defaults to `undefined`] |
+| **error** | `object` | Error message if authorization failed. | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -543,7 +822,6 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** |  |  -  |
-| **401** | Not authenticated |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -611,8 +889,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successfully logged in |  -  |
-| **401** | Invalid token |  -  |
-| **403** | Not available in production |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -710,7 +986,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // 'DAILY' | 'ALL' | The game mode to filter history by (e.g. daily, playlist) (optional)
+    // 'DAILY' | 'ALL' | The game mode to filter history by (e.g. daily, all) (optional)
     mode: mode_example,
     // number | The limit of the history (optional)
     limit: 8.14,
@@ -735,7 +1011,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mode** | `DAILY`, `ALL` | The game mode to filter history by (e.g. daily, playlist) | [Optional] [Defaults to `undefined`] [Enum: DAILY, ALL] |
+| **mode** | `DAILY`, `ALL` | The game mode to filter history by (e.g. daily, all) | [Optional] [Defaults to `undefined`] [Enum: DAILY, ALL] |
 | **limit** | `number` | The limit of the history | [Optional] [Defaults to `undefined`] |
 | **offset** | `number` | The offset of the history | [Optional] [Defaults to `undefined`] |
 
@@ -1313,6 +1589,258 @@ example().catch(console.error);
 |-------------|-------------|------------------|
 | **200** | Track options |  -  |
 | **401** | Not authenticated |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## streakControllerGetNextQuestion
+
+> QuizNextResponseDto streakControllerGetNextQuestion()
+
+Get the next unanswered quiz question
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { StreakControllerGetNextQuestionRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.streakControllerGetNextQuestion();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**QuizNextResponseDto**](QuizNextResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## streakControllerGetStatus
+
+> StreakStatusDto streakControllerGetStatus()
+
+Get streak status including freeze info
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { StreakControllerGetStatusRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.streakControllerGetStatus();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**StreakStatusDto**](StreakStatusDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## streakControllerSubmitAnswer
+
+> QuizResultDto streakControllerSubmitAnswer(submitQuizAnswerDto)
+
+Submit a quiz answer to earn a streak freeze
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { StreakControllerSubmitAnswerRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // SubmitQuizAnswerDto
+    submitQuizAnswerDto: ...,
+  } satisfies StreakControllerSubmitAnswerRequest;
+
+  try {
+    const data = await api.streakControllerSubmitAnswer(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **submitQuizAnswerDto** | [SubmitQuizAnswerDto](SubmitQuizAnswerDto.md) |  | |
+
+### Return type
+
+[**QuizResultDto**](QuizResultDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## streakControllerUseFreeze
+
+> StreakStatusDto streakControllerUseFreeze()
+
+Apply streak freezes to bridge a gap
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { StreakControllerUseFreezeRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.streakControllerUseFreeze();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**StreakStatusDto**](StreakStatusDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

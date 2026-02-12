@@ -29,10 +29,17 @@ export const queryKeys = {
     all: ["auth"] as const,
     me: ["auth", "me"] as const,
   },
+  // Streak queries
+  streak: {
+    all: ["streak"] as const,
+    status: ["streak", "status"] as const,
+    quiz: ["streak", "quiz"] as const,
+  },
   // Admin queries
   admin: {
     all: ["admin"] as const,
     messages: ["admin", "messages"] as const,
+    streakQuestions: ["admin", "streakQuestions"] as const,
   },
   // Daily game queries
   daily: {

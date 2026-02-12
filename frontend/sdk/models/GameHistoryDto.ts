@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { StreakFreezeUsageDto } from './StreakFreezeUsageDto';
+import {
+    StreakFreezeUsageDtoFromJSON,
+    StreakFreezeUsageDtoFromJSONTyped,
+    StreakFreezeUsageDtoToJSON,
+    StreakFreezeUsageDtoToJSONTyped,
+} from './StreakFreezeUsageDto';
 import type { GameHistoryEntryDto } from './GameHistoryEntryDto';
 import {
     GameHistoryEntryDtoFromJSON,
@@ -39,6 +46,12 @@ export interface GameHistoryDto {
      * @memberof GameHistoryDto
      */
     total: number;
+    /**
+     * Streak freeze usages within the date range (only for DAILY mode)
+     * @type {Array<StreakFreezeUsageDto>}
+     * @memberof GameHistoryDto
+     */
+    streakFreezeUsages?: Array<StreakFreezeUsageDto>;
 }
 
 /**
@@ -62,6 +75,7 @@ export function GameHistoryDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'items': ((json['items'] as Array<any>).map(GameHistoryEntryDtoFromJSON)),
         'total': json['total'],
+        'streakFreezeUsages': json['streakFreezeUsages'] == null ? undefined : ((json['streakFreezeUsages'] as Array<any>).map(StreakFreezeUsageDtoFromJSON)),
     };
 }
 
@@ -78,6 +92,7 @@ export function GameHistoryDtoToJSONTyped(value?: GameHistoryDto | null, ignoreD
         
         'items': ((value['items'] as Array<any>).map(GameHistoryEntryDtoToJSON)),
         'total': value['total'],
+        'streakFreezeUsages': value['streakFreezeUsages'] == null ? undefined : ((value['streakFreezeUsages'] as Array<any>).map(StreakFreezeUsageDtoToJSON)),
     };
 }
 

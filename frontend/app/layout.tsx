@@ -57,7 +57,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <QueryProvider>{children}</QueryProvider>
         </ErrorBoundary>
-        <Toaster theme="dark" position="bottom-center" />
+        <Toaster theme="dark" position="bottom-right" />
         <Analytics />
       </body>
     </html>

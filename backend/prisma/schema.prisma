@@ -15,9 +15,15 @@ model User {
   createdAt             DateTime @default(now()) @map("created_at")
   encryptedRefreshToken String?  @map("encrypted_refresh_token")
   updatedAt             DateTime @updatedAt @map("updated_at")
-  stats                 Stats[]
 
+  // Streak freeze fields
+  streakFreezes       Int      @default(0) @map("streak_freezes")
+  answeredQuestionIds String[] @default([]) @map("answered_question_ids")
+
+  stats        Stats[]
   gameSessions GameSession[]
+
+  streakFreezeUsages StreakFreezeUsage[]
 
   @@map("users")
 }
@@ -83,8 +89,9 @@ model Stats {
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
-  currentStreak Int @default(0) @map("current_streak")
-  bestStreak    Int @default(0) @map("best_streak")
+  currentStreak Int       @default(0) @map("current_streak")
+  bestStreak    Int       @default(0) @map("best_streak")
+  lastWinDate   DateTime? @map("last_win_date")
 
   totalGames        Int      @default(0) @map("total_games")
   totalWins         Int      @default(0) @map("total_wins")
@@ -107,4 +114,34 @@ model Message {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("message")
+}
+
+model StreakQuizQuestion {
+  id                 String   @id @default(uuid())
+  question           String
+  options            String[]
+  correctAnswerIndex Int      @map("correct_answer_index")
+  category           String   @default("general")
+  context            String?
+  isActive           Boolean  @default(true) @map("is_active")
+  addedBy            String   @map("added_by")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("streak_quiz_questions")
+}
+
+model StreakFreezeUsage {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  freezesUsed  Int      @map("freezes_used")
+  gapDays      Int      @map("gap_days")
+  streakAtTime Int      @map("streak_at_time")
+  coveredFrom  DateTime @map("covered_from")
+  coveredTo    DateTime @map("covered_to")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("streak_freeze_usages")
 }

@@ -71,6 +71,9 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
       queryClient.invalidateQueries({ queryKey: queryKeys.game.playedToday });
       queryClient.invalidateQueries({ queryKey: ["game", "history"] });
       queryClient.invalidateQueries({ queryKey: ["daily", "history"] });
+      if (isDaily) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.streak.status });
+      }
     }
   }, [isDaily, isGameOver, queryClient]);
 

@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `items` | [Array&lt;GameHistoryEntryDto&gt;](GameHistoryEntryDto.md)
 `total` | number
+`streakFreezeUsages` | [Array&lt;StreakFreezeUsageDto&gt;](StreakFreezeUsageDto.md)
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { GameHistoryDto } from ''
 const example = {
   "items": null,
   "total": null,
+  "streakFreezeUsages": null,
 } satisfies GameHistoryDto
 
 console.log(example)

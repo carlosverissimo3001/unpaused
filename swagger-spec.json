@@ -24,6 +24,7 @@
             "name": "code",
             "required": true,
             "in": "query",
+            "description": "Authorization code from Spotify",
             "schema": {
               "type": "string"
             }
@@ -32,16 +33,18 @@
             "name": "state",
             "required": true,
             "in": "query",
+            "description": "State parameter for CSRF protection",
             "schema": {
               "type": "string"
             }
           },
           {
             "name": "error",
-            "required": true,
+            "required": false,
             "in": "query",
+            "description": "Error message if authorization failed.",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/Object"
             }
           }
         ],
@@ -70,9 +73,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Not authenticated"
           }
         },
         "security": [
@@ -124,12 +124,6 @@
         "responses": {
           "200": {
             "description": "Successfully logged in"
-          },
-          "401": {
-            "description": "Invalid token"
-          },
-          "403": {
-            "description": "Not available in production"
           }
         },
         "summary": "Dev-only: Login with a manually obtained Spotify token",
@@ -706,6 +700,262 @@
           "Api"
         ]
       }
+    },
+    "/admin/streak-questions": {
+      "get": {
+        "operationId": "AdminController_listStreakQuestions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StreakQuestionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "List all streak quiz questions (admin only)",
+        "tags": [
+          "Api"
+        ]
+      },
+      "post": {
+        "operationId": "AdminController_createStreakQuestion",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStreakQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreakQuestionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Create a streak quiz question (admin only)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/admin/streak-questions/{id}": {
+      "patch": {
+        "operationId": "AdminController_updateStreakQuestion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStreakQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreakQuestionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Update a streak quiz question (admin only)",
+        "tags": [
+          "Api"
+        ]
+      },
+      "delete": {
+        "operationId": "AdminController_deleteStreakQuestion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Soft-delete a streak quiz question (admin only)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/streak/status": {
+      "get": {
+        "operationId": "StreakController_getStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreakStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get streak status including freeze info",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/streak/use-freeze": {
+      "post": {
+        "operationId": "StreakController_useFreeze",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreakStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Apply streak freezes to bridge a gap",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/streak/quiz/next": {
+      "get": {
+        "operationId": "StreakController_getNextQuestion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizNextResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get the next unanswered quiz question",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/streak/quiz/answer": {
+      "post": {
+        "operationId": "StreakController_submitAnswer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitQuizAnswerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Submit a quiz answer to earn a streak freeze",
+        "tags": [
+          "Api"
+        ]
+      }
     }
   },
   "info": {
@@ -725,6 +975,10 @@
       }
     },
     "schemas": {
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
       "AuthMeResponseDto": {
         "type": "object",
         "properties": {
@@ -1094,6 +1348,43 @@
           "artistName"
         ]
       },
+      "StreakFreezeUsageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Freeze usage ID"
+          },
+          "coveredFrom": {
+            "type": "string",
+            "description": "First covered day (YYYY-MM-DD)"
+          },
+          "coveredTo": {
+            "type": "string",
+            "description": "Last covered day (YYYY-MM-DD)"
+          },
+          "freezesUsed": {
+            "type": "number",
+            "description": "Number of freezes consumed"
+          },
+          "gapDays": {
+            "type": "number",
+            "description": "Number of gap days bridged"
+          },
+          "streakAtTime": {
+            "type": "number",
+            "description": "Streak count at the time of freeze usage"
+          }
+        },
+        "required": [
+          "id",
+          "coveredFrom",
+          "coveredTo",
+          "freezesUsed",
+          "gapDays",
+          "streakAtTime"
+        ]
+      },
       "GameHistoryDto": {
         "type": "object",
         "properties": {
@@ -1106,6 +1397,13 @@
           "total": {
             "type": "number",
             "description": "Total count"
+          },
+          "streakFreezeUsages": {
+            "description": "Streak freeze usages within the date range (only for DAILY mode)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StreakFreezeUsageDto"
+            }
           }
         },
         "required": [
@@ -1376,6 +1674,277 @@
             "example": "Message Note"
           }
         }
+      },
+      "StreakQuestionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "correctAnswerIndex": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "addedBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "question",
+          "options",
+          "correctAnswerIndex",
+          "category",
+          "isActive",
+          "addedBy",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateStreakQuestionDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "The question text"
+          },
+          "options": {
+            "description": "Answer options (4 choices)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "correctAnswerIndex": {
+            "type": "number",
+            "description": "Index of the correct answer (0-3)",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "category": {
+            "type": "string",
+            "description": "Question category",
+            "default": "general"
+          },
+          "context": {
+            "type": "string",
+            "description": "Private context/note about the inside joke"
+          }
+        },
+        "required": [
+          "question",
+          "options",
+          "correctAnswerIndex",
+          "category"
+        ]
+      },
+      "UpdateStreakQuestionDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "correctAnswerIndex": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "category": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "StreakStatusDto": {
+        "type": "object",
+        "properties": {
+          "currentStreak": {
+            "type": "number",
+            "description": "Current daily streak (consecutive win days)"
+          },
+          "bestStreak": {
+            "type": "number",
+            "description": "Best daily streak ever"
+          },
+          "playedToday": {
+            "type": "boolean",
+            "description": "Whether the user has won today"
+          },
+          "streakAtRisk": {
+            "type": "boolean",
+            "description": "Whether a gap exists and streak could be lost"
+          },
+          "canSaveStreak": {
+            "type": "boolean",
+            "description": "Whether the user can save their streak with freezes"
+          },
+          "gapDays": {
+            "type": "number",
+            "description": "Number of missed days in the gap"
+          },
+          "freezesAvailable": {
+            "type": "number",
+            "description": "Number of freezes available"
+          },
+          "freezeCost": {
+            "type": "number",
+            "description": "Number of freezes needed to bridge the gap"
+          },
+          "isTrusted": {
+            "type": "boolean",
+            "description": "Whether the user is trusted (can earn freezes)"
+          }
+        },
+        "required": [
+          "currentStreak",
+          "bestStreak",
+          "playedToday",
+          "streakAtRisk",
+          "canSaveStreak",
+          "gapDays",
+          "freezesAvailable",
+          "freezeCost",
+          "isTrusted"
+        ]
+      },
+      "QuizQuestionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Question ID"
+          },
+          "question": {
+            "type": "string",
+            "description": "The question text"
+          },
+          "options": {
+            "description": "Answer options",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string",
+            "description": "Question category"
+          }
+        },
+        "required": [
+          "id",
+          "question",
+          "options",
+          "category"
+        ]
+      },
+      "QuizNextResponseDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "description": "The next question, or null if no more questions available",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuizQuestionDto"
+              }
+            ]
+          },
+          "done": {
+            "type": "boolean",
+            "description": "Whether there are no more questions to answer"
+          },
+          "freezesAvailable": {
+            "type": "number",
+            "description": "Current number of freezes"
+          }
+        },
+        "required": [
+          "question",
+          "done",
+          "freezesAvailable"
+        ]
+      },
+      "SubmitQuizAnswerDto": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "description": "The question ID"
+          },
+          "answerIndex": {
+            "type": "number",
+            "description": "The selected answer index (0-3)",
+            "minimum": 0,
+            "maximum": 3
+          }
+        },
+        "required": [
+          "questionId",
+          "answerIndex"
+        ]
+      },
+      "QuizResultDto": {
+        "type": "object",
+        "properties": {
+          "correct": {
+            "type": "boolean",
+            "description": "Whether the answer was correct"
+          },
+          "freezeEarned": {
+            "type": "boolean",
+            "description": "Whether a freeze was earned from this answer"
+          },
+          "freezesAvailable": {
+            "type": "number",
+            "description": "Current number of freezes after this answer"
+          },
+          "correctAnswerIndex": {
+            "type": "number",
+            "description": "The correct answer index (shown after answering)"
+          }
+        },
+        "required": [
+          "correct",
+          "freezeEarned",
+          "freezesAvailable",
+          "correctAnswerIndex"
+        ]
       }
     }
   }

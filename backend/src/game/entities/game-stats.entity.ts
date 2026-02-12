@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GameMode } from '@prisma/client';
 
 export class GameStatsEntity {
@@ -27,4 +27,10 @@ export class GameStatsEntity {
 
   @ApiProperty({ description: 'The game mode', enum: GameMode })
   mode: GameMode;
+
+  @ApiPropertyOptional({
+    description: 'Last date the user won a daily',
+    type: Date,
+  })
+  lastWinDate?: Date;
 }

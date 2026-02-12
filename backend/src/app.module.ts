@@ -10,6 +10,7 @@ import { GameModule } from './game/game.module';
 import { SpotifyModule } from './spotify/spotify.module';
 import { MessageModule } from './message/message.module';
 import { AdminModule } from './admin/admin.module';
+import { StreakModule } from './streak/streak.module';
 import { BullModule } from '@nestjs/bullmq';
 import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
 
@@ -28,6 +29,7 @@ import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
     SpotifyModule,
     MessageModule,
     AdminModule,
+    StreakModule,
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

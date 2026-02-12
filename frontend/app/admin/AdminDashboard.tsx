@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { ArrowLeft, Loader2, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminMessages } from "@/hooks/admin/useAdminMessages";
@@ -10,6 +9,7 @@ import { useAdminCreateMessage } from "@/hooks/admin/useAdminCreateMessage";
 import { useAdminUpdateMessage } from "@/hooks/admin/useAdminUpdateMessage";
 import { useAdminDeleteMessage } from "@/hooks/admin/useAdminDeleteMessage";
 import { Button } from "@/components/ui/button";
+import { StreakQuestionsAdmin } from "@/components/admin/StreakQuestionsAdmin";
 import type { MessageDto, CreateMessageDto, UpdateMessageDto } from "@/sdk";
 
 export function AdminDashboard() {
@@ -152,6 +152,11 @@ export function AdminDashboard() {
           </table>
         </div>
       )}
+
+      {/* Streak Quiz Questions */}
+      <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-4">
+        <StreakQuestionsAdmin />
+      </div>
 
       {/* Create modal */}
       {createOpen && (
