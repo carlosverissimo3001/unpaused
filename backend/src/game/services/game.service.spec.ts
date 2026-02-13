@@ -255,6 +255,121 @@ describe('GameService', () => {
       expect(mockTrackRepository.findById).not.toHaveBeenCalled();
     });
 
+    // --- evaluateGuess partial match tests (CAR-13) ---
+
+    const setupGuessScenario = () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: OWNER_USER_ID,
+      });
+      mockGameSessionRepository.findById.mockResolvedValue(makeGameSession());
+      mockAuthService.getUserById.mockResolvedValue({
+        id: OWNER_USER_ID,
+        isTrusted: false,
+      });
+      mockGameSessionRepository.updateSessionProgress.mockResolvedValue(
+        makeGameSession({ currentRound: 1 }),
+      );
+    };
+
+    it('should return ARTIST when artist matches with different casing', async () => {
+      setupGuessScenario();
+      mockTrackRepository.findById.mockResolvedValue({
+        ...mockTrack,
+        artistName: 'The Beatles',
+        albumName: 'Abbey Road',
+      });
+
+      const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
+        trackId: 'wrong-track',
+        trackName: 'Wrong Song',
+        artistName: 'the beatles', // different casing
+        albumName: 'Different Album',
+      });
+
+      expect(result.result).toBe('ARTIST');
+    });
+
+    it('should return ALBUM when album matches with different casing', async () => {
+      setupGuessScenario();
+      mockTrackRepository.findById.mockResolvedValue({
+        ...mockTrack,
+        artistName: 'The Beatles',
+        albumName: 'Abbey Road',
+      });
+
+      const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
+        trackId: 'wrong-track',
+        trackName: 'Wrong Song',
+        artistName: 'Wrong Artist',
+        albumName: 'ABBEY ROAD', // different casing
+      });
+
+      expect(result.result).toBe('ALBUM');
+    });
+
+    it('should return ARTIST_AND_ALBUM when both match with different casing', async () => {
+      setupGuessScenario();
+      mockTrackRepository.findById.mockResolvedValue({
+        ...mockTrack,
+        artistName: 'The Beatles',
+        albumName: 'Abbey Road',
+      });
+
+      const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
+        trackId: 'wrong-track',
+        trackName: 'Wrong Song',
+        artistName: 'THE BEATLES',
+        albumName: 'abbey road',
+      });
+
+      expect(result.result).toBe('ARTIST_AND_ALBUM');
+    });
+
+    it('should return WRONG when neither artist nor album matches', async () => {
+      setupGuessScenario();
+      mockTrackRepository.findById.mockResolvedValue(mockTrack);
+
+      const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
+        trackId: 'wrong-track',
+        trackName: 'Wrong Song',
+        artistName: 'Wrong Artist',
+        albumName: 'Wrong Album',
+      });
+
+      expect(result.result).toBe('WRONG');
+    });
+
+    it('should handle null guess artistName without crashing', async () => {
+      setupGuessScenario();
+      mockTrackRepository.findById.mockResolvedValue(mockTrack);
+
+      const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
+        trackId: 'wrong-track',
+        trackName: 'Wrong Song',
+        // no artistName
+        albumName: 'Wrong Album',
+      });
+
+      expect(result.result).toBe('WRONG');
+    });
+
+    it('should handle null album on both sides gracefully', async () => {
+      setupGuessScenario();
+      mockTrackRepository.findById.mockResolvedValue({
+        ...mockTrack,
+        albumName: null, // actual track has no album
+      });
+
+      const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
+        trackId: 'wrong-track',
+        trackName: 'Wrong Song',
+        artistName: 'Wrong Artist',
+        // no albumName on guess either
+      });
+
+      expect(result.result).toBe('WRONG');
+    });
+
     it('should check ownership before checking game status', async () => {
       // Game is over AND belongs to a different user
       // Should get NotFoundException (ownership), not BadRequestException (game over)
@@ -268,6 +383,145 @@ describe('GameService', () => {
       await expect(
         service.submitGuess(OTHER_SESSION_ID, GAME_ID, guessDto),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('evaluateGuess', () => {
+    const evaluate = (
+      guess: Record<string, unknown>,
+      track: Record<string, unknown>,
+    ) => (service as any).evaluateGuess(guess, track);
+
+    const actualTrack = {
+      id: 'track-actual',
+      name: 'Shape of You',
+      artistName: 'Ed Sheeran',
+      albumName: '÷ (Divide)',
+    };
+
+    it('should return Skip when skip is true', () => {
+      expect(evaluate({ skip: true }, actualTrack)).toBe('SKIP');
+    });
+
+    it('should return Skip when trackId is missing', () => {
+      expect(evaluate({}, actualTrack)).toBe('SKIP');
+    });
+
+    it('should return Correct on exact trackId match', () => {
+      expect(evaluate({ trackId: 'track-actual' }, actualTrack)).toBe(
+        'CORRECT',
+      );
+    });
+
+    it('should return Correct on forgiving name+artist match (different version)', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'different-id',
+            trackName: 'Shape of You (Acoustic)',
+            artistName: 'Ed Sheeran',
+          },
+          actualTrack,
+        ),
+      ).toBe('CORRECT');
+    });
+
+    it('should return ARTIST with case-insensitive artist match', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: 'ed sheeran',
+            albumName: 'Wrong Album',
+          },
+          actualTrack,
+        ),
+      ).toBe('ARTIST');
+    });
+
+    it('should return ARTIST with mixed casing', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: 'ED SHEERAN',
+            albumName: 'Wrong',
+          },
+          actualTrack,
+        ),
+      ).toBe('ARTIST');
+    });
+
+    it('should return ALBUM with case-insensitive album match', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: 'Wrong Artist',
+            albumName: '÷ (DIVIDE)',
+          },
+          actualTrack,
+        ),
+      ).toBe('ALBUM');
+    });
+
+    it('should return ARTIST_AND_ALBUM with case-insensitive match on both', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong Song',
+            artistName: 'ED SHEERAN',
+            albumName: '÷ (divide)',
+          },
+          actualTrack,
+        ),
+      ).toBe('ARTIST_AND_ALBUM');
+    });
+
+    it('should return WRONG when nothing matches', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: 'Wrong',
+            albumName: 'Wrong',
+          },
+          actualTrack,
+        ),
+      ).toBe('WRONG');
+    });
+
+    it('should not match artist when guess artistName is null', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: null,
+            albumName: '÷ (Divide)',
+          },
+          actualTrack,
+        ),
+      ).toBe('ALBUM');
+    });
+
+    it('should not match album when actual albumName is null', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: 'Ed Sheeran',
+            albumName: 'Some Album',
+          },
+          { ...actualTrack, albumName: null },
+        ),
+      ).toBe('ARTIST');
     });
   });
 });

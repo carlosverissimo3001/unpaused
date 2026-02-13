@@ -466,8 +466,15 @@ export class GameService {
         return GuessResult.Correct;
       }
     }
-    const isArtistCorrect = guess.artistName === actual.artistName;
-    const isAlbumCorrect = guess.albumName === actual.albumName;
+    const isArtistCorrect =
+      guess.artistName != null &&
+      normalizeText(guess.artistName).toLowerCase() ===
+        normalizeText(actual.artistName).toLowerCase();
+    const isAlbumCorrect =
+      guess.albumName != null &&
+      actual.albumName != null &&
+      normalizeText(guess.albumName).toLowerCase() ===
+        normalizeText(actual.albumName).toLowerCase();
 
     let result = GuessResult.Wrong;
     if (isArtistCorrect && isAlbumCorrect) {
