@@ -94,8 +94,11 @@ export class GameController {
   @ApiCookieAuth()
   @ApiParam({ name: 'id', description: 'The internal Game Session UUID' })
   @ApiResponse({ status: 200, type: GameStateDto })
-  async getGameState(@Param('id') id: string): Promise<GameStateDto> {
-    return this.gameService.getGameState(id);
+  async getGameState(
+    @SessionId() sessionId: string,
+    @Param('id') id: string,
+  ): Promise<GameStateDto> {
+    return this.gameService.getGameState(sessionId, id);
   }
 
   @Post(':id/guess')
@@ -103,9 +106,10 @@ export class GameController {
   @ApiParam({ name: 'id', description: 'The internal Game Session UUID' })
   @ApiResponse({ status: 200, type: GuessResultDto })
   async submitGuess(
+    @SessionId() sessionId: string,
     @Param('id') id: string,
     @Body() dto: GuessDto,
   ): Promise<GuessResultDto> {
-    return this.gameService.submitGuess(id, dto);
+    return this.gameService.submitGuess(sessionId, id, dto);
   }
 }

@@ -84,7 +84,7 @@ export class GameService {
     // If there's an active session (or already played daily) for this user and mode,
     // return it instead of starting a new one
     if (existing) {
-      return this.getGameState(existing.id);
+      return this.getGameState(sessionId, existing.id);
     }
 
     const targetPlaylistId =
@@ -235,12 +235,21 @@ export class GameService {
 
   /**
    * Get current game state
+   * @param sessionId - The session ID of the requesting user
    * @param gameSessionId - The ID of the game session
    */
-  async getGameState(gameSessionId: string): Promise<GameStateDto> {
+  async getGameState(
+    sessionId: string,
+    gameSessionId: string,
+  ): Promise<GameStateDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
     const game = await this.gameSessionRepository.findById(gameSessionId);
 
     if (!game || !game.userId) {
+      throw new NotFoundException('Game session not found');
+    }
+
+    if (game.userId !== userId) {
       throw new NotFoundException('Game session not found');
     }
 
@@ -266,10 +275,12 @@ export class GameService {
 
   @Transactional()
   async submitGuess(
+    sessionId: string,
     gameSessionId: string,
     params: GuessDto,
   ): Promise<GuessResultDto> {
-    const game = await this.validateGameSession(gameSessionId);
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const game = await this.validateGameSession(gameSessionId, userId);
     if (!game.userId) {
       throw new NotFoundException('Game session not found');
     }
@@ -403,12 +414,19 @@ export class GameService {
   }
 
   /**
-   * Validates if the game exists and is playable
+   * Validates if the game exists, is owned by the user, and is playable
    * @param id - The ID of the game session
+   * @param userId - The ID of the requesting user
    */
-  private async validateGameSession(id: string): Promise<GameSessionEntity> {
+  private async validateGameSession(
+    id: string,
+    userId: string,
+  ): Promise<GameSessionEntity> {
     const game = await this.gameSessionRepository.findById(id);
     if (!game) {
+      throw new NotFoundException('Game session not found');
+    }
+    if (game.userId !== userId) {
       throw new NotFoundException('Game session not found');
     }
     if (game.status !== GameStatus.PLAYING) {
