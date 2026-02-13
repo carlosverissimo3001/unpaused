@@ -8,12 +8,10 @@ import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
 import { useLogout } from '@/hooks/auth/useLogout';
 import { useTokenLogin } from '@/hooks/auth/useTokenLogin';
 import { usePlaylistFilters } from '@/hooks/playlists/usePlaylistFilters';
-import { usePlaylistUrlLoader } from '@/hooks/playlists/usePlaylistUrlLoader';
 import { useAuthError } from '@/hooks/auth/useAuthError';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { AppHeader } from '@/components/features/AppHeader';
 import { DailyChallengeBanner } from '@/components/features/DailyChallengeBanner';
-import { PlaylistUrlSearch } from '@/components/features/playlist/PlaylistUrlSearch';
 import { PlaylistFilters } from '@/components/features/playlist/PlaylistFilters';
 import { PlaylistGrid } from '@/components/features/playlist/PlaylistGrid';
 import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
@@ -27,7 +25,6 @@ export default function Home() {
   );
 
   const playlistFilters = usePlaylistFilters();
-  const playlistUrlLoader = usePlaylistUrlLoader();
   const { error } = useAuthError();
 
   const { data: user, isLoading: isLoadingUser } = useMe();
@@ -97,15 +94,6 @@ export default function Home() {
               className="space-y-4 sm:space-y-6"
             >
               <DailyChallengeBanner isTrusted={user.isTrusted} />
-
-              <PlaylistUrlSearch
-                playlistUrl={playlistUrlLoader.playlistUrl}
-                urlError={playlistUrlLoader.urlError}
-                isSearchFocused={playlistUrlLoader.isSearchFocused}
-                onPlaylistUrlChange={playlistUrlLoader.setPlaylistUrl}
-                onSearchFocus={playlistUrlLoader.setIsSearchFocused}
-                onLoad={playlistUrlLoader.handleLoad}
-              />
 
               {/* Main Content Header */}
               <div className="mt-1 sm:mt-2">
