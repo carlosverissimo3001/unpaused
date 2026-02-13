@@ -62,17 +62,14 @@ describe('GameService', () => {
 
   const mockAuthService = {
     getUserBySessionId: jest.fn(),
-    getUserById: jest.fn(),
   };
 
   const mockGameSessionRepository = {
-    findById: jest.fn(),
+    findByIdWithTrack: jest.fn(),
     updateSessionProgress: jest.fn(),
   };
 
-  const mockTrackRepository = {
-    findById: jest.fn(),
-  };
+  const mockTrackRepository = {};
 
   const mockGameStatsRepository = {
     upsert: jest.fn(),
@@ -112,12 +109,11 @@ describe('GameService', () => {
     it('should return game state when the requesting user owns the session', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OWNER_USER_ID,
-      });
-      mockGameSessionRepository.findById.mockResolvedValue(makeGameSession());
-      mockTrackRepository.findById.mockResolvedValue(mockTrack);
-      mockAuthService.getUserById.mockResolvedValue({
-        id: OWNER_USER_ID,
         isTrusted: false,
+      });
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: mockTrack,
       });
 
       const result = await service.getGameState(OWNER_SESSION_ID, GAME_ID);
@@ -127,11 +123,35 @@ describe('GameService', () => {
       expect(result.previewUrl).toBe(mockTrack.previewUrl);
     });
 
+    it('should fetch user and game+track in parallel', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: OWNER_USER_ID,
+        isTrusted: false,
+      });
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: mockTrack,
+      });
+
+      await service.getGameState(OWNER_SESSION_ID, GAME_ID);
+
+      expect(mockAuthService.getUserBySessionId).toHaveBeenCalledWith(
+        OWNER_SESSION_ID,
+      );
+      expect(mockGameSessionRepository.findByIdWithTrack).toHaveBeenCalledWith(
+        GAME_ID,
+      );
+    });
+
     it('should throw NotFoundException when a different user tries to access the session', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OTHER_USER_ID,
+        isTrusted: false,
       });
-      mockGameSessionRepository.findById.mockResolvedValue(makeGameSession());
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: mockTrack,
+      });
 
       await expect(
         service.getGameState(OTHER_SESSION_ID, GAME_ID),
@@ -141,19 +161,39 @@ describe('GameService', () => {
     it('should throw NotFoundException when game session does not exist', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OWNER_USER_ID,
+        isTrusted: false,
       });
-      mockGameSessionRepository.findById.mockResolvedValue(null);
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue(null);
 
       await expect(
         service.getGameState(OWNER_SESSION_ID, 'nonexistent-id'),
       ).rejects.toThrow(NotFoundException);
     });
 
+    it('should throw NotFoundException when track has no preview URL', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: OWNER_USER_ID,
+        isTrusted: false,
+      });
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: { ...mockTrack, previewUrl: null },
+      });
+
+      await expect(
+        service.getGameState(OWNER_SESSION_ID, GAME_ID),
+      ).rejects.toThrow(NotFoundException);
+    });
+
     it('should not leak whether a game exists when ownership fails', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OTHER_USER_ID,
+        isTrusted: false,
       });
-      mockGameSessionRepository.findById.mockResolvedValue(makeGameSession());
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: mockTrack,
+      });
 
       try {
         await service.getGameState(OTHER_SESSION_ID, GAME_ID);
@@ -179,12 +219,11 @@ describe('GameService', () => {
     it('should accept a guess from the session owner', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OWNER_USER_ID,
-      });
-      mockGameSessionRepository.findById.mockResolvedValue(makeGameSession());
-      mockTrackRepository.findById.mockResolvedValue(mockTrack);
-      mockAuthService.getUserById.mockResolvedValue({
-        id: OWNER_USER_ID,
         isTrusted: false,
+      });
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: mockTrack,
       });
       mockGameSessionRepository.updateSessionProgress.mockResolvedValue(
         makeGameSession({ currentRound: 1 }),
@@ -200,11 +239,38 @@ describe('GameService', () => {
       expect(result.currentRound).toBe(1);
     });
 
+    it('should fetch user and game+track in parallel', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: OWNER_USER_ID,
+        isTrusted: false,
+      });
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: mockTrack,
+      });
+      mockGameSessionRepository.updateSessionProgress.mockResolvedValue(
+        makeGameSession({ currentRound: 1 }),
+      );
+
+      await service.submitGuess(OWNER_SESSION_ID, GAME_ID, guessDto);
+
+      expect(mockAuthService.getUserBySessionId).toHaveBeenCalledWith(
+        OWNER_SESSION_ID,
+      );
+      expect(mockGameSessionRepository.findByIdWithTrack).toHaveBeenCalledWith(
+        GAME_ID,
+      );
+    });
+
     it('should throw NotFoundException when a different user tries to submit a guess', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OTHER_USER_ID,
+        isTrusted: false,
       });
-      mockGameSessionRepository.findById.mockResolvedValue(makeGameSession());
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: mockTrack,
+      });
 
       await expect(
         service.submitGuess(OTHER_SESSION_ID, GAME_ID, guessDto),
@@ -214,8 +280,9 @@ describe('GameService', () => {
     it('should throw NotFoundException for non-existent game session', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OWNER_USER_ID,
+        isTrusted: false,
       });
-      mockGameSessionRepository.findById.mockResolvedValue(null);
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue(null);
 
       await expect(
         service.submitGuess(OWNER_SESSION_ID, 'nonexistent-id', guessDto),
@@ -225,10 +292,12 @@ describe('GameService', () => {
     it('should throw BadRequestException when game is already over', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OWNER_USER_ID,
+        isTrusted: false,
       });
-      mockGameSessionRepository.findById.mockResolvedValue(
-        makeGameSession({ status: GameStatus.WON }),
-      );
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession({ status: GameStatus.WON }),
+        track: mockTrack,
+      });
 
       await expect(
         service.submitGuess(OWNER_SESSION_ID, GAME_ID, guessDto),
@@ -238,8 +307,12 @@ describe('GameService', () => {
     it('should not leak game existence when ownership check fails', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OTHER_USER_ID,
+        isTrusted: false,
       });
-      mockGameSessionRepository.findById.mockResolvedValue(makeGameSession());
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: mockTrack,
+      });
 
       try {
         await service.submitGuess(OTHER_SESSION_ID, GAME_ID, guessDto);
@@ -250,21 +323,18 @@ describe('GameService', () => {
           'Game session not found',
         );
       }
-
-      // Verify we never reached the track lookup or guess evaluation
-      expect(mockTrackRepository.findById).not.toHaveBeenCalled();
     });
 
     // --- evaluateGuess partial match tests (CAR-13) ---
 
-    const setupGuessScenario = () => {
+    const setupGuessScenario = (trackOverrides?: Record<string, unknown>) => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OWNER_USER_ID,
-      });
-      mockGameSessionRepository.findById.mockResolvedValue(makeGameSession());
-      mockAuthService.getUserById.mockResolvedValue({
-        id: OWNER_USER_ID,
         isTrusted: false,
+      });
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession(),
+        track: { ...mockTrack, ...trackOverrides },
       });
       mockGameSessionRepository.updateSessionProgress.mockResolvedValue(
         makeGameSession({ currentRound: 1 }),
@@ -272,9 +342,7 @@ describe('GameService', () => {
     };
 
     it('should return ARTIST when artist matches with different casing', async () => {
-      setupGuessScenario();
-      mockTrackRepository.findById.mockResolvedValue({
-        ...mockTrack,
+      setupGuessScenario({
         artistName: 'The Beatles',
         albumName: 'Abbey Road',
       });
@@ -290,9 +358,7 @@ describe('GameService', () => {
     });
 
     it('should return ALBUM when album matches with different casing', async () => {
-      setupGuessScenario();
-      mockTrackRepository.findById.mockResolvedValue({
-        ...mockTrack,
+      setupGuessScenario({
         artistName: 'The Beatles',
         albumName: 'Abbey Road',
       });
@@ -308,9 +374,7 @@ describe('GameService', () => {
     });
 
     it('should return ARTIST_AND_ALBUM when both match with different casing', async () => {
-      setupGuessScenario();
-      mockTrackRepository.findById.mockResolvedValue({
-        ...mockTrack,
+      setupGuessScenario({
         artistName: 'The Beatles',
         albumName: 'Abbey Road',
       });
@@ -327,7 +391,6 @@ describe('GameService', () => {
 
     it('should return WRONG when neither artist nor album matches', async () => {
       setupGuessScenario();
-      mockTrackRepository.findById.mockResolvedValue(mockTrack);
 
       const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
         trackId: 'wrong-track',
@@ -341,7 +404,6 @@ describe('GameService', () => {
 
     it('should handle null guess artistName without crashing', async () => {
       setupGuessScenario();
-      mockTrackRepository.findById.mockResolvedValue(mockTrack);
 
       const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
         trackId: 'wrong-track',
@@ -354,11 +416,7 @@ describe('GameService', () => {
     });
 
     it('should handle null album on both sides gracefully', async () => {
-      setupGuessScenario();
-      mockTrackRepository.findById.mockResolvedValue({
-        ...mockTrack,
-        albumName: null, // actual track has no album
-      });
+      setupGuessScenario({ albumName: null });
 
       const result = await service.submitGuess(OWNER_SESSION_ID, GAME_ID, {
         trackId: 'wrong-track',
@@ -375,10 +433,12 @@ describe('GameService', () => {
       // Should get NotFoundException (ownership), not BadRequestException (game over)
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: OTHER_USER_ID,
+        isTrusted: false,
       });
-      mockGameSessionRepository.findById.mockResolvedValue(
-        makeGameSession({ status: GameStatus.WON }),
-      );
+      mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
+        game: makeGameSession({ status: GameStatus.WON }),
+        track: mockTrack,
+      });
 
       await expect(
         service.submitGuess(OTHER_SESSION_ID, GAME_ID, guessDto),

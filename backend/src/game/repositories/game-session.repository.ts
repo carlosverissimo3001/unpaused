@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { startOfDay } from 'date-fns';
 import { PrismaService } from '@prisma/prisma.service';
-import { Prisma, GameSession, GameStatus, GameMode } from '@prisma/client';
+import {
+  Prisma,
+  GameSession,
+  GameStatus,
+  GameMode,
+  Track,
+} from '@prisma/client';
 import { InputJsonValue } from '@prisma/client/runtime/client';
 import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { GameSessionEntity } from '../entities/game-session.entity';
@@ -39,9 +45,23 @@ export class GameSessionRepository {
   async findById(id: string): Promise<GameSessionEntity | null> {
     const gameSession = await this.prisma.gameSession.findUnique({
       where: { id },
-      include: { track: true },
     });
     return gameSession ? this.fromPrisma(gameSession) : null;
+  }
+
+  /**
+   * Finds a game session by ID with its track relation in a single query.
+   */
+  async findByIdWithTrack(
+    id: string,
+  ): Promise<{ game: GameSessionEntity; track: Track } | null> {
+    const result = await this.prisma.gameSession.findUnique({
+      where: { id },
+      include: { track: true },
+    });
+    if (!result) return null;
+    const { track, ...gameSession } = result;
+    return { game: this.fromPrisma(gameSession), track };
   }
 
   /**

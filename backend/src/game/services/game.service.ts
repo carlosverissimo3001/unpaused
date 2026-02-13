@@ -242,33 +242,30 @@ export class GameService {
     sessionId: string,
     gameSessionId: string,
   ): Promise<GameStateDto> {
-    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const game = await this.gameSessionRepository.findById(gameSessionId);
+    const [user, gameWithTrack] = await Promise.all([
+      this.authService.getUserBySessionId(sessionId),
+      this.gameSessionRepository.findByIdWithTrack(gameSessionId),
+    ]);
 
-    if (!game || !game.userId) {
+    if (!gameWithTrack || !gameWithTrack.game.userId) {
       throw new NotFoundException('Game session not found');
     }
 
-    if (game.userId !== userId) {
+    const { game, track } = gameWithTrack;
+
+    if (game.userId !== user.id) {
       throw new NotFoundException('Game session not found');
     }
 
-    // Fetch track with relation
-    const track = await this.trackRepository.findById(game.trackId);
-    if (!track || !track.previewUrl) {
+    // Should not happen since we only start games with valid tracks, but just in case
+    if (!track.previewUrl) {
       throw new NotFoundException('Track not found or no preview URL');
     }
 
-    const user = await this.authService.getUserById(game.userId);
-
-    const extras =
-      game.userId != null
-        ? this.getUserExtras(
-            user.isTrusted,
-            game.status !== GameStatus.PLAYING,
-            game.status === GameStatus.WON,
-          )
-        : {};
+    const extras = this.getUserExtras(
+      user.isTrusted,
+      game.status === GameStatus.WON,
+    );
 
     return mapToGameStateDto(game, track, extras);
   }
@@ -279,20 +276,23 @@ export class GameService {
     gameSessionId: string,
     params: GuessDto,
   ): Promise<GuessResultDto> {
-    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const game = await this.validateGameSession(gameSessionId, userId);
-    if (!game.userId) {
+    const [user, gameWithTrack] = await Promise.all([
+      this.authService.getUserBySessionId(sessionId),
+      this.gameSessionRepository.findByIdWithTrack(gameSessionId),
+    ]);
+
+    if (!gameWithTrack || !gameWithTrack.game.userId) {
       throw new NotFoundException('Game session not found');
     }
-    const track = await this.trackRepository.findById(game.trackId);
 
-    if (!track) {
-      throw new NotFoundException('Active track not found');
+    const { game, track } = gameWithTrack;
+
+    if (game.userId !== user.id) {
+      throw new NotFoundException('Game session not found');
     }
 
-    const user = await this.authService.getUserById(game.userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (game.status !== GameStatus.PLAYING) {
+      throw new BadRequestException('Game is already over');
     }
 
     const result = this.evaluateGuess(params, track);
@@ -414,28 +414,6 @@ export class GameService {
   }
 
   /**
-   * Validates if the game exists, is owned by the user, and is playable
-   * @param id - The ID of the game session
-   * @param userId - The ID of the requesting user
-   */
-  private async validateGameSession(
-    id: string,
-    userId: string,
-  ): Promise<GameSessionEntity> {
-    const game = await this.gameSessionRepository.findById(id);
-    if (!game) {
-      throw new NotFoundException('Game session not found');
-    }
-    if (game.userId !== userId) {
-      throw new NotFoundException('Game session not found');
-    }
-    if (game.status !== GameStatus.PLAYING) {
-      throw new BadRequestException('Game is already over');
-    }
-    return game;
-  }
-
-  /**
    * Business Logic: Compares the guess against the actual track.
    * Match on exact trackId OR normalized trackName + artistName (forgiving: Remix/Single etc.).
    */
@@ -515,15 +493,7 @@ export class GameService {
     return history;
   }
 
-  /**
-   * Combined extras for a user (personalized lore when game over, meta when win).
-   * Keeps getGameState and submitGuess flow simple.
-   */
-  getUserExtras(
-    isTrusted: boolean,
-    _isGameOver: boolean,
-    isWin: boolean,
-  ): GameExtrasVo {
+  getUserExtras(isTrusted: boolean, isWin: boolean): GameExtrasVo {
     if (!isTrusted) {
       return {};
     }
