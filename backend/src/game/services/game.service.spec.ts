@@ -583,5 +583,47 @@ describe('GameService', () => {
         ),
       ).toBe('ARTIST');
     });
+
+    it('should not match artist when guess artistName is empty string', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: '',
+            albumName: '÷ (Divide)',
+          },
+          actualTrack,
+        ),
+      ).toBe('ALBUM');
+    });
+
+    it('should not match album when guess albumName is empty string', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: 'Ed Sheeran',
+            albumName: '',
+          },
+          actualTrack,
+        ),
+      ).toBe('ARTIST');
+    });
+
+    it('should return WRONG when both artistName and albumName are empty strings', () => {
+      expect(
+        evaluate(
+          {
+            trackId: 'wrong',
+            trackName: 'Wrong',
+            artistName: '',
+            albumName: '',
+          },
+          actualTrack,
+        ),
+      ).toBe('WRONG');
+    });
   });
 });
