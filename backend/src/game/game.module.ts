@@ -3,6 +3,7 @@ import { GameController } from './controllers/game.controller';
 import { SearchController } from './controllers/search.controller';
 import { GameService } from './services/game.service';
 import { SearchService } from './services/search.service';
+import { GameStatsService } from './services/game-stats.service';
 import { GameSessionRepository } from './repositories/game-session.repository';
 import { AuthModule } from '../auth/auth.module';
 import { PlaylistModule } from '../playlist/playlist.module';
@@ -28,6 +29,7 @@ import { GameConsumer } from './consumers/game.consumer';
   providers: [
     GameService,
     SearchService,
+    GameStatsService,
     GameSessionRepository,
     GameStatsRepository,
     GameConsumer,

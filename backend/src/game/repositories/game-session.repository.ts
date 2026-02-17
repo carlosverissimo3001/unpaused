@@ -59,7 +59,9 @@ export class GameSessionRepository {
       where: { id },
       include: { track: true },
     });
-    if (!result) return null;
+    if (!result) {
+      return null;
+    }
     const { track, ...gameSession } = result;
     return { game: this.fromPrisma(gameSession), track };
   }
@@ -161,8 +163,8 @@ export class GameSessionRepository {
     if (mode) {
       where.mode = mode;
     }
-    if (status) {
-      where.status = status;
+    if (status?.length) {
+      where.status = { in: status };
     }
     if (onlyCompleted) {
       where.completedAt = { not: null };

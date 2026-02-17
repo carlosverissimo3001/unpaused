@@ -330,13 +330,16 @@
             "in": "query",
             "description": "Filter by game status",
             "schema": {
-              "enum": [
-                "PLAYING",
-                "WON",
-                "LOST",
-                "ABANDONED"
-              ],
-              "type": "string"
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "PLAYING",
+                  "WON",
+                  "LOST",
+                  "ABANDONED"
+                ]
+              }
             }
           },
           {

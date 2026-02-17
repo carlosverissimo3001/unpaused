@@ -15,7 +15,7 @@ export interface HistoryFilters {
   page: number;
   pageSize: PageSize;
   search?: string;
-  status?: GameStatusFilter;
+  status?: GameStatusFilter[];
   from?: string;
   to?: string;
 }
@@ -29,7 +29,7 @@ export function useGameHistory(filters: HistoryFilters, enabled = true) {
       page,
       limit: pageSize,
       search: search || undefined,
-      status: status || undefined,
+      status: status && status.length > 0 ? status : undefined,
       from: from || undefined,
       to: to || undefined,
     }),
@@ -39,7 +39,7 @@ export function useGameHistory(filters: HistoryFilters, enabled = true) {
         page,
         limit: pageSize,
         search: search || undefined,
-        status: status || undefined,
+        status: status.length ? status : undefined,
         from: from ? new Date(from) : undefined,
         to: to ? new Date(to) : undefined,
       }),

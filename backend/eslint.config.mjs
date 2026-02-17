@@ -28,6 +28,7 @@ export default tseslint.config(
   {
     rules: {
       '@typescript-eslint/no-floating-promises': 'error',
+      'curly': ['error', 'all'], // Always require curly braces for control statements
       'prettier/prettier': [
         'error',
         {

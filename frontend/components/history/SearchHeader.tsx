@@ -30,13 +30,14 @@ const STATUS_CHIPS = [
   },
 ] as const;
 
+type StatusFilterValue =
+  (typeof GameStatusFilter)[keyof typeof GameStatusFilter];
+
 interface SearchHeaderProps {
   search: string;
   onSearchChange: (value: string) => void;
-  status?: (typeof GameStatusFilter)[keyof typeof GameStatusFilter];
-  onStatusChange: (
-    status?: (typeof GameStatusFilter)[keyof typeof GameStatusFilter],
-  ) => void;
+  status: StatusFilterValue[];
+  onStatusChange: (status: StatusFilterValue[]) => void;
   totalItems: number;
   isFiltered: boolean;
   onClearFilters: () => void;
@@ -159,13 +160,21 @@ export function SearchHeader({
 
       <div className="mt-3 lg:mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
         {STATUS_CHIPS.map((chip) => {
-          const isActive = status === chip.value;
+          const isActive = status.includes(chip.value);
           const Icon = chip.icon;
+
+          const handleClick = () => {
+            if (isActive) {
+              onStatusChange(status.filter((s) => s !== chip.value));
+            } else {
+              onStatusChange([...status, chip.value]);
+            }
+          };
 
           return (
             <button
               key={chip.value}
-              onClick={() => onStatusChange(isActive ? undefined : chip.value)}
+              onClick={handleClick}
               className="group relative flex items-center gap-2 sm:gap-3 pl-2.5 sm:pl-3 pr-3 sm:pr-4 py-2 bg-white/[0.02] border border-white/5 rounded-lg transition-all active:scale-95 hover:border-white/10 touch-manipulation"
             >
               {/* Active Indicator Strip */}
@@ -186,7 +195,6 @@ export function SearchHeader({
               <AnimatePresence>
                 {isActive && (
                   <motion.div
-                    layoutId="active-pill"
                     className="absolute inset-0 border border-white/20 rounded-lg pointer-events-none"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

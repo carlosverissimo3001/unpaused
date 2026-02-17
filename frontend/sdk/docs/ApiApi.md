@@ -719,8 +719,8 @@ async function example() {
     limit: 8.14,
     // string | Search by track name, artist name, or album name (optional)
     search: search_example,
-    // 'PLAYING' | 'WON' | 'LOST' | 'ABANDONED' | Filter by game status (optional)
-    status: status_example,
+    // Array<'PLAYING' | 'WON' | 'LOST' | 'ABANDONED'> | Filter by game status (optional)
+    status: ...,
     // Date | Filter from date (ISO 8601) (optional)
     from: 2013-10-20T19:20:30+01:00,
     // Date | Filter to date (ISO 8601) (optional)
@@ -748,7 +748,7 @@ example().catch(console.error);
 | **page** | `number` | Page number (1-indexed) | [Optional] [Defaults to `1`] |
 | **limit** | `number` | Items per page | [Optional] [Defaults to `10`] |
 | **search** | `string` | Search by track name, artist name, or album name | [Optional] [Defaults to `undefined`] |
-| **status** | `PLAYING`, `WON`, `LOST`, `ABANDONED` | Filter by game status | [Optional] [Defaults to `undefined`] [Enum: PLAYING, WON, LOST, ABANDONED] |
+| **status** | `PLAYING`, `WON`, `LOST`, `ABANDONED` | Filter by game status | [Optional] [Enum: PLAYING, WON, LOST, ABANDONED] |
 | **from** | `Date` | Filter from date (ISO 8601) | [Optional] [Defaults to `undefined`] |
 | **to** | `Date` | Filter to date (ISO 8601) | [Optional] [Defaults to `undefined`] |
 

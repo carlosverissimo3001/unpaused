@@ -111,7 +111,7 @@ export interface GameControllerGetHistoryRequest {
     page?: number;
     limit?: number;
     search?: string;
-    status?: GameControllerGetHistoryStatusEnum;
+    status?: Array<GameControllerGetHistoryStatusEnum>;
     from?: Date;
     to?: Date;
 }

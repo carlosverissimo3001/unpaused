@@ -12,15 +12,10 @@ import { TrackRepository } from '@/track/repositories/track.repository';
 import { TrackService } from '@/track/services/track.service';
 import { Transactional } from '@transaction/transactional.decorator';
 import { normalizeText, normalizeTrackNameForMatch } from '@utils/text';
-import {
-  formatDate,
-  subHours,
-  startOfDay,
-  differenceInCalendarDays,
-} from 'date-fns';
+import { formatDate, subHours } from 'date-fns';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 import { AppLoggerService } from '../../logger/logger.service';
-import { EMOJIS, GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
+import { GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
 import { PlayedTodayDto } from '../dto/daily/played-today.dto';
 import { ShareResultDto } from '../dto/daily/share-result.dto';
 import {
@@ -36,16 +31,19 @@ import { GuessResultDto } from '../dto/guess/guess-result.dto';
 import { GuessDto } from '../dto/guess/guess.dto';
 import { GameStatsDto } from '../dto/stats/game-stats.dto';
 import { GetStatsDto } from '../dto/stats/get-stats.dto';
-import { GameSessionEntity } from '../entities/game-session.entity';
 import { GameSessionRepository } from '../repositories/game-session.repository';
-import { GameStatsRepository } from '../repositories/game-stats.repository';
-import { UpdateGameStatsParams } from '../types';
 import {
   mapInitialGameState,
   mapToGameStateDto,
 } from '../utils/game-state-mapper';
-import { GameExtrasVo, MetaGameExtrasVo } from '../vos/game-extras.vo';
-import { gameNumberFromDate } from '../utils/utils';
+import {
+  gameNumberFromDate,
+  getUserExtras,
+  shuffleInPlace,
+} from '../utils/utils';
+import { buildShareText, guessToEmoji } from '../utils/share.utils';
+import { GameStatsService } from './game-stats.service';
+import { AddGuessToHistoryParams } from '../types';
 
 @Injectable()
 export class GameService {
@@ -58,7 +56,7 @@ export class GameService {
     private readonly gameSessionRepository: GameSessionRepository,
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
-    private readonly gameStatsRepository: GameStatsRepository,
+    private readonly gameStatsService: GameStatsService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
@@ -154,16 +152,9 @@ export class GameService {
       );
 
       const playable = tracks.filter((t) => t.id);
-      if (!playable.length) continue;
-
-      const shuffleInPlace = <T>(array: T[]): void => {
-        for (let i = array.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          const temp = array[i];
-          array[i] = array[j];
-          array[j] = temp;
-        }
-      };
+      if (!playable.length) {
+        continue;
+      }
 
       const shuffled = [...playable];
       shuffleInPlace(shuffled);
@@ -262,7 +253,7 @@ export class GameService {
       throw new NotFoundException('Track not found or no preview URL');
     }
 
-    const extras = this.getUserExtras(
+    const extras = getUserExtras(
       user.isTrusted,
       game.status === GameStatus.WON,
     );
@@ -274,7 +265,7 @@ export class GameService {
   async submitGuess(
     sessionId: string,
     gameSessionId: string,
-    params: GuessDto,
+    guess: GuessDto,
   ): Promise<GuessResultDto> {
     const [user, gameWithTrack] = await Promise.all([
       this.authService.getUserBySessionId(sessionId),
@@ -285,7 +276,7 @@ export class GameService {
       throw new NotFoundException('Game session not found');
     }
 
-    const { game, track } = gameWithTrack;
+    const { game, track: actual } = gameWithTrack;
 
     if (game.userId !== user.id) {
       throw new NotFoundException('Game session not found');
@@ -295,17 +286,22 @@ export class GameService {
       throw new BadRequestException('Game is already over');
     }
 
-    const result = this.evaluateGuess(params, track);
+    const result = this.evaluateGuess(guess, actual);
 
-    const updatedGuesses = this.addGuessToHistory(game, result, track, params);
+    const updatedGuesses = this.addGuessToHistory({
+      game,
+      result,
+      actual,
+      guess,
+    });
     const nextRound = game.currentRound + 1;
     const { status, gameOver } = this.calculateNextState(result, nextRound);
 
     if (gameOver && game.userId) {
-      await this.updateGameStats({
+      await this.gameStatsService.updateGameStats({
         userId: game.userId,
         roundWon:
-          result === GuessResult.Correct ? game.currentRound : undefined,
+          result === GuessResult.Correct ? game.currentRound : nextRound,
         mode: game.mode,
       });
     }
@@ -324,93 +320,6 @@ export class GameService {
       currentRound: nextRound,
       snippetDuration: ROUND_DURATIONS[Math.min(nextRound, MAX_ROUNDS - 1)],
     };
-  }
-
-  /**
-   * Updates stats for the user. Uses upsert to atomically ensure the
-   * stats row exists (avoids race on initial create), then read and update.
-   * Must run within a @Transactional() boundary so it participates in the same transaction.
-   */
-  private async updateGameStats(params: UpdateGameStatsParams): Promise<void> {
-    const { userId, roundWon, mode } = params;
-
-    // --- ALL mode: unchanged (win = increment, lose = reset) ---
-    const stats = await this.gameStatsRepository.upsert(userId, GameMode.ALL);
-    const newStreak = roundWon ? stats.currentStreak + 1 : 0;
-
-    const dist = [...(stats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0])];
-    const index = roundWon ? roundWon : 6; // Failures go to index 6
-    dist[index] = (dist[index] ?? 0) + 1;
-
-    await this.gameStatsRepository.update(
-      userId,
-      {
-        currentStreak: newStreak,
-        bestStreak: Math.max(stats.bestStreak, newStreak),
-        roundDistribution: dist,
-        won: !!roundWon,
-      },
-      GameMode.ALL,
-    );
-
-    // --- DAILY mode: date-aware streak logic ---
-    if (mode === GameMode.DAILY) {
-      const dailyStats = await this.gameStatsRepository.upsert(
-        userId,
-        GameMode.DAILY,
-      );
-
-      const dailyDist = [
-        ...(dailyStats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0]),
-      ];
-      dailyDist[index] = (dailyDist[index] ?? 0) + 1;
-
-      if (roundWon) {
-        // Date-aware streak: only winning counts toward daily streak
-        const today = startOfDay(new Date());
-        const lastWin = dailyStats.lastWinDate
-          ? startOfDay(dailyStats.lastWinDate)
-          : null;
-
-        let newDailyStreak: number;
-
-        if (lastWin && differenceInCalendarDays(today, lastWin) === 0) {
-          // Already won today — don't double-count, only update distribution
-          newDailyStreak = dailyStats.currentStreak;
-        } else if (lastWin && differenceInCalendarDays(today, lastWin) === 1) {
-          // Won yesterday → consecutive day
-          newDailyStreak = dailyStats.currentStreak + 1;
-        } else {
-          // First win ever, or gap exists (freeze not applied → reset)
-          // If freeze was used, lastWinDate was set to yesterday by StreakService.useFreeze()
-          newDailyStreak = 1;
-        }
-
-        await this.gameStatsRepository.update(
-          userId,
-          {
-            currentStreak: newDailyStreak,
-            bestStreak: Math.max(dailyStats.bestStreak, newDailyStreak),
-            roundDistribution: dailyDist,
-            won: true,
-            lastWinDate: today,
-          },
-          GameMode.DAILY,
-        );
-      } else {
-        // Lost: reset streak to 0 (daily is one-shot, so a loss guarantees the streak is broken)
-        await this.gameStatsRepository.update(
-          userId,
-          {
-            currentStreak: 0,
-            bestStreak: dailyStats.bestStreak,
-            roundDistribution: dailyDist,
-            won: false,
-          },
-          GameMode.DAILY,
-        );
-      }
-    }
   }
 
   /**
@@ -467,11 +376,9 @@ export class GameService {
   }
 
   private addGuessToHistory(
-    game: GameSessionEntity,
-    result: GuessResult,
-    actual: Track,
-    guess: GuessDto,
+    params: AddGuessToHistoryParams,
   ): GuessHistoryDto[] {
+    const { game, result, actual, guess } = params;
     const history = [...(game.guesses as unknown as GuessHistoryDto[])];
 
     const trackName =
@@ -491,21 +398,6 @@ export class GameService {
     });
 
     return history;
-  }
-
-  getUserExtras(isTrusted: boolean, isWin: boolean): GameExtrasVo {
-    if (!isTrusted) {
-      return {};
-    }
-
-    const extras: GameExtrasVo = {};
-
-    if (isWin) {
-      const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-      extras.meta = new MetaGameExtrasVo(emoji);
-    }
-
-    return extras;
   }
 
   private calculateNextState(
@@ -607,12 +499,7 @@ export class GameService {
     params: GetStatsDto,
   ): Promise<GameStatsDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const stats = await this.gameStatsRepository.findByUserId(
-      userId,
-      params.mode,
-    );
-
-    return GameStatsDto.fromEntity(stats);
+    return this.gameStatsService.getStats(userId, params.mode);
   }
 
   async getPlayedToday(sessionId: string): Promise<PlayedTodayDto> {
@@ -636,29 +523,18 @@ export class GameService {
     }
 
     const guesses = game.guesses;
-    const guessPattern = guesses
-      .map((g) => {
-        if (g.result === GuessResult.Correct) return '🟩';
-        if (
-          g.result === GuessResult.Artist ||
-          g.result === GuessResult.ArtistAndAlbum
-        )
-          return '🟨';
-        if (g.result === GuessResult.Skip) return '⬜';
-        return '🟥';
-      })
-      .join('');
+    const guessPattern = guesses.map((g) => guessToEmoji(g.result)).join('');
 
     const dateSource = game.completedAt ?? game.createdAt;
     const gameNum = gameNumberFromDate(dateSource);
-    const resultEmoji = game.status === GameStatus.WON ? '🎉' : '😢';
     const appUrl = process.env.APP_URL || 'https://unpaused.example.com';
-    const shareText = `Unpaused Daily #${gameNum} ${resultEmoji}
-Score: ${game.score ?? 0}/6
-
-${guessPattern}
-
-Play at: ${appUrl}/daily`;
+    const shareText = buildShareText({
+      gameNumber: gameNum,
+      isWin: game.status === GameStatus.WON,
+      score: game.score ?? 0,
+      guesses,
+      appUrl,
+    });
 
     const track = await this.trackRepository.findById(game.trackId);
 

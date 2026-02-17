@@ -3,6 +3,7 @@ import { IsNotNullableOptional } from '../../utils/decorators/notNullableOptiona
 import { Transform } from 'class-transformer';
 import { IsNumber, Min, Max, IsEnum, IsString, IsDate } from 'class-validator';
 import { GameMode, GameStatus } from '@prisma/client';
+import { TransformToArray } from '../../utils/transformers/toArray.transform';
 
 export class GetHistoryDto {
   @ApiPropertyOptional({
@@ -47,10 +48,12 @@ export class GetHistoryDto {
   @ApiPropertyOptional({
     description: 'Filter by game status',
     enum: GameStatus,
+    isArray: true,
   })
   @IsNotNullableOptional()
-  @IsEnum(GameStatus)
-  status?: GameStatus;
+  @TransformToArray()
+  @IsEnum(GameStatus, { each: true })
+  status?: GameStatus[];
 
   @ApiPropertyOptional({
     description: 'Filter from date (ISO 8601)',

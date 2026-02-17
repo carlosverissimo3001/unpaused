@@ -3,7 +3,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { GameMode, GameStatus } from '@prisma/client';
 import { GameService } from './game.service';
 import { GameSessionRepository } from '../repositories/game-session.repository';
-import { GameStatsRepository } from '../repositories/game-stats.repository';
+import { GameStatsService } from './game-stats.service';
 import { TrackRepository } from '@/track/repositories/track.repository';
 import { TrackService } from '@/track/services/track.service';
 import { AuthService } from '@auth/services/auth.service';
@@ -71,9 +71,9 @@ describe('GameService', () => {
 
   const mockTrackRepository = {};
 
-  const mockGameStatsRepository = {
-    upsert: jest.fn(),
-    update: jest.fn(),
+  const mockGameStatsService = {
+    getStats: jest.fn(),
+    updateGameStats: jest.fn(),
   };
 
   const mockPlaylistService = {};
@@ -90,7 +90,7 @@ describe('GameService', () => {
           useValue: mockGameSessionRepository,
         },
         { provide: TrackRepository, useValue: mockTrackRepository },
-        { provide: GameStatsRepository, useValue: mockGameStatsRepository },
+        { provide: GameStatsService, useValue: mockGameStatsService },
         { provide: PlaylistService, useValue: mockPlaylistService },
         { provide: TrackService, useValue: mockTrackService },
         { provide: PrismaService, useValue: mockPrismaService },

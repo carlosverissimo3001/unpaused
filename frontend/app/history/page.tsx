@@ -54,9 +54,7 @@ function HistoryPageContent() {
   );
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<
-    GameStatusFilter | undefined
-  >(undefined);
+  const [statusFilter, setStatusFilter] = useState<GameStatusFilter[]>([]);
   const [pageSize, setPageSize] = useState<PageSize>(DEFAULT_PAGE_SIZE);
 
   const mode = dailyOnly ? GameMode.Daily : GameMode.All;
@@ -65,7 +63,7 @@ function HistoryPageContent() {
     enabled: dailyOnly && !!user,
   });
 
-  const isFiltered = !!search || !!statusFilter;
+  const isFiltered = !!search || statusFilter.length > 0;
 
   const { data, isLoading, isPlaceholderData, error } = useGameHistory(
     {
@@ -95,13 +93,10 @@ function HistoryPageContent() {
     setPage(1);
   }, []);
 
-  const handleStatusChange = useCallback(
-    (value: GameStatusFilter | undefined) => {
-      setStatusFilter(value);
-      setPage(1);
-    },
-    [],
-  );
+  const handleStatusChange = useCallback((value: GameStatusFilter[]) => {
+    setStatusFilter(value);
+    setPage(1);
+  }, []);
 
   const handlePageSizeChange = useCallback((size: PageSize) => {
     setPageSize(size);
@@ -110,7 +105,7 @@ function HistoryPageContent() {
 
   const handleClearFilters = useCallback(() => {
     setSearch('');
-    setStatusFilter(undefined);
+    setStatusFilter([]);
     setPage(1);
   }, []);
 

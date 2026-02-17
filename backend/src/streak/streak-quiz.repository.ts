@@ -43,7 +43,9 @@ export class StreakQuizRepository {
       },
     });
 
-    if (questions.length === 0) return null;
+    if (questions.length === 0) {
+      return null;
+    }
 
     const randomIndex = Math.floor(Math.random() * questions.length);
     return this.fromPrisma(questions[randomIndex]);

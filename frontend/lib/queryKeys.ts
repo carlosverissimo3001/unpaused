@@ -18,7 +18,7 @@ export const queryKeys = {
       page?: number;
       limit?: number;
       search?: string;
-      status?: string;
+      status?: string[];
       from?: string;
       to?: string;
     }) => ['game', 'history', params] as const,
