@@ -1,8 +1,15 @@
 import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 
+type GuessResultStyle = {
+  label: string;
+  barClass: string;
+  cardClass: string;
+  badgeClass: string;
+};
+
 export const GUESS_RESULT_STYLE: Record<
-  string,
-  { label: string; barClass: string; cardClass: string; badgeClass: string }
+  GuessHistoryDtoResultEnum,
+  GuessResultStyle
 > = {
   [GuessHistoryDtoResultEnum.Correct]: {
     label: 'Correct',
@@ -42,9 +49,16 @@ export const GUESS_RESULT_STYLE: Record<
   },
 };
 
-export function getGuessResultStyle(result: string) {
-  return (
-    GUESS_RESULT_STYLE[result] ??
-    GUESS_RESULT_STYLE[GuessHistoryDtoResultEnum.Wrong]
-  );
+const PENDING_STYLE: GuessResultStyle = {
+  label: 'Checking\u2026',
+  barClass: 'bg-white/30',
+  cardClass: 'bg-white/5 border-white/10',
+  badgeClass: 'bg-white/10 text-white/40 border-white/20',
+};
+
+export function getGuessResultStyle(
+  result: GuessHistoryDtoResultEnum | null | undefined,
+) {
+  if (result == null) return PENDING_STYLE;
+  return GUESS_RESULT_STYLE[result] ?? PENDING_STYLE;
 }

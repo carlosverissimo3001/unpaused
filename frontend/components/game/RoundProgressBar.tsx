@@ -2,10 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { getGuessResultStyle } from './guess-result-styles';
+import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 import { ROUND_DURATIONS } from '@/consts/consts';
 
 interface Guess {
-  result: string;
+  result: GuessHistoryDtoResultEnum | null;
 }
 
 interface RoundProgressBarProps {

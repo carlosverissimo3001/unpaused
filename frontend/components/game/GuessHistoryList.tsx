@@ -8,7 +8,7 @@ interface Guess {
   trackId?: string | null;
   trackName?: string | null;
   artistName?: string | null;
-  result: string;
+  result: GuessHistoryDtoResultEnum | null;
 }
 
 interface GuessHistoryListProps {
