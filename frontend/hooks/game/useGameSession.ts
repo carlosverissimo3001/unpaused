@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { useStartGame } from './useStartGame';
 import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
@@ -38,9 +38,15 @@ export function useGameSession(mode: GameMode, playlistId?: string) {
     retry: false,
   });
 
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     if (!shouldStart || hasStarted.current) return;
     hasStarted.current = true;
+
+    // Clear stale session from a previous game so the old game state
+    // doesn't briefly flash (e.g. SongRevealCard) before the new one loads
+    queryClient.setQueryData(sessionCacheKey, undefined);
 
     startGameMutation.mutate(
       isPlaylist && playlistId ? { playlistId, mode } : { mode },
