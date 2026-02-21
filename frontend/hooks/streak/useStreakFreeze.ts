@@ -20,8 +20,10 @@ export function useStreakFreeze() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.streak.status, data);
-      void queryClient.invalidateQueries({ queryKey: queryKeys.game.stats });
-      void queryClient.invalidateQueries({ queryKey: ['game', 'history'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.game.stats() });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.game.history(),
+      });
     },
   });
 }

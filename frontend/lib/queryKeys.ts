@@ -22,7 +22,7 @@ export const queryKeys = {
       from?: string;
       to?: string;
     }) => ['game', 'history', params] as const,
-    stats: ['game', 'stats'] as const,
+    stats: (mode?: string) => ['game', 'stats', mode] as const,
     playedToday: ['game', 'playedToday'] as const,
     share: (gameId: string) => ['game', 'share', gameId] as const,
   },
@@ -57,7 +57,7 @@ export const queryKeys = {
   daily: {
     all: ['daily'] as const,
     today: ['daily', 'today'] as const,
-    stats: ['daily', 'stats'] as const,
+    stats: (mode?: string) => ['daily', 'stats', mode] as const,
     history: (params?: { limit?: number; offset?: number }) =>
       ['daily', 'history', params] as const,
     share: (gameId: string) => ['daily', 'share', gameId] as const,

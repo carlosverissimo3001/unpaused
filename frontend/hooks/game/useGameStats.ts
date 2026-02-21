@@ -15,7 +15,7 @@ type UseGameStatsOptions = {
 export function useGameStats(params: UseGameStatsOptions) {
   const { mode, useCached, enabled } = params;
   return useQuery({
-    queryKey: [...queryKeys.game.stats, mode],
+    queryKey: queryKeys.game.stats(mode),
     queryFn: () => api.gameControllerGetStats({ mode }),
     placeholderData: useCached ? keepPreviousData : undefined,
     enabled: enabled ?? true,
