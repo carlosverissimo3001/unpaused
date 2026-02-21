@@ -17,7 +17,7 @@ import type { MetaGameExtrasVo, TrackOptionDto } from '@/sdk';
 import { GuessPattern } from './GuessPattern';
 import { ShareButton } from '@/components/daily/ShareButton';
 import { triggerRevealConfetti } from './confetti';
-import { useAlbumArtColor } from '@/hooks/misc/useAlbumArtColor';
+import { useImageColor } from '@/hooks/misc/useImageColor';
 
 const GLASS_STYLE = {
   background: 'rgba(18, 18, 18, 0.6)',
@@ -78,7 +78,7 @@ export function SongRevealCard({
     ? `https://open.spotify.com/track/${answer.id}`
     : undefined;
   const isWon = status === GameStateDtoStatusEnum.Won;
-  const albumColor = useAlbumArtColor(answer?.albumImageUrl ?? null);
+  const albumColor = useImageColor(answer?.albumImageUrl ?? null);
   const albumGlowColor = albumColor.replace(/[\d.]+\)$/, '0.5)');
 
   useEffect(() => {

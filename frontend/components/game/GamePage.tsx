@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useGameOrchestrator } from '@/hooks/game/useGameOrchestrator';
-import { useAlbumArtColor } from '@/hooks/misc/useAlbumArtColor';
+import { useImageColor } from '@/hooks/misc/useImageColor';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { RoundProgressBar } from './RoundProgressBar';
 import { PlaySnippetButton } from './PlaySnippetButton';
@@ -56,7 +56,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     pauseSnippet,
   } = gameAudio;
 
-  const albumArtColor = useAlbumArtColor(
+  const albumArtColor = useImageColor(
     isGameOver && gameState?.answer?.albumImageUrl
       ? gameState.answer.albumImageUrl
       : null,

@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Lock, Globe, ListMusic } from 'lucide-react';
 import type { PlaylistDto } from '@/sdk';
-import { usePlaylistColor } from '@/hooks/misc/usePlaylistColor';
+import { useImageColor } from '@/hooks/misc/useImageColor';
 
 interface PlaylistCardProps {
   playlist: PlaylistDto;
@@ -17,7 +17,10 @@ interface PlaylistCardProps {
 function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
   const imageUrl = playlist.imageUrl;
   const [isHovered, setIsHovered] = useState(false);
-  const ambientColor = usePlaylistColor(imageUrl);
+  const ambientColor = useImageColor(imageUrl, {
+    fallback: 'rgba(30, 215, 96, 0.15)',
+    alpha: 0.15,
+  });
   const isLikedSongs = playlist.id.endsWith('liked-songs');
 
   const glowColor = ambientColor.replace('0.15', '0.1').replace('0.1', '0.08');
