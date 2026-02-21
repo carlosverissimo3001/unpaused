@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import type { TrackOptionDto } from '@/sdk';
 import { api } from '@/sdk/client';
+import { queryKeys } from '@/lib/queryKeys';
 import { MIN_QUERY_LENGTH, DEBOUNCE_MS } from '../../consts/consts';
+import { useDebouncedValue } from '../useDebouncedValue';
 
 /**
  * Hook for Spotify track search (game guess dropdown).
- * Calls GET /search/tracks via SDK as the user types (debounced).
+ * Uses TanStack Query with a debounced query key for automatic caching,
+ * deduplication, and stale-while-revalidate behavior.
  */
 export function useSpotifyTrackSearch() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,42 +19,23 @@ export function useSpotifyTrackSearch() {
   const [selectedTrack, setSelectedTrack] = useState<TrackOptionDto | null>(
     null,
   );
-  const [filteredTracks, setFilteredTracks] = useState<TrackOptionDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const trimmed = searchQuery.trim();
-    if (trimmed.length < MIN_QUERY_LENGTH) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Resetting state on input change
-      setFilteredTracks([]);
+  const debouncedQuery = useDebouncedValue(searchQuery.trim(), DEBOUNCE_MS);
 
-      setIsLoading(false);
-      return;
-    }
+  const { data: filteredTracks = [], isLoading: queryLoading } = useQuery({
+    queryKey: queryKeys.search.tracks(debouncedQuery),
+    queryFn: () => api.searchControllerSearchTracks({ q: debouncedQuery }),
+    enabled: debouncedQuery.length >= MIN_QUERY_LENGTH,
+    staleTime: 2 * 60 * 1000,
+    placeholderData: keepPreviousData,
+  });
 
-    // Show loading immediately while debouncing or fetching (avoids brief "No songs found")
-
-    setIsLoading(true);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      debounceRef.current = null;
-      api
-        .searchControllerSearchTracks({ q: trimmed })
-        .then((results) => setFilteredTracks(results ?? []))
-        .catch(() => {
-          setFilteredTracks([]);
-          toast.error('Search failed. Please try again.');
-        })
-        .finally(() => setIsLoading(false));
-    }, DEBOUNCE_MS);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [searchQuery]);
+  // Show loading during debounce delay too, so the UI doesn't flash "No songs found"
+  const trimmed = searchQuery.trim();
+  const isDebouncing =
+    trimmed !== debouncedQuery && trimmed.length >= MIN_QUERY_LENGTH;
+  const isLoading = queryLoading || isDebouncing;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

@@ -53,6 +53,11 @@ export const queryKeys = {
     all: ['admin'] as const,
     streakQuestions: ['admin', 'streakQuestions'] as const,
   },
+  // Search queries
+  search: {
+    all: ['search'] as const,
+    tracks: (query: string) => ['search', 'tracks', query] as const,
+  },
   // Daily game queries
   daily: {
     all: ['daily'] as const,
