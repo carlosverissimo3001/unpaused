@@ -61,10 +61,7 @@ export const queryKeys = {
   // Daily game queries
   daily: {
     all: ['daily'] as const,
-    today: ['daily', 'today'] as const,
-    stats: (mode?: string) => ['daily', 'stats', mode] as const,
     history: (params?: { limit?: number; offset?: number }) =>
       ['daily', 'history', params] as const,
-    share: (gameId: string) => ['daily', 'share', gameId] as const,
   },
 } as const;
