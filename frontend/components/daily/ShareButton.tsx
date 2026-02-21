@@ -18,13 +18,12 @@ export function ShareButton({
   variant = 'outline',
 }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
-  const shareMutation = useGameShare();
+  const { data, isLoading } = useGameShare(gameId);
 
   const handleShare = async () => {
     try {
-      const result = await shareMutation.mutateAsync(gameId);
-      if (result?.shareText) {
-        await navigator.clipboard.writeText(result.shareText);
+      if (data?.shareText) {
+        await navigator.clipboard.writeText(data.shareText);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
@@ -38,7 +37,7 @@ export function ShareButton({
       variant={variant}
       size="sm"
       onClick={handleShare}
-      disabled={shareMutation.isPending}
+      disabled={isLoading || !data}
       className={className}
       aria-label={copied ? 'Copied!' : 'Copy share text'}
     >
@@ -47,8 +46,8 @@ export function ShareButton({
           <Check className="w-4 h-4 mr-2" />
           Copied!
         </>
-      ) : shareMutation.isPending ? (
-        'Copying...'
+      ) : isLoading ? (
+        'Loading...'
       ) : (
         <>
           <Share2 className="w-4 h-4 mr-2" />

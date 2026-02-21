@@ -9,7 +9,7 @@ import { HistoryFilter } from '@/components/history/HistoryFilter';
 import { HistoryStats } from '@/components/history/HistoryStats';
 import { SearchHeader } from '@/components/history/SearchHeader';
 import { useMe } from '@/hooks/auth/useMe';
-import { useGameShare } from '@/hooks/game/useGameShare';
+import { gameShareQueryOptions } from '@/hooks/game/useGameShare';
 import {
   useGameHistory,
   DEFAULT_PAGE_SIZE,
@@ -26,6 +26,7 @@ import { BarChart3, Play } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { useGameStats } from '../../hooks/game/useGameStats';
@@ -45,7 +46,7 @@ function getEntryDate(e: TimelineEntry): string {
 }
 
 function HistoryPageContent() {
-  const shareMutation = useGameShare();
+  const queryClient = useQueryClient();
   const { data: user, isLoading: isAuthLoading } = useMe();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const searchParams = useSearchParams();
@@ -148,7 +149,7 @@ function HistoryPageContent() {
   const handleShare = useCallback(
     async (id: string) => {
       try {
-        const result = await shareMutation.mutateAsync(id);
+        const result = await queryClient.fetchQuery(gameShareQueryOptions(id));
         if (result?.shareText) {
           await navigator.clipboard.writeText(result.shareText);
           setCopiedId(id);
@@ -158,7 +159,7 @@ function HistoryPageContent() {
         toast.error('Failed to copy share text');
       }
     },
-    [shareMutation],
+    [queryClient],
   );
 
   // Show spinner while auth is resolving to prevent flash of empty state
