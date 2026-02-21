@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { ROUND_DURATIONS } from '@/consts/consts';
 import { useAudioAmplitude } from './useAudioAmplitude';
+import { useMediaSession } from '../useMediaSession';
 
 interface UseGameAudioOptions {
   previewUrl: string | null | undefined;
@@ -137,6 +138,20 @@ export function useGameAudio({
     setIsFullSongPlaying(false);
     setIsMuted(false);
   }, []);
+
+  // Intercept OS media keys so hardware play/pause can't bypass snippet timing
+  const mediaSessionCallbacks = useMemo(
+    () =>
+      isGameOver
+        ? { onPlay: toggleFullSong, onPause: toggleFullSong }
+        : { onPlay: playSnippet, onPause: pauseSnippet },
+    [isGameOver, toggleFullSong, playSnippet, pauseSnippet],
+  );
+
+  useMediaSession({
+    enabled: !!previewUrl,
+    ...mediaSessionCallbacks,
+  });
 
   useEffect(() => {
     if (!isGameOver || !previewUrl) return;

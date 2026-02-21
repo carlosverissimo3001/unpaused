@@ -1,100 +1,83 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-
-interface MediaMetadata {
-  title: string;
-  artist: string;
-  album?: string;
-  artwork?: MediaImage[];
-}
+import { useEffect } from 'react';
 
 interface UseMediaSessionOptions {
-  audioElement: HTMLAudioElement | null;
-  metadata?: MediaMetadata;
+  /** When false, metadata is cleared and action handlers are removed */
+  enabled: boolean;
+  metadata?: {
+    title: string;
+    artist: string;
+    album?: string;
+    artwork?: MediaImage[];
+  };
+  /** Called when the OS play signal fires (headphones, media keys, lock screen) */
   onPlay?: () => void;
+  /** Called when the OS pause signal fires */
   onPause?: () => void;
 }
 
 /**
- * Hook to integrate Web Media Session API for OS media controls
+ * Integrates with the Web Media Session API to intercept OS media controls.
+ *
+ * IMPORTANT: The play/pause handlers intentionally do NOT call
+ * audioElement.play()/pause() directly. Instead they delegate to
+ * onPlay/onPause callbacks so the game logic controls playback timing.
+ * This prevents hardware media keys from bypassing snippet duration limits.
  */
 export function useMediaSession({
-  audioElement,
+  enabled,
   metadata,
   onPlay,
   onPause,
 }: UseMediaSessionOptions) {
-  const metadataRef = useRef<MediaMetadata | undefined>(metadata);
-
-  // Update metadata ref when it changes
-  useEffect(() => {
-    metadataRef.current = metadata;
-  }, [metadata]);
-
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) {
-      return; // Media Session API not supported
+      return;
     }
 
     const mediaSession = navigator.mediaSession;
 
-    // Set metadata
-    if (metadataRef.current) {
-      mediaSession.metadata = new MediaMetadata({
-        title: metadataRef.current.title,
-        artist: metadataRef.current.artist,
-        album: metadataRef.current.album,
-        artwork: metadataRef.current.artwork || [],
-      });
-    }
-
-    // Set action handlers
-    mediaSession.setActionHandler('play', () => {
-      if (audioElement && audioElement.paused) {
-        audioElement.play().catch((err) => {
-          console.error('Failed to play via media session:', err);
-        });
-      }
-      onPlay?.();
-    });
-
-    mediaSession.setActionHandler('pause', () => {
-      if (audioElement && !audioElement.paused) {
-        audioElement.pause();
-      }
-      onPause?.();
-    });
-
-    // Sync playback state with audio element
-    const updatePlaybackState = () => {
-      if (audioElement) {
-        mediaSession.playbackState = audioElement.paused ? 'paused' : 'playing';
-      }
-    };
-
-    // Listen to audio events to sync state
-    if (audioElement) {
-      audioElement.addEventListener('play', updatePlaybackState);
-      audioElement.addEventListener('pause', updatePlaybackState);
-      audioElement.addEventListener('ended', updatePlaybackState);
-      updatePlaybackState(); // Set initial state
-    }
-
-    // Cleanup
-    return () => {
-      if (audioElement) {
-        audioElement.removeEventListener('play', updatePlaybackState);
-        audioElement.removeEventListener('pause', updatePlaybackState);
-        audioElement.removeEventListener('ended', updatePlaybackState);
-      }
-      // Clear action handlers
+    if (!enabled) {
+      mediaSession.metadata = null;
+      mediaSession.playbackState = 'none';
       try {
         mediaSession.setActionHandler('play', null);
         mediaSession.setActionHandler('pause', null);
       } catch {
-        // Some browsers may not support clearing handlers
+        // Some browsers don't support clearing handlers
+      }
+      return;
+    }
+
+    // Set metadata when enabled
+    if (metadata) {
+      mediaSession.metadata = new MediaMetadata({
+        title: metadata.title,
+        artist: metadata.artist,
+        album: metadata.album,
+        artwork: metadata.artwork ?? [],
+      });
+    }
+
+    // Intercept play/pause — delegate to game callbacks, never touch the audio element
+    mediaSession.setActionHandler('play', () => {
+      onPlay?.();
+    });
+
+    mediaSession.setActionHandler('pause', () => {
+      onPause?.();
+    });
+
+    return () => {
+      mediaSession.metadata = null;
+      mediaSession.playbackState = 'none';
+      try {
+        mediaSession.setActionHandler('play', null);
+        mediaSession.setActionHandler('pause', null);
+      } catch {
+        // Some browsers don't support clearing handlers
       }
     };
-  }, [audioElement, onPlay, onPause]);
+  }, [enabled, metadata, onPlay, onPause]);
 }
