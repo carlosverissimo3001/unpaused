@@ -5,17 +5,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PlaylistService } from '@/playlist/services/playlist.service';
-import { GameMode, GameStatus, Track } from '@prisma/client';
+import { GameMode, GameStatus } from '@prisma/client';
 import { PrismaService } from '@prisma/prisma.service';
 import { TrackDto } from '@/track/dto/track.dto';
 import { TrackRepository } from '@/track/repositories/track.repository';
 import { TrackService } from '@/track/services/track.service';
 import { Transactional } from '@transaction/transactional.decorator';
-import { normalizeText, normalizeTrackNameForMatch } from '@utils/text';
 import { formatDate, subHours } from 'date-fns';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 import { AppLoggerService } from '../../logger/logger.service';
-import { GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
+import { GuessResult, ROUND_DURATIONS, MAX_ROUNDS } from '../consts';
 import { PlayedTodayDto } from '../dto/daily/played-today.dto';
 import { ShareResultDto } from '../dto/daily/share-result.dto';
 import {
@@ -37,13 +36,17 @@ import {
   mapToGameStateDto,
 } from '../utils/game-state-mapper';
 import {
+  evaluateGuess,
+  addGuessToHistory,
+  calculateNextState,
+} from '../utils/guess-evaluator';
+import {
   gameNumberFromDate,
   getUserExtras,
   shuffleInPlace,
 } from '../utils/utils';
 import { buildShareText, guessToEmoji } from '../utils/share.utils';
 import { GameStatsService } from './game-stats.service';
-import { AddGuessToHistoryParams } from '../types';
 
 @Injectable()
 export class GameService {
@@ -286,16 +289,16 @@ export class GameService {
       throw new BadRequestException('Game is already over');
     }
 
-    const result = this.evaluateGuess(guess, actual);
+    const result = evaluateGuess(guess, actual);
 
-    const updatedGuesses = this.addGuessToHistory({
-      game,
+    const updatedGuesses = addGuessToHistory(
+      game.guesses as unknown as GuessHistoryDto[],
       result,
       actual,
       guess,
-    });
+    );
     const nextRound = game.currentRound + 1;
-    const { status, gameOver } = this.calculateNextState(result, nextRound);
+    const { status, gameOver } = calculateNextState(result, nextRound);
 
     if (gameOver && game.userId) {
       await this.gameStatsService.updateGameStats({
@@ -320,99 +323,6 @@ export class GameService {
       currentRound: nextRound,
       snippetDuration: ROUND_DURATIONS[Math.min(nextRound, MAX_ROUNDS - 1)],
     };
-  }
-
-  /**
-   * Business Logic: Compares the guess against the actual track.
-   * Match on exact trackId OR normalized trackName + artistName (forgiving: Remix/Single etc.).
-   */
-  private evaluateGuess(guess: GuessDto, actual: Track): GuessResult {
-    const { trackId, skip } = guess;
-
-    if (skip || !trackId) {
-      return GuessResult.Skip;
-    }
-
-    if (trackId === actual.id) {
-      return GuessResult.Correct;
-    }
-
-    // Forgiving match: same song, different version (e.g. Remix, Single, Live From Paris)
-    if (
-      guess.trackName != null &&
-      guess.trackName !== '' &&
-      guess.artistName != null &&
-      guess.artistName !== ''
-    ) {
-      const normName = normalizeTrackNameForMatch(guess.trackName);
-      const normArtist = normalizeText(guess.artistName);
-      if (
-        normName === normalizeTrackNameForMatch(actual.name) &&
-        normArtist === normalizeText(actual.artistName)
-      ) {
-        return GuessResult.Correct;
-      }
-    }
-    const isArtistCorrect =
-      guess.artistName != null &&
-      normalizeText(guess.artistName).toLowerCase() ===
-        normalizeText(actual.artistName).toLowerCase();
-    const isAlbumCorrect =
-      guess.albumName != null &&
-      actual.albumName != null &&
-      normalizeText(guess.albumName).toLowerCase() ===
-        normalizeText(actual.albumName).toLowerCase();
-
-    let result = GuessResult.Wrong;
-    if (isArtistCorrect && isAlbumCorrect) {
-      result = GuessResult.ArtistAndAlbum;
-    } else if (isArtistCorrect) {
-      result = GuessResult.Artist;
-    } else if (isAlbumCorrect) {
-      result = GuessResult.Album;
-    }
-
-    return result;
-  }
-
-  private addGuessToHistory(
-    params: AddGuessToHistoryParams,
-  ): GuessHistoryDto[] {
-    const { game, result, actual, guess } = params;
-    const history = [...(game.guesses as unknown as GuessHistoryDto[])];
-
-    const trackName =
-      result === GuessResult.Correct
-        ? actual.name
-        : (guess.trackName ?? 'Unknown');
-    const artistName =
-      result === GuessResult.Correct
-        ? actual.artistName
-        : (guess.artistName ?? 'Unknown');
-
-    history.push({
-      trackId: guess.trackId,
-      trackName,
-      artistName,
-      result,
-    });
-
-    return history;
-  }
-
-  private calculateNextState(
-    result: GuessResult,
-    nextRound: number,
-  ): { status: GameStatus; gameOver: boolean } {
-    if (result === GuessResult.Correct) {
-      return { status: GameStatus.WON, gameOver: true };
-    }
-
-    if (nextRound >= MAX_ROUNDS) {
-      return { status: GameStatus.LOST, gameOver: true };
-    }
-
-    return { status: GameStatus.PLAYING, gameOver: false };
   }
 
   async getHistory(

@@ -1,0 +1,447 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import {
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
+import { GameStatus, RoomStatus } from '@prisma/client';
+import { MultiplayerGameService } from './multiplayer-game.service';
+import { RoomRepository } from '../repositories/room.repository';
+import { MultiplayerGameSessionRepository } from '../repositories/multiplayer-game-session.repository';
+import { AuthService } from '../../auth/services/auth.service';
+
+describe('MultiplayerGameService', () => {
+  let service: MultiplayerGameService;
+
+  const HOST_SESSION = 'session-host';
+  const PLAYER_SESSION = 'session-player';
+  const HOST_USER_ID = 'user-host';
+  const PLAYER_USER_ID = 'user-player';
+  const ROOM_ID = 'room-123';
+  const TRACK_1 = 'track-1';
+  const TRACK_2 = 'track-2';
+  const SESSION_ID = 'game-session-1';
+
+  const mockTrack = {
+    id: TRACK_1,
+    name: 'Test Song',
+    artistName: 'Test Artist',
+    albumName: 'Test Album',
+    albumImageUrl: 'https://example.com/album.jpg',
+    albumUrl: null,
+    releaseYear: 2024,
+    previewUrl: 'https://example.com/preview.mp3',
+    lastScrapedAt: new Date(),
+    createdAt: new Date(),
+  };
+
+  const makeRoom = (overrides?: Record<string, unknown>) => ({
+    id: ROOM_ID,
+    inviteCode: 'ABCD1234',
+    hostId: HOST_USER_ID,
+    roundCount: 2,
+    status: RoomStatus.PLAYING,
+    trackIds: [TRACK_1, TRACK_2],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    startedAt: new Date(),
+    completedAt: null,
+    players: [
+      {
+        id: 'rp-host',
+        roomId: ROOM_ID,
+        userId: HOST_USER_ID,
+        totalScore: 0,
+        joinedAt: new Date(),
+        user: { displayName: 'Host', avatarUrl: null },
+      },
+      {
+        id: 'rp-player',
+        roomId: ROOM_ID,
+        userId: PLAYER_USER_ID,
+        totalScore: 0,
+        joinedAt: new Date(),
+        user: { displayName: 'Player', avatarUrl: null },
+      },
+    ],
+    ...overrides,
+  });
+
+  const makeSession = (overrides?: Record<string, unknown>) => ({
+    id: SESSION_ID,
+    userId: HOST_USER_ID,
+    playlistId: `multiplayer-${ROOM_ID}`,
+    mode: 'MULTIPLAYER',
+    trackId: TRACK_1,
+    currentRound: 0,
+    guesses: [],
+    status: GameStatus.PLAYING,
+    multiplayerRoomId: ROOM_ID,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    completedAt: null,
+    track: mockTrack,
+    ...overrides,
+  });
+
+  const mockAuthService = {
+    getUserBySessionId: jest.fn(),
+  };
+
+  const mockRoomRepository = {
+    findById: jest.fn(),
+    updateStatus: jest.fn(),
+    addToPlayerScore: jest.fn(),
+  };
+
+  const mockGameSessionRepository = {
+    findPlayerSessions: jest.fn(),
+    createSession: jest.fn(),
+    findActiveSession: jest.fn(),
+    updateSessionProgress: jest.fn(),
+    findAllRoomSessions: jest.fn(),
+    countCompletedSessions: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        MultiplayerGameService,
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: RoomRepository, useValue: mockRoomRepository },
+        {
+          provide: MultiplayerGameSessionRepository,
+          useValue: mockGameSessionRepository,
+        },
+      ],
+    }).compile();
+
+    service = module.get<MultiplayerGameService>(MultiplayerGameService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getRoundState', () => {
+    it('should return round state for a player in a PLAYING room', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findPlayerSessions.mockResolvedValue([]);
+      mockGameSessionRepository.createSession.mockResolvedValue(makeSession());
+
+      const result = await service.getRoundState(HOST_SESSION, ROOM_ID);
+
+      expect(result.sessionId).toBe(SESSION_ID);
+      expect(result.roundIndex).toBe(0);
+      expect(result.totalRounds).toBe(2);
+      expect(result.previewUrl).toBe(mockTrack.previewUrl);
+      expect(result.status).toBe(GameStatus.PLAYING);
+      expect(result.answer).toBeUndefined();
+    });
+
+    it('should advance to next round after completing one', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findPlayerSessions.mockResolvedValue([
+        makeSession({ status: GameStatus.WON }), // completed round 0
+      ]);
+      mockGameSessionRepository.createSession.mockResolvedValue(
+        makeSession({ id: 'session-2', trackId: TRACK_2 }),
+      );
+
+      const result = await service.getRoundState(HOST_SESSION, ROOM_ID);
+
+      expect(result.roundIndex).toBe(1);
+      expect(mockGameSessionRepository.createSession).toHaveBeenCalledWith(
+        HOST_USER_ID,
+        ROOM_ID,
+        TRACK_2,
+      );
+    });
+
+    it('should return existing session if already created for current round', async () => {
+      const existing = makeSession();
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findPlayerSessions.mockResolvedValue([
+        existing,
+      ]);
+
+      const result = await service.getRoundState(HOST_SESSION, ROOM_ID);
+
+      expect(result.sessionId).toBe(SESSION_ID);
+      expect(mockGameSessionRepository.createSession).not.toHaveBeenCalled();
+    });
+
+    it('should include answer when round is complete', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(
+        makeRoom({ roundCount: 1, trackIds: [TRACK_1] }),
+      );
+      mockGameSessionRepository.findPlayerSessions.mockResolvedValue([
+        makeSession({ status: GameStatus.WON }),
+      ]);
+
+      const result = await service.getRoundState(HOST_SESSION, ROOM_ID);
+
+      expect(result.answer).toBeDefined();
+      expect(result.answer!.name).toBe('Test Song');
+    });
+
+    it('should throw NotFoundException for non-existent room', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        service.getRoundState(HOST_SESSION, 'nonexistent'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException when room is WAITING', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(
+        makeRoom({ status: RoomStatus.WAITING }),
+      );
+
+      await expect(
+        service.getRoundState(HOST_SESSION, ROOM_ID),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw ForbiddenException when user is not in the room', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: 'stranger',
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      await expect(
+        service.getRoundState('session-stranger', ROOM_ID),
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('submitGuess', () => {
+    const guessDto = {
+      trackId: TRACK_1,
+      trackName: 'Test Song',
+      artistName: 'Test Artist',
+      albumName: 'Test Album',
+      skip: false,
+    };
+
+    it('should accept a correct guess and update score', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findActiveSession.mockResolvedValue(
+        makeSession(),
+      );
+      mockGameSessionRepository.updateSessionProgress.mockResolvedValue(
+        undefined,
+      );
+      mockGameSessionRepository.countCompletedSessions.mockResolvedValue(0);
+
+      const result = await service.submitGuess(HOST_SESSION, ROOM_ID, guessDto);
+
+      expect(result.result).toBe('CORRECT');
+      expect(result.gameOver).toBe(true);
+      expect(result.status).toBe(GameStatus.WON);
+      expect(mockRoomRepository.addToPlayerScore).toHaveBeenCalledWith(
+        'rp-host',
+        6, // First guess correct = 6 points
+      );
+    });
+
+    it('should accept a skip without updating score', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findActiveSession.mockResolvedValue(
+        makeSession(),
+      );
+
+      const result = await service.submitGuess(HOST_SESSION, ROOM_ID, {
+        skip: true,
+      });
+
+      expect(result.result).toBe('SKIP');
+      expect(result.gameOver).toBe(false);
+      expect(mockRoomRepository.addToPlayerScore).not.toHaveBeenCalled();
+    });
+
+    it('should throw when room is not PLAYING', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(
+        makeRoom({ status: RoomStatus.COMPLETED }),
+      );
+
+      await expect(
+        service.submitGuess(HOST_SESSION, ROOM_ID, guessDto),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw when no active session exists', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findActiveSession.mockResolvedValue(null);
+
+      await expect(
+        service.submitGuess(HOST_SESSION, ROOM_ID, guessDto),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw ForbiddenException for non-player', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: 'stranger',
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      await expect(
+        service.submitGuess('session-stranger', ROOM_ID, guessDto),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should complete room when all players finish all rounds', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findActiveSession.mockResolvedValue(
+        makeSession(),
+      );
+      // After this guess, all players have completed all rounds
+      mockGameSessionRepository.countCompletedSessions
+        .mockResolvedValueOnce(2) // host completed 2 rounds
+        .mockResolvedValueOnce(2); // player completed 2 rounds
+
+      await service.submitGuess(HOST_SESSION, ROOM_ID, guessDto);
+
+      expect(mockRoomRepository.updateStatus).toHaveBeenCalledWith(
+        ROOM_ID,
+        RoomStatus.COMPLETED,
+        { completedAt: expect.any(Date) },
+      );
+    });
+  });
+
+  describe('getScoreboard', () => {
+    it('should only show rounds the caller has completed', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findAllRoomSessions.mockResolvedValue([
+        // Host completed round 0
+        makeSession({
+          userId: HOST_USER_ID,
+          trackId: TRACK_1,
+          status: GameStatus.WON,
+          currentRound: 1,
+          user: { displayName: 'Host', avatarUrl: null },
+        }),
+        // Player completed round 0
+        makeSession({
+          userId: PLAYER_USER_ID,
+          trackId: TRACK_1,
+          status: GameStatus.LOST,
+          currentRound: 6,
+          user: { displayName: 'Player', avatarUrl: null },
+        }),
+        // Player completed round 1 (host hasn't yet)
+        makeSession({
+          userId: PLAYER_USER_ID,
+          trackId: TRACK_2,
+          status: GameStatus.WON,
+          currentRound: 2,
+          user: { displayName: 'Player', avatarUrl: null },
+        }),
+      ]);
+
+      const result = await service.getScoreboard(HOST_SESSION, ROOM_ID);
+
+      // Host only completed round 0, so only round 0 should be visible
+      expect(result.rounds).toHaveLength(1);
+      expect(result.rounds[0].roundIndex).toBe(0);
+      expect(result.rounds[0].players).toHaveLength(2);
+    });
+
+    it('should sort standings by total score descending', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(
+        makeRoom({
+          players: [
+            {
+              id: 'rp-host',
+              roomId: ROOM_ID,
+              userId: HOST_USER_ID,
+              totalScore: 3,
+              joinedAt: new Date(),
+              user: { displayName: 'Host', avatarUrl: null },
+            },
+            {
+              id: 'rp-player',
+              roomId: ROOM_ID,
+              userId: PLAYER_USER_ID,
+              totalScore: 10,
+              joinedAt: new Date(),
+              user: { displayName: 'Player', avatarUrl: null },
+            },
+          ],
+        }),
+      );
+      mockGameSessionRepository.findAllRoomSessions.mockResolvedValue([]);
+
+      const result = await service.getScoreboard(HOST_SESSION, ROOM_ID);
+
+      expect(result.standings[0].displayName).toBe('Player');
+      expect(result.standings[1].displayName).toBe('Host');
+    });
+
+    it('should throw ForbiddenException for non-player', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: 'stranger',
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      await expect(
+        service.getScoreboard('session-stranger', ROOM_ID),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should reflect room completion status', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(
+        makeRoom({ status: RoomStatus.COMPLETED }),
+      );
+      mockGameSessionRepository.findAllRoomSessions.mockResolvedValue([]);
+
+      const result = await service.getScoreboard(HOST_SESSION, ROOM_ID);
+
+      expect(result.isComplete).toBe(true);
+      expect(result.roomStatus).toBe(RoomStatus.COMPLETED);
+    });
+  });
+});

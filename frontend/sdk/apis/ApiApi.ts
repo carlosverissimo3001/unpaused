@@ -17,17 +17,21 @@ import * as runtime from '../runtime';
 import type {
   AdminUserDto,
   AuthMeResponseDto,
+  CreateRoomDto,
   CreateStreakQuestionDto,
   GameHistoryDto,
   GameStateDto,
   GameStatsDto,
   GuessDto,
   GuessResultDto,
+  MultiplayerRoundStateDto,
   PlayedTodayDto,
   PlaylistDto,
   PlaylistsResponseDto,
   QuizNextResponseDto,
   QuizResultDto,
+  RoomDto,
+  ScoreboardDto,
   ShareResultDto,
   StartGameDto,
   StreakQuestionDto,
@@ -43,6 +47,8 @@ import {
     AdminUserDtoToJSON,
     AuthMeResponseDtoFromJSON,
     AuthMeResponseDtoToJSON,
+    CreateRoomDtoFromJSON,
+    CreateRoomDtoToJSON,
     CreateStreakQuestionDtoFromJSON,
     CreateStreakQuestionDtoToJSON,
     GameHistoryDtoFromJSON,
@@ -55,6 +61,8 @@ import {
     GuessDtoToJSON,
     GuessResultDtoFromJSON,
     GuessResultDtoToJSON,
+    MultiplayerRoundStateDtoFromJSON,
+    MultiplayerRoundStateDtoToJSON,
     PlayedTodayDtoFromJSON,
     PlayedTodayDtoToJSON,
     PlaylistDtoFromJSON,
@@ -65,6 +73,10 @@ import {
     QuizNextResponseDtoToJSON,
     QuizResultDtoFromJSON,
     QuizResultDtoToJSON,
+    RoomDtoFromJSON,
+    RoomDtoToJSON,
+    ScoreboardDtoFromJSON,
+    ScoreboardDtoToJSON,
     ShareResultDtoFromJSON,
     ShareResultDtoToJSON,
     StartGameDtoFromJSON,
@@ -140,6 +152,39 @@ export interface GameControllerStartGameRequest {
 }
 
 export interface GameControllerSubmitGuessRequest {
+    id: string;
+    guessDto: GuessDto;
+}
+
+export interface MultiplayerControllerCreateRoomRequest {
+    createRoomDto: CreateRoomDto;
+}
+
+export interface MultiplayerControllerGetRoomStateRequest {
+    id: string;
+}
+
+export interface MultiplayerControllerGetRoundStateRequest {
+    id: string;
+}
+
+export interface MultiplayerControllerGetScoreboardRequest {
+    id: string;
+}
+
+export interface MultiplayerControllerJoinRoomRequest {
+    code: string;
+}
+
+export interface MultiplayerControllerLeaveRoomRequest {
+    id: string;
+}
+
+export interface MultiplayerControllerStartGameRequest {
+    id: string;
+}
+
+export interface MultiplayerControllerSubmitGuessRequest {
     id: string;
     guessDto: GuessDto;
 }
@@ -861,6 +906,313 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Create a new multiplayer room
+     */
+    async multiplayerControllerCreateRoomRaw(requestParameters: MultiplayerControllerCreateRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoomDto>> {
+        if (requestParameters['createRoomDto'] == null) {
+            throw new runtime.RequiredError(
+                'createRoomDto',
+                'Required parameter "createRoomDto" was null or undefined when calling multiplayerControllerCreateRoom().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/multiplayer/rooms`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateRoomDtoToJSON(requestParameters['createRoomDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RoomDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Create a new multiplayer room
+     */
+    async multiplayerControllerCreateRoom(requestParameters: MultiplayerControllerCreateRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoomDto> {
+        const response = await this.multiplayerControllerCreateRoomRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get room state with players
+     */
+    async multiplayerControllerGetRoomStateRaw(requestParameters: MultiplayerControllerGetRoomStateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoomDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerGetRoomState().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/multiplayer/rooms/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RoomDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get room state with players
+     */
+    async multiplayerControllerGetRoomState(requestParameters: MultiplayerControllerGetRoomStateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoomDto> {
+        const response = await this.multiplayerControllerGetRoomStateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get current round state for the player
+     */
+    async multiplayerControllerGetRoundStateRaw(requestParameters: MultiplayerControllerGetRoundStateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MultiplayerRoundStateDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerGetRoundState().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/multiplayer/rooms/{id}/round`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MultiplayerRoundStateDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get current round state for the player
+     */
+    async multiplayerControllerGetRoundState(requestParameters: MultiplayerControllerGetRoundStateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MultiplayerRoundStateDto> {
+        const response = await this.multiplayerControllerGetRoundStateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get scoreboard (only completed rounds visible)
+     */
+    async multiplayerControllerGetScoreboardRaw(requestParameters: MultiplayerControllerGetScoreboardRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ScoreboardDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerGetScoreboard().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/multiplayer/rooms/{id}/scoreboard`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ScoreboardDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get scoreboard (only completed rounds visible)
+     */
+    async multiplayerControllerGetScoreboard(requestParameters: MultiplayerControllerGetScoreboardRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ScoreboardDto> {
+        const response = await this.multiplayerControllerGetScoreboardRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Join a room by invite code
+     */
+    async multiplayerControllerJoinRoomRaw(requestParameters: MultiplayerControllerJoinRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoomDto>> {
+        if (requestParameters['code'] == null) {
+            throw new runtime.RequiredError(
+                'code',
+                'Required parameter "code" was null or undefined when calling multiplayerControllerJoinRoom().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/multiplayer/rooms/{code}/join`;
+        urlPath = urlPath.replace(`{${"code"}}`, encodeURIComponent(String(requestParameters['code'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RoomDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Join a room by invite code
+     */
+    async multiplayerControllerJoinRoom(requestParameters: MultiplayerControllerJoinRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoomDto> {
+        const response = await this.multiplayerControllerJoinRoomRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Leave a room (host leaving expires it)
+     */
+    async multiplayerControllerLeaveRoomRaw(requestParameters: MultiplayerControllerLeaveRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerLeaveRoom().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/multiplayer/rooms/{id}/leave`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Leave a room (host leaving expires it)
+     */
+    async multiplayerControllerLeaveRoom(requestParameters: MultiplayerControllerLeaveRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.multiplayerControllerLeaveRoomRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Start the game (host only)
+     */
+    async multiplayerControllerStartGameRaw(requestParameters: MultiplayerControllerStartGameRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoomDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerStartGame().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/multiplayer/rooms/{id}/start`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RoomDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Start the game (host only)
+     */
+    async multiplayerControllerStartGame(requestParameters: MultiplayerControllerStartGameRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoomDto> {
+        const response = await this.multiplayerControllerStartGameRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Submit a guess for the current round
+     */
+    async multiplayerControllerSubmitGuessRaw(requestParameters: MultiplayerControllerSubmitGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GuessResultDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerSubmitGuess().'
+            );
+        }
+
+        if (requestParameters['guessDto'] == null) {
+            throw new runtime.RequiredError(
+                'guessDto',
+                'Required parameter "guessDto" was null or undefined when calling multiplayerControllerSubmitGuess().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/multiplayer/rooms/{id}/guess`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GuessDtoToJSON(requestParameters['guessDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GuessResultDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Submit a guess for the current round
+     */
+    async multiplayerControllerSubmitGuess(requestParameters: MultiplayerControllerSubmitGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GuessResultDto> {
+        const response = await this.multiplayerControllerSubmitGuessRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get current user\'s playlists
      */
     async playlistControllerGetMyPlaylistsRaw(requestParameters: PlaylistControllerGetMyPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistsResponseDto>> {
@@ -1115,7 +1467,8 @@ export class ApiApi extends runtime.BaseAPI {
  */
 export const GameControllerGetHistoryModeEnum = {
     Daily: 'DAILY',
-    All: 'ALL'
+    All: 'ALL',
+    Multiplayer: 'MULTIPLAYER'
 } as const;
 export type GameControllerGetHistoryModeEnum = typeof GameControllerGetHistoryModeEnum[keyof typeof GameControllerGetHistoryModeEnum];
 /**
@@ -1133,6 +1486,7 @@ export type GameControllerGetHistoryStatusEnum = typeof GameControllerGetHistory
  */
 export const GameControllerGetStatsModeEnum = {
     Daily: 'DAILY',
-    All: 'ALL'
+    All: 'ALL',
+    Multiplayer: 'MULTIPLAYER'
 } as const;
 export type GameControllerGetStatsModeEnum = typeof GameControllerGetStatsModeEnum[keyof typeof GameControllerGetStatsModeEnum];

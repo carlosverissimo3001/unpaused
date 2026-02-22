@@ -22,6 +22,14 @@ All URIs are relative to *http://localhost*
 | [**gameControllerGetStats**](ApiApi.md#gamecontrollergetstats) | **GET** /game/stats | Get user\&#39;s daily stats |
 | [**gameControllerStartGame**](ApiApi.md#gamecontrollerstartgame) | **POST** /game/start | Start a new game from a playlist or daily |
 | [**gameControllerSubmitGuess**](ApiApi.md#gamecontrollersubmitguess) | **POST** /game/{id}/guess | Submit a guess for a specific session |
+| [**multiplayerControllerCreateRoom**](ApiApi.md#multiplayercontrollercreateroom) | **POST** /multiplayer/rooms | Create a new multiplayer room |
+| [**multiplayerControllerGetRoomState**](ApiApi.md#multiplayercontrollergetroomstate) | **GET** /multiplayer/rooms/{id} | Get room state with players |
+| [**multiplayerControllerGetRoundState**](ApiApi.md#multiplayercontrollergetroundstate) | **GET** /multiplayer/rooms/{id}/round | Get current round state for the player |
+| [**multiplayerControllerGetScoreboard**](ApiApi.md#multiplayercontrollergetscoreboard) | **GET** /multiplayer/rooms/{id}/scoreboard | Get scoreboard (only completed rounds visible) |
+| [**multiplayerControllerJoinRoom**](ApiApi.md#multiplayercontrollerjoinroom) | **POST** /multiplayer/rooms/{code}/join | Join a room by invite code |
+| [**multiplayerControllerLeaveRoom**](ApiApi.md#multiplayercontrollerleaveroom) | **POST** /multiplayer/rooms/{id}/leave | Leave a room (host leaving expires it) |
+| [**multiplayerControllerStartGame**](ApiApi.md#multiplayercontrollerstartgame) | **POST** /multiplayer/rooms/{id}/start | Start the game (host only) |
+| [**multiplayerControllerSubmitGuess**](ApiApi.md#multiplayercontrollersubmitguess) | **POST** /multiplayer/rooms/{id}/guess | Submit a guess for the current round |
 | [**playlistControllerGetMyPlaylists**](ApiApi.md#playlistcontrollergetmyplaylists) | **GET** /playlists/me | Get current user\&#39;s playlists |
 | [**playlistControllerGetPlaylistById**](ApiApi.md#playlistcontrollergetplaylistbyid) | **GET** /playlists/{id} | Get playlist by ID |
 | [**searchControllerSearchTracks**](ApiApi.md#searchcontrollersearchtracks) | **GET** /search/tracks | Search Spotify tracks (for game guess options) |
@@ -846,7 +854,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // 'DAILY' | 'ALL' | The game mode to filter history by (e.g. daily, all) (optional)
+    // 'DAILY' | 'ALL' | 'MULTIPLAYER' | The game mode to filter history by (e.g. daily, all) (optional)
     mode: mode_example,
     // number | Page number (1-indexed) (optional)
     page: 8.14,
@@ -879,7 +887,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mode** | `DAILY`, `ALL` | The game mode to filter history by (e.g. daily, all) | [Optional] [Defaults to `undefined`] [Enum: DAILY, ALL] |
+| **mode** | `DAILY`, `ALL`, `MULTIPLAYER` | The game mode to filter history by (e.g. daily, all) | [Optional] [Defaults to `undefined`] [Enum: DAILY, ALL, MULTIPLAYER] |
 | **page** | `number` | Page number (1-indexed) | [Optional] [Defaults to `1`] |
 | **limit** | `number` | Items per page | [Optional] [Defaults to `10`] |
 | **search** | `string` | Search by track name, artist name, or album name | [Optional] [Defaults to `undefined`] |
@@ -1063,7 +1071,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // 'DAILY' | 'ALL' | The game mode
+    // 'DAILY' | 'ALL' | 'MULTIPLAYER' | The game mode
     mode: mode_example,
   } satisfies GameControllerGetStatsRequest;
 
@@ -1084,7 +1092,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mode** | `DAILY`, `ALL` | The game mode | [Defaults to `undefined`] [Enum: DAILY, ALL] |
+| **mode** | `DAILY`, `ALL`, `MULTIPLAYER` | The game mode | [Defaults to `undefined`] [Enum: DAILY, ALL, MULTIPLAYER] |
 
 ### Return type
 
@@ -1230,6 +1238,562 @@ example().catch(console.error);
 ### Authorization
 
 No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+| **429** | Rate limit exceeded |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerCreateRoom
+
+> RoomDto multiplayerControllerCreateRoom(createRoomDto)
+
+Create a new multiplayer room
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerCreateRoomRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // CreateRoomDto
+    createRoomDto: ...,
+  } satisfies MultiplayerControllerCreateRoomRequest;
+
+  try {
+    const data = await api.multiplayerControllerCreateRoom(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **createRoomDto** | [CreateRoomDto](CreateRoomDto.md) |  | |
+
+### Return type
+
+[**RoomDto**](RoomDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerGetRoomState
+
+> RoomDto multiplayerControllerGetRoomState(id)
+
+Get room state with players
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerGetRoomStateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Room ID
+    id: id_example,
+  } satisfies MultiplayerControllerGetRoomStateRequest;
+
+  try {
+    const data = await api.multiplayerControllerGetRoomState(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | Room ID | [Defaults to `undefined`] |
+
+### Return type
+
+[**RoomDto**](RoomDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerGetRoundState
+
+> MultiplayerRoundStateDto multiplayerControllerGetRoundState(id)
+
+Get current round state for the player
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerGetRoundStateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Room ID
+    id: id_example,
+  } satisfies MultiplayerControllerGetRoundStateRequest;
+
+  try {
+    const data = await api.multiplayerControllerGetRoundState(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | Room ID | [Defaults to `undefined`] |
+
+### Return type
+
+[**MultiplayerRoundStateDto**](MultiplayerRoundStateDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerGetScoreboard
+
+> ScoreboardDto multiplayerControllerGetScoreboard(id)
+
+Get scoreboard (only completed rounds visible)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerGetScoreboardRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Room ID
+    id: id_example,
+  } satisfies MultiplayerControllerGetScoreboardRequest;
+
+  try {
+    const data = await api.multiplayerControllerGetScoreboard(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | Room ID | [Defaults to `undefined`] |
+
+### Return type
+
+[**ScoreboardDto**](ScoreboardDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerJoinRoom
+
+> RoomDto multiplayerControllerJoinRoom(code)
+
+Join a room by invite code
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerJoinRoomRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Room invite code
+    code: code_example,
+  } satisfies MultiplayerControllerJoinRoomRequest;
+
+  try {
+    const data = await api.multiplayerControllerJoinRoom(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **code** | `string` | Room invite code | [Defaults to `undefined`] |
+
+### Return type
+
+[**RoomDto**](RoomDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerLeaveRoom
+
+> multiplayerControllerLeaveRoom(id)
+
+Leave a room (host leaving expires it)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerLeaveRoomRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Room ID
+    id: id_example,
+  } satisfies MultiplayerControllerLeaveRoomRequest;
+
+  try {
+    const data = await api.multiplayerControllerLeaveRoom(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | Room ID | [Defaults to `undefined`] |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerStartGame
+
+> RoomDto multiplayerControllerStartGame(id)
+
+Start the game (host only)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerStartGameRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Room ID
+    id: id_example,
+  } satisfies MultiplayerControllerStartGameRequest;
+
+  try {
+    const data = await api.multiplayerControllerStartGame(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | Room ID | [Defaults to `undefined`] |
+
+### Return type
+
+[**RoomDto**](RoomDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerSubmitGuess
+
+> GuessResultDto multiplayerControllerSubmitGuess(id, guessDto)
+
+Submit a guess for the current round
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerSubmitGuessRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Room ID
+    id: id_example,
+    // GuessDto
+    guessDto: ...,
+  } satisfies MultiplayerControllerSubmitGuessRequest;
+
+  try {
+    const data = await api.multiplayerControllerSubmitGuess(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **guessDto** | [GuessDto](GuessDto.md) |  | |
+
+### Return type
+
+[**GuessResultDto**](GuessResultDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
 
 ### HTTP request headers
 

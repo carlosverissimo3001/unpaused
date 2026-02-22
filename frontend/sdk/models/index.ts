@@ -2,6 +2,7 @@
 /* eslint-disable */
 export * from './AdminUserDto';
 export * from './AuthMeResponseDto';
+export * from './CreateRoomDto';
 export * from './CreateStreakQuestionDto';
 export * from './GameHistoryDto';
 export * from './GameHistoryEntryDto';
@@ -11,6 +12,7 @@ export * from './GuessDto';
 export * from './GuessHistoryDto';
 export * from './GuessResultDto';
 export * from './MetaGameExtrasVo';
+export * from './MultiplayerRoundStateDto';
 export * from './PaginationMetaDto';
 export * from './PlayedTodayDto';
 export * from './PlaylistDto';
@@ -18,6 +20,12 @@ export * from './PlaylistsResponseDto';
 export * from './QuizNextResponseDto';
 export * from './QuizQuestionDto';
 export * from './QuizResultDto';
+export * from './RoomDto';
+export * from './RoomPlayerDto';
+export * from './ScoreboardDto';
+export * from './ScoreboardPlayerRoundDto';
+export * from './ScoreboardPlayerTotalDto';
+export * from './ScoreboardRoundDto';
 export * from './ShareResultDto';
 export * from './StartGameDto';
 export * from './StreakFreezeUsageDto';

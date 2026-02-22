@@ -100,7 +100,8 @@ export type GameHistoryEntryDtoStatusEnum = typeof GameHistoryEntryDtoStatusEnum
  */
 export const GameHistoryEntryDtoModeEnum = {
     Daily: 'DAILY',
-    All: 'ALL'
+    All: 'ALL',
+    Multiplayer: 'MULTIPLAYER'
 } as const;
 export type GameHistoryEntryDtoModeEnum = typeof GameHistoryEntryDtoModeEnum[keyof typeof GameHistoryEntryDtoModeEnum];
 

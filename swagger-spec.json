@@ -290,7 +290,8 @@
             "schema": {
               "enum": [
                 "DAILY",
-                "ALL"
+                "ALL",
+                "MULTIPLAYER"
               ],
               "type": "string"
             }
@@ -398,7 +399,8 @@
             "schema": {
               "enum": [
                 "DAILY",
-                "ALL"
+                "ALL",
+                "MULTIPLAYER"
               ],
               "type": "string"
             }
@@ -949,6 +951,308 @@
           "Api"
         ]
       }
+    },
+    "/multiplayer/rooms": {
+      "post": {
+        "operationId": "MultiplayerController_createRoom",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoomDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Create a new multiplayer room",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/multiplayer/rooms/{id}": {
+      "get": {
+        "operationId": "MultiplayerController_getRoomState",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Room ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get room state with players",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/multiplayer/rooms/{code}/join": {
+      "post": {
+        "operationId": "MultiplayerController_joinRoom",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Room invite code",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Join a room by invite code",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/multiplayer/rooms/{id}/start": {
+      "post": {
+        "operationId": "MultiplayerController_startGame",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Room ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Start the game (host only)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/multiplayer/rooms/{id}/leave": {
+      "post": {
+        "operationId": "MultiplayerController_leaveRoom",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Room ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Leave a room (host leaving expires it)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/multiplayer/rooms/{id}/round": {
+      "get": {
+        "operationId": "MultiplayerController_getRoundState",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Room ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultiplayerRoundStateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get current round state for the player",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/multiplayer/rooms/{id}/guess": {
+      "post": {
+        "operationId": "MultiplayerController_submitGuess",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Room ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuessResultDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Submit a guess for the current round",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/multiplayer/rooms/{id}/scoreboard": {
+      "get": {
+        "operationId": "MultiplayerController_getScoreboard",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Room ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScoreboardDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get scoreboard (only completed rounds visible)",
+        "tags": [
+          "Api"
+        ]
+      }
     }
   },
   "info": {
@@ -1108,7 +1412,8 @@
             "description": "The game mode to start (all or daily)",
             "enum": [
               "DAILY",
-              "ALL"
+              "ALL",
+              "MULTIPLAYER"
             ]
           }
         },
@@ -1308,7 +1613,8 @@
             "description": "The game mode",
             "enum": [
               "DAILY",
-              "ALL"
+              "ALL",
+              "MULTIPLAYER"
             ]
           },
           "guesses": {
@@ -1480,7 +1786,8 @@
             "description": "The game mode",
             "enum": [
               "DAILY",
-              "ALL"
+              "ALL",
+              "MULTIPLAYER"
             ]
           },
           "winRate": {
@@ -1962,6 +2269,294 @@
           "freezeEarned",
           "freezesAvailable",
           "correctAnswerIndex"
+        ]
+      },
+      "CreateRoomDto": {
+        "type": "object",
+        "properties": {
+          "roundCount": {
+            "type": "number",
+            "description": "Number of rounds for the game",
+            "enum": [
+              3,
+              5,
+              10
+            ]
+          }
+        },
+        "required": [
+          "roundCount"
+        ]
+      },
+      "RoomPlayerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "totalScore": {
+            "type": "number"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "displayName",
+          "totalScore",
+          "joinedAt"
+        ]
+      },
+      "RoomDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "inviteCode": {
+            "type": "string"
+          },
+          "hostId": {
+            "type": "string"
+          },
+          "roundCount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "WAITING",
+              "PLAYING",
+              "COMPLETED",
+              "EXPIRED"
+            ]
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoomPlayerDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "inviteCode",
+          "hostId",
+          "roundCount",
+          "status",
+          "players",
+          "createdAt"
+        ]
+      },
+      "MultiplayerRoundStateDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "The game session ID for this round"
+          },
+          "roundIndex": {
+            "type": "number",
+            "description": "Room round index (0-based)"
+          },
+          "totalRounds": {
+            "type": "number",
+            "description": "Total rounds in the room"
+          },
+          "currentGuess": {
+            "type": "number",
+            "description": "Guess count within this round"
+          },
+          "snippetDuration": {
+            "type": "number",
+            "description": "Snippet duration for the current guess"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PLAYING",
+              "WON",
+              "LOST",
+              "ABANDONED"
+            ]
+          },
+          "guesses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuessHistoryDto"
+            }
+          },
+          "previewUrl": {
+            "type": "string",
+            "description": "Track preview URL"
+          },
+          "answer": {
+            "description": "Answer (only when round is complete)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrackOptionDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "sessionId",
+          "roundIndex",
+          "totalRounds",
+          "currentGuess",
+          "snippetDuration",
+          "status",
+          "guesses",
+          "previewUrl"
+        ]
+      },
+      "ScoreboardPlayerRoundDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number",
+            "description": "Score for this round (0-6)"
+          },
+          "guessCount": {
+            "type": "number",
+            "description": "Number of guesses used"
+          },
+          "won": {
+            "type": "boolean",
+            "description": "Whether the player won this round"
+          }
+        },
+        "required": [
+          "userId",
+          "displayName",
+          "score",
+          "guessCount",
+          "won"
+        ]
+      },
+      "ScoreboardRoundDto": {
+        "type": "object",
+        "properties": {
+          "roundIndex": {
+            "type": "number",
+            "description": "Round index (0-based)"
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreboardPlayerRoundDto"
+            }
+          },
+          "trackName": {
+            "type": "string",
+            "description": "Track name (after round complete)"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Artist name (after round complete)"
+          },
+          "albumImageUrl": {
+            "type": "string",
+            "description": "Album image URL"
+          }
+        },
+        "required": [
+          "roundIndex",
+          "players"
+        ]
+      },
+      "ScoreboardPlayerTotalDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "totalScore": {
+            "type": "number",
+            "description": "Total score across all rounds"
+          }
+        },
+        "required": [
+          "userId",
+          "displayName",
+          "totalScore"
+        ]
+      },
+      "ScoreboardDto": {
+        "type": "object",
+        "properties": {
+          "rounds": {
+            "description": "Per-round scores (only for rounds the caller has completed)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreboardRoundDto"
+            }
+          },
+          "standings": {
+            "description": "Total scores per player",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoreboardPlayerTotalDto"
+            }
+          },
+          "roomStatus": {
+            "type": "string",
+            "enum": [
+              "WAITING",
+              "PLAYING",
+              "COMPLETED",
+              "EXPIRED"
+            ]
+          },
+          "isComplete": {
+            "type": "boolean",
+            "description": "Whether all rounds are complete for all players"
+          }
+        },
+        "required": [
+          "rounds",
+          "standings",
+          "roomStatus",
+          "isComplete"
         ]
       }
     }
