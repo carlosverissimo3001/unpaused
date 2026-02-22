@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AdminUserDto,
   AuthMeResponseDto,
   CreateStreakQuestionDto,
   GameHistoryDto,
@@ -35,8 +36,11 @@ import type {
   TokenLoginDto,
   TrackOptionDto,
   UpdateStreakQuestionDto,
+  UpdateUserRoleDto,
 } from '../models/index';
 import {
+    AdminUserDtoFromJSON,
+    AdminUserDtoToJSON,
     AuthMeResponseDtoFromJSON,
     AuthMeResponseDtoToJSON,
     CreateStreakQuestionDtoFromJSON,
@@ -77,6 +81,8 @@ import {
     TrackOptionDtoToJSON,
     UpdateStreakQuestionDtoFromJSON,
     UpdateStreakQuestionDtoToJSON,
+    UpdateUserRoleDtoFromJSON,
+    UpdateUserRoleDtoToJSON,
 } from '../models/index';
 
 export interface AdminControllerCreateStreakQuestionRequest {
@@ -90,6 +96,11 @@ export interface AdminControllerDeleteStreakQuestionRequest {
 export interface AdminControllerUpdateStreakQuestionRequest {
     id: string;
     updateStreakQuestionDto: UpdateStreakQuestionDto;
+}
+
+export interface AdminControllerUpdateUserRoleRequest {
+    id: string;
+    updateUserRoleDto: UpdateUserRoleDto;
 }
 
 export interface AuthControllerCallbackRequest {
@@ -262,6 +273,35 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * List all users (admin only)
+     */
+    async adminControllerListUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<AdminUserDto>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/admin/users`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(AdminUserDtoFromJSON));
+    }
+
+    /**
+     * List all users (admin only)
+     */
+    async adminControllerListUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<AdminUserDto>> {
+        const response = await this.adminControllerListUsersRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Update a streak quiz question (admin only)
      */
     async adminControllerUpdateStreakQuestionRaw(requestParameters: AdminControllerUpdateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StreakQuestionDto>> {
@@ -305,6 +345,53 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async adminControllerUpdateStreakQuestion(requestParameters: AdminControllerUpdateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakQuestionDto> {
         const response = await this.adminControllerUpdateStreakQuestionRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update user role flags (admin only)
+     */
+    async adminControllerUpdateUserRoleRaw(requestParameters: AdminControllerUpdateUserRoleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling adminControllerUpdateUserRole().'
+            );
+        }
+
+        if (requestParameters['updateUserRoleDto'] == null) {
+            throw new runtime.RequiredError(
+                'updateUserRoleDto',
+                'Required parameter "updateUserRoleDto" was null or undefined when calling adminControllerUpdateUserRole().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/admin/users/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateUserRoleDtoToJSON(requestParameters['updateUserRoleDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AdminUserDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Update user role flags (admin only)
+     */
+    async adminControllerUpdateUserRole(requestParameters: AdminControllerUpdateUserRoleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserDto> {
+        const response = await this.adminControllerUpdateUserRoleRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

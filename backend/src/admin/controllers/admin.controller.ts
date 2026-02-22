@@ -22,12 +22,18 @@ import { UpdateStreakQuestionDto } from '../../streak/dto/update-streak-question
 import { SessionGuard } from '@utils/guards/session-guard';
 import { AdminGuard } from '@utils/guards/admin-guard';
 import { SessionId } from '@utils/decorators/sessionId.decorator';
+import { AdminUserService } from '../services/admin-user.service';
+import { AdminUserDto } from '../dto/admin-user.dto';
+import { UpdateUserRoleDto } from '../dto/update-user-role.dto';
 
 @ApiTags('Api')
 @Controller('admin')
 @UseGuards(SessionGuard, AdminGuard)
 export class AdminController {
-  constructor(private readonly streakQuizService: StreakQuizService) {}
+  constructor(
+    private readonly streakQuizService: StreakQuizService,
+    private readonly adminUserService: AdminUserService,
+  ) {}
 
   @Get('streak-questions')
   @ApiCookieAuth()
@@ -67,5 +73,25 @@ export class AdminController {
   @ApiResponse({ status: 204 })
   async deleteStreakQuestion(@Param('id') id: string): Promise<void> {
     return this.streakQuizService.deleteQuestion(id);
+  }
+
+  @Get('users')
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'List all users (admin only)' })
+  @ApiResponse({ status: 200, type: [AdminUserDto] })
+  async listUsers(): Promise<AdminUserDto[]> {
+    return this.adminUserService.listUsers();
+  }
+
+  @Patch('users/:id')
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Update user role flags (admin only)' })
+  @ApiParam({ name: 'id' })
+  @ApiResponse({ status: 200, type: AdminUserDto })
+  async updateUserRole(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserRoleDto,
+  ): Promise<AdminUserDto> {
+    return this.adminUserService.updateUserRole(id, dto);
   }
 }

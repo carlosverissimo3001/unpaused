@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './AdminUserDto';
 export * from './AuthMeResponseDto';
 export * from './CreateStreakQuestionDto';
 export * from './GameHistoryDto';
@@ -26,3 +27,4 @@ export * from './SubmitQuizAnswerDto';
 export * from './TokenLoginDto';
 export * from './TrackOptionDto';
 export * from './UpdateStreakQuestionDto';
+export * from './UpdateUserRoleDto';

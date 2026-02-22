@@ -52,6 +52,7 @@ export const queryKeys = {
   admin: {
     all: ['admin'] as const,
     streakQuestions: ['admin', 'streakQuestions'] as const,
+    users: ['admin', 'users'] as const,
   },
   // Search queries
   search: {

@@ -7,7 +7,9 @@ All URIs are relative to *http://localhost*
 | [**adminControllerCreateStreakQuestion**](ApiApi.md#admincontrollercreatestreakquestion) | **POST** /admin/streak-questions | Create a streak quiz question (admin only) |
 | [**adminControllerDeleteStreakQuestion**](ApiApi.md#admincontrollerdeletestreakquestion) | **DELETE** /admin/streak-questions/{id} | Soft-delete a streak quiz question (admin only) |
 | [**adminControllerListStreakQuestions**](ApiApi.md#admincontrollerliststreakquestions) | **GET** /admin/streak-questions | List all streak quiz questions (admin only) |
+| [**adminControllerListUsers**](ApiApi.md#admincontrollerlistusers) | **GET** /admin/users | List all users (admin only) |
 | [**adminControllerUpdateStreakQuestion**](ApiApi.md#admincontrollerupdatestreakquestion) | **PATCH** /admin/streak-questions/{id} | Update a streak quiz question (admin only) |
+| [**adminControllerUpdateUserRole**](ApiApi.md#admincontrollerupdateuserrole) | **PATCH** /admin/users/{id} | Update user role flags (admin only) |
 | [**authControllerCallback**](ApiApi.md#authcontrollercallback) | **GET** /auth/callback | Handle Spotify OAuth callback |
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
 | [**authControllerLogout**](ApiApi.md#authcontrollerlogout) | **POST** /auth/logout | Logout and clear session |
@@ -229,6 +231,67 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## adminControllerListUsers
+
+> Array&lt;AdminUserDto&gt; adminControllerListUsers()
+
+List all users (admin only)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AdminControllerListUsersRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.adminControllerListUsers();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**Array&lt;AdminUserDto&gt;**](AdminUserDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## adminControllerUpdateStreakQuestion
 
 > StreakQuestionDto adminControllerUpdateStreakQuestion(id, updateStreakQuestionDto)
@@ -282,6 +345,78 @@ example().catch(console.error);
 ### Return type
 
 [**StreakQuestionDto**](StreakQuestionDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## adminControllerUpdateUserRole
+
+> AdminUserDto adminControllerUpdateUserRole(id, updateUserRoleDto)
+
+Update user role flags (admin only)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AdminControllerUpdateUserRoleRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string
+    id: id_example,
+    // UpdateUserRoleDto
+    updateUserRoleDto: ...,
+  } satisfies AdminControllerUpdateUserRoleRequest;
+
+  try {
+    const data = await api.adminControllerUpdateUserRole(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` |  | [Defaults to `undefined`] |
+| **updateUserRoleDto** | [UpdateUserRoleDto](UpdateUserRoleDto.md) |  | |
+
+### Return type
+
+[**AdminUserDto**](AdminUserDto.md)
 
 ### Authorization
 
@@ -1106,6 +1241,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** |  |  -  |
+| **429** | Rate limit exceeded |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -1326,6 +1462,7 @@ example().catch(console.error);
 |-------------|-------------|------------------|
 | **200** | Track options |  -  |
 | **401** | Not authenticated |  -  |
+| **429** | Rate limit exceeded |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

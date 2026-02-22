@@ -562,6 +562,9 @@
                 }
               }
             }
+          },
+          "429": {
+            "description": "Rate limit exceeded"
           }
         },
         "summary": "Submit a guess for a specific session",
@@ -599,6 +602,9 @@
           },
           "401": {
             "description": "Not authenticated"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
           }
         },
         "security": [
@@ -745,6 +751,82 @@
           }
         ],
         "summary": "Soft-delete a streak quiz question (admin only)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "operationId": "AdminController_listUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminUserDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "List all users (admin only)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/admin/users/{id}": {
+      "patch": {
+        "operationId": "AdminController_updateUserRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Update user role flags (admin only)",
         "tags": [
           "Api"
         ]
@@ -1672,6 +1754,57 @@
             "type": "string"
           },
           "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AdminUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "spotifyUserId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "isTrusted": {
+            "type": "boolean"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "spotifyUserId",
+          "displayName",
+          "isTrusted",
+          "isAdmin",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateUserRoleDto": {
+        "type": "object",
+        "properties": {
+          "isTrusted": {
+            "type": "boolean"
+          },
+          "isAdmin": {
             "type": "boolean"
           }
         }
