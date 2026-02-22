@@ -229,7 +229,7 @@ export class GameSessionRepository {
 
     return {
       ...prismaEntity,
-      userId: prismaEntity.userId ?? undefined,
+      userId: prismaEntity.userId,
       completedAt: prismaEntity.completedAt ?? undefined,
       guesses: mapGuessesFromPrisma(prismaEntity.guesses),
       score,

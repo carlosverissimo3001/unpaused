@@ -7,17 +7,17 @@ datasource db {
 }
 
 model User {
-  id                    String   @id @default(uuid())
-  spotifyUserId         String   @unique @map("spotify_user_id")
-  displayName           String   @map("display_name")
-  avatarUrl             String?  @map("avatar_url")
-  encryptedRefreshToken String?  @map("encrypted_refresh_token")
-  
-  isTrusted             Boolean  @default(false) @map("is_trusted")
-  isAdmin               Boolean  @default(false) @map("is_admin")
-  
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  id                    String  @id @default(uuid())
+  spotifyUserId         String  @unique @map("spotify_user_id")
+  displayName           String  @map("display_name")
+  avatarUrl             String? @map("avatar_url")
+  encryptedRefreshToken String? @map("encrypted_refresh_token")
+
+  isTrusted Boolean @default(false) @map("is_trusted")
+  isAdmin   Boolean @default(false) @map("is_admin")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Streak freeze fields
   streakFreezes       Int      @default(0) @map("streak_freezes")
@@ -41,9 +41,8 @@ enum GameStatus {
 model GameSession {
   id String @id @default(uuid())
 
-  // Nullable, as we allow users to play without logging in
-  userId String? @map("user_id")
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   playlistId String   @map("playlist_id")
   mode       GameMode @default(ALL)

@@ -6,8 +6,8 @@ export class GameSessionEntity {
   @ApiProperty({ description: 'The ID of the game session' })
   id: string;
 
-  @ApiPropertyOptional({ description: 'The ID of the user' })
-  userId?: string;
+  @ApiProperty({ description: 'The ID of the user' })
+  userId: string;
 
   @ApiProperty({ description: 'The ID of the playlist' })
   playlistId: string;
