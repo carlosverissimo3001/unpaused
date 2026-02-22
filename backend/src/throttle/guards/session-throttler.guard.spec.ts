@@ -54,7 +54,10 @@ describe('SessionThrottlerGuard', () => {
         limit: 20,
       } as ThrottlerLimitDetail;
 
-      const message = await guard['getErrorMessage'](mockContext, detail as any);
+      const message = await guard['getErrorMessage'](
+        mockContext,
+        detail as any,
+      );
       expect(message).toBe(
         'Rate limit exceeded. Try again in 45s (limit: 20 requests per minute).',
       );
@@ -66,7 +69,10 @@ describe('SessionThrottlerGuard', () => {
         limit: 60,
       } as ThrottlerLimitDetail;
 
-      const message = await guard['getErrorMessage'](mockContext, detail as any);
+      const message = await guard['getErrorMessage'](
+        mockContext,
+        detail as any,
+      );
       expect(message).toBe(
         'Rate limit exceeded. Try again in 2s (limit: 60 requests per minute).',
       );
@@ -78,7 +84,10 @@ describe('SessionThrottlerGuard', () => {
         limit: 10,
       } as ThrottlerLimitDetail;
 
-      const message = await guard['getErrorMessage'](mockContext, detail as any);
+      const message = await guard['getErrorMessage'](
+        mockContext,
+        detail as any,
+      );
       expect(message).toBe(
         'Rate limit exceeded. Try again in 1s (limit: 10 requests per minute).',
       );
