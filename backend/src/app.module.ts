@@ -10,6 +10,7 @@ import { GameModule } from './game/game.module';
 import { SpotifyModule } from './spotify/spotify.module';
 import { AdminModule } from './admin/admin.module';
 import { StreakModule } from './streak/streak.module';
+import { ThrottleModule } from './throttle/throttle.module';
 import { BullModule } from '@nestjs/bullmq';
 import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
 
@@ -22,6 +23,7 @@ import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
     PrismaModule,
     TransactionModule,
     RedisModule,
+    ThrottleModule,
     AuthModule,
     PlaylistModule,
     GameModule,

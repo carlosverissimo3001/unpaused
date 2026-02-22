@@ -1,4 +1,5 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiOperation,
@@ -10,6 +11,12 @@ import { SearchService } from '../services/search.service';
 import { TrackOptionDto } from '../../track/dto/track-option.dto';
 import { SessionId } from '@utils/decorators/sessionId.decorator';
 import { SessionGuard } from '@utils/guards/session-guard';
+import { SessionThrottlerGuard } from '@throttle/guards/session-throttler.guard';
+import {
+  THROTTLE_SEARCH,
+  THROTTLE_SEARCH_LIMIT,
+  THROTTLE_TTL,
+} from '@throttle/throttle.constants';
 
 @ApiTags('Api')
 @Controller('search')
@@ -20,12 +27,17 @@ export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get('tracks')
+  @UseGuards(SessionThrottlerGuard)
+  @Throttle({
+    [THROTTLE_SEARCH]: { limit: THROTTLE_SEARCH_LIMIT, ttl: THROTTLE_TTL },
+  })
   @ApiOperation({ summary: 'Search Spotify tracks (for game guess options)' })
   @ApiResponse({
     status: 200,
     description: 'Track options',
     type: [TrackOptionDto],
   })
+  @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
   async searchTracks(
     @SessionId() sessionId: string,
     @Query('q') q: string,

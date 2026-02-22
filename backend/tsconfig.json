@@ -28,7 +28,8 @@
       "@game/*": ["src/game/*"],
       "@spotify/*": ["src/spotify/*"],
       "@tracks/*": ["src/track/*"],
-      "@utils/*": ["src/utils/*"]
+      "@utils/*": ["src/utils/*"],
+      "@throttle/*": ["src/throttle/*"]
     }
   },
   "include": ["src/**/*.ts"],

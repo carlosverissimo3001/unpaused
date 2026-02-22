@@ -7,6 +7,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiCookieAuth,
   ApiOperation,
@@ -16,6 +17,12 @@ import {
 } from '@nestjs/swagger';
 import { SessionId } from '@utils/decorators/sessionId.decorator';
 import { SessionGuard } from '@utils/guards/session-guard';
+import { SessionThrottlerGuard } from '@throttle/guards/session-throttler.guard';
+import {
+  THROTTLE_GUESS,
+  THROTTLE_GUESS_LIMIT,
+  THROTTLE_TTL,
+} from '@throttle/throttle.constants';
 import { PlayedTodayDto } from '../dto/daily/played-today.dto';
 import { ShareResultDto } from '../dto/daily/share-result.dto';
 import { GameHistoryDto } from '../dto/game-history.dto';
@@ -102,9 +109,14 @@ export class GameController {
   }
 
   @Post(':id/guess')
+  @UseGuards(SessionThrottlerGuard)
+  @Throttle({
+    [THROTTLE_GUESS]: { limit: THROTTLE_GUESS_LIMIT, ttl: THROTTLE_TTL },
+  })
   @ApiOperation({ summary: 'Submit a guess for a specific session' })
   @ApiParam({ name: 'id', description: 'The internal Game Session UUID' })
   @ApiResponse({ status: 200, type: GuessResultDto })
+  @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
   async submitGuess(
     @SessionId() sessionId: string,
     @Param('id') id: string,

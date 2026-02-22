@@ -19,5 +19,6 @@ module.exports = {
     '^@spotify/(?!web-api-ts-sdk)(.*)$': '<rootDir>/spotify/$1',
     '^@tracks/(.*)$': '<rootDir>/track/$1',
     '^@utils/(.*)$': '<rootDir>/utils/$1',
+    '^@throttle/(.*)$': '<rootDir>/throttle/$1',
   },
 };

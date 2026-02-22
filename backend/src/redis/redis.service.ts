@@ -36,4 +36,9 @@ export class RedisService implements OnModuleDestroy {
     const result = await this.client.exists(key);
     return result === 1;
   }
+
+  /** Expose the underlying ioredis client (used by throttler storage adapter) */
+  getClient(): Redis {
+    return this.client;
+  }
 }
