@@ -12,6 +12,12 @@ out
 *.generated.*
 swagger-spec.json
 
+# Test files
+**/*.spec.ts
+**/*.spec.js
+**/*.test.ts
+**/*.test.js
+
 # Logs
 *.log
 
