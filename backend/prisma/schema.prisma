@@ -28,6 +28,9 @@ model User {
 
   streakFreezeUsages StreakFreezeUsage[]
 
+  hostedRooms MultiplayerRoom[] @relation("hostedRooms")
+  roomPlayers RoomPlayer[]
+
   @@map("users")
 }
 
@@ -54,6 +57,9 @@ model GameSession {
   guesses      Json       @default("[]")
   status       GameStatus @default(PLAYING)
 
+  multiplayerRoomId String?          @map("multiplayer_room_id")
+  multiplayerRoom   MultiplayerRoom? @relation(fields: [multiplayerRoomId], references: [id], onDelete: SetNull)
+
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
   completedAt DateTime? @map("completed_at")
@@ -61,6 +67,7 @@ model GameSession {
   @@index([userId])
   @@index([userId, mode])
   @@index([userId, createdAt])
+  @@index([multiplayerRoomId])
   @@map("game_sessions")
 }
 
@@ -85,6 +92,7 @@ model Track {
 enum GameMode {
   DAILY
   ALL
+  MULTIPLAYER
 }
 
 model Stats {
@@ -135,4 +143,50 @@ model StreakFreezeUsage {
 
   @@index([userId])
   @@map("streak_freeze_usages")
+}
+
+enum RoomStatus {
+  WAITING
+  PLAYING
+  COMPLETED
+  EXPIRED
+}
+
+model MultiplayerRoom {
+  id         String     @id @default(uuid())
+  inviteCode String     @unique @map("invite_code")
+  hostId     String     @map("host_id")
+  host       User       @relation("hostedRooms", fields: [hostId], references: [id], onDelete: Cascade)
+
+  roundCount Int        @map("round_count")
+  status     RoomStatus @default(WAITING)
+
+  trackIds String[] @default([]) @map("track_ids")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  players      RoomPlayer[]
+  gameSessions GameSession[]
+
+  @@index([hostId])
+  @@map("multiplayer_rooms")
+}
+
+model RoomPlayer {
+  id     String          @id @default(uuid())
+  roomId String          @map("room_id")
+  room   MultiplayerRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId String          @map("user_id")
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  totalScore Int      @default(0) @map("total_score")
+  joinedAt   DateTime @default(now()) @map("joined_at")
+
+  @@unique([roomId, userId])
+  @@index([roomId])
+  @@index([userId])
+  @@map("room_players")
 }
