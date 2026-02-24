@@ -54,6 +54,11 @@ export const queryKeys = {
     streakQuestions: ['admin', 'streakQuestions'] as const,
     users: ['admin', 'users'] as const,
   },
+  // Multiplayer queries
+  multiplayer: {
+    all: ['multiplayer'] as const,
+    room: (roomId: string) => ['multiplayer', 'room', roomId] as const,
+  },
   // Search queries
   search: {
     all: ['search'] as const,

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { useMe } from '@/hooks/auth/useMe';
+import { consumeAuthReturnUrl } from '@/lib/auth-return';
 import { StreakFreezePrompt } from '@/components/streak/StreakFreezePrompt';
 import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
 import { useLogout } from '@/hooks/auth/useLogout';
@@ -24,10 +26,21 @@ export default function Home() {
     'rgba(30, 215, 96, 0.1)',
   );
 
+  const router = useRouter();
   const playlistFilters = usePlaylistFilters();
   const { error } = useAuthError();
 
   const { data: user, isLoading: isLoadingUser } = useMe();
+
+  // Handle post-OAuth redirect back to multiplayer join (or other) pages
+  useEffect(() => {
+    if (user) {
+      const returnUrl = consumeAuthReturnUrl();
+      if (returnUrl) {
+        router.replace(returnUrl);
+      }
+    }
+  }, [user, router]);
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } =
     useMyPlaylists({
       onlyPublic: playlistFilters.onlyPublic,
