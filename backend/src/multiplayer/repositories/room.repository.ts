@@ -75,7 +75,11 @@ export class RoomRepository {
   async updateStatus(
     roomId: string,
     status: RoomStatus,
-    extra?: { startedAt?: Date; completedAt?: Date; trackIds?: string[] },
+    extra?: {
+      startedAt?: Date;
+      completedAt?: Date;
+      trackIds?: string[];
+    },
   ): Promise<RoomWithPlayers> {
     return this.prisma.multiplayerRoom.update({
       where: { id: roomId },

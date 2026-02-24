@@ -12,6 +12,7 @@ import {
 } from '../repositories/room.repository';
 import { RoomDto } from '../dto/room.dto';
 import { CreateRoomDto } from '../dto/create-room.dto';
+import { TrackPoolService } from './track-pool.service';
 
 const INVITE_CODE_CHARSET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const INVITE_CODE_LENGTH = 8;
@@ -22,6 +23,7 @@ export class RoomService {
   constructor(
     private readonly authService: AuthService,
     private readonly roomRepository: RoomRepository,
+    private readonly trackPoolService: TrackPoolService,
   ) {}
 
   async createRoom(sessionId: string, dto: CreateRoomDto): Promise<RoomDto> {
@@ -84,12 +86,38 @@ export class RoomService {
       throw new BadRequestException('Game has already started or completed');
     }
 
-    // Track pooling will be handled by CAR-29/CAR-30.
-    // For now, just transition the room status.
+    // Pool tracks from all players' liked songs
+    const playerUserIds = room.players.map((p) => p.userId);
+    let trackIds: string[];
+    try {
+      trackIds = await this.trackPoolService.selectTracksForRoom(
+        playerUserIds,
+        room.roundCount,
+      );
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      const message =
+        error instanceof Error && error.message
+          ? `Failed to select tracks for this room: ${error.message}`
+          : 'Failed to select tracks for this room';
+      throw new BadRequestException(message);
+    }
+
+    if (trackIds.length < room.roundCount) {
+      throw new BadRequestException(
+        `Not enough tracks to start the game (required: ${room.roundCount}, found: ${trackIds.length})`,
+      );
+    }
+
     const updated = await this.roomRepository.updateStatus(
       roomId,
       RoomStatus.PLAYING,
-      { startedAt: new Date() },
+      {
+        startedAt: new Date(),
+        trackIds,
+      },
     );
 
     return RoomDto.fromEntity(updated);

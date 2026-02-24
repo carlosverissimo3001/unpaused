@@ -8,6 +8,7 @@ import { RoomStatus } from '@prisma/client';
 import { RoomService } from './room.service';
 import { RoomRepository } from '../repositories/room.repository';
 import { AuthService } from '../../auth/services/auth.service';
+import { TrackPoolService } from './track-pool.service';
 
 describe('RoomService', () => {
   let service: RoomService;
@@ -58,12 +59,17 @@ describe('RoomService', () => {
     inviteCodeExists: jest.fn(),
   };
 
+  const mockTrackPoolService = {
+    selectTracksForRoom: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RoomService,
         { provide: AuthService, useValue: mockAuthService },
         { provide: RoomRepository, useValue: mockRoomRepository },
+        { provide: TrackPoolService, useValue: mockTrackPoolService },
       ],
     }).compile();
 
@@ -191,11 +197,18 @@ describe('RoomService', () => {
   });
 
   describe('startGame', () => {
-    it('should let host start a WAITING room', async () => {
+    it('should let host start a WAITING room with track pooling', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
         id: HOST_USER_ID,
       });
       mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockTrackPoolService.selectTracksForRoom.mockResolvedValue([
+        'track-1',
+        'track-2',
+        'track-3',
+        'track-4',
+        'track-5',
+      ]);
       mockRoomRepository.updateStatus.mockResolvedValue(
         makeRoom({ status: RoomStatus.PLAYING }),
       );
@@ -203,10 +216,17 @@ describe('RoomService', () => {
       const result = await service.startGame(HOST_SESSION, ROOM_ID);
 
       expect(result.status).toBe(RoomStatus.PLAYING);
+      expect(mockTrackPoolService.selectTracksForRoom).toHaveBeenCalledWith(
+        [HOST_USER_ID],
+        5,
+      );
       expect(mockRoomRepository.updateStatus).toHaveBeenCalledWith(
         ROOM_ID,
         RoomStatus.PLAYING,
-        { startedAt: expect.any(Date) },
+        {
+          startedAt: expect.any(Date),
+          trackIds: ['track-1', 'track-2', 'track-3', 'track-4', 'track-5'],
+        },
       );
     });
 

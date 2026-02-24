@@ -83,6 +83,13 @@ export class SessionService {
       this.sessionMaxAge,
     );
 
+    // Reverse mapping: spotifyUserId → sessionId (for multiplayer track pooling)
+    await this.redisService.set(
+      `user-session:${spotifyUserId}`,
+      sessionId,
+      this.sessionMaxAge,
+    );
+
     return sessionId;
   }
 
@@ -104,9 +111,53 @@ export class SessionService {
   }
 
   /**
+   * Get a session ID by Spotify user ID (reverse lookup).
+   * Returns null if no active session exists for the user.
+   */
+  async getSessionIdBySpotifyUserId(
+    spotifyUserId: string,
+  ): Promise<string | null> {
+    const sessionId = await this.redisService.get(
+      `user-session:${spotifyUserId}`,
+    );
+    if (!sessionId) {
+      return null;
+    }
+
+    // Verify the session still exists (it may have expired)
+    const exists = await this.redisService.exists(`session:${sessionId}`);
+    if (!exists) {
+      await this.redisService.del(`user-session:${spotifyUserId}`);
+      return null;
+    }
+
+    return sessionId;
+  }
+
+  /**
    * Delete session (logout)
    */
   async deleteSession(sessionId: string): Promise<void> {
-    await this.redisService.del(`session:${sessionId}`);
+    const sessionKey = `session:${sessionId}`;
+    try {
+      // Clean up reverse mapping before deleting the session
+      const data = await this.redisService.get(sessionKey);
+      if (data) {
+        try {
+          const session = JSON.parse(data) as UserSessionDto;
+          const userSessionKey = `user-session:${session.spotifyUserId}`;
+          const currentSessionId = await this.redisService.get(userSessionKey);
+
+          // Only delete the reverse mapping if it still points to this session
+          if (currentSessionId === sessionId) {
+            await this.redisService.del(userSessionKey);
+          }
+        } catch {
+          // Ignore parse errors during cleanup
+        }
+      }
+    } finally {
+      await this.redisService.del(sessionKey);
+    }
   }
 }
