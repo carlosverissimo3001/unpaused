@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | string
 `userId` | string
+`spotifyUserId` | string
 `displayName` | string
 `avatarUrl` | string
 `totalScore` | number
@@ -22,6 +23,7 @@ import type { RoomPlayerDto } from ''
 const example = {
   "id": null,
   "userId": null,
+  "spotifyUserId": null,
   "displayName": null,
   "avatarUrl": null,
   "totalScore": null,

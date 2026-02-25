@@ -111,6 +111,21 @@ export class SessionService {
   }
 
   /**
+   * Refresh the reverse mapping (spotifyUserId → sessionId) so it stays
+   * alive as long as the user is actively making requests.
+   */
+  async refreshUserSessionMapping(
+    spotifyUserId: string,
+    sessionId: string,
+  ): Promise<void> {
+    await this.redisService.set(
+      `user-session:${spotifyUserId}`,
+      sessionId,
+      this.sessionMaxAge,
+    );
+  }
+
+  /**
    * Get a session ID by Spotify user ID (reverse lookup).
    * Returns null if no active session exists for the user.
    */

@@ -2297,6 +2297,9 @@
           "userId": {
             "type": "string"
           },
+          "spotifyUserId": {
+            "type": "string"
+          },
           "displayName": {
             "type": "string"
           },
@@ -2314,6 +2317,7 @@
         "required": [
           "id",
           "userId",
+          "spotifyUserId",
           "displayName",
           "totalScore",
           "joinedAt"

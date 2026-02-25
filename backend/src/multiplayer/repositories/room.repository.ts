@@ -4,14 +4,18 @@ import { MultiplayerRoom, RoomPlayer, RoomStatus, User } from '@prisma/client';
 
 const PLAYERS_INCLUDE = {
   players: {
-    include: { user: { select: { displayName: true, avatarUrl: true } } },
+    include: {
+      user: {
+        select: { spotifyUserId: true, displayName: true, avatarUrl: true },
+      },
+    },
     orderBy: { joinedAt: 'asc' as const },
   },
 };
 
 export type RoomWithPlayers = MultiplayerRoom & {
   players: (RoomPlayer & {
-    user: Pick<User, 'displayName' | 'avatarUrl'>;
+    user: Pick<User, 'spotifyUserId' | 'displayName' | 'avatarUrl'>;
   })[];
 };
 

@@ -16,7 +16,12 @@ export class SessionGuard implements CanActivate {
       throw new UnauthorizedException('No active session found');
     }
 
-    await this.sessionService.getSession(sessionId);
+    const session = await this.sessionService.getSession(sessionId);
+    await this.sessionService.refreshUserSessionMapping(
+      session.spotifyUserId,
+      sessionId,
+    );
+
     return true;
   }
 }

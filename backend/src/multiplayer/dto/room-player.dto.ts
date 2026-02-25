@@ -9,6 +9,9 @@ export class RoomPlayerDto {
   userId: string;
 
   @ApiProperty()
+  spotifyUserId: string;
+
+  @ApiProperty()
   displayName: string;
 
   @ApiPropertyOptional({ type: String })
@@ -21,11 +24,14 @@ export class RoomPlayerDto {
   joinedAt: Date;
 
   static fromEntity(
-    player: RoomPlayer & { user: Pick<User, 'displayName' | 'avatarUrl'> },
+    player: RoomPlayer & {
+      user: Pick<User, 'spotifyUserId' | 'displayName' | 'avatarUrl'>;
+    },
   ): RoomPlayerDto {
     return {
       id: player.id,
       userId: player.userId,
+      spotifyUserId: player.user.spotifyUserId,
       displayName: player.user.displayName,
       avatarUrl: player.user.avatarUrl ?? undefined,
       totalScore: player.totalScore,

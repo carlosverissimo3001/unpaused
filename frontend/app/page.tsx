@@ -18,6 +18,7 @@ import { PlaylistFilters } from '@/components/features/playlist/PlaylistFilters'
 import { PlaylistGrid } from '@/components/features/playlist/PlaylistGrid';
 import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
 import { AppFooter } from '@/components/features/AppFooter';
+import { MultiplayerBanner } from '@/components/multiplayer/MultiplayerBanner';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function Home() {
@@ -107,6 +108,7 @@ export default function Home() {
               className="space-y-4 sm:space-y-6"
             >
               <DailyChallengeBanner isTrusted={user.isTrusted} />
+              <MultiplayerBanner />
 
               {/* Main Content Header */}
               <div className="mt-1 sm:mt-2">
