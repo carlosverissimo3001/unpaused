@@ -1,11 +1,11 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { MultiplayerResultsPage } from '@/components/multiplayer/MultiplayerResultsPage';
+import { ResultsContainer } from '@/components/multiplayer/results';
 
 export default function MultiplayerResultsRoute() {
   const params = useParams();
   const roomId = params.roomId as string;
 
-  return <MultiplayerResultsPage roomId={roomId} />;
+  return <ResultsContainer roomId={roomId} />;
 }
