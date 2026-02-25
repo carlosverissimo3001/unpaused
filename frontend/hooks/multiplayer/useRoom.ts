@@ -11,10 +11,10 @@ export function useRoom(roomId: string | undefined) {
     queryFn: () => api.multiplayerControllerGetRoomState({ id: roomId! }),
     enabled: !!roomId,
     // TODO: At some point, we'd like to have websockets for this, but for now,
-    // we'll just poll the server every 5 seconds if the room is still waiting for players.
+    // we'll poll the server every 2 seconds if the room is still waiting for players.
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      return status === 'WAITING' ? 5000 : false;
+      return status === 'WAITING' ? 2000 : false;
     },
   });
 }

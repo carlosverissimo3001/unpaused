@@ -31,6 +31,7 @@ export default function RoomLobbyPage() {
   const startRoom = useStartRoom();
   const leaveRoom = useLeaveRoom();
   const [copied, setCopied] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   // Find current user's player entry to determine host status
   const currentPlayer = useMemo(() => {
@@ -51,7 +52,12 @@ export default function RoomLobbyPage() {
   // Redirect to game when status changes to PLAYING
   useEffect(() => {
     if (room?.status === 'PLAYING') {
-      router.replace(`/multiplayer/${roomId}/play`);
+      setIsStarting(true);
+      const redirectTimer = window.setTimeout(() => {
+        router.replace(`/multiplayer/${roomId}/play`);
+      }, 1000);
+
+      return () => window.clearTimeout(redirectTimer);
     }
   }, [room?.status, roomId, router]);
 
@@ -182,7 +188,7 @@ export default function RoomLobbyPage() {
             >
               <Wifi className="w-3.5 h-3.5 text-spotify-green" />
             </motion.div>
-            Waiting for players
+            {isStarting ? 'Game starting...' : 'Waiting for players'}
           </div>
         </div>
       </div>
@@ -313,6 +319,39 @@ export default function RoomLobbyPage() {
           </motion.div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isStarting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-spotify-black/90 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.25 }}
+              className="rounded-2xl border border-spotify-green/20 bg-white/[0.04] px-8 py-7 text-center"
+            >
+              <motion.div
+                className="mx-auto mb-4 h-10 w-10 rounded-full border-2 border-spotify-green/50 border-t-spotify-green"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+              />
+              <motion.h2
+                animate={{ scale: [1, 1.03, 1] }}
+                transition={{ duration: 0.9, repeat: Infinity }}
+                className="text-xl font-bold text-white"
+              >
+                Game Starting!
+              </motion.h2>
+              <p className="mt-2 text-sm text-white/60">Loading round...</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
