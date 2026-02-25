@@ -16,6 +16,23 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
   const router = useRouter();
   const joinRoom = useJoinRoom();
 
+  const extractCodeFromInput = (value: string): string => {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return '';
+    }
+
+    const joinPathPattern = /(?:^|\/+)multiplayer\/join\/([^/?#\s]+)/i;
+    const pathMatch = trimmed.match(joinPathPattern);
+    const candidate = pathMatch?.[1] ?? trimmed;
+
+    return candidate
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toUpperCase()
+      .slice(0, 8);
+  };
+
   const modalId = useId();
   const titleId = `${modalId}-title`;
   const descriptionId = `${modalId}-description`;
@@ -36,8 +53,7 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
   }, [open, onClose]);
 
   const handleCodeChange = (value: string) => {
-    const filtered = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-    setCode(filtered.slice(0, 8));
+    setCode(extractCodeFromInput(value));
   };
 
   const handleSubmit = useCallback(() => {

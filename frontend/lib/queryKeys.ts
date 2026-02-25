@@ -58,6 +58,8 @@ export const queryKeys = {
   multiplayer: {
     all: ['multiplayer'] as const,
     room: (roomId: string) => ['multiplayer', 'room', roomId] as const,
+    round: (roomId: string) => ['multiplayer', 'round', roomId] as const,
+    scoreboard: (roomId: string) => ['multiplayer', 'scoreboard', roomId] as const,
   },
   // Search queries
   search: {

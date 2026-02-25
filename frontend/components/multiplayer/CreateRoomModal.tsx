@@ -133,21 +133,7 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
                     Number of Rounds
                   </label>
 
-                  <div className="relative grid grid-cols-3 gap-3">
-                    <motion.div
-                      className="absolute inset-y-0 rounded-xl border-2 border-spotify-green/40 bg-spotify-green/10 pointer-events-none"
-                      layoutId="roundHighlight"
-                      animate={{
-                        x: `calc(${ROUND_OPTIONS.findIndex((o) => o.value === roundCount)} * (100% + 12px))`,
-                      }}
-                      transition={{
-                        type: 'spring',
-                        damping: 25,
-                        stiffness: 300,
-                      }}
-                      style={{ width: 'calc((100% - 24px) / 3)' }}
-                    />
-
+                  <div className="grid grid-cols-3 gap-3">
                     {ROUND_OPTIONS.map((option) => {
                       const isSelected = roundCount === option.value;
                       return (
@@ -157,9 +143,9 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
                           role="radio"
                           aria-checked={isSelected}
                           onClick={() => setRoundCount(option.value)}
-                          className={`relative z-10 flex flex-col items-center gap-1 rounded-xl border px-4 py-4 transition-all focus:outline-none focus:ring-2 focus:ring-spotify-green/50 ${
+                          className={`flex flex-col items-center gap-1 rounded-xl border px-4 py-4 transition-all focus:outline-none focus:ring-2 focus:ring-spotify-green/50 ${
                             isSelected
-                              ? 'border-transparent text-white'
+                              ? 'border-spotify-green/40 bg-spotify-green/10 text-white'
                               : 'border-white/10 bg-white/5 text-white/60 hover:border-white/20'
                           }`}
                         >

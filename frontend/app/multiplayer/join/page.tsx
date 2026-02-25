@@ -14,6 +14,23 @@ export default function JoinManualPage() {
   const { data: user, isLoading: isLoadingUser } = useMe();
   const joinMutation = useJoinRoom();
 
+  function extractCodeFromInput(value: string): string {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return '';
+    }
+
+    const joinPathPattern = /(?:^|\/+)multiplayer\/join\/([^/?#\s]+)/i;
+    const pathMatch = trimmed.match(joinPathPattern);
+    const candidate = pathMatch?.[1] ?? trimmed;
+
+    return candidate
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toUpperCase()
+      .slice(0, 8);
+  }
+
   // Auth gate
   useEffect(() => {
     if (isLoadingUser) return;
@@ -31,9 +48,7 @@ export default function JoinManualPage() {
   }, [joinMutation.data, router]);
 
   function handleInput(value: string) {
-    // Filter to valid chars and uppercase
-    const filtered = value.replace(/[^A-Za-z2-9]/g, '').toUpperCase();
-    setCode(filtered.slice(0, 8));
+    setCode(extractCodeFromInput(value));
   }
 
   function handleSubmit(e: FormEvent) {
@@ -57,9 +72,7 @@ export default function JoinManualPage() {
         className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl backdrop-blur-xl"
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.3)' }}
       >
-        <h1 className="text-xl font-semibold text-center mb-6">
-          Join a Room
-        </h1>
+        <h1 className="text-xl font-semibold text-center mb-6">Join a Room</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -73,9 +86,7 @@ export default function JoinManualPage() {
           />
 
           {joinMutation.isError && (
-            <p className="text-sm text-red-400">
-              {joinMutation.error.message}
-            </p>
+            <p className="text-sm text-red-400">{joinMutation.error.message}</p>
           )}
 
           <Button
