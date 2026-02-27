@@ -4,4 +4,5 @@ import { SpotifyApi } from '@spotify/web-api-ts-sdk';
 export interface SpotifyClient {
   sdk: SpotifyApi;
   session: UserSessionDto;
+  accessToken: string;
 }

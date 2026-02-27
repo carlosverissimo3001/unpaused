@@ -31,7 +31,7 @@ export class SpotifyService {
       refresh_token: '',
     });
 
-    return { sdk, session };
+    return { sdk, session, accessToken };
   }
 
   /**

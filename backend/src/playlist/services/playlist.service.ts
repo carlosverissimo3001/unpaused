@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { Playlist, Track, PlaylistedTrack } from '@spotify/web-api-ts-sdk';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Playlist, Track } from '@spotify/web-api-ts-sdk';
 import { PlaylistsResponseDto } from '../dto/playlist-response.dto';
 import { PlaylistDto } from '../dto/playlist.dto';
 import { GetPlaylistsDto } from '../dto/get-playlists-dto';
@@ -17,12 +17,14 @@ import {
   LIKED_META_CACHE_PREFIX,
   PLAYLIST_TRACKS_CACHE_PREFIX,
   LIKED_TRACKS_CACHE_PREFIX,
+  PLAYLIST_TOTAL_TRACKS_PREFIX,
   PLAYLIST_CACHE_TTL,
   TRACK_BATCH_CACHE_TTL,
 } from '../../consts';
 
+// Feb 2026: Spotify renamed `track` → `item` in playlist item objects (new /items endpoint)
 const TRACK_FIELDS =
-  'items(track(id,name,artists(name),album(id,name,images,release_date),duration_ms,external_urls,preview_url,is_playable))';
+  'items(item(id,name,artists(name),album(id,name,images,release_date),duration_ms,external_urls,preview_url,is_playable))';
 
 @Injectable()
 export class PlaylistService {
@@ -126,6 +128,16 @@ export class PlaylistService {
         }),
         PLAYLIST_CACHE_TTL,
       );
+
+      await Promise.all(
+        savedMapped.map((p) =>
+          this.redis.set(
+            `${PLAYLIST_TOTAL_TRACKS_PREFIX}${session.spotifyUserId}:${p.id}`,
+            String(p.totalTracks),
+            PLAYLIST_CACHE_TTL,
+          ),
+        ),
+      );
     }
 
     const playlists: PlaylistDto[] = [];
@@ -216,31 +228,63 @@ export class PlaylistService {
     sessionId: string,
     playlistId: string,
   ): Promise<TrackDto[]> {
-    const { sdk, session } = await this.spotifyService.getClient(sessionId);
-    const cacheKey = `${PLAYLIST_TRACKS_CACHE_PREFIX}${session.spotifyUserId}:${playlistId}`;
+    const { session, accessToken } =
+      await this.spotifyService.getClient(sessionId);
+
+    const totalKey = `${PLAYLIST_TOTAL_TRACKS_PREFIX}${session.spotifyUserId}:${playlistId}`;
+    const totalRaw = await this.redis.get(totalKey);
+    let total = totalRaw ? parseInt(totalRaw, 10) : 0;
+
+    // Fallback: playlist accessed before getMyPlaylists was called (e.g. deep link / bookmark)
+    if (total === 0) {
+      const meta = await this.getPlaylistById(sessionId, playlistId);
+      total = meta.totalTracks;
+      if (total > 0) {
+        await this.redis.set(totalKey, String(total), PLAYLIST_CACHE_TTL);
+      }
+    }
+
+    const offset =
+      total > 0 ? Math.floor(Math.random() * Math.max(1, total - 49)) : 0;
+
+    const cacheKey = `${PLAYLIST_TRACKS_CACHE_PREFIX}${session.spotifyUserId}:${playlistId}:${offset}`;
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
     }
-    const response = await this.spotifyService.safeCall(
-      () =>
-        sdk.playlists.getPlaylistItems(
-          playlistId,
-          undefined,
-          TRACK_FIELDS,
-          50,
-          0,
-        ),
-      'getPlaylistFirstTracks',
+
+    // Feb 2026: GET /playlists/{id}/tracks is deprecated. Use /items instead.
+    const params = new URLSearchParams({
+      fields: TRACK_FIELDS,
+      limit: '50',
+      offset: String(offset),
+    });
+    const rawResponse = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}/items?${params}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
     );
+    if (rawResponse.status === HttpStatus.TOO_MANY_REQUESTS) {
+      const retryAfter = rawResponse.headers.get('Retry-After');
+      const waitTime = retryAfter ? parseInt(retryAfter, 10) : 60;
+      throw new HttpException(
+        `Rate limited. Try again in ${waitTime}s`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    if (!rawResponse.ok) {
+      const body = await rawResponse.text();
+      throw new Error(
+        `Spotify playlist items request failed (${rawResponse.status}): ${body}`,
+      );
+    }
+    const response = (await rawResponse.json()) as {
+      items?: Array<{ item?: Track; track?: Track }>;
+    };
 
     const items = response.items ?? [];
     const tracks = items
-      .filter(
-        (item): item is PlaylistedTrack<Track> & { track: Track } =>
-          !!item.track,
-      )
-      .map((item) => mapTrack(item.track));
+      .filter((item) => !!(item.item?.id ?? item.track?.id))
+      .map((item) => mapTrack((item.item ?? item.track) as Track));
 
     await this.redis.set(
       cacheKey,

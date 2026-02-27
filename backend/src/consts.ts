@@ -11,6 +11,7 @@ export const PLAYLIST_META_CACHE_PREFIX = 'playlist_meta:';
 export const LIKED_META_CACHE_PREFIX = 'liked_meta:';
 export const PLAYLIST_TRACKS_CACHE_PREFIX = 'playlist_tracks:';
 export const LIKED_TRACKS_CACHE_PREFIX = 'liked_tracks:';
+export const PLAYLIST_TOTAL_TRACKS_PREFIX = 'playlist_total:';
 export const PLAYLIST_CACHE_TTL = 5 * 60 * 60; // 5 hours
 export const TRACK_BATCH_CACHE_TTL = 5 * 60 * 60;
 
