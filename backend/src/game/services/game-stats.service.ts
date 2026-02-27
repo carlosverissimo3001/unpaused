@@ -4,7 +4,7 @@ import { differenceInCalendarDays, startOfDay } from 'date-fns';
 import { GameStatsRepository } from '../repositories/game-stats.repository';
 import { UpdateDailyStatsParams, UpdateGameStatsParams } from '../types';
 import { GameStatsDto } from '../dto/stats/game-stats.dto';
-import { isNil } from 'lodash';
+import { GAME_MAX_ROUNDS } from '../../consts';
 
 /**
  * Service responsible for all game statistics operations.
@@ -29,12 +29,12 @@ export class GameStatsService {
    * Always updates ALL mode stats, and additionally updates DAILY mode stats if applicable.
    */
   async updateGameStats(params: UpdateGameStatsParams): Promise<void> {
-    const { userId, roundWon, mode } = params;
+    const { userId, lastGameRound, mode } = params;
 
-    await this.updateAllModeStats(userId, roundWon);
+    await this.updateAllModeStats(userId, lastGameRound);
 
     if (mode === GameMode.DAILY) {
-      await this.updateDailyModeStats(userId, roundWon);
+      await this.updateDailyModeStats(userId, lastGameRound);
     }
   }
 
@@ -43,14 +43,16 @@ export class GameStatsService {
    */
   private async updateAllModeStats(
     userId: string,
-    roundWon?: number,
+    lastGameRound: number,
   ): Promise<void> {
     const stats = await this.gameStatsRepository.upsert(userId, GameMode.ALL);
-    const newStreak = !isNil(roundWon) ? stats.currentStreak + 1 : 0;
+    const won = lastGameRound < GAME_MAX_ROUNDS;
+
+    const newStreak = won ? stats.currentStreak + 1 : 0;
 
     const dist = this.updateRoundDistribution(
       stats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0],
-      roundWon,
+      lastGameRound,
     );
 
     await this.gameStatsRepository.update(
@@ -59,7 +61,7 @@ export class GameStatsService {
         currentStreak: newStreak,
         bestStreak: Math.max(stats.bestStreak, newStreak),
         roundDistribution: dist,
-        won: !isNil(roundWon),
+        won,
       },
       GameMode.ALL,
     );
@@ -70,19 +72,20 @@ export class GameStatsService {
    */
   private async updateDailyModeStats(
     userId: string,
-    roundWon?: number,
+    lastGameRound: number,
   ): Promise<void> {
     const dailyStats = await this.gameStatsRepository.upsert(
       userId,
       GameMode.DAILY,
     );
+    const won = lastGameRound < GAME_MAX_ROUNDS;
 
     const dailyDist = this.updateRoundDistribution(
       dailyStats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0],
-      roundWon,
+      lastGameRound,
     );
 
-    return roundWon
+    return won
       ? this.updateDailyStatsForWin({ userId, dailyStats, dailyDist })
       : this.updateDailyStatsForLoss({ userId, dailyStats, dailyDist });
   }
@@ -178,11 +181,10 @@ export class GameStatsService {
    */
   private updateRoundDistribution(
     distribution: number[],
-    roundWon?: number,
+    lastGameRound: number,
   ): number[] {
     const dist = [...distribution];
-    const index = !isNil(roundWon) ? roundWon : 6;
-    dist[index] = (dist[index] ?? 0) + 1;
+    dist[lastGameRound] = (dist[lastGameRound] ?? 0) + 1;
     return dist;
   }
 }

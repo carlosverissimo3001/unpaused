@@ -303,7 +303,7 @@ export class GameService {
     if (gameOver && game.userId) {
       await this.gameStatsService.updateGameStats({
         userId: game.userId,
-        roundWon:
+        lastGameRound:
           result === GuessResult.Correct ? game.currentRound : nextRound,
         mode: game.mode,
       });

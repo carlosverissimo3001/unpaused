@@ -6,7 +6,7 @@ import { GuessDto } from './dto/guess/guess.dto';
 
 export type UpdateGameStatsParams = {
   userId: string;
-  roundWon?: number;
+  lastGameRound: number;
   mode: GameMode;
 };
 

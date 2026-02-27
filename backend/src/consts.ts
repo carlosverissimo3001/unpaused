@@ -41,3 +41,5 @@ export type JobDataMap = {
 };
 
 export type JobNames = keyof JobDataMap;
+
+export const GAME_MAX_ROUNDS = 6;
