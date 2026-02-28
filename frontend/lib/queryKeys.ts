@@ -1,3 +1,5 @@
+import { PlaylistControllerGetMyPlaylistsSortByEnum as PlaylistSortBy } from '@sdk';
+
 /**
  * Centralized query keys factory for consistent cache invalidation
  * Follows TanStack Query best practices for hierarchical keys
@@ -13,6 +15,7 @@ export const queryKeys = {
     session: (sessionId: string) => ['game', 'session', sessionId] as const,
     state: (sessionId: string) =>
       ['game', 'session', sessionId, 'state'] as const,
+    allHistory: ['game', 'history'] as const,
     history: (params?: {
       mode?: string;
       page?: number;
@@ -22,6 +25,7 @@ export const queryKeys = {
       from?: string;
       to?: string;
     }) => ['game', 'history', params] as const,
+    allStats: ['game', 'stats'] as const,
     stats: (mode?: string) => ['game', 'stats', mode] as const,
     playedToday: ['game', 'playedToday'] as const,
     share: (gameId: string) => ['game', 'share', gameId] as const,
@@ -33,7 +37,8 @@ export const queryKeys = {
       limit?: number;
       offset?: number;
       onlyPublic?: boolean;
-      onlyUserOwned?: boolean;
+      onlyPrivate?: boolean;
+      sortBy?: PlaylistSortBy;
     }) => ['playlists', 'me', params] as const,
     detail: (playlistId: string) => ['playlists', playlistId] as const,
   },
@@ -59,7 +64,8 @@ export const queryKeys = {
     all: ['multiplayer'] as const,
     room: (roomId: string) => ['multiplayer', 'room', roomId] as const,
     round: (roomId: string) => ['multiplayer', 'round', roomId] as const,
-    scoreboard: (roomId: string) => ['multiplayer', 'scoreboard', roomId] as const,
+    scoreboard: (roomId: string) =>
+      ['multiplayer', 'scoreboard', roomId] as const,
   },
   // Search queries
   search: {
@@ -69,6 +75,7 @@ export const queryKeys = {
   // Daily game queries
   daily: {
     all: ['daily'] as const,
+    allHistory: ['daily', 'history'] as const,
     history: (params?: { limit?: number; offset?: number }) =>
       ['daily', 'history', params] as const,
   },

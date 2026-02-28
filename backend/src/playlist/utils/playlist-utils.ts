@@ -3,6 +3,7 @@ import { UserSessionDto } from '../../auth/dto/user-session.dto';
 import { GetPlaylistsDto } from '../dto/get-playlists-dto';
 import { PlaylistDto } from '../dto/playlist.dto';
 import { getFirstImage } from '../../utils/utils';
+import { PLAYLIST_SORT_BY } from '../consts';
 
 /**
  * Type for Spotify API response that may use either old (tracks) or new (items) field names.
@@ -48,12 +49,33 @@ export function applyFilters(
   session: UserSessionDto,
 ): SimplifiedPlaylist[] {
   return playlists.filter((p) => {
+    // Spotify only allows playing user-owned playlists
+    if (p.owner?.display_name !== session.displayName) {
+      return false;
+    }
     if (filters.onlyPublic && !p.public) {
       return false;
     }
-    if (filters.onlyUserOwned) {
-      return p.owner?.display_name === session.displayName;
+    if (filters.onlyPrivate && p.public) {
+      return false;
     }
     return true;
+  });
+}
+
+export function sortPlaylists(
+  playlists: PlaylistDto[],
+  sortBy: PLAYLIST_SORT_BY,
+): PlaylistDto[] {
+  if (sortBy === PLAYLIST_SORT_BY.DEFAULT) {
+    return playlists;
+  }
+
+  return [...playlists].sort((a, b) => {
+    if (sortBy === PLAYLIST_SORT_BY.NAME) {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+    // tracks — descending
+    return b.totalTracks - a.totalTracks;
   });
 }

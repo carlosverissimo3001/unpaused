@@ -193,7 +193,8 @@ export interface PlaylistControllerGetMyPlaylistsRequest {
     limit?: number;
     offset?: number;
     onlyPublic?: boolean;
-    onlyUserOwned?: boolean;
+    onlyPrivate?: boolean;
+    sortBy?: PlaylistControllerGetMyPlaylistsSortByEnum;
 }
 
 export interface PlaylistControllerGetPlaylistByIdRequest {
@@ -1230,8 +1231,12 @@ export class ApiApi extends runtime.BaseAPI {
             queryParameters['onlyPublic'] = requestParameters['onlyPublic'];
         }
 
-        if (requestParameters['onlyUserOwned'] != null) {
-            queryParameters['onlyUserOwned'] = requestParameters['onlyUserOwned'];
+        if (requestParameters['onlyPrivate'] != null) {
+            queryParameters['onlyPrivate'] = requestParameters['onlyPrivate'];
+        }
+
+        if (requestParameters['sortBy'] != null) {
+            queryParameters['sortBy'] = requestParameters['sortBy'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1490,3 +1495,12 @@ export const GameControllerGetStatsModeEnum = {
     Multiplayer: 'MULTIPLAYER'
 } as const;
 export type GameControllerGetStatsModeEnum = typeof GameControllerGetStatsModeEnum[keyof typeof GameControllerGetStatsModeEnum];
+/**
+ * @export
+ */
+export const PlaylistControllerGetMyPlaylistsSortByEnum = {
+    Default: 'default',
+    Name: 'name',
+    Tracks: 'tracks'
+} as const;
+export type PlaylistControllerGetMyPlaylistsSortByEnum = typeof PlaylistControllerGetMyPlaylistsSortByEnum[keyof typeof PlaylistControllerGetMyPlaylistsSortByEnum];

@@ -4,7 +4,7 @@ import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Lock, Globe, ListMusic } from 'lucide-react';
+import { Play, Lock, Globe, ListMusic, Pin } from 'lucide-react';
 import type { PlaylistDto } from '@/sdk';
 import { useImageColor } from '@/hooks/misc/useImageColor';
 
@@ -60,6 +60,12 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
               </div>
             )}
 
+            {isLikedSongs && (
+              <div className="absolute top-2 right-2 z-20 bg-black/60 backdrop-blur-sm rounded-full p-1.5 border border-white/10">
+                <Pin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-spotify-green rotate-45" fill="currentColor" />
+              </div>
+            )}
+
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{
@@ -83,21 +89,24 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
               {playlist.owner}
             </p>
 
-            <div className="mt-auto pt-2 sm:pt-4 flex items-center justify-between text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-white/20">
+            <div className="mt-auto pt-2 sm:pt-4 flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-white/30">
               <div className="flex items-center gap-1.5">
-                <ListMusic className="w-3 h-3" />
+                <ListMusic className="w-3 h-3 opacity-60" />
                 <span>{playlist.totalTracks} tracks</span>
               </div>
 
               {!isLikedSongs && (
-                <div className="flex items-center gap-1.5">
-                  {playlist.isPublic ? (
-                    <Globe className="w-3 h-3" />
-                  ) : (
-                    <Lock className="w-3 h-3" />
-                  )}
-                  <span>{playlist.isPublic ? 'Public' : 'Private'}</span>
-                </div>
+                <>
+                  <span className="text-white/15">·</span>
+                  <div className="flex items-center gap-1.5">
+                    {playlist.isPublic ? (
+                      <Globe className="w-3 h-3 opacity-60" />
+                    ) : (
+                      <Lock className="w-3 h-3 opacity-60" />
+                    )}
+                    <span>{playlist.isPublic ? 'Public' : 'Private'}</span>
+                  </div>
+                </>
               )}
             </div>
           </div>

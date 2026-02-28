@@ -19,7 +19,7 @@ import {
   Wifi,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function RoomLobbyPage() {
@@ -32,6 +32,34 @@ export default function RoomLobbyPage() {
   const leaveRoom = useLeaveRoom();
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const knownPlayerIdsRef = useRef<Set<string> | null>(null);
+
+  // Toast when a new player joins via polling
+  useEffect(() => {
+    if (!room || !user) return;
+
+    const currentIds = new Set(room.players.map((p) => p.id));
+
+    if (knownPlayerIdsRef.current === null) {
+      // First load — seed without toasting
+      knownPlayerIdsRef.current = currentIds;
+      return;
+    }
+
+    for (const player of room.players) {
+      if (!knownPlayerIdsRef.current.has(player.id)) {
+        // Skip toasting ourselves
+        if (player.spotifyUserId !== user.spotifyUserId) {
+          toast(`${player.displayName} joined!`, {
+            icon: '👋',
+            duration: 3000,
+          });
+        }
+      }
+    }
+
+    knownPlayerIdsRef.current = currentIds;
+  }, [room, user]);
 
   // Find current user's player entry to determine host status
   const currentPlayer = useMemo(() => {
@@ -280,11 +308,14 @@ export default function RoomLobbyPage() {
               <>
                 <button
                   onClick={handleStartGame}
-                  disabled={!canStart || startRoom.isPending}
+                  disabled={!canStart || startRoom.isPending || isStarting}
                   className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-spotify-green px-6 py-4 text-base font-bold text-black hover:bg-spotify-green/90 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 transition-all shadow-[0_0_30px_rgba(30,215,96,0.15)]"
                 >
-                  {startRoom.isPending ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                  {startRoom.isPending || isStarting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Starting...
+                    </>
                   ) : (
                     <>
                       <Play className="w-5 h-5" fill="currentColor" />

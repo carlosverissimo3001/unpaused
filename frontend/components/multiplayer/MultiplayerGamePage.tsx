@@ -16,7 +16,9 @@ import { useSubmitMultiplayerGuess } from '@/hooks/multiplayer/useSubmitMultipla
 import { useRoom } from '@/hooks/multiplayer/useRoom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { useMe } from '@/hooks/auth/useMe';
 import {
   MultiplayerRoundStateDtoStatusEnum,
@@ -137,6 +139,7 @@ function RoundScoreSummary({
 
 export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const submitGuessMutation = useSubmitMultiplayerGuess();
   const spotifySearch = useSpotifyTrackSearch();
   const {
@@ -169,6 +172,14 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     roundState &&
     roundState.roundIndex === roundState.totalRounds - 1 &&
     isRoundComplete;
+
+  // Invalidate stats & history so they're fresh when the user navigates away
+  useEffect(() => {
+    if (!isGameOver) return;
+    void queryClient.invalidateQueries({ queryKey: queryKeys.game.allStats });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.game.allHistory });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.game.playedToday });
+  }, [isGameOver, queryClient]);
 
   // Derive past round results from scoreboard for the round dots
   const pastResults = useMemo(() => {

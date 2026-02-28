@@ -3,14 +3,22 @@ import { Playlist, Track } from '@spotify/web-api-ts-sdk';
 import { PlaylistsResponseDto } from '../dto/playlist-response.dto';
 import { PlaylistDto } from '../dto/playlist.dto';
 import { GetPlaylistsDto } from '../dto/get-playlists-dto';
-import { applyFilters, mapPlaylistLite } from '../utils/playlist-utils';
+import {
+  applyFilters,
+  mapPlaylistLite,
+  sortPlaylists,
+} from '../utils/playlist-utils';
 import { SpotifyService } from '../../spotify/services/spotify.service';
 import { mapTrack } from '@/track/utils.ts/track-utils';
 import { TrackDto } from '@/track/dto/track.dto';
 import { AppLoggerService } from '../../logger/logger.service';
 import { RedisService } from '../../redis/redis.service';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
-import { LIKED_SONGS_COVER, LIKED_SONGS_URL } from '../consts';
+import {
+  LIKED_SONGS_COVER,
+  LIKED_SONGS_URL,
+  PLAYLIST_SORT_BY,
+} from '../consts';
 import {
   PLAYLIST_CACHE_PREFIX,
   PLAYLIST_META_CACHE_PREFIX,
@@ -84,12 +92,13 @@ export class PlaylistService {
       limit = 20,
       offset = 0,
       onlyPublic = false,
-      onlyUserOwned = false,
+      onlyPrivate = false,
+      sortBy = PLAYLIST_SORT_BY.DEFAULT,
     } = params;
 
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
 
-    const cacheKey = `${PLAYLIST_CACHE_PREFIX}${session.spotifyUserId}:${limit}:${offset}:${onlyPublic}:${onlyUserOwned}`;
+    const cacheKey = `${PLAYLIST_CACHE_PREFIX}${session.spotifyUserId}:${limit}:${offset}:${onlyPublic}:${onlyPrivate}:${sortBy}`;
     const cached = await this.redis.get(cacheKey);
 
     let savedMapped: PlaylistDto[];
@@ -110,10 +119,11 @@ export class PlaylistService {
       );
       const saved = applyFilters(
         response.items,
-        { onlyPublic, onlyUserOwned },
+        { onlyPublic, onlyPrivate },
         session,
       );
       savedMapped = saved.map((p) => mapPlaylistLite(p as Playlist<Track>));
+      savedMapped = sortPlaylists(savedMapped, sortBy);
       total = response.total ?? 0;
       responseLimit = response.limit ?? limit;
       responseOffset = response.offset ?? offset;

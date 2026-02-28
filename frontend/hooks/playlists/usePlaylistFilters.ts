@@ -1,25 +1,31 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { PlaylistControllerGetMyPlaylistsSortByEnum as SortByValues } from '@/sdk';
+
+export type Visibility = 'all' | 'public' | 'private';
 
 /**
  * Hook to manage playlist filter state
- * Encapsulates includePrivate and onlyUserOwned filter logic
  */
 export function usePlaylistFilters() {
-  const [onlyPublic, setOnlyPublic] = useState(false);
-  const [onlyUserOwned, setOnlyUserOwned] = useState(false);
+  const [visibility, setVisibility] = useState<Visibility>('all');
+  const [sortBy, setSortBy] = useState<SortByValues>(SortByValues.Default);
 
   const clearFilters = useCallback(() => {
-    setOnlyPublic(false);
-    setOnlyUserOwned(true);
+    setVisibility('all');
+    setSortBy(SortByValues.Default);
   }, []);
 
+  const hasActiveFilters =
+    visibility !== 'all' || sortBy !== SortByValues.Default;
+
   return {
-    onlyPublic,
-    onlyUserOwned,
-    setOnlyPublic,
-    setOnlyUserOwned,
+    visibility,
+    setVisibility,
+    sortBy,
+    setSortBy,
     clearFilters,
+    hasActiveFilters,
   };
 }

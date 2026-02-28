@@ -9,11 +9,14 @@ import type { PlaylistsResponseDto } from '@/sdk';
 // Also, playlist don't change a lot, so we can have higher stale time and gc time
 const THIRTY_MINUTES = 30 * 60 * 1000;
 
+import type { PlaylistControllerGetMyPlaylistsSortByEnum } from '@/sdk/apis/ApiApi';
+
 interface UseMyPlaylistsParams {
   limit?: number;
   offset?: number;
   onlyPublic?: boolean;
-  onlyUserOwned?: boolean;
+  onlyPrivate?: boolean;
+  sortBy?: PlaylistControllerGetMyPlaylistsSortByEnum;
   enabled?: boolean;
 }
 

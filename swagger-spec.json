@@ -164,12 +164,26 @@
             }
           },
           {
-            "name": "onlyUserOwned",
+            "name": "onlyPrivate",
             "required": false,
             "in": "query",
-            "description": "Include only playlists owned by the user",
+            "description": "Include only private playlists",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort playlists by field",
+            "schema": {
+              "enum": [
+                "default",
+                "name",
+                "tracks"
+              ],
+              "type": "string"
             }
           }
         ],

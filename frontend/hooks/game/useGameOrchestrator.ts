@@ -73,15 +73,15 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
 
   useEffect(() => {
     if (isGameOver) {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.game.stats() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.game.allStats });
       void queryClient.invalidateQueries({
         queryKey: queryKeys.game.playedToday,
       });
       void queryClient.invalidateQueries({
-        queryKey: queryKeys.game.history(),
+        queryKey: queryKeys.game.allHistory,
       });
       void queryClient.invalidateQueries({
-        queryKey: queryKeys.daily.history(),
+        queryKey: queryKeys.daily.allHistory,
       });
       if (isDaily) {
         void queryClient.invalidateQueries({

@@ -44,8 +44,9 @@ export default function Home() {
   }, [user, router]);
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } =
     useMyPlaylists({
-      onlyPublic: playlistFilters.onlyPublic,
-      onlyUserOwned: playlistFilters.onlyUserOwned,
+      onlyPublic: playlistFilters.visibility === 'public',
+      onlyPrivate: playlistFilters.visibility === 'private',
+      sortBy: playlistFilters.sortBy,
       enabled: !!user,
     });
   const logoutMutation = useLogout();
@@ -130,11 +131,10 @@ export default function Home() {
                   <div className="flex items-center min-w-0 overflow-x-auto no-scrollbar -mr-4 pr-4 -ml-2 pl-2">
                     <div className="flex items-center gap-2 py-1">
                       <PlaylistFilters
-                        onlyPublic={playlistFilters.onlyPublic}
-                        onlyUserOwned={playlistFilters.onlyUserOwned}
-                        onOnlyPublicChange={playlistFilters.setOnlyPublic}
-                        onOnlyUserOwnedChange={playlistFilters.setOnlyUserOwned}
-                        onClearFilters={playlistFilters.clearFilters}
+                        visibility={playlistFilters.visibility}
+                        onVisibilityChange={playlistFilters.setVisibility}
+                        sortBy={playlistFilters.sortBy}
+                        onSortByChange={playlistFilters.setSortBy}
                       />
                     </div>
                   </div>

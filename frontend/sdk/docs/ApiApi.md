@@ -1812,7 +1812,7 @@ example().catch(console.error);
 
 ## playlistControllerGetMyPlaylists
 
-> PlaylistsResponseDto playlistControllerGetMyPlaylists(limit, offset, onlyPublic, onlyUserOwned)
+> PlaylistsResponseDto playlistControllerGetMyPlaylists(limit, offset, onlyPublic, onlyPrivate, sortBy)
 
 Get current user\&#39;s playlists
 
@@ -1840,8 +1840,10 @@ async function example() {
     offset: 0,
     // boolean | Include only public playlists (optional)
     onlyPublic: true,
-    // boolean | Include only playlists owned by the user (optional)
-    onlyUserOwned: true,
+    // boolean | Include only private playlists (optional)
+    onlyPrivate: true,
+    // 'default' | 'name' | 'tracks' | Sort playlists by field (optional)
+    sortBy: sortBy_example,
   } satisfies PlaylistControllerGetMyPlaylistsRequest;
 
   try {
@@ -1864,7 +1866,8 @@ example().catch(console.error);
 | **limit** | `number` |  | [Optional] [Defaults to `undefined`] |
 | **offset** | `number` |  | [Optional] [Defaults to `undefined`] |
 | **onlyPublic** | `boolean` | Include only public playlists | [Optional] [Defaults to `undefined`] |
-| **onlyUserOwned** | `boolean` | Include only playlists owned by the user | [Optional] [Defaults to `undefined`] |
+| **onlyPrivate** | `boolean` | Include only private playlists | [Optional] [Defaults to `undefined`] |
+| **sortBy** | `default`, `name`, `tracks` | Sort playlists by field | [Optional] [Defaults to `undefined`] [Enum: default, name, tracks] |
 
 ### Return type
 
