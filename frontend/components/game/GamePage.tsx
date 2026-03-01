@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useGameOrchestrator } from '@/hooks/game/useGameOrchestrator';
+import { useVolume } from '@/hooks/game/useVolume';
 import { useImageColor } from '@/hooks/misc/useImageColor';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { RoundProgressBar } from './RoundProgressBar';
@@ -28,6 +29,8 @@ interface GamePageProps {
 }
 
 export function GamePage({ mode, playlistId }: GamePageProps) {
+  const { volume, setVolume } = useVolume();
+
   const {
     playlist,
     gameState,
@@ -44,7 +47,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     handleSubmit,
     handleSkip,
     handlePlayAgain,
-  } = useGameOrchestrator(mode, playlistId);
+  } = useGameOrchestrator(mode, playlistId, { volume });
 
   // Destructure gameAudio to avoid ref access warnings
   const {
@@ -172,6 +175,8 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               amplitude={amplitude}
               onPlay={playSnippet}
               onPause={pauseSnippet}
+              volume={volume}
+              onVolumeChange={setVolume}
             />
           )}
 
@@ -206,9 +211,9 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                     isPlaylist && playlist ? (playlist.imageUrl ?? null) : null
                   }
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
-                  isMuted={gameAudio.isMuted}
                   onToggleFullSong={gameAudio.toggleFullSong}
-                  onToggleMute={gameAudio.toggleMute}
+                  volume={volume}
+                  onVolumeChange={setVolume}
                   rankTitle={gameState.rankTitle ?? null}
                   specialNote={gameState.specialNote ?? null}
                   meta={gameState.meta ?? null}

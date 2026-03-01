@@ -9,6 +9,7 @@ import { SongRevealCard } from '@/components/game/SongRevealCard';
 import { GuessHistoryList } from '@/components/game/GuessHistoryList';
 import { GuessInput } from '@/components/game/GuessInput';
 import { useGameAudio } from '@/hooks/game/useGameAudio';
+import { useVolume } from '@/hooks/game/useVolume';
 import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
 import { useMultiplayerRound } from '@/hooks/multiplayer/useMultiplayerRound';
 import { useMultiplayerScoreboard } from '@/hooks/multiplayer/useMultiplayerScoreboard';
@@ -141,6 +142,7 @@ function RoundScoreSummary({
 /* ─── Main component ──────────────────────────────────────────── */
 
 export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
+  const { volume, setVolume } = useVolume();
   const router = useRouter();
   const queryClient = useQueryClient();
   const submitGuessMutation = useSubmitMultiplayerGuess();
@@ -224,6 +226,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     previewUrl: roundState?.previewUrl,
     isGameOver: !!isRoundComplete,
     currentRound: roundState?.currentGuess ?? 0,
+    volume,
   });
 
   const {
@@ -426,6 +429,8 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
               amplitude={amplitude}
               onPlay={playSnippet}
               onPause={pauseSnippet}
+              volume={volume}
+              onVolumeChange={setVolume}
             />
           )}
 
@@ -448,9 +453,9 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
                   showViewStats={false}
                   showPlayAgain={false}
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
-                  isMuted={gameAudio.isMuted}
                   onToggleFullSong={gameAudio.toggleFullSong}
-                  onToggleMute={gameAudio.toggleMute}
+                  volume={volume}
+                  onVolumeChange={setVolume}
                 />
 
                 {/* Player's own score for this round */}

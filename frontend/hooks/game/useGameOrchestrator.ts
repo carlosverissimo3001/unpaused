@@ -22,7 +22,11 @@ const ShouldShakeResult: GuessResult[] = [
   GuessResult.ArtistAndAlbum,
 ];
 
-export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
+export function useGameOrchestrator(
+  mode: GameMode,
+  playlistId?: string,
+  { volume = 0.8 }: { volume?: number } = {},
+) {
   const queryClient = useQueryClient();
   const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
@@ -52,6 +56,7 @@ export function useGameOrchestrator(mode: GameMode, playlistId?: string) {
     previewUrl: gameState?.previewUrl,
     isGameOver: !!isGameOver,
     currentRound: gameState?.currentRound ?? 0,
+    volume,
   });
 
   const isLoading =

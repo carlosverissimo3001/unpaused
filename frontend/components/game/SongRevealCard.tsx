@@ -4,20 +4,14 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  ExternalLink,
-  Disc3,
-} from 'lucide-react';
+import { Play, Pause, ExternalLink, Disc3 } from 'lucide-react';
 import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
 import type { MetaGameExtrasVo, TrackOptionDto } from '@/sdk';
 import { GuessPattern } from './GuessPattern';
 import { ShareButton } from '@/components/daily/ShareButton';
 import { triggerRevealConfetti } from './confetti';
 import { useImageColor } from '@/hooks/misc/useImageColor';
+import { VolumeSlider } from './VolumeSlider';
 
 const GLASS_STYLE = {
   background: 'rgba(18, 18, 18, 0.6)',
@@ -42,9 +36,9 @@ interface SongRevealCardProps {
   playlistTotalTracks?: number | null;
   playlistImageUrl?: string | null;
   isFullSongPlaying: boolean;
-  isMuted: boolean;
   onToggleFullSong: () => void;
-  onToggleMute: () => void;
+  volume: number;
+  onVolumeChange: (v: number) => void;
   /** Easter egg: personalized rank for special users */
   rankTitle?: string | null;
   /** Easter egg: personalized note for special users */
@@ -67,9 +61,9 @@ export function SongRevealCard({
   playlistTotalTracks,
   playlistImageUrl,
   isFullSongPlaying,
-  isMuted,
   onToggleFullSong,
-  onToggleMute,
+  volume,
+  onVolumeChange,
   rankTitle,
   specialNote,
   meta,
@@ -213,7 +207,7 @@ export function SongRevealCard({
         )}
       </div>
       {previewUrl && (
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex items-center justify-center gap-2 mt-4">
           <motion.button
             type="button"
             onClick={onToggleFullSong}
@@ -232,24 +226,7 @@ export function SongRevealCard({
               </motion.span>
             )}
           </motion.button>
-          <motion.button
-            type="button"
-            onClick={onToggleMute}
-            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-colors"
-            aria-label={isMuted ? 'Unmute' : 'Mute'}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {isMuted ? (
-              <motion.span whileHover={{ rotate: -5 }}>
-                <VolumeX className="w-5 h-5 text-white" />
-              </motion.span>
-            ) : (
-              <motion.span whileHover={{ rotate: -5 }}>
-                <Volume2 className="w-5 h-5 text-white" />
-              </motion.span>
-            )}
-          </motion.button>
+          <VolumeSlider volume={volume} onVolumeChange={onVolumeChange} />
         </div>
       )}
 

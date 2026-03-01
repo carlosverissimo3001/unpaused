@@ -9,18 +9,19 @@ interface UseGameAudioOptions {
   previewUrl: string | null | undefined;
   isGameOver: boolean;
   currentRound: number;
+  volume: number;
 }
 
 export function useGameAudio({
   previewUrl,
   isGameOver,
   currentRound,
+  volume,
 }: UseGameAudioOptions) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const fullAudioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullSongPlaying, setIsFullSongPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
 
   // Use a Ref to track the animation frame for high-precision stopping
   const requestRef = useRef<number | null>(null);
@@ -33,6 +34,16 @@ export function useGameAudio({
     start: startAmplitude,
     stop: stopAmplitude,
   } = useAudioAmplitude(audioRef);
+
+  // Keep a ref so imperative play calls always read the latest volume
+  const volumeRef = useRef(volume);
+  volumeRef.current = volume;
+
+  // Apply volume to both audio elements whenever it changes (live adjustment)
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+    if (fullAudioRef.current) fullAudioRef.current.volume = volume;
+  }, [volume]);
 
   const stopAudioInternal = useCallback(() => {
     if (requestRef.current) {
@@ -68,6 +79,7 @@ export function useGameAudio({
     const adjustedDuration = isMobile ? durationMs + 60 : durationMs;
 
     audio.currentTime = 0;
+    audio.volume = volumeRef.current;
     initAmplitude();
 
     audio
@@ -115,19 +127,12 @@ export function useGameAudio({
     if (!fullAudioRef.current) return;
 
     if (fullAudioRef.current.paused) {
+      fullAudioRef.current.volume = volumeRef.current;
       void fullAudioRef.current.play().then(() => setIsFullSongPlaying(true));
     } else {
       fullAudioRef.current.pause();
       setIsFullSongPlaying(false);
     }
-  }, []);
-
-  const toggleMute = useCallback(() => {
-    setIsMuted((m) => {
-      const newMuted = !m;
-      if (fullAudioRef.current) fullAudioRef.current.muted = newMuted;
-      return newMuted;
-    });
   }, []);
 
   const stopFullSong = useCallback(() => {
@@ -136,7 +141,6 @@ export function useGameAudio({
       fullAudioRef.current.currentTime = 0;
     }
     setIsFullSongPlaying(false);
-    setIsMuted(false);
   }, []);
 
   // Intercept OS media keys so hardware play/pause can't bypass snippet timing
@@ -170,6 +174,7 @@ export function useGameAudio({
     const fullAudio = fullAudioRef.current;
     if (fullAudio) {
       fullAudio.currentTime = 0;
+      fullAudio.volume = volumeRef.current;
       fullAudio
         .play()
         .then(() => setIsFullSongPlaying(true))
@@ -186,12 +191,10 @@ export function useGameAudio({
     fullAudioRef,
     isPlaying,
     isFullSongPlaying,
-    isMuted,
     amplitude,
     playSnippet,
     pauseSnippet,
     toggleFullSong,
-    toggleMute,
     stopFullSong,
   };
 }
