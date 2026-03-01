@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Home } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { triggerConfetti } from '@/components/game/confetti';
 import { useMe } from '@/hooks/auth/useMe';
 import { useMultiplayerScoreboard } from '@/hooks/multiplayer/useMultiplayerScoreboard';
+import { useMultiplayerSocket } from '@/hooks/multiplayer/useMultiplayerSocket';
 import { useRoom } from '@/hooks/multiplayer/useRoom';
 import { RoundBreakdown } from './RoundBreakdown';
 import { ResultsHeader } from './ResultsHeader';
@@ -20,13 +21,66 @@ interface ResultsContainerProps {
 }
 
 export function ResultsContainer({ roomId }: ResultsContainerProps) {
+  const [socketPlayerProgress, setSocketPlayerProgress] = useState<
+    Map<string, number>
+  >(() => new Map());
+
+  const onPlayerRoundComplete = useCallback(
+    (data: { userId: string; roundIndex: number }) => {
+      setSocketPlayerProgress((prev) => {
+        const current = prev.get(data.userId) ?? -1;
+        if (data.roundIndex <= current) return prev;
+        const next = new Map(prev);
+        next.set(data.userId, data.roundIndex);
+        return next;
+      });
+    },
+    [],
+  );
+
+  const { connected, hostDisconnected } = useMultiplayerSocket(roomId, {
+    onPlayerRoundComplete,
+  });
   const {
     data: scoreboard,
     isLoading,
     error,
-  } = useMultiplayerScoreboard(roomId);
+  } = useMultiplayerScoreboard(roomId, connected);
   const { data: me } = useMe();
-  const { data: room } = useRoom(roomId);
+  const { data: room } = useRoom(roomId, connected);
+
+  const scoreboardPlayerProgress = useMemo(() => {
+    const progress = new Map<string, number>();
+    if (!scoreboard) {
+      return progress;
+    }
+
+    for (const round of scoreboard.rounds) {
+      for (const player of round.players) {
+        const current = progress.get(player.userId) ?? -1;
+        if (round.roundIndex > current) {
+          progress.set(player.userId, round.roundIndex);
+        }
+      }
+    }
+
+    return progress;
+  }, [scoreboard]);
+
+  const playerProgress = useMemo(() => {
+    if (socketPlayerProgress.size === 0) {
+      return scoreboardPlayerProgress;
+    }
+
+    const merged = new Map(scoreboardPlayerProgress);
+    for (const [userId, roundIndex] of socketPlayerProgress) {
+      const current = merged.get(userId) ?? -1;
+      if (roundIndex > current) {
+        merged.set(userId, roundIndex);
+      }
+    }
+    return merged;
+  }, [scoreboardPlayerProgress, socketPlayerProgress]);
 
   const isComplete = scoreboard?.isComplete ?? false;
 
@@ -102,7 +156,14 @@ export function ResultsContainer({ roomId }: ResultsContainerProps) {
   }
 
   if (!isComplete) {
-    return <WaitingForPlayers />;
+    return (
+      <WaitingForPlayers
+        players={room?.players ?? []}
+        totalRounds={room?.roundCount ?? 0}
+        playerProgress={playerProgress}
+        hostDisconnected={hostDisconnected}
+      />
+    );
   }
 
   if (!winner) {

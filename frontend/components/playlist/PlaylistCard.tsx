@@ -62,7 +62,10 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
 
             {isLikedSongs && (
               <div className="absolute top-2 right-2 z-20 bg-black/60 backdrop-blur-sm rounded-full p-1.5 border border-white/10">
-                <Pin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-spotify-green rotate-45" fill="currentColor" />
+                <Pin
+                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-spotify-green rotate-45"
+                  fill="currentColor"
+                />
               </div>
             )}
 
@@ -84,10 +87,6 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
             <h3 className="font-black text-sm sm:text-xl text-white line-clamp-1 leading-tight group-hover:text-spotify-green transition-colors">
               {playlist.name}
             </h3>
-
-            <p className="text-xs sm:text-sm text-white/40 font-medium line-clamp-1 mt-0.5 sm:mt-1">
-              {playlist.owner}
-            </p>
 
             <div className="mt-auto pt-2 sm:pt-4 flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-white/30">
               <div className="flex items-center gap-1.5">

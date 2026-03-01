@@ -18,6 +18,9 @@ export class RoomPlayerDto {
   avatarUrl?: string;
 
   @ApiProperty()
+  isReady: boolean;
+
+  @ApiProperty()
   totalScore: number;
 
   @ApiProperty()
@@ -34,6 +37,7 @@ export class RoomPlayerDto {
       spotifyUserId: player.user.spotifyUserId,
       displayName: player.user.displayName,
       avatarUrl: player.user.avatarUrl ?? undefined,
+      isReady: player.isReady,
       totalScore: player.totalScore,
       joinedAt: player.joinedAt,
     };

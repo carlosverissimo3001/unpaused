@@ -8,6 +8,7 @@ import { MultiplayerGameService } from './services/multiplayer-game.service';
 import { TrackPoolService } from './services/track-pool.service';
 import { RoomRepository } from './repositories/room.repository';
 import { MultiplayerGameSessionRepository } from './repositories/multiplayer-game-session.repository';
+import { RoomsGateway } from './gateways/rooms.gateway';
 
 @Module({
   imports: [AuthModule, PlaylistModule, TrackModule],
@@ -18,6 +19,7 @@ import { MultiplayerGameSessionRepository } from './repositories/multiplayer-gam
     TrackPoolService,
     RoomRepository,
     MultiplayerGameSessionRepository,
+    RoomsGateway,
   ],
   exports: [RoomService, MultiplayerGameService, RoomRepository],
 })

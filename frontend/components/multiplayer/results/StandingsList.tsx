@@ -13,6 +13,8 @@ export function StandingsList({
   ranks,
   currentUserId,
 }: StandingsListProps) {
+  const maxScore = standings[0]?.totalScore ?? 0;
+
   return (
     <motion.div
       role="list"
@@ -35,6 +37,7 @@ export function StandingsList({
           player={player}
           rank={ranks[index]}
           isCurrentUser={player.userId === currentUserId}
+          maxScore={maxScore}
         />
       ))}
     </motion.div>

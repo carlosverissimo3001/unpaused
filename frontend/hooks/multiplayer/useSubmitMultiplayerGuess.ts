@@ -8,26 +8,33 @@ import type { GuessResultDto } from '@/sdk';
 import type { GuessDto } from '@/sdk';
 
 export function useSubmitMultiplayerGuess() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation<GuessResultDto, Error, { roomId: string; guess: GuessDto }>({
-        mutationFn: async ({ roomId, guess }) => {
-            try {
-                return await api.multiplayerControllerSubmitGuess({ id: roomId, guessDto: guess });
-            } catch (e) {
-                const message = await getApiErrorMessage(e);
-                throw new Error(message);
-            }
-        },
-        onSuccess: (_, { roomId }) => {
-            // Invalidate the round state to refetch updated state
-            void queryClient.invalidateQueries({
-                queryKey: queryKeys.multiplayer.round(roomId),
-            });
-            // Also invalidate scoreboard since round might be complete
-            void queryClient.invalidateQueries({
-                queryKey: queryKeys.multiplayer.scoreboard(roomId),
-            });
-        },
-    });
+  return useMutation<
+    GuessResultDto,
+    Error,
+    { roomId: string; guess: GuessDto }
+  >({
+    mutationFn: async ({ roomId, guess }) => {
+      try {
+        return await api.multiplayerControllerSubmitGuess({
+          id: roomId,
+          guessDto: guess,
+        });
+      } catch (e) {
+        const message = await getApiErrorMessage(e);
+        throw new Error(message);
+      }
+    },
+    onSuccess: (_, { roomId }) => {
+      // Invalidate the round state to refetch updated state
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.multiplayer.round(roomId),
+      });
+      // Also invalidate scoreboard since round might be complete
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.multiplayer.scoreboard(roomId),
+      });
+    },
+  });
 }

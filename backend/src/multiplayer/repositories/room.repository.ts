@@ -99,6 +99,22 @@ export class RoomRepository {
     });
   }
 
+  async toggleReady(roomId: string, userId: string): Promise<RoomWithPlayers> {
+    const player = await this.prisma.roomPlayer.findUniqueOrThrow({
+      where: { roomId_userId: { roomId, userId } },
+    });
+
+    await this.prisma.roomPlayer.update({
+      where: { id: player.id },
+      data: { isReady: !player.isReady },
+    });
+
+    return this.prisma.multiplayerRoom.findUniqueOrThrow({
+      where: { id: roomId },
+      include: PLAYERS_INCLUDE,
+    });
+  }
+
   async inviteCodeExists(code: string): Promise<boolean> {
     const room = await this.prisma.multiplayerRoom.findUnique({
       where: { inviteCode: code },

@@ -1,7 +1,22 @@
-import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, Loader2 } from 'lucide-react';
+import type { RoomPlayerDto } from '@/sdk';
+import { HostDisconnectedBanner } from '../HostDisconnectedBanner';
 
-export function WaitingForPlayers() {
+interface WaitingForPlayersProps {
+  players: RoomPlayerDto[];
+  totalRounds: number;
+  playerProgress: Map<string, number>;
+  hostDisconnected: boolean;
+}
+
+export function WaitingForPlayers({
+  players,
+  totalRounds,
+  playerProgress,
+  hostDisconnected,
+}: WaitingForPlayersProps) {
   return (
     <div
       className="flex min-h-screen min-h-[100dvh] items-center justify-center"
@@ -23,20 +38,140 @@ export function WaitingForPlayers() {
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      <div className="relative z-10 text-center">
+      <div className="relative z-10 w-full max-w-md px-4">
+        {/* Header */}
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          className="mb-4 inline-block"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
         >
-          <Loader2 className="h-8 w-8 text-[#1DB954]" />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            className="mb-4 inline-block"
+          >
+            <Loader2 className="h-8 w-8 text-[#1DB954]" />
+          </motion.div>
+          <h2 className="mb-2 text-xl font-bold text-white">
+            Waiting for other players
+          </h2>
+          <p className="text-sm text-white/40">
+            Results will appear once everyone finishes
+          </p>
         </motion.div>
-        <h2 className="mb-2 text-xl font-bold text-white">
-          Waiting for other players
-        </h2>
-        <p className="text-sm text-white/40">
-          Results will appear once everyone finishes
-        </p>
+
+        {/* Host disconnected warning */}
+        <AnimatePresence>
+          {hostDisconnected && <HostDisconnectedBanner />}
+        </AnimatePresence>
+
+        {/* Player progress card */}
+        {players.length > 0 && totalRounds > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden divide-y divide-white/5"
+          >
+            {players.map((player, index) => {
+              const lastRoundIndex = playerProgress.get(player.userId);
+              const completedRounds =
+                lastRoundIndex !== undefined ? lastRoundIndex + 1 : 0;
+              const isDone = completedRounds >= totalRounds;
+
+              return (
+                <motion.div
+                  key={player.id}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 + index * 0.06 }}
+                  className="px-4 py-3.5 flex items-center gap-3"
+                >
+                  {/* Avatar */}
+                  <div className="relative shrink-0">
+                    {player.avatarUrl ? (
+                      <Image
+                        src={player.avatarUrl}
+                        alt={player.displayName}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-white/10"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-white/10 border-2 border-white/10 flex items-center justify-center text-sm font-bold text-white/60">
+                        {player.displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    {/* Status indicator on avatar */}
+                    <div
+                      className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-[#121212] flex items-center justify-center ${
+                        isDone ? 'bg-green-500' : 'bg-white/20'
+                      }`}
+                    >
+                      {isDone ? (
+                        <Check
+                          className="w-2.5 h-2.5 text-white"
+                          strokeWidth={3}
+                        />
+                      ) : (
+                        <motion.div
+                          className="w-1.5 h-1.5 rounded-full bg-[#1DB954]"
+                          animate={{ opacity: [0.4, 1, 0.4] }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Name + progress */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-semibold text-white truncate">
+                        {player.displayName}
+                      </span>
+                      <span
+                        className={`text-xs font-mono shrink-0 ml-2 ${
+                          isDone
+                            ? 'text-green-400 font-semibold'
+                            : 'text-white/30'
+                        }`}
+                      >
+                        {isDone ? 'Done' : `${completedRounds}/${totalRounds}`}
+                      </span>
+                    </div>
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalRounds }, (_, i) => (
+                        <motion.div
+                          key={i}
+                          className="h-1.5 flex-1 rounded-full bg-white/10 overflow-hidden"
+                        >
+                          <motion.div
+                            className={`h-full rounded-full ${
+                              isDone ? 'bg-green-500' : 'bg-[#1DB954]'
+                            }`}
+                            initial={{ width: 0 }}
+                            animate={{
+                              width: i < completedRounds ? '100%' : '0%',
+                            }}
+                            transition={{
+                              duration: 0.4,
+                              delay: i * 0.08,
+                              ease: 'easeOut',
+                            }}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
       </div>
     </div>
   );

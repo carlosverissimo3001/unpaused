@@ -46,7 +46,7 @@ function MultiplayerBannerComponent() {
                   Friends.
                 </span>
               </h2>
-              <p className="text-white/50 text-[10px] sm:text-base font-medium truncate">
+              <p className="text-white/50 text-[10px] sm:text-base font-medium leading-snug">
                 Compete head-to-head. Who knows the vibes?
               </p>
             </div>

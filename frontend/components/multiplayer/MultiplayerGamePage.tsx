@@ -12,12 +12,14 @@ import { useGameAudio } from '@/hooks/game/useGameAudio';
 import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
 import { useMultiplayerRound } from '@/hooks/multiplayer/useMultiplayerRound';
 import { useMultiplayerScoreboard } from '@/hooks/multiplayer/useMultiplayerScoreboard';
+import { useMultiplayerSocket } from '@/hooks/multiplayer/useMultiplayerSocket';
 import { useSubmitMultiplayerGuess } from '@/hooks/multiplayer/useSubmitMultiplayerGuess';
 import { useRoom } from '@/hooks/multiplayer/useRoom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { useMe } from '@/hooks/auth/useMe';
 import {
@@ -25,6 +27,7 @@ import {
   type MultiplayerRoundStateDto,
 } from '@/sdk';
 import { ChevronRight, Trophy } from 'lucide-react';
+import { HostDisconnectedBanner } from './HostDisconnectedBanner';
 
 const SHAKE_VARIANTS: Variants = {
   shake: {
@@ -142,29 +145,46 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
   const queryClient = useQueryClient();
   const submitGuessMutation = useSubmitMultiplayerGuess();
   const spotifySearch = useSpotifyTrackSearch();
+  const { data: me } = useMe();
+
+  // Socket must come before useRoom so `connected` is available
+  const currentUserIdRef = useRef<string | undefined>(undefined);
+  const { connected, hostDisconnected } = useMultiplayerSocket(roomId, {
+    onPlayerRoundComplete: (data) => {
+      if (data.userId !== currentUserIdRef.current) {
+        toast(`${data.displayName} finished round ${data.roundIndex + 1}`, {
+          duration: 3000,
+        });
+      }
+    },
+  });
+
+  const { data: room, isLoading: roomLoading } = useRoom(roomId, connected);
+
+  // Resolve current user's internal userId from the room player list
+  const currentUserId = useMemo(() => {
+    if (!me || !room) return undefined;
+    return room.players.find((p) => p.spotifyUserId === me.spotifyUserId)
+      ?.userId;
+  }, [me, room]);
+
+  // Keep ref in sync for the socket callback
+  useEffect(() => {
+    currentUserIdRef.current = currentUserId;
+  }, [currentUserId]);
+
   const {
     data: roundState,
     isLoading: roundLoading,
     error: roundError,
     advanceRound,
-  } = useMultiplayerRound(roomId);
-  const { data: room, isLoading: roomLoading } = useRoom(roomId);
-  const { data: me } = useMe();
-  const { data: scoreboard } = useMultiplayerScoreboard(roomId);
+  } = useMultiplayerRound(roomId, connected);
+  const { data: scoreboard } = useMultiplayerScoreboard(roomId, connected);
 
   const [transitionKey, setTransitionKey] = useState(0);
 
   const isLoading = roundLoading || roomLoading;
   const error = roundError;
-
-  // Resolve current user's internal userId from the room player list
-  const myInternalUserId = useMemo(() => {
-    if (!me || !room) return undefined;
-    const player = room.players.find(
-      (p) => p.spotifyUserId === me.spotifyUserId,
-    );
-    return player?.userId;
-  }, [me, room]);
 
   const isRoundComplete =
     roundState?.status !== MultiplayerRoundStateDtoStatusEnum.Playing;
@@ -174,23 +194,31 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     isRoundComplete;
 
   // Invalidate stats & history so they're fresh when the user navigates away
+  // and auto-redirect to results after 5 seconds
   useEffect(() => {
     if (!isGameOver) return;
     void queryClient.invalidateQueries({ queryKey: queryKeys.game.allStats });
     void queryClient.invalidateQueries({ queryKey: queryKeys.game.allHistory });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.game.playedToday });
-  }, [isGameOver, queryClient]);
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.game.playedToday,
+    });
+
+    const timer = window.setTimeout(() => {
+      router.push(`/multiplayer/${roomId}/results`);
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [isGameOver, queryClient, roomId, router]);
 
   // Derive past round results from scoreboard for the round dots
   const pastResults = useMemo(() => {
     const map = new Map<number, boolean>();
-    if (!scoreboard || !myInternalUserId) return map;
+    if (!scoreboard || !currentUserId) return map;
     for (const round of scoreboard.rounds) {
-      const myResult = round.players.find((p) => p.userId === myInternalUserId);
+      const myResult = round.players.find((p) => p.userId === currentUserId);
       if (myResult) map.set(round.roundIndex, myResult.won);
     }
     return map;
-  }, [scoreboard, myInternalUserId]);
+  }, [scoreboard, currentUserId]);
 
   const gameAudio = useGameAudio({
     previewUrl: roundState?.previewUrl,
@@ -311,6 +339,13 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
         className="p-3 sm:p-6 md:p-8 lg:p-10 relative z-10 flex flex-col min-h-screen min-h-[100dvh] safe-area-inset"
       >
         <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-3 sm:gap-0">
+          {/* Host disconnected warning */}
+          <AnimatePresence>
+            {hostDisconnected && currentUserId !== room?.hostId && (
+              <HostDisconnectedBanner />
+            )}
+          </AnimatePresence>
+
           {/* Round dots */}
           <RoundDots roundState={roundState} pastResults={pastResults} />
 
@@ -323,6 +358,44 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
               </span>
             </h2>
           </div>
+
+          {/* Auto-redirect to results (game over) */}
+          {isGameOver && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              className="flex flex-col items-center gap-2 mb-6 w-full max-w-xs mx-auto"
+            >
+              <motion.button
+                onClick={() => router.push(`/multiplayer/${roomId}/results`)}
+                className="group relative flex items-center justify-center gap-2 w-full px-8 py-3.5 bg-[#1DB954] text-black font-bold rounded-full hover:bg-[#1ed760] transition-colors overflow-hidden"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                {/* Countdown bar filling from left */}
+                <motion.div
+                  className="absolute inset-0 bg-black/15 origin-right"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 5, ease: 'linear' }}
+                />
+                <span className="relative flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  View Results
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </motion.button>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-xs text-white/30"
+              >
+                Redirecting to results...
+              </motion.p>
+            </motion.div>
+          )}
 
           <audio
             ref={audioRef}
@@ -384,25 +457,12 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
                 <RoundScoreSummary
                   roomId={roomId}
                   roundIndex={roundState.roundIndex}
-                  myUserId={myInternalUserId}
+                  myUserId={currentUserId}
                 />
 
-                {/* Next Round / View Results */}
-                <div className="mt-6 flex justify-center">
-                  {isGameOver ? (
-                    <motion.button
-                      onClick={() =>
-                        router.push(`/multiplayer/${roomId}/results`)
-                      }
-                      className="group flex items-center gap-2 px-8 py-3 bg-[#1DB954] text-black font-bold rounded-full hover:bg-[#1ed760] transition-colors"
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                    >
-                      <Trophy className="w-5 h-5" />
-                      View Results
-                      <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                    </motion.button>
-                  ) : (
+                {/* Next Round */}
+                {!isGameOver && (
+                  <div className="mt-6 flex justify-center">
                     <motion.button
                       onClick={handleNextRound}
                       className="group flex items-center gap-2 px-8 py-3 bg-[#1DB954] text-black font-bold rounded-full hover:bg-[#1ed760] transition-colors"
@@ -412,8 +472,8 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
                       Next Round
                       <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </motion.button>
-                  )}
-                </div>
+                  </div>
+                )}
               </motion.div>
             ) : (
               <motion.div

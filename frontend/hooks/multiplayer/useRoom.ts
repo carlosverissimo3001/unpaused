@@ -5,16 +5,15 @@ import { queryKeys } from '@/lib/queryKeys';
 import { api } from '@/sdk/client';
 import type { RoomDto } from '@/sdk';
 
-export function useRoom(roomId: string | undefined) {
+export function useRoom(roomId: string | undefined, socketConnected = false) {
   return useQuery<RoomDto>({
     queryKey: queryKeys.multiplayer.room(roomId!),
     queryFn: () => api.multiplayerControllerGetRoomState({ id: roomId! }),
     enabled: !!roomId,
-    // TODO: At some point, we'd like to have websockets for this, but for now,
-    // we'll poll the server every 2 seconds if the room is still waiting for players.
     refetchInterval: (query) => {
+      if (socketConnected) return false; // socket handles updates
       const status = query.state.data?.status;
-      return status === 'WAITING' ? 2000 : false;
+      return status === 'WAITING' ? 2000 : false; // fallback polling
     },
   });
 }

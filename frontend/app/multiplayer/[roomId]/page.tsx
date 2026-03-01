@@ -1,11 +1,14 @@
 'use client';
 
+import { HostDisconnectedBanner } from '@/components/multiplayer/HostDisconnectedBanner';
 import PlayerRow from '@/components/multiplayer/PlayerRow';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useMe } from '@/hooks/auth/useMe';
 import { useLeaveRoom } from '@/hooks/multiplayer/useLeaveRoom';
+import { useMultiplayerSocket } from '@/hooks/multiplayer/useMultiplayerSocket';
 import { useRoom } from '@/hooks/multiplayer/useRoom';
 import { useStartRoom } from '@/hooks/multiplayer/useStartRoom';
+import { useToggleReady } from '@/hooks/multiplayer/useToggleReady';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -27,11 +30,13 @@ export default function RoomLobbyPage() {
   const roomId = params.roomId;
   const router = useRouter();
   const { data: user } = useMe();
-  const { data: room, isLoading, isError, error } = useRoom(roomId);
+  const { connected, onlineUserIds, hostDisconnected } =
+    useMultiplayerSocket(roomId);
+  const { data: room, isLoading, isError, error } = useRoom(roomId, connected);
   const startRoom = useStartRoom();
   const leaveRoom = useLeaveRoom();
+  const toggleReady = useToggleReady();
   const [copied, setCopied] = useState(false);
-  const [isStarting, setIsStarting] = useState(false);
   const knownPlayerIdsRef = useRef<Set<string> | null>(null);
 
   // Toast when a new player joins via polling
@@ -70,7 +75,9 @@ export default function RoomLobbyPage() {
   }, [room, user]);
 
   const isHost = currentPlayer ? currentPlayer.userId === room?.hostId : false;
-  const canStart = isHost && (room?.players.length ?? 0) >= 2;
+  const allReady = room?.players.every((p) => p.isReady) ?? false;
+  const canStart = isHost && (room?.players.length ?? 0) >= 2 && allReady;
+  const isStarting = room?.status === 'PLAYING';
 
   const inviteUrl =
     typeof window !== 'undefined' && room
@@ -79,15 +86,14 @@ export default function RoomLobbyPage() {
 
   // Redirect to game when status changes to PLAYING
   useEffect(() => {
-    if (room?.status === 'PLAYING') {
-      setIsStarting(true);
+    if (isStarting) {
       const redirectTimer = window.setTimeout(() => {
         router.replace(`/multiplayer/${roomId}/play`);
       }, 1000);
 
       return () => window.clearTimeout(redirectTimer);
     }
-  }, [room?.status, roomId, router]);
+  }, [isStarting, roomId, router]);
 
   async function handleCopyLink() {
     try {
@@ -98,6 +104,11 @@ export default function RoomLobbyPage() {
     } catch {
       toast.error('Failed to copy');
     }
+  }
+
+  function handleToggleReady() {
+    if (!roomId || toggleReady.isPending) return;
+    toggleReady.mutate(roomId);
   }
 
   function handleStartGame() {
@@ -265,6 +276,11 @@ export default function RoomLobbyPage() {
             </div>
           </motion.div>
 
+          {/* Host disconnected warning */}
+          <AnimatePresence>
+            {hostDisconnected && !isHost && <HostDisconnectedBanner />}
+          </AnimatePresence>
+
           {/* Players list */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -291,6 +307,8 @@ export default function RoomLobbyPage() {
                     isHost={player.userId === room.hostId}
                     isCurrentUser={player.spotifyUserId === user?.spotifyUserId}
                     index={index}
+                    isReady={player.isReady}
+                    isOnline={onlineUserIds.includes(player.userId)}
                   />
                 ))}
               </AnimatePresence>
@@ -304,6 +322,24 @@ export default function RoomLobbyPage() {
             transition={{ delay: 0.3 }}
             className="flex flex-col gap-3"
           >
+            {/* Ready toggle — available for all players */}
+            <button
+              onClick={handleToggleReady}
+              disabled={toggleReady.isPending}
+              className={`w-full flex items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-bold transition-all ${
+                currentPlayer?.isReady
+                  ? 'bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20'
+                  : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
+              }`}
+            >
+              {toggleReady.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : currentPlayer?.isReady ? (
+                <Check className="w-4 h-4" />
+              ) : null}
+              {currentPlayer?.isReady ? 'Ready' : 'Mark as Ready'}
+            </button>
+
             {isHost && (
               <>
                 <button
@@ -325,7 +361,9 @@ export default function RoomLobbyPage() {
                 </button>
                 {!canStart && (
                   <p className="text-xs text-white/30 text-center">
-                    Need at least 2 players to start
+                    {(room?.players.length ?? 0) < 2
+                      ? 'Need at least 2 players to start'
+                      : 'All players must be ready'}
                   </p>
                 )}
                 {startRoom.isError && (

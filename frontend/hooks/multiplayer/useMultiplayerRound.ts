@@ -7,7 +7,10 @@ import { api } from '@/sdk/client';
 import type { MultiplayerRoundStateDto } from '@/sdk';
 import { MultiplayerRoundStateDtoStatusEnum } from '@/sdk';
 
-export function useMultiplayerRound(roomId: string | undefined) {
+export function useMultiplayerRound(
+  roomId: string | undefined,
+  socketConnected = false,
+) {
   const queryClient = useQueryClient();
 
   const query = useQuery<MultiplayerRoundStateDto>({
@@ -18,8 +21,10 @@ export function useMultiplayerRound(roomId: string | undefined) {
      * Only poll when the round is complete — waiting for other players
      * or room-level state changes. During active play the player drives
      * state via guess submissions which invalidate the cache directly.
+     * Skip polling entirely if socket is connected.
      */
     refetchInterval: (query) => {
+      if (socketConnected) return false;
       const status = query.state.data?.status;
       if (!status) return false;
       return status !== MultiplayerRoundStateDtoStatusEnum.Playing

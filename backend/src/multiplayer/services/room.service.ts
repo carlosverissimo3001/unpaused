@@ -13,6 +13,7 @@ import {
 import { RoomDto } from '../dto/room.dto';
 import { CreateRoomDto } from '../dto/create-room.dto';
 import { TrackPoolService } from './track-pool.service';
+import { RoomsGateway } from '../gateways/rooms.gateway';
 
 const INVITE_CODE_CHARSET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const INVITE_CODE_LENGTH = 8;
@@ -24,6 +25,7 @@ export class RoomService {
     private readonly authService: AuthService,
     private readonly roomRepository: RoomRepository,
     private readonly trackPoolService: TrackPoolService,
+    private readonly roomsGateway: RoomsGateway,
   ) {}
 
   async createRoom(sessionId: string, dto: CreateRoomDto): Promise<RoomDto> {
@@ -71,7 +73,28 @@ export class RoomService {
 
     // Re-fetch to include the new player
     const updated = await this.findRoomOrThrow(room.id);
-    return RoomDto.fromEntity(updated);
+    const dto = RoomDto.fromEntity(updated);
+    this.roomsGateway.emitRoomUpdate(room.id, dto);
+    return dto;
+  }
+
+  async toggleReady(sessionId: string, roomId: string): Promise<RoomDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const room = await this.findRoomOrThrow(roomId);
+
+    if (room.status !== RoomStatus.WAITING) {
+      throw new BadRequestException('Room is no longer in waiting state');
+    }
+
+    const isPlayer = room.players.some((p) => p.userId === userId);
+    if (!isPlayer) {
+      throw new BadRequestException('You are not in this room');
+    }
+
+    const updated = await this.roomRepository.toggleReady(roomId, userId);
+    const dto = RoomDto.fromEntity(updated);
+    this.roomsGateway.emitRoomUpdate(roomId, dto);
+    return dto;
   }
 
   async startGame(sessionId: string, roomId: string): Promise<RoomDto> {
@@ -84,6 +107,12 @@ export class RoomService {
 
     if (room.status !== RoomStatus.WAITING) {
       throw new BadRequestException('Game has already started or completed');
+    }
+
+    if (!room.players.every((p) => p.isReady)) {
+      throw new BadRequestException(
+        'All players must be ready before starting',
+      );
     }
 
     // Pool tracks from all players' liked songs
@@ -120,7 +149,9 @@ export class RoomService {
       },
     );
 
-    return RoomDto.fromEntity(updated);
+    const dto = RoomDto.fromEntity(updated);
+    this.roomsGateway.emitRoomUpdate(roomId, dto);
+    return dto;
   }
 
   async leaveRoom(sessionId: string, roomId: string): Promise<void> {
@@ -134,12 +165,18 @@ export class RoomService {
 
     // If host leaves, expire the room
     if (room.hostId === userId) {
-      await this.roomRepository.updateStatus(roomId, RoomStatus.EXPIRED);
+      const updated = await this.roomRepository.updateStatus(
+        roomId,
+        RoomStatus.EXPIRED,
+      );
+      this.roomsGateway.emitRoomUpdate(roomId, RoomDto.fromEntity(updated));
       return;
     }
 
     // Otherwise just remove the player
     await this.roomRepository.removePlayer(roomId, userId);
+    const updated = await this.findRoomOrThrow(roomId);
+    this.roomsGateway.emitRoomUpdate(roomId, RoomDto.fromEntity(updated));
   }
 
   private async findRoomOrThrow(roomId: string): Promise<RoomWithPlayers> {

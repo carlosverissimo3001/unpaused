@@ -12,7 +12,10 @@ const CODE_REGEX = /^[A-Z0-9]{1,8}$/;
 
 export default function JoinByCodePage() {
   const params = useParams<{ code: string }>();
-  const rawCode = params.code.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 8);
+  const rawCode = params.code
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase()
+    .slice(0, 8);
   const isValidCode = CODE_REGEX.test(rawCode);
   const router = useRouter();
   const { data: user, isLoading: isLoadingUser } = useMe();
@@ -53,7 +56,8 @@ export default function JoinByCodePage() {
         >
           <p className="text-red-400 mb-2 font-semibold">Invalid invite code</p>
           <p className="text-white/50 text-sm mb-4">
-            The code in the link doesn&apos;t look right. Try entering it manually.
+            The code in the link doesn&apos;t look right. Try entering it
+            manually.
           </p>
           <Link
             href="/multiplayer/join"
@@ -75,10 +79,7 @@ export default function JoinByCodePage() {
           style={{ boxShadow: '0 0 40px rgba(0,0,0,0.3)' }}
         >
           <p className="text-red-400 mb-4">{joinMutation.error.message}</p>
-          <Link
-            href="/"
-            className="text-spotify-green hover:underline text-sm"
-          >
+          <Link href="/" className="text-spotify-green hover:underline text-sm">
             Back to home
           </Link>
         </div>

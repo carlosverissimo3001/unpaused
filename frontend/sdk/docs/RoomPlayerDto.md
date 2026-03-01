@@ -11,6 +11,7 @@ Name | Type
 `spotifyUserId` | string
 `displayName` | string
 `avatarUrl` | string
+`isReady` | boolean
 `totalScore` | number
 `joinedAt` | Date
 
@@ -26,6 +27,7 @@ const example = {
   "spotifyUserId": null,
   "displayName": null,
   "avatarUrl": null,
+  "isReady": null,
   "totalScore": null,
   "joinedAt": null,
 } satisfies RoomPlayerDto

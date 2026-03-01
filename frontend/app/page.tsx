@@ -113,31 +113,25 @@ export default function Home() {
 
               {/* Main Content Header */}
               <div className="mt-1 sm:mt-2">
-                <div className="flex flex-row items-center justify-between gap-2 relative z-10">
-                  <div className="space-y-1">
-                    <div className="flex items-baseline gap-2 sm:gap-3">
-                      <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-white whitespace-nowrap">
-                        Your Playlists
-                      </h1>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 relative z-10">
+                  <div className="flex items-baseline gap-2 sm:gap-3">
+                    <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-white whitespace-nowrap">
+                      Your Playlists
+                    </h1>
 
-                      {!isLoadingPlaylists && (
-                        <span className="text-sm sm:text-lg font-mono text-spotify-green/40 font-light tracking-tighter shrink-0">
-                          /{playlists.length.toString().padStart(2, '0')}
-                        </span>
-                      )}
-                    </div>
+                    {!isLoadingPlaylists && (
+                      <span className="text-sm sm:text-lg font-mono text-spotify-green/40 font-light tracking-tighter shrink-0">
+                        /{playlists.length.toString().padStart(2, '0')}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="flex items-center min-w-0 overflow-x-auto no-scrollbar -mr-4 pr-4 -ml-2 pl-2">
-                    <div className="flex items-center gap-2 py-1">
-                      <PlaylistFilters
-                        visibility={playlistFilters.visibility}
-                        onVisibilityChange={playlistFilters.setVisibility}
-                        sortBy={playlistFilters.sortBy}
-                        onSortByChange={playlistFilters.setSortBy}
-                      />
-                    </div>
-                  </div>
+                  <PlaylistFilters
+                    visibility={playlistFilters.visibility}
+                    onVisibilityChange={playlistFilters.setVisibility}
+                    sortBy={playlistFilters.sortBy}
+                    onSortByChange={playlistFilters.setSortBy}
+                  />
                 </div>
 
                 <motion.div

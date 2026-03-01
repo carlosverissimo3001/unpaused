@@ -26,6 +26,8 @@ import {
   ScoreboardPlayerRoundDto,
   ScoreboardPlayerTotalDto,
 } from '../dto/scoreboard.dto';
+import { RoomsGateway } from '../gateways/rooms.gateway';
+import { RoomDto } from '../dto/room.dto';
 
 @Injectable()
 export class MultiplayerGameService {
@@ -33,6 +35,7 @@ export class MultiplayerGameService {
     private readonly authService: AuthService,
     private readonly roomRepository: RoomRepository,
     private readonly gameSessionRepository: MultiplayerGameSessionRepository,
+    private readonly roomsGateway: RoomsGateway,
   ) {}
 
   async getRoundState(
@@ -179,6 +182,17 @@ export class MultiplayerGameService {
         await this.roomRepository.addToPlayerScore(player.id, roundScore);
       }
 
+      // Notify other players in the room about round completion
+      const displayName =
+        room.players.find((p) => p.userId === userId)?.user.displayName ??
+        'Unknown';
+      const roundIndex = room.trackIds.indexOf(activeSession.trackId);
+      this.roomsGateway.emitPlayerRoundComplete(roomId, {
+        userId,
+        displayName,
+        roundIndex,
+      });
+
       // Check if all players have finished all rounds → complete room
       await this.checkRoomCompletion(roomId, room.roundCount);
     }
@@ -303,8 +317,11 @@ export class MultiplayerGameService {
     }
 
     // All players finished all rounds
-    await this.roomRepository.updateStatus(roomId, RoomStatus.COMPLETED, {
-      completedAt: new Date(),
-    });
+    const updated = await this.roomRepository.updateStatus(
+      roomId,
+      RoomStatus.COMPLETED,
+      { completedAt: new Date() },
+    );
+    this.roomsGateway.emitRoomUpdate(roomId, RoomDto.fromEntity(updated));
   }
 }

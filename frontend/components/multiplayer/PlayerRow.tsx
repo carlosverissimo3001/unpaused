@@ -8,10 +8,12 @@ type PlayerRowProps = {
   isHost: boolean;
   isCurrentUser: boolean;
   index: number;
+  isReady?: boolean;
+  isOnline?: boolean;
 };
 
 function PlayerRow(props: PlayerRowProps) {
-  const { player, isHost, isCurrentUser, index } = props;
+  const { player, isHost, isCurrentUser, index, isReady, isOnline } = props;
   return (
     <motion.div
       layout
@@ -41,6 +43,13 @@ function PlayerRow(props: PlayerRowProps) {
             <Crown className="w-3 h-3 text-yellow-900" />
           </div>
         )}
+        {isOnline !== undefined && (
+          <div
+            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#121212] ${
+              isOnline ? 'bg-green-500' : 'bg-white/30'
+            }`}
+          />
+        )}
       </div>
 
       {/* Name */}
@@ -54,6 +63,19 @@ function PlayerRow(props: PlayerRowProps) {
           )}
         </p>
       </div>
+
+      {/* Ready badge */}
+      {isReady !== undefined && (
+        <span
+          className={`shrink-0 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${
+            isReady
+              ? 'text-green-400/80 bg-green-500/10 border-green-500/20'
+              : 'text-white/30 bg-white/5 border-white/10'
+          }`}
+        >
+          {isReady ? 'Ready' : 'Not Ready'}
+        </span>
+      )}
 
       {/* Host badge */}
       {isHost && (

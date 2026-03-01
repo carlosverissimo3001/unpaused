@@ -30,7 +30,7 @@ const SORT_OPTIONS = [
 const PILL_BASE =
   'relative overflow-hidden min-w-[72px] sm:min-w-[88px] h-8 sm:h-9 px-4 sm:px-5 rounded-full border text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-500 active:scale-90 flex items-center justify-center';
 const PILL_ACTIVE =
-  'bg-spotify-green border-white/20 text-black shadow-[0_10px_20px_-10px_rgba(30,215,96,0.5)] scale-105';
+  'bg-spotify-green border-white/20 text-black shadow-[0_10px_20px_-10px_rgba(30,215,96,0.5)]';
 const PILL_INACTIVE =
   'bg-white/[0.03] border-white/10 text-white/40 hover:bg-white/[0.08] hover:border-white/20';
 
@@ -72,7 +72,7 @@ function PlaylistFiltersComponent({
   const isSortActive = sortBy !== SortPlaylistsBy.Default;
 
   return (
-    <div className="flex items-center gap-1.5 sm:gap-3">
+    <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
       <FilterPill
         active={visibility === 'public'}
         onClick={() => toggleVisibility('public')}
