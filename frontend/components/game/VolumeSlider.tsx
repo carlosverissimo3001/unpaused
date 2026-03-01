@@ -23,7 +23,7 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
   const Icon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
-    <div className="grid grid-cols-[28px_minmax(0,1fr)_28px] items-center gap-1.5 w-[160px] mx-auto">
+    <div className="grid grid-cols-[28px_minmax(0,1fr)_28px] items-center gap-1.5 w-[160px]">
       <button
         type="button"
         onClick={toggleMute}

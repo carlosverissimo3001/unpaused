@@ -207,7 +207,7 @@ export function SongRevealCard({
         )}
       </div>
       {previewUrl && (
-        <div className="flex items-center justify-center gap-2 mt-4">
+        <div className="mt-4 w-fit mx-auto flex items-center gap-2">
           <motion.button
             type="button"
             onClick={onToggleFullSong}
