@@ -57,7 +57,7 @@ export function GuessHistoryList({
 
             return (
               <motion.div
-                key={i}
+                key={`${i}-${guess.trackId ?? 'skip'}-${guess.result}`}
                 variants={ITEM_VARIANTS}
                 initial="initial"
                 animate={'animate'}

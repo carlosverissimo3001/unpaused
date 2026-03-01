@@ -2,6 +2,7 @@
 
 import { useRef, useCallback } from 'react';
 import { Volume2, Volume1, VolumeX } from 'lucide-react';
+import { DEFAULT_VOLUME } from '@/consts/consts';
 
 interface VolumeSliderProps {
   volume: number;
@@ -9,21 +10,21 @@ interface VolumeSliderProps {
 }
 
 export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
-  const previousVolumeRef = useRef(volume || 0.3);
+  const previousVolumeRef = useRef(volume || DEFAULT_VOLUME);
 
   const toggleMute = useCallback(() => {
     if (volume > 0) {
       previousVolumeRef.current = volume;
       onVolumeChange(0);
     } else {
-      onVolumeChange(previousVolumeRef.current || 0.3);
+      onVolumeChange(previousVolumeRef.current || DEFAULT_VOLUME);
     }
   }, [volume, onVolumeChange]);
 
   const Icon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
-    <div className="grid grid-cols-[28px_minmax(0,1fr)_28px] items-center gap-1.5 w-[160px]">
+    <div className="hidden md:grid grid-cols-[28px_minmax(0,1fr)_28px] items-center gap-1.5 w-[160px]">
       <button
         type="button"
         onClick={toggleMute}

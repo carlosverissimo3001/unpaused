@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -74,9 +74,13 @@ export function SongRevealCard({
   const isWon = status === GameStateDtoStatusEnum.Won;
   const albumColor = useImageColor(answer?.albumImageUrl ?? null);
   const albumGlowColor = albumColor.replace(/[\d.]+\)$/, '0.5)');
+  const confettiFiredRef = useRef(false);
 
   useEffect(() => {
-    if (isWon) triggerRevealConfetti();
+    if (isWon && !confettiFiredRef.current) {
+      confettiFiredRef.current = true;
+      triggerRevealConfetti();
+    }
   }, [isWon]);
 
   return (

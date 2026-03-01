@@ -10,7 +10,7 @@ export function useScrollDirection(threshold = 10) {
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
-      setIsAtTop(y < 10);
+      setIsAtTop(y < threshold);
       if (Math.abs(y - lastY.current) >= threshold) {
         setDirection(y > lastY.current ? 'down' : 'up');
         lastY.current = y;
