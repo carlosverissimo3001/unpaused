@@ -77,23 +77,17 @@ export function useGameOrchestrator(
   }, [gameState?.guesses, lastGuessResult]);
 
   useEffect(() => {
-    if (isGameOver) {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.game.allStats });
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.game.playedToday,
-      });
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.game.allHistory,
-      });
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.daily.allHistory,
-      });
-      if (isDaily) {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.streak.status,
-        });
-      }
-    }
+    if (!isGameOver) return;
+    const keys = [
+      queryKeys.game.allStats,
+      queryKeys.game.playedToday,
+      queryKeys.game.allHistory,
+      queryKeys.daily.allHistory,
+      ...(isDaily ? [queryKeys.streak.status] : []),
+    ];
+    void Promise.all(
+      keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+    );
   }, [isDaily, isGameOver, queryClient]);
 
   const handleSubmit = useCallback(() => {

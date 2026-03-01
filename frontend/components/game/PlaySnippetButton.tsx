@@ -62,6 +62,9 @@ export function PlaySnippetButton({
                 ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }
                 : { type: 'spring', stiffness: 100, damping: 15 }
             }
+            aria-label={
+              isPlaying ? `Pause snippet` : `Play ${duration} second snippet`
+            }
             onClick={isPlaying ? onPause : onPlay}
             className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-full text-base sm:text-lg border border-white/10 shadow-[0_0_30px_-5px_rgba(30,215,96,0.5)] min-h-[48px] touch-manipulation"
             style={{

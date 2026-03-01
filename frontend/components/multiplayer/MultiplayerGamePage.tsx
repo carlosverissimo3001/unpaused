@@ -28,6 +28,8 @@ import {
   type MultiplayerRoundStateDto,
 } from '@/sdk';
 import { ChevronRight, Trophy } from 'lucide-react';
+import { GLASS_STYLE } from '@/lib/styles';
+import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
 import { HostDisconnectedBanner } from './HostDisconnectedBanner';
 
 const SHAKE_VARIANTS: Variants = {
@@ -121,11 +123,7 @@ function RoundScoreSummary({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.35 }}
       className="mt-5 p-4 rounded-xl text-center"
-      style={{
-        background: 'rgba(18, 18, 18, 0.5)',
-        backdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255,255,255,0.08)',
-      }}
+      style={GLASS_STYLE}
     >
       <p className="text-sm text-white/50 mb-1">Your score this round</p>
       <p className="text-3xl font-black text-[#1DB954] tabular-nums">
@@ -194,6 +192,8 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     roundState &&
     roundState.roundIndex === roundState.totalRounds - 1 &&
     isRoundComplete;
+
+  useWarnOnLeave(!!roundState && !isGameOver);
 
   // Invalidate stats & history so they're fresh when the user navigates away
   // and auto-redirect to results after 5 seconds

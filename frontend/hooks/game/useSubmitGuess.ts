@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { api } from '@/sdk/client';
 import type {
@@ -128,6 +129,7 @@ export function useSubmitGuess() {
           context.previousState,
         );
       }
+      toast.error('Failed to submit guess. Please try again.');
     },
   });
 }

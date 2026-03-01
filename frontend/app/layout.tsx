@@ -4,7 +4,9 @@ import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/react';
 import './globals.css';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { MotionProvider } from '@/components/providers/MotionProvider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { OfflineBanner } from '@/components/ui/OfflineBanner';
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -67,8 +69,11 @@ export default function RootLayout({
         className={`${quicksand.variable} font-sans antialiased max-w-[100vw] overflow-x-hidden`}
       >
         <ErrorBoundary>
-          <QueryProvider>{children}</QueryProvider>
+          <MotionProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </MotionProvider>
         </ErrorBoundary>
+        <OfflineBanner />
         <Toaster theme="dark" position="bottom-right" />
         <Analytics />
       </body>

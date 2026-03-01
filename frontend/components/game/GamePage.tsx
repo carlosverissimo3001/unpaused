@@ -5,6 +5,7 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useGameOrchestrator } from '@/hooks/game/useGameOrchestrator';
 import { useVolume } from '@/hooks/game/useVolume';
+import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
 import { useImageColor } from '@/hooks/misc/useImageColor';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { RoundProgressBar } from './RoundProgressBar';
@@ -58,6 +59,8 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     playSnippet,
     pauseSnippet,
   } = gameAudio;
+
+  useWarnOnLeave(!!gameState && !isGameOver);
 
   const albumArtColor = useImageColor(
     isGameOver && gameState?.answer?.albumImageUrl

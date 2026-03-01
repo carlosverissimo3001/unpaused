@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Disc3 } from 'lucide-react';
 import type { TrackOptionDto } from '@/sdk';
 import { MIN_QUERY_LENGTH } from '@/consts/consts';
+import { GLASS_STYLE } from '@/lib/styles';
 
 export interface GuessSearchState {
   searchQuery: string;
@@ -25,15 +26,6 @@ interface GuessInputProps {
   onSkip: () => void;
   submitPending: boolean;
 }
-
-const GLASS_STYLE = {
-  background: 'rgba(18, 18, 18, 0.5)',
-  backdropFilter: 'blur(24px)',
-  WebkitBackdropFilter: 'blur(24px)' as const,
-  border: '1px solid rgba(255,255,255,0.1)',
-  boxShadow:
-    '0 0 0 1px rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.3), 0 0 24px rgba(29,185,84,0.04), inset 0 1px 0 rgba(255,255,255,0.03)',
-};
 
 const DROPDOWN_ITEM_STAGGER = 0.03;
 
@@ -81,6 +73,7 @@ export function GuessInput({
             <motion.button
               type="button"
               onClick={handleClearSelection}
+              aria-label="Clear selection"
               className="p-2 hover:bg-black/10 rounded-full transition-colors"
               whileHover={{ scale: 1.05, rotate: 90 }}
               whileTap={{ scale: 0.95 }}
@@ -120,7 +113,9 @@ export function GuessInput({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute z-20 w-full mt-2 max-h-80 overflow-y-auto rounded-xl shadow-2xl border border-white/10"
+                  role="listbox"
+                  aria-label="Search results"
+                  className="absolute z-20 w-full mt-2 max-h-[60vh] overflow-y-auto rounded-xl shadow-2xl border border-white/10"
                   style={{
                     background: 'rgba(24, 24, 24, 0.95)',
                     backdropFilter: 'blur(20px)',
@@ -133,6 +128,7 @@ export function GuessInput({
                     filteredTracks.map((track, index) => (
                       <motion.button
                         key={track.id}
+                        role="option"
                         type="button"
                         onClick={() => handleSelectTrack(track)}
                         initial={{ opacity: 0, x: -8 }}
@@ -195,6 +191,7 @@ export function GuessInput({
           disabled={submitPending}
           whileHover={{ scale: submitPending ? 1 : 1.02 }}
           whileTap={{ scale: submitPending ? 1 : 0.98 }}
+          aria-label="Skip round"
           className="flex-1 py-3.5 rounded-xl font-semibold text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[48px] touch-manipulation active:scale-95"
         >
           Skip
@@ -202,6 +199,7 @@ export function GuessInput({
         <motion.button
           type="button"
           onClick={onSubmit}
+          aria-label="Submit guess"
           disabled={!selectedTrack || submitPending}
           whileHover={selectedTrack && !submitPending ? { scale: 1.02 } : {}}
           whileTap={selectedTrack && !submitPending ? { scale: 0.98 } : {}}

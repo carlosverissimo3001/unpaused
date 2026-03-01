@@ -12,15 +12,7 @@ import { ShareButton } from '@/components/daily/ShareButton';
 import { triggerRevealConfetti } from './confetti';
 import { useImageColor } from '@/hooks/misc/useImageColor';
 import { VolumeSlider } from './VolumeSlider';
-
-const GLASS_STYLE = {
-  background: 'rgba(18, 18, 18, 0.6)',
-  backdropFilter: 'blur(24px)',
-  WebkitBackdropFilter: 'blur(24px)' as const,
-  border: '1px solid rgba(255,255,255,0.12)',
-  boxShadow:
-    '0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.4), 0 0 40px rgba(29,185,84,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
-};
+import { GLASS_STYLE } from '@/lib/styles';
 
 interface SongRevealCardProps {
   status: string;
