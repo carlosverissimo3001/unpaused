@@ -10,8 +10,9 @@ import { PrismaService } from '@prisma/prisma.service';
 import { TrackDto } from '@/track/dto/track.dto';
 import { TrackRepository } from '@/track/repositories/track.repository';
 import { TrackService } from '@/track/services/track.service';
+import { LastfmService } from '@/track/services/lastfm.service';
 import { Transactional } from '@transaction/transactional.decorator';
-import { formatDate, subHours } from 'date-fns';
+import { formatDate, isAfter, subDays, subHours } from 'date-fns';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 import { AppLoggerService } from '../../logger/logger.service';
 import { GuessResult, ROUND_DURATIONS, MAX_ROUNDS } from '../consts';
@@ -46,7 +47,9 @@ import {
   shuffleInPlace,
 } from '../utils/utils';
 import { buildShareText, guessToEmoji } from '../utils/share.utils';
+import { buildHintsForRound } from '../utils/hint-builder';
 import { GameStatsService } from './game-stats.service';
+import { TrackMetadataVo } from '../../track/vo/track-metadata.vo';
 
 @Injectable()
 export class GameService {
@@ -60,6 +63,7 @@ export class GameService {
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
     private readonly gameStatsService: GameStatsService,
+    private readonly lastfmService: LastfmService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
@@ -102,6 +106,12 @@ export class GameService {
       targetPlaylistId,
     );
 
+    const metadata = await this.fetchOrReuseMetadata(
+      selectedTrack.id,
+      selectedTrack.name,
+      selectedTrack.primaryArtist,
+    );
+
     await this.trackRepository.upsertTrack(selectedTrack.id, {
       name: selectedTrack.name,
       artistName: selectedTrack.primaryArtist,
@@ -110,6 +120,8 @@ export class GameService {
       albumUrl: `https://open.spotify.com/album/${selectedTrack.albumId}`,
       releaseYear: selectedTrack.releaseYear,
       previewUrl,
+      metadata,
+      allArtists: selectedTrack.allArtists,
     });
 
     const game = await this.gameSessionRepository.createSession({
@@ -236,23 +248,25 @@ export class GameService {
     sessionId: string,
     gameSessionId: string,
   ): Promise<GameStateDto> {
-    const [user, gameWithTrack] = await Promise.all([
+    const [user, game] = await Promise.all([
       this.authService.getUserBySessionId(sessionId),
       this.gameSessionRepository.findByIdWithTrack(gameSessionId),
     ]);
 
-    if (!gameWithTrack || !gameWithTrack.game.userId) {
+    if (!game || !game.userId) {
       throw new NotFoundException('Game session not found');
     }
-
-    const { game, track } = gameWithTrack;
 
     if (game.userId !== user.id) {
       throw new NotFoundException('Game session not found');
     }
 
+    if (!game.track) {
+      throw new NotFoundException('Associated track not found');
+    }
+
     // Should not happen since we only start games with valid tracks, but just in case
-    if (!track.previewUrl) {
+    if (!game.track.previewUrl) {
       throw new NotFoundException('Track not found or no preview URL');
     }
 
@@ -261,7 +275,7 @@ export class GameService {
       game.status === GameStatus.WON,
     );
 
-    return mapToGameStateDto(game, track, extras);
+    return mapToGameStateDto(game, game.track, extras);
   }
 
   @Transactional()
@@ -270,16 +284,14 @@ export class GameService {
     gameSessionId: string,
     guess: GuessDto,
   ): Promise<GuessResultDto> {
-    const [user, gameWithTrack] = await Promise.all([
+    const [user, game] = await Promise.all([
       this.authService.getUserBySessionId(sessionId),
       this.gameSessionRepository.findByIdWithTrack(gameSessionId),
     ]);
 
-    if (!gameWithTrack || !gameWithTrack.game.userId) {
+    if (!game || !game.userId) {
       throw new NotFoundException('Game session not found');
     }
-
-    const { game, track: actual } = gameWithTrack;
 
     if (game.userId !== user.id) {
       throw new NotFoundException('Game session not found');
@@ -289,12 +301,16 @@ export class GameService {
       throw new BadRequestException('Game is already over');
     }
 
-    const result = evaluateGuess(guess, actual);
+    if (!game.track) {
+      throw new NotFoundException('Associated track not found');
+    }
+
+    const result = evaluateGuess(guess, game.track);
 
     const updatedGuesses = addGuessToHistory(
       game.guesses as unknown as GuessHistoryDto[],
       result,
-      actual,
+      game.track,
       guess,
     );
     const nextRound = game.currentRound + 1;
@@ -316,13 +332,42 @@ export class GameService {
       completedAt: gameOver ? new Date() : undefined,
     });
 
+    const hints =
+      !gameOver && game.track.previewUrl
+        ? buildHintsForRound(game.track, nextRound)
+        : undefined;
+
     return {
       result,
       gameOver,
       status,
       currentRound: nextRound,
       snippetDuration: ROUND_DURATIONS[Math.min(nextRound, MAX_ROUNDS - 1)],
+      hints,
     };
+  }
+
+  /**
+   * Returns existing metadata if fresh (<30 days), otherwise fetches from Last.fm.
+   */
+  private async fetchOrReuseMetadata(
+    trackId: string,
+    trackName: string,
+    artistName: string,
+  ): Promise<TrackMetadataVo> {
+    const existing = await this.trackRepository.findById(trackId);
+    const meta = existing?.metadata ?? {};
+
+    if (meta.lastfm?.fetchedAt) {
+      const thirtyDaysAgo = subDays(new Date(), 30);
+      if (isAfter(new Date(meta.lastfm.fetchedAt), thirtyDaysAgo)) {
+        return meta;
+      }
+    }
+
+    const lastfm = await this.lastfmService.getTrackInfo(trackName, artistName);
+
+    return lastfm ? { ...meta, lastfm } : meta;
   }
 
   async getHistory(

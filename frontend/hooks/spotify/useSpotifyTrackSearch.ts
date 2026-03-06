@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useState, useRef, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { TrackOptionDto } from '@/sdk';
 import { api } from '@/sdk/client';
 import { queryKeys } from '@/lib/queryKeys';
@@ -28,7 +28,6 @@ export function useSpotifyTrackSearch() {
     queryFn: () => api.searchControllerSearchTracks({ q: debouncedQuery }),
     enabled: debouncedQuery.length >= MIN_QUERY_LENGTH,
     staleTime: 2 * 60 * 1000,
-    placeholderData: keepPreviousData,
   });
 
   // Show loading during debounce delay too, so the UI doesn't flash "No songs found"
@@ -36,19 +35,6 @@ export function useSpotifyTrackSearch() {
   const isDebouncing =
     trimmed !== debouncedQuery && trimmed.length >= MIN_QUERY_LENGTH;
   const isLoading = queryLoading || isDebouncing;
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleSelectTrack = useCallback((track: TrackOptionDto) => {
     setSelectedTrack(track);

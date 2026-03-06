@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { HintDto } from './HintDto';
+import {
+    HintDtoFromJSON,
+    HintDtoFromJSONTyped,
+    HintDtoToJSON,
+    HintDtoToJSONTyped,
+} from './HintDto';
 import type { MetaGameExtrasVo } from './MetaGameExtrasVo';
 import {
     MetaGameExtrasVoFromJSON,
@@ -101,6 +108,12 @@ export interface GameStateDto {
      * @memberof GameStateDto
      */
     meta?: MetaGameExtrasVo;
+    /**
+     * Progressive song metadata hints for the current round
+     * @type {Array<HintDto>}
+     * @memberof GameStateDto
+     */
+    hints?: Array<HintDto>;
 }
 
 
@@ -149,6 +162,7 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
         'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
         'meta': json['meta'] == null ? undefined : MetaGameExtrasVoFromJSON(json['meta']),
+        'hints': json['hints'] == null ? undefined : ((json['hints'] as Array<any>).map(HintDtoFromJSON)),
     };
 }
 
@@ -173,6 +187,7 @@ export function GameStateDtoToJSONTyped(value?: GameStateDto | null, ignoreDiscr
         'rankTitle': value['rankTitle'],
         'specialNote': value['specialNote'],
         'meta': MetaGameExtrasVoToJSON(value['meta']),
+        'hints': value['hints'] == null ? undefined : ((value['hints'] as Array<any>).map(HintDtoToJSON)),
     };
 }
 

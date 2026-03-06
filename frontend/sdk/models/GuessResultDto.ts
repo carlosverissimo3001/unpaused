@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { HintDto } from './HintDto';
+import {
+    HintDtoFromJSON,
+    HintDtoFromJSONTyped,
+    HintDtoToJSON,
+    HintDtoToJSONTyped,
+} from './HintDto';
+
 /**
  * 
  * @export
@@ -67,6 +75,12 @@ export interface GuessResultDto {
      * @memberof GuessResultDto
      */
     meta?: object;
+    /**
+     * Progressive song metadata hints for the next round
+     * @type {Array<HintDto>}
+     * @memberof GuessResultDto
+     */
+    hints?: Array<HintDto>;
 }
 
 
@@ -125,6 +139,7 @@ export function GuessResultDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
         'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
         'meta': json['meta'] == null ? undefined : json['meta'],
+        'hints': json['hints'] == null ? undefined : ((json['hints'] as Array<any>).map(HintDtoFromJSON)),
     };
 }
 
@@ -147,6 +162,7 @@ export function GuessResultDtoToJSONTyped(value?: GuessResultDto | null, ignoreD
         'rankTitle': value['rankTitle'],
         'specialNote': value['specialNote'],
         'meta': value['meta'],
+        'hints': value['hints'] == null ? undefined : ((value['hints'] as Array<any>).map(HintDtoToJSON)),
     };
 }
 

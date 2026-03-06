@@ -11,6 +11,7 @@ export * from './GameStatsDto';
 export * from './GuessDto';
 export * from './GuessHistoryDto';
 export * from './GuessResultDto';
+export * from './HintDto';
 export * from './MetaGameExtrasVo';
 export * from './MultiplayerRoundStateDto';
 export * from './PaginationMetaDto';

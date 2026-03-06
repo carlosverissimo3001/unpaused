@@ -1,19 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { startOfDay } from 'date-fns';
 import { PrismaService } from '@prisma/prisma.service';
-import {
-  Prisma,
-  GameSession,
-  GameStatus,
-  GameMode,
-  Track,
-} from '@prisma/client';
+import { Prisma, GameStatus, GameMode } from '@prisma/client';
 import { InputJsonValue } from '@prisma/client/runtime/client';
 import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { GameSessionEntity } from '../entities/game-session.entity';
-import { mapGuessesFromPrisma } from '../utils/guess-mapper';
 import { FindGameSessionsDto } from '../dto/session/find-game-sessions.dto';
 import { GAME_HISTORY_DEFAULT_PAGE_SIZE } from '../consts';
+import { mapGameSession, PrismaGameSessionResult } from '../../utils/mappers';
 
 @Injectable()
 export class GameSessionRepository {
@@ -27,14 +21,14 @@ export class GameSessionRepository {
     data: Prisma.GameSessionCreateInput,
   ): Promise<GameSessionEntity> {
     const createdSession = await this.prisma.gameSession.create({ data });
-    return this.fromPrisma(createdSession);
+    return mapGameSession(createdSession as PrismaGameSessionResult);
   }
 
   async findMany(
     where: Prisma.GameSessionWhereInput,
   ): Promise<GameSessionEntity[]> {
     const sessions = await this.prisma.gameSession.findMany({ where });
-    return sessions.map((s) => this.fromPrisma(s));
+    return sessions.map((s) => mapGameSession(s as PrismaGameSessionResult));
   }
 
   /**
@@ -46,15 +40,15 @@ export class GameSessionRepository {
     const gameSession = await this.prisma.gameSession.findUnique({
       where: { id },
     });
-    return gameSession ? this.fromPrisma(gameSession) : null;
+    return gameSession
+      ? mapGameSession(gameSession as PrismaGameSessionResult)
+      : null;
   }
 
   /**
    * Finds a game session by ID with its track relation in a single query.
    */
-  async findByIdWithTrack(
-    id: string,
-  ): Promise<{ game: GameSessionEntity; track: Track } | null> {
+  async findByIdWithTrack(id: string): Promise<GameSessionEntity | null> {
     const result = await this.prisma.gameSession.findUnique({
       where: { id },
       include: { track: true },
@@ -62,8 +56,7 @@ export class GameSessionRepository {
     if (!result) {
       return null;
     }
-    const { track, ...gameSession } = result;
-    return { game: this.fromPrisma(gameSession), track };
+    return mapGameSession(result as PrismaGameSessionResult);
   }
 
   /**
@@ -90,7 +83,7 @@ export class GameSessionRepository {
         completedAt: updateData.completedAt ?? null,
       },
     });
-    return this.fromPrisma(updatedSession);
+    return mapGameSession(updatedSession as PrismaGameSessionResult);
   }
 
   async updateMany(
@@ -119,7 +112,7 @@ export class GameSessionRepository {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return session ? this.fromPrisma(session) : null;
+    return session ? mapGameSession(session as PrismaGameSessionResult) : null;
   }
 
   /**
@@ -138,7 +131,7 @@ export class GameSessionRepository {
       where: { userId, mode, status: GameStatus.PLAYING, playlistId },
       orderBy: { createdAt: 'desc' },
     });
-    return session ? this.fromPrisma(session) : null;
+    return session ? mapGameSession(session as PrismaGameSessionResult) : null;
   }
 
   /**
@@ -202,7 +195,7 @@ export class GameSessionRepository {
     ]);
 
     return {
-      items: items.map((s) => this.fromPrisma(s)),
+      items: items.map((s) => mapGameSession(s as PrismaGameSessionResult)),
       total,
     };
   }
@@ -215,24 +208,6 @@ export class GameSessionRepository {
         completedAt: new Date(),
       },
     });
-    return this.fromPrisma(updatedSession);
-  }
-
-  fromPrisma(prismaEntity: GameSession): GameSessionEntity {
-    const score =
-      prismaEntity.status === GameStatus.WON
-        ? // Guessed on 6th round -> score = 1, guessed on 1st round -> score = 6
-          6 - prismaEntity.currentRound + 1
-        : prismaEntity.status === GameStatus.LOST
-          ? 0
-          : undefined;
-
-    return {
-      ...prismaEntity,
-      userId: prismaEntity.userId,
-      completedAt: prismaEntity.completedAt ?? undefined,
-      guesses: mapGuessesFromPrisma(prismaEntity.guesses),
-      score,
-    };
+    return mapGameSession(updatedSession as PrismaGameSessionResult);
   }
 }

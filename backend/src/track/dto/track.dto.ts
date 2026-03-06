@@ -2,51 +2,58 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TrackDto {
   @ApiProperty({ description: 'The ID of the track' })
-  id: string;
+  readonly id: string;
 
   @ApiProperty({ description: 'The name of the track' })
-  name: string;
+  readonly name: string;
 
   @ApiProperty({
     description:
       'Normalized name for search/matching (no weird Unicode/spacing)',
   })
-  normalizedName: string;
+  readonly normalizedName: string;
 
   @ApiProperty({ type: String, isArray: true })
-  artists: string[];
+  readonly artists: string[];
 
   @ApiProperty({ description: 'The name of the album' })
-  albumName: string;
+  readonly albumName: string;
 
   @ApiProperty({ description: 'The ID of the album' })
-  albumId: string;
+  readonly albumId: string;
 
   @ApiProperty({ description: 'The image URL of the track' })
-  imageUrl: string;
+  readonly imageUrl: string;
 
   @ApiProperty({ description: 'The duration of the track in milliseconds' })
-  durationMs: number;
+  readonly durationMs: number;
 
   @ApiProperty({ description: 'The external URL of the track' })
-  externalUrl: string;
+  readonly externalUrl: string;
 
   @ApiPropertyOptional({
     description: 'The preview URL of the track',
     nullable: true,
     type: String,
   })
-  previewUrl?: string;
+  readonly previewUrl?: string;
 
   @ApiProperty()
-  isPlayable: boolean;
+  readonly isPlayable: boolean;
 
   @ApiProperty({ description: 'The primary artist for easier comparison' })
-  primaryArtist: string;
+  readonly primaryArtist: string;
 
   @ApiPropertyOptional({
     description: 'The release year of the track',
     nullable: true,
   })
-  releaseYear?: number;
+  readonly releaseYear?: number;
+
+  @ApiProperty({
+    description: 'All artist names for the track',
+    type: String,
+    isArray: true,
+  })
+  readonly allArtists: string[];
 }

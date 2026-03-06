@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { useStreakStatus } from '@/hooks/streak/useStreakStatus';
 import { useStreakFreeze } from '@/hooks/streak/useStreakFreeze';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface StreakFreezePromptProps {
   onResolved: () => void;
@@ -23,6 +23,20 @@ function wasDismissed(streak: number, gap: number) {
   return sessionStorage.getItem(getDismissKey(streak, gap)) === '1';
 }
 
+function getStreakLostDailyKey(streak: number, gap: number) {
+  const today = new Date().toISOString().slice(0, 10);
+  return `streak-lost-shown:${streak}:${gap}:${today}`;
+}
+
+function wasStreakLostShownToday(streak: number, gap: number) {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(getStreakLostDailyKey(streak, gap)) === '1';
+}
+
+function markStreakLostShownToday(streak: number, gap: number) {
+  localStorage.setItem(getStreakLostDailyKey(streak, gap), '1');
+}
+
 export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
   const { data: status } = useStreakStatus();
   const freezeMutation = useStreakFreeze();
@@ -32,7 +46,24 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
     manuallyDismissed ||
     (!!status && wasDismissed(status.currentStreak, status.gapDays));
 
-  if (!status || !status.streakAtRisk || isDismissed) return null;
+  const shouldSkip =
+    !status ||
+    !status.streakAtRisk ||
+    isDismissed ||
+    (!status.canSaveStreak &&
+      wasStreakLostShownToday(status.currentStreak, status.gapDays));
+
+  useEffect(() => {
+    if (status && status.streakAtRisk && !status.canSaveStreak) {
+      markStreakLostShownToday(status.currentStreak, status.gapDays);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (shouldSkip) onResolved();
+  }, [shouldSkip, onResolved]);
+
+  if (shouldSkip) return null;
 
   const handleSave = () => {
     freezeMutation.mutate(undefined, {

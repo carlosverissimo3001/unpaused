@@ -112,7 +112,7 @@ export class MultiplayerController {
     return this.roomService.leaveRoom(sessionId, id);
   }
 
-  @Get('rooms/:id/round')
+  /* @Get('rooms/:id/round')
   @ApiCookieAuth()
   @ApiOperation({ summary: 'Get current round state for the player' })
   @ApiParam({ name: 'id', description: 'Room ID' })
@@ -152,5 +152,5 @@ export class MultiplayerController {
     @Param('id') id: string,
   ): Promise<ScoreboardDto> {
     return this.gameService.getScoreboard(sessionId, id);
-  }
+  } */
 }

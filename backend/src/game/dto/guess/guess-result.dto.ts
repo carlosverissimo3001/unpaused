@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GuessResult } from '../../consts';
 import { GameStatus } from '@prisma/client';
 import { MetaGameExtrasVo } from '../../vos/game-extras.vo';
+import { HintDto } from '../hint/hint.dto';
 
 export class GuessResultDto {
   @ApiProperty({ enum: GuessResult, description: 'The result of the guess' })
@@ -37,4 +38,11 @@ export class GuessResultDto {
     type: Object,
   })
   meta?: MetaGameExtrasVo;
+
+  @ApiPropertyOptional({
+    description: 'Progressive song metadata hints for the next round',
+    type: HintDto,
+    isArray: true,
+  })
+  hints?: HintDto[];
 }

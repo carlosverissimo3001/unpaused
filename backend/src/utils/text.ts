@@ -53,3 +53,7 @@ export function normalizeText(value: string): string {
   }
   return words.join(' ');
 }
+
+export function compareText(a: string, b: string): boolean {
+  return normalizeText(a.toLowerCase()) === normalizeText(b.toLowerCase());
+}

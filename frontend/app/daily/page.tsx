@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { GamePage } from '@/components/game/GamePage';
 import { StreakFreezePrompt } from '@/components/streak/StreakFreezePrompt';
 import { useStreakStatus } from '@/hooks/streak/useStreakStatus';
@@ -10,6 +10,7 @@ import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 export default function DailyPage() {
   const { data: status, isLoading } = useStreakStatus();
   const [promptResolved, setPromptResolved] = useState(false);
+  const resolvePrompt = useCallback(() => setPromptResolved(true), []);
 
   // While loading streak status, show a brief spinner
   if (isLoading) {
@@ -25,7 +26,7 @@ export default function DailyPage() {
 
   // Show freeze prompt before the game if streak is at risk
   if (status?.streakAtRisk && !promptResolved) {
-    return <StreakFreezePrompt onResolved={() => setPromptResolved(true)} />;
+    return <StreakFreezePrompt onResolved={resolvePrompt} />;
   }
 
   return <GamePage mode={GameMode.Daily} />;

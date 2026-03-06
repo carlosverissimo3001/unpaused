@@ -9,7 +9,7 @@ import {
   sortPlaylists,
 } from '../utils/playlist-utils';
 import { SpotifyService } from '../../spotify/services/spotify.service';
-import { mapTrack } from '@/track/utils.ts/track-utils';
+import { mapSpotifyTrackToTrackEntity } from '../../utils/mappers';
 import { TrackDto } from '@/track/dto/track.dto';
 import { AppLoggerService } from '../../logger/logger.service';
 import { RedisService } from '../../redis/redis.service';
@@ -220,7 +220,7 @@ export class PlaylistService {
     );
     const tracks = (page.items ?? [])
       .filter((item) => !!item.track)
-      .map((item) => mapTrack(item.track));
+      .map((item) => mapSpotifyTrackToTrackEntity(item.track));
 
     await this.redis.set(
       cacheKey,
@@ -294,7 +294,9 @@ export class PlaylistService {
     const items = response.items ?? [];
     const tracks = items
       .filter((item) => !!(item.item?.id ?? item.track?.id))
-      .map((item) => mapTrack((item.item ?? item.track) as Track));
+      .map((item) =>
+        mapSpotifyTrackToTrackEntity((item.item ?? item.track) as Track),
+      );
 
     await this.redis.set(
       cacheKey,

@@ -98,6 +98,7 @@ describe('TrackPoolService', () => {
         albumName: null,
         albumUrl: null,
         releaseYear: null,
+        metadata: {},
         lastScrapedAt: new Date(),
         createdAt: new Date(),
       }),
@@ -138,6 +139,7 @@ describe('TrackPoolService', () => {
       albumName: null,
       albumUrl: null,
       releaseYear: null,
+      metadata: {},
       lastScrapedAt: new Date(),
       createdAt: new Date(),
     });
@@ -181,6 +183,7 @@ describe('TrackPoolService', () => {
       albumName: null,
       albumUrl: null,
       releaseYear: null,
+      metadata: {},
       lastScrapedAt: new Date(),
       createdAt: new Date(),
     } as any);
@@ -218,6 +221,7 @@ describe('TrackPoolService', () => {
       albumName: null,
       albumUrl: null,
       releaseYear: null,
+      metadata: {},
       lastScrapedAt: new Date(),
       createdAt: new Date(),
     });
@@ -249,6 +253,7 @@ describe('TrackPoolService', () => {
       albumName: null,
       albumUrl: null,
       releaseYear: null,
+      metadata: {},
       lastScrapedAt: new Date(),
       createdAt: new Date(),
     });

@@ -16,6 +16,7 @@ Name | Type
 `rankTitle` | string
 `specialNote` | string
 `meta` | [MetaGameExtrasVo](MetaGameExtrasVo.md)
+`hints` | [Array&lt;HintDto&gt;](HintDto.md)
 
 ## Example
 
@@ -34,6 +35,7 @@ const example = {
   "rankTitle": null,
   "specialNote": null,
   "meta": null,
+  "hints": null,
 } satisfies GameStateDto
 
 console.log(example)

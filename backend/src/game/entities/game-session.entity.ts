@@ -1,6 +1,7 @@
 import { GameMode, GameStatus } from '@prisma/client';
 import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { TrackEntity } from '../../track/entities/track.entity';
 
 export class GameSessionEntity {
   @ApiProperty({ description: 'The ID of the game session' })
@@ -39,4 +40,9 @@ export class GameSessionEntity {
 
   @ApiPropertyOptional({ description: 'The score of the game', type: Number })
   score?: number;
+
+  @ApiPropertyOptional({
+    description: 'The track associated with the game session',
+  })
+  track?: TrackEntity;
 }

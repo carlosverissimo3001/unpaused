@@ -1,11 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Search, X, Disc3 } from 'lucide-react';
 import type { TrackOptionDto } from '@/sdk';
 import { MIN_QUERY_LENGTH } from '@/consts/consts';
-import { GLASS_STYLE } from '@/lib/styles';
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from '@/components/ui/popover';
 
 export interface GuessSearchState {
   searchQuery: string;
@@ -27,15 +31,12 @@ interface GuessInputProps {
   submitPending: boolean;
 }
 
-const DROPDOWN_ITEM_STAGGER = 0.03;
-
 export function GuessInput({
   search,
   onSubmit,
   onSkip,
   submitPending,
 }: GuessInputProps) {
-  // Destructure search to avoid ref access warnings
   const {
     searchQuery,
     setSearchQuery,
@@ -49,153 +50,148 @@ export function GuessInput({
     handleClearSelection,
   } = search;
 
+  const dropdownOpen = showDropdown && searchQuery.length > 0 && !selectedTrack;
+
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div ref={searchRef} className="relative">
-        {selectedTrack ? (
-          <motion.div
-            layout
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-3 sm:p-4 rounded-xl text-black min-h-[56px]"
-            style={{
-              background: '#1DB954',
-              border: '1px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 0 20px rgba(29,185,84,0.3)',
-            }}
-          >
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate">{selectedTrack.name}</p>
-              <p className="text-sm text-black/70 truncate">
-                {selectedTrack.artist}
-              </p>
-            </div>
-            <motion.button
-              type="button"
-              onClick={handleClearSelection}
-              aria-label="Clear selection"
-              className="p-2 hover:bg-black/10 rounded-full transition-colors"
-              whileHover={{ scale: 1.05, rotate: 90 }}
-              whileTap={{ scale: 0.95 }}
+    <div
+      className="rounded-2xl p-3 sm:p-4 space-y-3"
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      <Popover open={dropdownOpen} modal={false}>
+        <div ref={searchRef}>
+          {selectedTrack ? (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 p-3 sm:p-4 rounded-xl text-black min-h-[56px]"
+              style={{
+                background: '#1DB954',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 0 20px rgba(29,185,84,0.3)',
+              }}
             >
-              <X className="w-5 h-5" />
-            </motion.button>
-          </motion.div>
-        ) : (
-          <>
-            <div className="relative">
-              <motion.span
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-[#535353]"
-                whileHover={{ rotate: 10 }}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate">{selectedTrack.name}</p>
+                <p className="text-sm text-black/70 truncate">
+                  {selectedTrack.artist}
+                </p>
+              </div>
+              <motion.button
+                type="button"
+                onClick={handleClearSelection}
+                aria-label="Clear selection"
+                className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                whileHover={{ scale: 1.05, rotate: 90 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Search className="w-5 h-5 pointer-events-none" />
-              </motion.span>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowDropdown(true);
-                }}
-                onFocus={() => setShowDropdown(true)}
-                placeholder="Search for a song..."
-                className="w-full pl-12 pr-4 py-3.5 sm:py-4 rounded-xl text-base text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all min-h-[48px] touch-manipulation"
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}
-              />
-            </div>
-            <AnimatePresence>
-              {showDropdown && searchQuery.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2 }}
-                  role="listbox"
-                  aria-label="Search results"
-                  className="absolute z-20 w-full mt-2 max-h-[60vh] overflow-y-auto rounded-xl shadow-2xl border border-white/10"
-                  style={{
-                    background: 'rgba(24, 24, 24, 0.95)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    boxShadow:
-                      '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)',
+                <X className="w-5 h-5" />
+              </motion.button>
+            </motion.div>
+          ) : (
+            <PopoverAnchor asChild>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-[#535353]">
+                  <Search className="w-5 h-5 pointer-events-none" />
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowDropdown(true);
                   }}
+                  onFocus={() => setShowDropdown(true)}
+                  placeholder="Search for a song..."
+                  className="w-full pl-12 pr-4 py-3.5 sm:py-4 rounded-xl text-base text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all min-h-[48px] touch-manipulation"
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}
+                />
+              </div>
+            </PopoverAnchor>
+          )}
+        </div>
+
+        <PopoverContent
+          className="p-0 w-[--radix-popover-trigger-width] overflow-hidden rounded-xl border border-white/10 shadow-2xl"
+          style={{
+            background: 'rgba(24, 24, 24, 0.95)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            boxShadow:
+              '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)',
+            maxHeight: 'var(--radix-popover-content-available-height, 60vh)',
+          }}
+          side="bottom"
+          avoidCollisions={false}
+          align="start"
+          sideOffset={8}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+          onInteractOutside={(e) => {
+            if (
+              searchRef.current &&
+              searchRef.current.contains(e.target as Node)
+            ) {
+              e.preventDefault();
+              return;
+            }
+            setShowDropdown(false);
+          }}
+        >
+          <div
+            className="overflow-y-auto overscroll-contain"
+            style={{ maxHeight: 'inherit' }}
+          >
+            {filteredTracks.length > 0 ? (
+              filteredTracks.map((track) => (
+                <button
+                  key={track.id}
+                  type="button"
+                  onClick={() => handleSelectTrack(track)}
+                  className="w-full p-3 sm:p-4 flex items-center gap-3 text-left hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl min-h-[56px] touch-manipulation active:bg-white/15"
                 >
-                  {filteredTracks.length > 0 ? (
-                    filteredTracks.map((track, index) => (
-                      <motion.button
-                        key={track.id}
-                        role="option"
-                        type="button"
-                        onClick={() => handleSelectTrack(track)}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{
-                          delay: index * DROPDOWN_ITEM_STAGGER,
-                          duration: 0.2,
-                        }}
-                        className="w-full p-3 sm:p-4 flex items-center gap-3 text-left hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl min-h-[56px] touch-manipulation active:bg-white/15"
-                      >
-                        {track.albumImageUrl ? (
-                          <Image
-                            src={track.albumImageUrl}
-                            alt=""
-                            width={40}
-                            height={40}
-                            className="rounded-lg flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                            <motion.span whileHover={{ rotate: 15 }}>
-                              <Disc3 className="w-5 h-5 text-[#535353]" />
-                            </motion.span>
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium text-white truncate">
-                            {track.name}
-                          </p>
-                          <p className="text-sm text-[#b3b3b3] truncate">
-                            {track.artist}
-                          </p>
-                        </div>
-                      </motion.button>
-                    ))
+                  {track.albumImageUrl ? (
+                    <Image
+                      src={track.albumImageUrl}
+                      alt=""
+                      width={40}
+                      height={40}
+                      className="rounded-lg flex-shrink-0"
+                    />
                   ) : (
-                    <div className="p-4 text-[#b3b3b3] text-center text-sm">
-                      {isLoading
-                        ? 'Searching...'
-                        : searchQuery.trim().length < MIN_QUERY_LENGTH
-                          ? `Type at least ${MIN_QUERY_LENGTH} characters`
-                          : 'No songs found'}
+                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                      <Disc3 className="w-5 h-5 text-[#535353]" />
                     </div>
                   )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </>
-        )}
-      </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white truncate">
+                      {track.name}
+                    </p>
+                    <p className="text-sm text-[#b3b3b3] truncate">
+                      {track.artist}
+                    </p>
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div className="p-4 text-[#b3b3b3] text-center text-sm">
+                {isLoading
+                  ? 'Searching...'
+                  : searchQuery.trim().length < MIN_QUERY_LENGTH
+                    ? `Type at least ${MIN_QUERY_LENGTH} characters`
+                    : 'No songs found'}
+              </div>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
 
-      <motion.div
-        layout
-        className="rounded-xl p-1 flex gap-3"
-        style={GLASS_STYLE}
-      >
-        <motion.button
-          type="button"
-          onClick={onSkip}
-          disabled={submitPending}
-          whileHover={{ scale: submitPending ? 1 : 1.02 }}
-          whileTap={{ scale: submitPending ? 1 : 0.98 }}
-          aria-label="Skip round"
-          className="flex-1 py-3.5 rounded-xl font-semibold text-white/90 border border-white/10 hover:border-white/20 hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[48px] touch-manipulation active:scale-95"
-        >
-          Skip
-        </motion.button>
+      <div className="flex flex-col gap-2">
         <motion.button
           type="button"
           onClick={onSubmit}
@@ -203,15 +199,24 @@ export function GuessInput({
           disabled={!selectedTrack || submitPending}
           whileHover={selectedTrack && !submitPending ? { scale: 1.02 } : {}}
           whileTap={selectedTrack && !submitPending ? { scale: 0.98 } : {}}
-          className={`flex-1 py-3.5 rounded-xl font-semibold transition-all min-h-[48px] touch-manipulation ${
+          className={`w-full py-2.5 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base transition-all min-h-[40px] sm:min-h-[48px] touch-manipulation ${
             selectedTrack && !submitPending
               ? 'bg-[#1DB954] hover:bg-[#1ed760] text-black shadow-lg shadow-[#1DB954]/20 active:scale-95'
-              : 'bg-white/10 text-white/50 cursor-not-allowed'
+              : 'bg-white/[0.06] text-white/30 border border-white/[0.08] cursor-not-allowed'
           }`}
         >
           Submit
         </motion.button>
-      </motion.div>
+        <button
+          type="button"
+          onClick={onSkip}
+          disabled={submitPending}
+          aria-label="Skip round"
+          className="text-white/40 hover:text-white/70 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors touch-manipulation"
+        >
+          Skip this round
+        </button>
+      </div>
     </div>
   );
 }

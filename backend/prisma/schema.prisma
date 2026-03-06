@@ -80,9 +80,14 @@ model Track {
   albumUrl      String? @map("album_url")
   releaseYear   Int?    @map("release_year")
   previewUrl    String? @map("preview_url")
+  allArtists    String[] @default([]) @map("all_artists")
+  metadata      Json?   @default("{}") @map("metadata")
 
   lastScrapedAt DateTime @default(now()) @map("last_scraped_at")
   createdAt     DateTime @default(now()) @map("created_at")
+
+  // Need the default since I added this field after the table already had data
+  updatedAt     DateTime @updatedAt @map("updated_at") @default(now())
 
   gameSessions GameSession[]
 

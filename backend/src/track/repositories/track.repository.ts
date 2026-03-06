@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
-import { Track } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { TrackEntity } from '../entities/track.entity';
+import { UpsertTrackDto } from '../dto/upsert-track.dto';
+import { mapTrack } from '../../utils/mappers';
 
 @Injectable()
 export class TrackRepository {
@@ -11,16 +14,18 @@ export class TrackRepository {
    * @param id - The ID of the track
    * @returns The Track if found, null otherwise
    */
-  async findById(id: string): Promise<Track | null> {
-    return await this.prisma.track.findUnique({
+  async findById(id: string): Promise<TrackEntity | null> {
+    const track = await this.prisma.track.findUnique({
       where: { id },
     });
+    return track ? mapTrack(track) : null;
   }
 
-  async findMany(ids: string[]): Promise<Track[]> {
-    return await this.prisma.track.findMany({
+  async findMany(ids: string[]): Promise<TrackEntity[]> {
+    const tracks = await this.prisma.track.findMany({
       where: { id: { in: ids } },
     });
+    return tracks.map((track) => mapTrack(track));
   }
 
   /**
@@ -30,24 +35,19 @@ export class TrackRepository {
    * @param data - The partial track data to upsert
    * @returns The upserted Track
    */
-  async upsertTrack(id: string, data: Partial<Track>): Promise<Track> {
-    return await this.prisma.track.upsert({
+  async upsertTrack(id: string, data: UpsertTrackDto): Promise<TrackEntity> {
+    const track = await this.prisma.track.upsert({
       where: { id },
       update: {
         ...data,
-        lastScrapedAt: new Date(),
+        metadata: data.metadata as unknown as Prisma.InputJsonObject,
       },
       create: {
         id,
-        name: data.name ?? '',
-        artistName: data.artistName ?? '',
-        albumImageUrl: data.albumImageUrl ?? null,
-        albumName: data.albumName ?? null,
-        albumUrl: data.albumUrl ?? null,
-        releaseYear: data.releaseYear ?? null,
-        previewUrl: data.previewUrl ?? null,
-        lastScrapedAt: new Date(),
+        ...data,
+        metadata: data.metadata as unknown as Prisma.InputJsonObject,
       },
     });
+    return mapTrack(track);
   }
 }

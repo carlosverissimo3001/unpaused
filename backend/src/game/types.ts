@@ -22,3 +22,10 @@ export type AddGuessToHistoryParams = {
   actual: Track;
   guess: GuessDto;
 };
+
+export enum HintType {
+  GENRE = 'GENRE',
+  DECADE = 'DECADE',
+  ALBUM = 'ALBUM',
+  POPULARITY = 'POPULARITY',
+}

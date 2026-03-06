@@ -28,6 +28,7 @@ import {
 } from '../dto/scoreboard.dto';
 import { RoomsGateway } from '../gateways/rooms.gateway';
 import { RoomDto } from '../dto/room.dto';
+import { TrackEntity } from '../../track/entities/track.entity';
 
 @Injectable()
 export class MultiplayerGameService {
@@ -38,7 +39,7 @@ export class MultiplayerGameService {
     private readonly roomsGateway: RoomsGateway,
   ) {}
 
-  async getRoundState(
+  /* async getRoundState(
     sessionId: string,
     roomId: string,
   ): Promise<MultiplayerRoundStateDto> {
@@ -152,14 +153,15 @@ export class MultiplayerGameService {
     }
 
     const actual = activeSession.track;
-    const result = evaluateGuess(guess, actual);
+    // TODO, fix this cast
+    const result = evaluateGuess(guess, actual as TrackEntity);
 
     const existingGuesses =
       (activeSession.guesses as unknown as GuessHistoryDto[]) ?? [];
     const updatedGuesses = addGuessToHistory(
       existingGuesses,
       result,
-      actual,
+      actual as TrackEntity,
       guess,
     );
     const nextRound = activeSession.currentRound + 1;
@@ -323,5 +325,5 @@ export class MultiplayerGameService {
       { completedAt: new Date() },
     );
     this.roomsGateway.emitRoomUpdate(roomId, RoomDto.fromEntity(updated));
-  }
+  } */
 }

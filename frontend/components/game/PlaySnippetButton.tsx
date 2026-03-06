@@ -35,7 +35,7 @@ export function PlaySnippetButton({
   const ring2Opacity = useTransform(amplitude, [0, 1], [0, 0.4]);
 
   return (
-    <div className="text-center mb-4 sm:mb-6 md:mb-8">
+    <div className="text-center mb-4 sm:mb-6">
       <div className="inline-flex flex-col items-center">
         <div className="relative flex items-center justify-center">
           <div
@@ -52,6 +52,20 @@ export function PlaySnippetButton({
             />
           </div>
 
+          {!isPlaying && (
+            <motion.div
+              className="absolute inset-0 rounded-full z-0"
+              animate={{
+                boxShadow: [
+                  '0 0 20px 4px rgba(30,215,96,0.15)',
+                  '0 0 40px 8px rgba(30,215,96,0.3)',
+                  '0 0 20px 4px rgba(30,215,96,0.15)',
+                ],
+              }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          )}
+
           <motion.button
             type="button"
             whileHover={{ scale: 1.05, transition: SPRING }}
@@ -66,7 +80,7 @@ export function PlaySnippetButton({
               isPlaying ? `Pause snippet` : `Play ${duration} second snippet`
             }
             onClick={isPlaying ? onPause : onPlay}
-            className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-full text-base sm:text-lg border border-white/10 shadow-[0_0_30px_-5px_rgba(30,215,96,0.5)] min-h-[48px] touch-manipulation"
+            className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-full text-base sm:text-lg border border-white/10 min-h-[48px] touch-manipulation"
             style={{
               boxShadow:
                 '0 0 30px -5px rgba(30,215,96,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',

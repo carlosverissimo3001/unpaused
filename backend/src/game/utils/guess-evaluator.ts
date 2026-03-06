@@ -1,14 +1,18 @@
-import { Track, GameStatus } from '@prisma/client';
+import { GameStatus } from '@prisma/client';
 import { GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
 import { GuessDto } from '../dto/guess/guess.dto';
 import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { normalizeText, normalizeTrackNameForMatch } from '../../utils/text';
+import { TrackEntity } from '../../track/entities/track.entity';
 
 /**
  * Evaluates a guess against the actual track.
  * Match on exact trackId OR normalized trackName + artistName.
  */
-export function evaluateGuess(guess: GuessDto, actual: Track): GuessResult {
+export function evaluateGuess(
+  guess: GuessDto,
+  actual: TrackEntity,
+): GuessResult {
   const { trackId, skip } = guess;
 
   if (skip || !trackId) {
@@ -61,7 +65,7 @@ export function evaluateGuess(guess: GuessDto, actual: Track): GuessResult {
 export function addGuessToHistory(
   existingGuesses: GuessHistoryDto[],
   result: GuessResult,
-  actual: Track,
+  actual: TrackEntity,
   guess: GuessDto,
 ): GuessHistoryDto[] {
   const history = [...existingGuesses];

@@ -5,9 +5,9 @@ import {
   TRACK_PREVIEW_CACHE_PREFIX,
   TRACK_PREVIEW_CACHE_TTL,
 } from '../../consts';
-import { Track } from '@prisma/client';
 import { TrackDto } from '../dto/track.dto';
 import { TrackRepository } from '../repositories/track.repository';
+import { TrackEntity } from '../entities/track.entity';
 
 @Injectable()
 export class TrackService {
@@ -26,26 +26,29 @@ export class TrackService {
   async getTrackWithPreview(
     spotifyTrackId: string,
     trackData: TrackDto,
-  ): Promise<Track> {
+  ): Promise<TrackEntity> {
     const cacheKey = `${TRACK_PREVIEW_CACHE_PREFIX}${spotifyTrackId}`;
     const cachedUrl = await this.redis.get(cacheKey);
 
     // Redis match
     if (cachedUrl) {
-      // Return a partial that satisfies the Prisma Track model
+      // TODO: Do we really need this??
       return {
         id: spotifyTrackId,
         previewUrl: cachedUrl,
         name: trackData.name,
         artistName: trackData.primaryArtist,
-        albumImageUrl: trackData.imageUrl ?? null,
-        albumName: trackData.albumName ?? null,
+        albumImageUrl: trackData.imageUrl ?? undefined,
+        albumName: trackData.albumName ?? undefined,
         albumUrl: trackData.albumId
           ? `https://open.spotify.com/album/${trackData.albumId}`
-          : null,
-        releaseYear: trackData.releaseYear ?? null,
+          : undefined,
+        releaseYear: trackData.releaseYear ?? undefined,
+        metadata: {},
         lastScrapedAt: new Date(),
         createdAt: new Date(),
+        updatedAt: new Date(),
+        allArtists: trackData.allArtists,
       };
     }
 
@@ -70,9 +73,10 @@ export class TrackService {
       albumName: trackData.albumName,
       albumUrl: trackData.albumId
         ? `https://open.spotify.com/album/${trackData.albumId}`
-        : null,
+        : undefined,
       releaseYear: trackData.releaseYear,
-      previewUrl: scrapedUrl,
+      previewUrl: scrapedUrl ?? undefined,
+      allArtists: trackData.allArtists,
     });
   }
 }

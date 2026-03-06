@@ -15,6 +15,7 @@ import { GuessHistoryList } from './GuessHistoryList';
 import { GameHeader } from './GameHeader';
 import { GameTitle } from './GameTitle';
 import { GuessInput } from './GuessInput';
+import { HintPanel } from './HintPanel';
 import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 const SHAKE_VARIANTS: Variants = {
@@ -183,11 +184,17 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             />
           )}
 
+          {!isGameOver && (
+            <HintPanel
+              hints={gameState.hints ?? []}
+              currentRound={gameState.currentRound}
+            />
+          )}
+
           <AnimatePresence mode="wait">
             {isGameOver ? (
               <motion.div
                 key="reveal"
-                layoutId="game-console-card"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
@@ -223,22 +230,14 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                 />
               </motion.div>
             ) : (
-              <motion.div
-                key="guess"
-                layoutId="game-console-card"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="flex-1"
-              >
+              <div className="relative z-20">
                 <GuessInput
                   search={spotifySearch}
                   onSubmit={handleSubmit}
                   onSkip={handleSkip}
                   submitPending={submitPending}
                 />
-              </motion.div>
+              </div>
             )}
           </AnimatePresence>
 

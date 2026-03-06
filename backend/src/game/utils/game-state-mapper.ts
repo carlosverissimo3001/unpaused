@@ -1,14 +1,16 @@
-import { GameStatus, Track } from '@prisma/client';
+import { GameStatus } from '@prisma/client';
 import { MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
 import { GameStateDto } from '../dto/game-state.dto';
 import { GameSessionEntity } from '../entities/game-session.entity';
 import { normalizeText } from '../../utils/text';
 import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { GameExtrasVo } from '../vos/game-extras.vo';
+import { buildHintsForRound } from './hint-builder';
+import { TrackEntity } from '../../track/entities/track.entity';
 
 export function mapToGameStateDto(
   game: GameSessionEntity,
-  track: Track,
+  track: TrackEntity,
   extras?: GameExtrasVo,
 ): GameStateDto {
   const guesses = game.guesses as unknown as GuessHistoryDto[];
@@ -37,6 +39,10 @@ export function mapToGameStateDto(
           }
         : undefined,
     ...(extras ? extras : {}),
+    hints:
+      game.status === GameStatus.PLAYING
+        ? buildHintsForRound(track, game.currentRound)
+        : undefined,
   };
 }
 

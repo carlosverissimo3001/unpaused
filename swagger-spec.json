@@ -1564,6 +1564,39 @@
           "winEmoji"
         ]
       },
+      "HintDto": {
+        "type": "object",
+        "properties": {
+          "round": {
+            "type": "number",
+            "description": "The round this hint was revealed"
+          },
+          "type": {
+            "type": "string",
+            "description": "Hint type identifier (genre, decade, etc.)",
+            "enum": [
+              "GENRE",
+              "DECADE",
+              "ALBUM",
+              "POPULARITY"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label for the hint"
+          },
+          "value": {
+            "type": "string",
+            "description": "The hint value"
+          }
+        },
+        "required": [
+          "round",
+          "type",
+          "label",
+          "value"
+        ]
+      },
       "GameStateDto": {
         "type": "object",
         "properties": {
@@ -1623,6 +1656,13 @@
                 "$ref": "#/components/schemas/MetaGameExtrasVo"
               }
             ]
+          },
+          "hints": {
+            "description": "Progressive song metadata hints for the current round",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HintDto"
+            }
           }
         },
         "required": [
@@ -1990,6 +2030,13 @@
           "meta": {
             "type": "object",
             "description": "Optional win easter eggs"
+          },
+          "hints": {
+            "description": "Progressive song metadata hints for the next round",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HintDto"
+            }
           }
         },
         "required": [

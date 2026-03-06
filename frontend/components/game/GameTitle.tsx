@@ -13,9 +13,9 @@ interface GameTitleProps {
 export function GameTitle({ mode, currentRound }: GameTitleProps) {
   if (mode === GameMode.All) {
     return (
-      <div className="text-center mb-6 md:mb-8">
+      <div className="text-center mb-4 md:mb-6">
         <h1
-          className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 tracking-tight text-white"
+          className="text-2xl md:text-3xl font-bold tracking-tight text-white"
           style={{
             letterSpacing: '-0.02em',
             textShadow: '0 2px 20px rgba(0,0,0,0.3)',
@@ -23,7 +23,7 @@ export function GameTitle({ mode, currentRound }: GameTitleProps) {
         >
           Guess the Song
         </h1>
-        <p className="text-[#b3b3b3] text-sm md:text-base font-medium">
+        <p className="text-[#b3b3b3] text-sm font-medium mt-1">
           Round {Math.min(currentRound + 1, ROUND_DURATIONS.length)} of{' '}
           {ROUND_DURATIONS.length}
         </p>
@@ -32,9 +32,9 @@ export function GameTitle({ mode, currentRound }: GameTitleProps) {
   }
 
   return (
-    <div className="text-center mb-6 md:mb-8">
+    <div className="text-center mb-4 md:mb-6">
       <h1
-        className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 tracking-tight text-white"
+        className="text-2xl md:text-3xl font-bold mb-2 tracking-tight text-white"
         style={{
           letterSpacing: '-0.02em',
           textShadow: '0 2px 20px rgba(0,0,0,0.3)',

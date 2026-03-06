@@ -3,6 +3,7 @@ import { GameStatus } from '@prisma/client';
 import { TrackOptionDto } from '@/track/dto/track-option.dto';
 import { GuessHistoryDto } from './guess/guess-history.dto';
 import { MetaGameExtrasVo } from '../vos/game-extras.vo';
+import { HintDto } from './hint/hint.dto';
 
 export class GameStateDto {
   @ApiProperty({ description: 'The ID of the game session' })
@@ -50,4 +51,11 @@ export class GameStateDto {
     type: MetaGameExtrasVo,
   })
   meta?: MetaGameExtrasVo;
+
+  @ApiPropertyOptional({
+    description: 'Progressive song metadata hints for the current round',
+    type: HintDto,
+    isArray: true,
+  })
+  hints?: HintDto[];
 }

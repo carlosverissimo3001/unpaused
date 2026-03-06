@@ -107,6 +107,7 @@ export function useSubmitGuess() {
           snippetDuration: result.snippetDuration,
           status: result.status,
           guesses: updatedGuesses,
+          hints: result.hints ?? currentState.hints,
         };
 
         queryClient.setQueryData<GameStateDto>(
