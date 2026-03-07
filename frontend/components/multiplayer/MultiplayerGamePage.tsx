@@ -64,7 +64,7 @@ function RoundDots({
         const isCurrent = i === current;
         const isCompleted = i < current || (isCurrent && isCurrentComplete);
 
-        let dotColor = 'bg-white/20'; // upcoming
+        let dotColor = 'bg-fg/20'; // upcoming
         if (isCompleted) {
           const won = isCurrent
             ? roundState.status === MultiplayerRoundStateDtoStatusEnum.Won
@@ -125,11 +125,11 @@ function RoundScoreSummary({
       className="mt-5 p-4 rounded-xl text-center"
       style={GLASS_STYLE}
     >
-      <p className="text-sm text-white/50 mb-1">Your score this round</p>
+      <p className="text-sm text-fg/50 mb-1">Your score this round</p>
       <p className="text-3xl font-black text-[#1DB954] tabular-nums">
         +{myRoundResult.score}
       </p>
-      <p className="text-xs text-white/30 mt-1">
+      <p className="text-xs text-fg/30 mt-1">
         {myRoundResult.guessCount}{' '}
         {myRoundResult.guessCount === 1 ? 'guess' : 'guesses'}
       </p>
@@ -280,7 +280,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     return (
       <div
         className="h-screen h-[100dvh] flex items-center justify-center"
-        style={{ background: '#121212' }}
+        style={{ background: 'rgb(var(--bg))' }}
       >
         <LoadingSpinner size="lg" />
       </div>
@@ -291,7 +291,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     return (
       <div
         className="h-screen h-[100dvh] flex items-center justify-center p-4 sm:p-6"
-        style={{ background: '#121212' }}
+        style={{ background: 'rgb(var(--bg))' }}
       >
         <div className="text-center max-w-md">
           <p className="text-red-400 mb-4">
@@ -311,7 +311,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
   return (
     <div
       className="min-h-screen min-h-[100dvh] overflow-y-auto"
-      style={{ background: '#121212' }}
+      style={{ background: 'rgb(var(--bg))' }}
     >
       <motion.div
         className="fixed inset-0 -z-10 pointer-events-none"
@@ -354,9 +354,9 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
 
           {/* Round title */}
           <div className="mb-6 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold text-fg">
               Round {roundState.roundIndex + 1}{' '}
-              <span className="text-white/30 font-normal">
+              <span className="text-fg/30 font-normal">
                 / {roundState.totalRounds}
               </span>
             </h2>
@@ -393,7 +393,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-xs text-white/30"
+                className="text-xs text-fg/30"
               >
                 Redirecting to results...
               </motion.p>

@@ -91,6 +91,12 @@ export interface GameStateDto {
      */
     answer?: TrackOptionDto;
     /**
+     * Album art URL, exposed progressively during gameplay
+     * @type {string}
+     * @memberof GameStateDto
+     */
+    albumImageUrl?: string;
+    /**
      * Optional personalized rank title (easter egg for special users)
      * @type {string}
      * @memberof GameStateDto
@@ -159,6 +165,7 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
         'previewUrl': json['previewUrl'],
         'answer': json['answer'] == null ? undefined : TrackOptionDtoFromJSON(json['answer']),
+        'albumImageUrl': json['albumImageUrl'] == null ? undefined : json['albumImageUrl'],
         'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
         'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
         'meta': json['meta'] == null ? undefined : MetaGameExtrasVoFromJSON(json['meta']),
@@ -184,6 +191,7 @@ export function GameStateDtoToJSONTyped(value?: GameStateDto | null, ignoreDiscr
         'guesses': ((value['guesses'] as Array<any>).map(GuessHistoryDtoToJSON)),
         'previewUrl': value['previewUrl'],
         'answer': TrackOptionDtoToJSON(value['answer']),
+        'albumImageUrl': value['albumImageUrl'],
         'rankTitle': value['rankTitle'],
         'specialNote': value['specialNote'],
         'meta': MetaGameExtrasVoToJSON(value['meta']),

@@ -119,7 +119,7 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
           {/* Close button */}
           <button
             onClick={onResolved}
-            className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/40 hover:text-white/70 transition-all"
+            className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full flex items-center justify-center bg-fg/5 hover:bg-fg/10 text-fg/40 hover:text-fg/70 transition-all"
           >
             <X className="w-4 h-4" />
           </button>
@@ -162,10 +162,10 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
               transition={{ delay: 0.3, duration: 0.5 }}
               className="text-center mb-6"
             >
-              <h2 className="text-[1.35rem] font-extrabold tracking-tight text-white mb-1">
+              <h2 className="text-[1.35rem] font-extrabold tracking-tight text-fg mb-1">
                 Don&apos;t let it die
               </h2>
-              <p className="text-white/45 text-[13px] leading-relaxed">
+              <p className="text-fg/45 text-[13px] leading-relaxed">
                 You missed{' '}
                 <span className="text-amber-400/90 font-semibold">
                   {status.gapDays} {status.gapDays === 1 ? 'day' : 'days'}
@@ -203,7 +203,7 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
                           ? 'bg-cyan-400/15 border border-cyan-400/50'
                           : filled
                             ? 'bg-cyan-500/10 border border-cyan-400/20'
-                            : 'bg-white/[0.02] border border-white/[0.06]'
+                            : 'bg-fg/[0.02] border border-fg/[0.06]'
                       }`}
                     >
                       <Snowflake
@@ -212,7 +212,7 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
                             ? 'text-cyan-300'
                             : filled
                               ? 'text-cyan-400/50'
-                              : 'text-white/[0.08]'
+                              : 'text-fg/[0.08]'
                         }`}
                       />
                     </div>
@@ -235,7 +235,7 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-cyan-400 to-teal-400" />
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-400 via-cyan-300 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute inset-x-0 top-0 h-[1px] bg-white/20" />
+                <div className="absolute inset-x-0 top-0 h-[1px] bg-fg/20" />
                 <span className="relative z-10 flex items-center justify-center gap-2.5 text-[#071520]">
                   <Snowflake className="w-[16px] h-[16px]" />
                   {freezeMutation.isPending
@@ -245,12 +245,12 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
               </button>
 
               <div className="flex items-center justify-between px-1">
-                <span className="text-white/25 text-[11px]">
+                <span className="text-fg/25 text-[11px]">
                   {status.freezesAvailable - status.freezeCost} left after
                 </span>
                 <button
                   onClick={handleDismiss}
-                  className="text-[12px] text-white/30 hover:text-white/50 transition-colors py-1 px-2 -mr-2"
+                  className="text-[12px] text-fg/30 hover:text-fg/50 transition-colors py-1 px-2 -mr-2"
                 >
                   Don&apos;t show again
                 </button>
@@ -289,12 +289,12 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
         className="relative rounded-[28px] overflow-hidden max-w-md w-full"
       >
         <div className="absolute inset-0 bg-gradient-to-b from-[#14101a] via-[#110e16] to-[#0c0a10]" />
-        <div className="absolute inset-0 rounded-[28px] border border-white/[0.05]" />
+        <div className="absolute inset-0 rounded-[28px] border border-fg/[0.05]" />
 
         {/* Close button */}
         <button
           onClick={onResolved}
-          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/40 hover:text-white/70 transition-all"
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full flex items-center justify-center bg-fg/5 hover:bg-fg/10 text-fg/40 hover:text-fg/70 transition-all"
         >
           <X className="w-4 h-4" />
         </button>
@@ -307,9 +307,9 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
               transition={{ duration: 0.6, ease }}
               className="relative w-[88px] h-[88px] rounded-full flex items-center justify-center"
             >
-              <div className="absolute inset-0 rounded-full bg-white/[0.03]" />
+              <div className="absolute inset-0 rounded-full bg-fg/[0.03]" />
               <div className="absolute inset-[1.5px] rounded-full bg-[#110e16]" />
-              <span className="relative text-[2.25rem] font-black tracking-tighter text-white/15 leading-none line-through decoration-white/10 decoration-2">
+              <span className="relative text-[2.25rem] font-black tracking-tighter text-fg/15 leading-none line-through decoration-white/10 decoration-2">
                 {status.currentStreak}
               </span>
             </motion.div>
@@ -319,7 +319,7 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.4 }}
-            className="text-center text-[11px] uppercase tracking-[0.15em] text-white/15 font-semibold mb-5"
+            className="text-center text-[11px] uppercase tracking-[0.15em] text-fg/15 font-semibold mb-5"
           >
             day streak
           </motion.p>
@@ -330,14 +330,14 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="text-center mb-7"
           >
-            <h2 className="text-[1.35rem] font-extrabold tracking-tight text-white/70 mb-1">
+            <h2 className="text-[1.35rem] font-extrabold tracking-tight text-fg/70 mb-1">
               Streak lost
             </h2>
-            <p className="text-white/35 text-[13px] leading-relaxed">
+            <p className="text-fg/35 text-[13px] leading-relaxed">
               {status.gapDays} {status.gapDays === 1 ? 'day' : 'days'} missed.
               {status.isTrusted &&
                 status.freezesAvailable < status.freezeCost && (
-                  <span className="block mt-1 text-white/20">
+                  <span className="block mt-1 text-fg/20">
                     Needed {status.freezeCost}{' '}
                     {status.freezeCost === 1 ? 'freeze' : 'freezes'}, had{' '}
                     {status.freezesAvailable}.
@@ -354,7 +354,7 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
           >
             <button
               onClick={onResolved}
-              className="w-full h-[52px] rounded-2xl font-semibold text-[14px] bg-white/[0.05] border border-white/[0.08] text-white/50 hover:bg-white/[0.08] hover:text-white/70 transition-all active:scale-[0.97]"
+              className="w-full h-[52px] rounded-2xl font-semibold text-[14px] bg-fg/[0.05] border border-fg/[0.08] text-fg/50 hover:bg-fg/[0.08] hover:text-fg/70 transition-all active:scale-[0.97]"
             >
               Start fresh
             </button>

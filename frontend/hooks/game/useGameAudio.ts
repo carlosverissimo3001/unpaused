@@ -35,12 +35,10 @@ export function useGameAudio({
     stop: stopAmplitude,
   } = useAudioAmplitude(audioRef);
 
-  // Keep a ref so imperative play calls always read the latest volume
   const volumeRef = useRef(volume);
-  volumeRef.current = volume;
 
-  // Apply volume to both audio elements whenever it changes (live adjustment)
   useEffect(() => {
+    volumeRef.current = volume;
     if (audioRef.current) audioRef.current.volume = volume;
     if (fullAudioRef.current) fullAudioRef.current.volume = volume;
   }, [volume]);

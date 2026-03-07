@@ -48,7 +48,7 @@ export function DailyChallengeCountdown() {
 
   return (
     <div className="flex items-center justify-end w-fit">
-      <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-2 bg-spotify-green/10 rounded-full border border-spotify-green/30 backdrop-blur-md shadow-[0_0_15px_rgba(30,215,96,0.1)]">
+      <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-2 bg-spotify-green/10 rounded-full border border-spotify-green/50 backdrop-blur-md shadow-[0_0_15px_rgba(30,215,96,0.1)]">
         <motion.div
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -61,11 +61,11 @@ export function DailyChallengeCountdown() {
           Next Drop:
         </span>
 
-        <div className="flex items-center font-mono font-bold text-white text-[11px] sm:text-lg tabular-nums">
+        <div className="flex items-center font-mono font-bold text-fg text-[11px] sm:text-lg tabular-nums">
           <RollingDigit value={timeLeft.h} label="h" />
-          <span className="mx-0.5 opacity-20">:</span>
+          <span className="mx-0.5 opacity-30">:</span>
           <RollingDigit value={timeLeft.m} label="m" />
-          <span className="mx-0.5 opacity-20">:</span>
+          <span className="mx-0.5 opacity-30">:</span>
           <RollingDigit value={timeLeft.s} label="s" />
         </div>
       </div>
@@ -97,7 +97,7 @@ function RollingDigit({ value, label }: { value: number; label: string }) {
           </motion.span>
         </AnimatePresence>
       </div>
-      <span className="text-[7px] sm:text-[10px] ml-0.5 opacity-40 font-sans font-normal uppercase">
+      <span className="text-[7px] sm:text-[10px] ml-0.5 opacity-60 font-sans font-normal uppercase">
         {label}
       </span>
     </div>

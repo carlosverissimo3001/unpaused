@@ -24,13 +24,13 @@ export function StreakBadge({
         )}
         <span>{currentStreak}</span>
         <span
-          className={`text-white/60 font-normal ${isLarge ? 'text-lg' : 'text-sm'}`}
+          className={`text-fg/60 font-normal ${isLarge ? 'text-lg' : 'text-sm'}`}
         >
           day streak
         </span>
       </span>
       {bestStreak != null && bestStreak > 0 && (
-        <span className="text-white/50 text-sm">Best: {bestStreak}</span>
+        <span className="text-fg/50 text-sm">Best: {bestStreak}</span>
       )}
     </div>
   );

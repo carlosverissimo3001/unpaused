@@ -13,6 +13,7 @@ Name | Type
 `guesses` | [Array&lt;GuessHistoryDto&gt;](GuessHistoryDto.md)
 `previewUrl` | string
 `answer` | [TrackOptionDto](TrackOptionDto.md)
+`albumImageUrl` | string
 `rankTitle` | string
 `specialNote` | string
 `meta` | [MetaGameExtrasVo](MetaGameExtrasVo.md)
@@ -32,6 +33,7 @@ const example = {
   "guesses": null,
   "previewUrl": null,
   "answer": null,
+  "albumImageUrl": null,
   "rankTitle": null,
   "specialNote": null,
   "meta": null,

@@ -35,6 +35,11 @@ export class GameStateDto {
   answer?: TrackOptionDto;
 
   @ApiPropertyOptional({
+    description: 'Album art URL, exposed progressively during gameplay',
+  })
+  albumImageUrl?: string;
+
+  @ApiPropertyOptional({
     description:
       'Optional personalized rank title (easter egg for special users)',
   })

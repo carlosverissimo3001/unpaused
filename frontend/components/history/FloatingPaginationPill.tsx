@@ -26,20 +26,20 @@ export function FloatingPaginationPill({
       transition={{ duration: 0.25, ease: 'easeOut' }}
       className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4"
     >
-      <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1.5 rounded-full bg-black/70 backdrop-blur-3xl border border-white/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.7),_0_0_0_1px_rgba(29,185,84,0.06)]">
+      <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1.5 rounded-full bg-black/70 backdrop-blur-3xl border border-fg/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.7),_0_0_0_1px_rgba(29,185,84,0.06)]">
         <motion.button
           whileTap={{ scale: 0.85 }}
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className="flex items-center justify-center w-7 h-7 rounded-full text-white/60 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors touch-manipulation"
+          className="flex items-center justify-center w-7 h-7 rounded-full text-fg/60 hover:text-fg disabled:opacity-20 disabled:cursor-not-allowed transition-colors touch-manipulation"
           aria-label="Previous page"
         >
           <ChevronLeft className="w-3.5 h-3.5" />
         </motion.button>
 
-        <span className="text-[11px] font-semibold text-white/70 tabular-nums select-none min-w-[3rem] sm:min-w-[3.5rem] text-center">
+        <span className="text-[11px] font-semibold text-fg/70 tabular-nums select-none min-w-[3rem] sm:min-w-[3.5rem] text-center">
           <span className="text-spotify-green font-bold">{currentPage}</span>
-          <span className="text-white/20 mx-0.5">/</span>
+          <span className="text-fg/20 mx-0.5">/</span>
           {Math.max(totalPages, 1)}
         </span>
 
@@ -47,7 +47,7 @@ export function FloatingPaginationPill({
           whileTap={{ scale: 0.85 }}
           disabled={currentPage >= totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className="flex items-center justify-center w-7 h-7 rounded-full text-white/60 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors touch-manipulation"
+          className="flex items-center justify-center w-7 h-7 rounded-full text-fg/60 hover:text-fg disabled:opacity-20 disabled:cursor-not-allowed transition-colors touch-manipulation"
           aria-label="Next page"
         >
           <ChevronRight className="w-3.5 h-3.5" />
@@ -55,7 +55,7 @@ export function FloatingPaginationPill({
 
         {/* Page size selector - hidden on very small screens */}
         <div className="hidden xs:flex items-center">
-          <div className="w-px h-4 bg-white/10 mx-0.5 sm:mx-1" />
+          <div className="w-px h-4 bg-fg/10 mx-0.5 sm:mx-1" />
           <div className="flex items-center gap-0.5">
             {PAGE_SIZE_OPTIONS.map((size) => (
               <button
@@ -64,8 +64,8 @@ export function FloatingPaginationPill({
                 onClick={() => onPageSizeChange(size)}
                 className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold tabular-nums transition-all duration-150 touch-manipulation ${
                   pageSize === size
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/25 hover:text-white/50'
+                    ? 'bg-fg/10 text-fg'
+                    : 'text-fg/25 hover:text-fg/50'
                 }`}
               >
                 {size}

@@ -31,7 +31,7 @@ export function ResultsHeader({
         </div>
         <h1
           aria-live="polite"
-          className="text-4xl font-black text-white sm:text-5xl"
+          className="text-4xl font-black text-fg sm:text-5xl"
         >
           You Won!
         </h1>
@@ -65,7 +65,7 @@ export function ResultsHeader({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-white/10 text-2xl font-bold text-white/60">
+                <div className="flex h-full w-full items-center justify-center bg-fg/10 text-2xl font-bold text-fg/60">
                   {winner.displayName[0]?.toUpperCase()}
                 </div>
               )}
@@ -86,7 +86,7 @@ export function ResultsHeader({
             transition={{ delay: 0.35 }}
             className="mt-4"
           >
-            <p className="text-sm text-white/50">Final score</p>
+            <p className="text-sm text-fg/50">Final score</p>
             <p className="mt-1 text-5xl font-black tabular-nums text-yellow-400 sm:text-6xl">
               {winner.totalScore}
             </p>
@@ -106,11 +106,11 @@ export function ResultsHeader({
       >
         <h1
           aria-live="polite"
-          className="text-4xl font-black text-white sm:text-5xl"
+          className="text-4xl font-black text-fg sm:text-5xl"
         >
           It&apos;s a Tie!
         </h1>
-        <p className="mt-3 text-white/60">
+        <p className="mt-3 text-fg/60">
           <span className="font-semibold text-yellow-400">
             {tiedPlayerNames.join(' & ')}
           </span>{' '}
@@ -133,11 +133,11 @@ export function ResultsHeader({
     >
       <h1
         aria-live="polite"
-        className="text-4xl font-black text-white sm:text-5xl"
+        className="text-4xl font-black text-fg sm:text-5xl"
       >
         Good Game!
       </h1>
-      <p className="mt-3 text-white/60">
+      <p className="mt-3 text-fg/60">
         <span className="font-semibold text-zinc-200">
           {winner.displayName}
         </span>{' '}
@@ -150,7 +150,7 @@ export function ResultsHeader({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-2 text-sm text-white/40"
+          className="mt-2 text-sm text-fg/40"
         >
           Your score:{' '}
           <span className="font-semibold text-[#1DB954]">{personalScore}</span>

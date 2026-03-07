@@ -80,7 +80,7 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
           <motion.div
             ref={modalRef}
             tabIndex={-1} // Makes the div focusable via JS
-            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl outline-none"
+            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-fg/10 bg-surface shadow-2xl outline-none"
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -99,7 +99,7 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
               <button
                 onClick={onClose}
                 aria-label="Close modal"
-                className="absolute top-4 right-4 p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors focus:ring-2 focus:ring-purple-500/50 outline-none"
+                className="absolute top-4 right-4 p-2 rounded-lg text-fg/40 hover:text-fg hover:bg-fg/10 transition-colors focus:ring-2 focus:ring-purple-500/50 outline-none"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -110,10 +110,10 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
                   <Zap className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <h2 id={titleId} className="text-xl font-bold text-white">
+                  <h2 id={titleId} className="text-xl font-bold text-fg">
                     Create Room
                   </h2>
-                  <p className="text-sm text-white/50">
+                  <p className="text-sm text-fg/50">
                     Set up a multiplayer game
                   </p>
                 </div>
@@ -127,7 +127,7 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
                 >
                   <label
                     id="rounds-label"
-                    className="flex items-center gap-2 text-sm font-medium text-white/70"
+                    className="flex items-center gap-2 text-sm font-medium text-fg/70"
                   >
                     <Music className="w-4 h-4" aria-hidden="true" />
                     Number of Rounds
@@ -145,15 +145,15 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
                           onClick={() => setRoundCount(option.value)}
                           className={`flex flex-col items-center gap-1 rounded-xl border px-4 py-4 transition-all focus:outline-none focus:ring-2 focus:ring-spotify-green/50 ${
                             isSelected
-                              ? 'border-spotify-green/40 bg-spotify-green/10 text-white'
-                              : 'border-white/10 bg-white/5 text-white/60 hover:border-white/20'
+                              ? 'border-spotify-green/40 bg-spotify-green/10 text-fg'
+                              : 'border-fg/10 bg-fg/5 text-fg/60 hover:border-fg/20'
                           }`}
                         >
                           <span className="text-2xl font-bold font-mono">
                             {option.label}
                           </span>
                           <span
-                            className={`text-xs ${isSelected ? 'text-spotify-green' : 'text-white/40'}`}
+                            className={`text-xs ${isSelected ? 'text-spotify-green' : 'text-fg/40'}`}
                           >
                             {option.description}
                           </span>

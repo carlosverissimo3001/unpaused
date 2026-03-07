@@ -48,14 +48,14 @@ export default function JoinByCodePage() {
   // Invalid code in URL
   if (!isValidCode) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-spotify-black text-white p-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+      <main className="min-h-screen flex items-center justify-center text-fg p-4">
+        <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
         <div
-          className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl backdrop-blur-xl text-center"
+          className="relative w-full max-w-sm rounded-2xl border border-fg/10 bg-fg/5 p-8 shadow-xl backdrop-blur-xl text-center"
           style={{ boxShadow: '0 0 40px rgba(0,0,0,0.3)' }}
         >
           <p className="text-red-400 mb-2 font-semibold">Invalid invite code</p>
-          <p className="text-white/50 text-sm mb-4">
+          <p className="text-fg/50 text-sm mb-4">
             The code in the link doesn&apos;t look right. Try entering it
             manually.
           </p>
@@ -72,10 +72,10 @@ export default function JoinByCodePage() {
 
   if (joinMutation.isError) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-spotify-black text-white p-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+      <main className="min-h-screen flex items-center justify-center text-fg p-4">
+        <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
         <div
-          className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl backdrop-blur-xl text-center"
+          className="relative w-full max-w-sm rounded-2xl border border-fg/10 bg-fg/5 p-8 shadow-xl backdrop-blur-xl text-center"
           style={{ boxShadow: '0 0 40px rgba(0,0,0,0.3)' }}
         >
           <p className="text-red-400 mb-4">{joinMutation.error.message}</p>
@@ -88,9 +88,9 @@ export default function JoinByCodePage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-spotify-black text-white">
+    <main className="min-h-screen flex flex-col items-center justify-center gap-4 text-fg">
       <LoadingSpinner size="md" />
-      <p className="text-white/60 text-sm">Joining room...</p>
+      <p className="text-fg/60 text-sm">Joining room...</p>
     </main>
   );
 }

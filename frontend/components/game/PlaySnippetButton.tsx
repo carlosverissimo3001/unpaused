@@ -62,7 +62,11 @@ export function PlaySnippetButton({
                   '0 0 20px 4px rgba(30,215,96,0.15)',
                 ],
               }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
             />
           )}
 
@@ -80,7 +84,7 @@ export function PlaySnippetButton({
               isPlaying ? `Pause snippet` : `Play ${duration} second snippet`
             }
             onClick={isPlaying ? onPause : onPlay}
-            className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-full text-base sm:text-lg border border-white/10 min-h-[48px] touch-manipulation"
+            className="relative z-10 bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-full text-base sm:text-lg border border-fg/10 min-h-[48px] touch-manipulation"
             style={{
               boxShadow:
                 '0 0 30px -5px rgba(30,215,96,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',

@@ -15,7 +15,7 @@ function MultiplayerBannerComponent() {
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 p-4 sm:p-6 shadow-2xl group transform-gpu"
+        className="relative overflow-hidden rounded-2xl border border-fg/10 bg-surface p-4 sm:p-6 shadow-2xl group transform-gpu"
       >
         {/* Animated background glow */}
         <motion.div
@@ -35,18 +35,18 @@ function MultiplayerBannerComponent() {
         <div className="relative z-10 flex flex-row items-center justify-between gap-2 sm:gap-4">
           {/* Left side: info */}
           <div className="flex flex-col gap-1 sm:gap-3 flex-1 min-w-0">
-            <div className="hidden sm:inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10 w-fit text-[10px] uppercase tracking-wider font-bold text-white/70">
+            <div className="hidden sm:inline-flex items-center gap-2 px-2 py-1 rounded-full bg-fg/5 border border-fg/10 w-fit text-[10px] uppercase tracking-wider font-bold text-fg/70">
               <Gamepad2 className="w-3 h-3" />
               Multiplayer
             </div>
             <div className="space-y-0.5 sm:space-y-1 min-w-0">
-              <h2 className="text-lg sm:text-3xl font-black tracking-tighter text-white truncate leading-tight">
+              <h2 className="text-lg sm:text-3xl font-black tracking-tighter text-fg truncate leading-tight">
                 Play with{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-spotify-green">
                   Friends.
                 </span>
               </h2>
-              <p className="text-white/50 text-[10px] sm:text-base font-medium leading-snug">
+              <p className="text-fg/50 text-[10px] sm:text-base font-medium leading-snug">
                 Compete head-to-head. Who knows the vibes?
               </p>
             </div>
@@ -58,7 +58,7 @@ function MultiplayerBannerComponent() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowJoinModal(true)}
-              className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-11 px-3 sm:px-5 rounded-full text-[11px] sm:text-sm font-bold border border-white/20 bg-white/5 hover:bg-white/10 text-white transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 h-8 sm:h-10 px-3 sm:px-5 rounded-full text-[11px] sm:text-sm font-bold border border-fg/20 bg-fg/5 hover:bg-fg/10 text-fg transition-colors"
             >
               <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Join</span>
@@ -69,7 +69,7 @@ function MultiplayerBannerComponent() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-11 px-3 sm:px-5 rounded-full text-[11px] sm:text-sm font-bold bg-spotify-green text-black hover:bg-spotify-green/90 shadow-[0_0_20px_rgba(30,215,96,0.15)] transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 h-8 sm:h-10 px-3 sm:px-5 rounded-full text-[11px] sm:text-sm font-bold bg-spotify-green text-black hover:bg-spotify-green/90 shadow-[0_0_20px_rgba(30,215,96,0.15)] transition-colors"
             >
               <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>Create</span>

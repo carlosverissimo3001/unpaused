@@ -132,7 +132,7 @@ export function ResultsContainer({ roomId }: ResultsContainerProps) {
     return (
       <div
         className="flex h-screen h-[100dvh] items-center justify-center"
-        style={{ background: '#121212' }}
+        style={{ background: 'rgb(var(--bg))' }}
       >
         <LoadingSpinner size="lg" />
       </div>
@@ -143,7 +143,7 @@ export function ResultsContainer({ roomId }: ResultsContainerProps) {
     return (
       <div
         className="flex h-screen h-[100dvh] items-center justify-center p-4"
-        style={{ background: '#121212' }}
+        style={{ background: 'rgb(var(--bg))' }}
       >
         <div className="max-w-md text-center">
           <p className="mb-4 text-red-400">Failed to load results</p>
@@ -173,7 +173,7 @@ export function ResultsContainer({ roomId }: ResultsContainerProps) {
   return (
     <div
       className="min-h-screen min-h-[100dvh] overflow-y-auto"
-      style={{ background: '#121212' }}
+      style={{ background: 'rgb(var(--bg))' }}
     >
       <motion.div
         className="pointer-events-none fixed inset-0 -z-10"

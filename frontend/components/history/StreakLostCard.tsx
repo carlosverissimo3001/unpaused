@@ -33,9 +33,9 @@ export function StreakLostCard({
       initial="hidden"
       animate="visible"
       custom={staggerIndex}
-      className="group relative rounded-xl overflow-hidden border border-white/[0.06] backdrop-blur-sm"
+      className="group relative rounded-xl overflow-hidden border border-fg/[0.06] backdrop-blur-sm"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1a1115] via-[#161014] to-[#110d10]" />
+      <div className="absolute inset-0 bg-surface dark:bg-gradient-to-r dark:from-[#1a1115] dark:via-[#161014] dark:to-[#110d10]" />
 
       <div className="relative flex">
         <div className="w-1 shrink-0 bg-gradient-to-b from-red-500/40 via-red-500/20 to-red-500/5" />
@@ -46,10 +46,10 @@ export function StreakLostCard({
           </div>
 
           <div className="min-w-0 flex-1">
-            <span className="text-[13px] font-semibold text-white/40">
+            <span className="text-[13px] font-semibold text-fg/40">
               Streak lost
             </span>
-            <p className="text-[11px] text-white/25">
+            <p className="text-[11px] text-fg/25">
               {formatDateRange(from, to)}
               <span className="ml-1.5">
                 · {gapDays === 1 ? '1 day missed' : `${gapDays} days missed`}

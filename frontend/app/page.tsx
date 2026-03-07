@@ -67,17 +67,17 @@ export default function Home() {
 
   if (isLoadingUser) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-spotify-black">
+      <main className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="md" />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen max-w-[100vw] flex flex-col relative overflow-x-hidden bg-spotify-black text-white">
+    <main className="min-h-screen max-w-[100vw] flex flex-col relative overflow-x-hidden text-fg">
       {/* Background Ambient Glow */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+        <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
         <motion.div
           className="absolute inset-0"
           animate={{
@@ -115,12 +115,12 @@ export default function Home() {
               <div className="mt-1 sm:mt-2">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 relative z-10">
                   <div className="flex items-baseline gap-2 sm:gap-3">
-                    <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-white whitespace-nowrap">
+                    <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-fg whitespace-nowrap">
                       Your Playlists
                     </h1>
 
                     {!isLoadingPlaylists && (
-                      <span className="text-sm sm:text-lg font-mono text-spotify-green/40 font-light tracking-tighter shrink-0">
+                      <span className="text-sm sm:text-lg font-mono text-spotify-green/70 font-light tracking-tighter shrink-0">
                         /{playlists.length.toString().padStart(2, '0')}
                       </span>
                     )}
@@ -136,7 +136,7 @@ export default function Home() {
 
                 <motion.div
                   animate={{ borderColor: ambientColor }}
-                  className="w-full h-px border-b border-white/5 mt-4 opacity-30"
+                  className="w-full h-px border-b border-fg/5 mt-4 opacity-30"
                 />
               </div>
 

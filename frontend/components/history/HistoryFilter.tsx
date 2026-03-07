@@ -20,24 +20,24 @@ export function HistoryFilter({
       <Button variant="ghost" size="default" asChild>
         <Link
           href="/"
-          className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+          className="flex items-center gap-2 text-fg/60 hover:text-fg transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           Back
         </Link>
       </Button>
-      <h1 className="font-black italic uppercase text-xl text-white tracking-tight">
+      <h1 className="font-black italic uppercase text-xl text-fg tracking-tight">
         Vault
       </h1>
       {isTrusted && (
-        <div className="ml-auto flex items-center gap-1.5 p-1 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
+        <div className="ml-auto flex items-center gap-1.5 p-1 rounded-xl bg-fg/[0.03] border border-fg/10 backdrop-blur-sm">
           <button
             type="button"
             onClick={() => onDailyOnlyChange(false)}
             className={`px-3 py-1.5 rounded-[10px] text-xs font-semibold uppercase tracking-widest transition-all ${
               !dailyOnly
-                ? 'bg-white/15 text-white shadow-sm'
-                : 'text-white/50 hover:text-white/80'
+                ? 'bg-fg/15 text-fg shadow-sm'
+                : 'text-fg/50 hover:text-fg/80'
             }`}
           >
             All
@@ -48,7 +48,7 @@ export function HistoryFilter({
             className={`px-3 py-1.5 rounded-[10px] text-xs font-semibold uppercase tracking-widest transition-all ${
               dailyOnly
                 ? 'bg-spotify-green/30 text-spotify-green shadow-sm'
-                : 'text-white/50 hover:text-white/80'
+                : 'text-fg/50 hover:text-fg/80'
             }`}
           >
             Daily

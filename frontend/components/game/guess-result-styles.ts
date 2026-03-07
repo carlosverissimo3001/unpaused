@@ -65,11 +65,11 @@ export const GUESS_RESULT_STYLE: Record<
 
 const PENDING_STYLE: GuessResultStyle = {
   label: 'Checking\u2026',
-  barClass: 'bg-white/30',
-  cardClass: 'bg-white/5 border-white/10',
-  badgeClass: 'bg-white/10 text-white/40 border-white/20',
+  barClass: 'bg-fg/30',
+  cardClass: 'bg-fg/5 border-fg/10',
+  badgeClass: 'bg-fg/10 text-fg/40 border-fg/20',
   accentClass: 'border-l-white/30',
-  dotClass: 'bg-white/30',
+  dotClass: 'bg-fg/30',
 };
 
 export function getGuessResultStyle(

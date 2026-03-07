@@ -40,7 +40,9 @@ import type {
   TokenLoginDto,
   TrackOptionDto,
   UpdateStreakQuestionDto,
+  UpdateUserPreferenceDto,
   UpdateUserRoleDto,
+  UserPreferenceDto,
 } from '../models/index';
 import {
     AdminUserDtoFromJSON,
@@ -93,8 +95,12 @@ import {
     TrackOptionDtoToJSON,
     UpdateStreakQuestionDtoFromJSON,
     UpdateStreakQuestionDtoToJSON,
+    UpdateUserPreferenceDtoFromJSON,
+    UpdateUserPreferenceDtoToJSON,
     UpdateUserRoleDtoFromJSON,
     UpdateUserRoleDtoToJSON,
+    UserPreferenceDtoFromJSON,
+    UserPreferenceDtoToJSON,
 } from '../models/index';
 
 export interface AdminControllerCreateStreakQuestionRequest {
@@ -211,6 +217,10 @@ export interface SearchControllerSearchTracksRequest {
 
 export interface StreakControllerSubmitAnswerRequest {
     submitQuizAnswerDto: SubmitQuizAnswerDto;
+}
+
+export interface UserPreferencesControllerUpdateRequest {
+    updateUserPreferenceDto: UpdateUserPreferenceDto;
 }
 
 /**
@@ -1503,6 +1513,74 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async streakControllerUseFreeze(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakStatusDto> {
         const response = await this.streakControllerUseFreezeRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get user preferences
+     */
+    async userPreferencesControllerGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserPreferenceDto>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/user-preferences`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserPreferenceDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user preferences
+     */
+    async userPreferencesControllerGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserPreferenceDto> {
+        const response = await this.userPreferencesControllerGetRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update user preferences
+     */
+    async userPreferencesControllerUpdateRaw(requestParameters: UserPreferencesControllerUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserPreferenceDto>> {
+        if (requestParameters['updateUserPreferenceDto'] == null) {
+            throw new runtime.RequiredError(
+                'updateUserPreferenceDto',
+                'Required parameter "updateUserPreferenceDto" was null or undefined when calling userPreferencesControllerUpdate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user-preferences`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateUserPreferenceDtoToJSON(requestParameters['updateUserPreferenceDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserPreferenceDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Update user preferences
+     */
+    async userPreferencesControllerUpdate(requestParameters: UserPreferencesControllerUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserPreferenceDto> {
+        const response = await this.userPreferencesControllerUpdateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

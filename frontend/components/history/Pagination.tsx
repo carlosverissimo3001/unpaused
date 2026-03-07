@@ -59,12 +59,12 @@ export function Pagination({
 
       <div className="flex flex-col items-center gap-1.5">
         {/* "Page X of Y" — hidden on mobile, shown sm+ */}
-        <span className="hidden sm:block text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+        <span className="hidden sm:block text-[10px] font-bold uppercase tracking-[0.2em] text-fg/30">
           Page {currentPage} of {totalPages}
         </span>
 
         {/* ── Desktop: full numbered bar (hidden below sm) ── */}
-        <div className="hidden sm:inline-flex items-center gap-1 p-1.5 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4),_0_0_0_1px_rgba(255,255,255,0.03)]">
+        <div className="hidden sm:inline-flex items-center gap-1 p-1.5 rounded-2xl bg-fg/[0.04] border border-fg/[0.08] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4),_0_0_0_1px_rgba(255,255,255,0.03)]">
           <NavButton
             direction="prev"
             disabled={isFirst}
@@ -75,7 +75,7 @@ export function Pagination({
             item === '...' ? (
               <span
                 key={`ellipsis-${idx}`}
-                className="flex items-center justify-center w-9 h-9 text-white/20 text-xs select-none"
+                className="flex items-center justify-center w-9 h-9 text-fg/20 text-xs select-none"
                 aria-hidden
               >
                 ...
@@ -98,7 +98,7 @@ export function Pagination({
         </div>
 
         {/* ── Mobile: compact bar (shown below sm) ── */}
-        <div className="inline-flex sm:hidden items-center gap-0.5 p-1 rounded-xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4),_0_0_0_1px_rgba(255,255,255,0.03)]">
+        <div className="inline-flex sm:hidden items-center gap-0.5 p-1 rounded-xl bg-fg/[0.04] border border-fg/[0.08] backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4),_0_0_0_1px_rgba(255,255,255,0.03)]">
           <NavButton
             direction="prev"
             disabled={isFirst}
@@ -106,9 +106,9 @@ export function Pagination({
             compact
           />
 
-          <span className="px-3 text-[11px] font-semibold text-white/60 tabular-nums select-none">
+          <span className="px-3 text-[11px] font-semibold text-fg/60 tabular-nums select-none">
             <span className="text-spotify-green font-bold">{currentPage}</span>
-            <span className="text-white/25 mx-1">/</span>
+            <span className="text-fg/25 mx-1">/</span>
             {totalPages}
           </span>
 
@@ -145,7 +145,7 @@ function NavButton({
       disabled={disabled}
       onClick={onClick}
       aria-label={direction === 'prev' ? 'Previous page' : 'Next page'}
-      className={`flex items-center justify-center ${size} rounded-xl transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed text-white/60 hover:text-white hover:bg-white/[0.08] active:scale-90`}
+      className={`flex items-center justify-center ${size} rounded-xl transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed text-fg/60 hover:text-fg hover:bg-fg/[0.08] active:scale-90`}
     >
       <Icon className="w-4 h-4" />
     </button>
@@ -178,9 +178,7 @@ function PageButton({
       )}
       <span
         className={`relative z-10 ${
-          isActive
-            ? 'text-spotify-green font-bold'
-            : 'text-white/50 hover:text-white'
+          isActive ? 'text-spotify-green font-bold' : 'text-fg/50 hover:text-fg'
         }`}
       >
         {page}

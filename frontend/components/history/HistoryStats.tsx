@@ -55,7 +55,7 @@ function WinRateCircle({ wins, total }: { wins: number; total: number }) {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={STROKE}
-                className="text-white/10"
+                className="text-fg/10"
               />
               <motion.circle
                 cx={SIZE / 2}
@@ -72,20 +72,20 @@ function WinRateCircle({ wins, total }: { wins: number; total: number }) {
                 className="text-spotify-green"
               />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white/90 tabular-nums">
+            <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-fg/90 tabular-nums">
               {displayRate}%
             </span>
           </div>
         </TooltipTrigger>
         <TooltipContent
           side="bottom"
-          className="bg-white/10 text-white border-white/10 backdrop-blur-md"
+          className="bg-fg/10 text-fg border-fg/10 backdrop-blur-md"
         >
-          <span className="text-white/90 font-semibold">{total}</span>
-          <span className="text-white/40"> games</span>
-          <span className="text-white/40"> vs </span>
-          <span className="text-white/90 font-semibold">{wins}</span>
-          <span className="text-white/40"> wins</span>
+          <span className="text-fg/90 font-semibold">{total}</span>
+          <span className="text-fg/40"> games</span>
+          <span className="text-fg/40"> vs </span>
+          <span className="text-fg/90 font-semibold">{wins}</span>
+          <span className="text-fg/40"> wins</span>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -108,10 +108,10 @@ export function HistoryStats({ stats }: HistoryStatsProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm p-4 flex flex-col items-center gap-2"
+        className="rounded-2xl bg-fg/[0.03] border border-fg/10 backdrop-blur-sm p-4 flex flex-col items-center gap-2"
       >
         <WinRateCircle wins={wins} total={total} />
-        <span className="font-black text-[10px] uppercase tracking-widest text-white/40">
+        <span className="font-black text-[10px] uppercase tracking-widest text-fg/40">
           Win rate
         </span>
       </motion.div>
@@ -120,7 +120,7 @@ export function HistoryStats({ stats }: HistoryStatsProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.05 }}
-        className="rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm p-4 flex flex-col items-center gap-2"
+        className="rounded-2xl bg-fg/[0.03] border border-fg/10 backdrop-blur-sm p-4 flex flex-col items-center gap-2"
       >
         <div className="flex flex-col items-center justify-center h-[64px] gap-0.5">
           <motion.div
@@ -129,11 +129,11 @@ export function HistoryStats({ stats }: HistoryStatsProps) {
           >
             <Flame className="w-8 h-8 text-spotify-green" strokeWidth={2} />
           </motion.div>
-          <span className="text-lg font-bold text-white/90 tabular-nums">
+          <span className="text-lg font-bold text-fg/90 tabular-nums">
             {streak}
           </span>
         </div>
-        <span className="font-black text-[10px] uppercase tracking-widest text-white/40">
+        <span className="font-black text-[10px] uppercase tracking-widest text-fg/40">
           Current streak
         </span>
       </motion.div>
@@ -142,7 +142,7 @@ export function HistoryStats({ stats }: HistoryStatsProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm p-4 flex flex-col items-center gap-2"
+        className="rounded-2xl bg-fg/[0.03] border border-fg/10 backdrop-blur-sm p-4 flex flex-col items-center gap-2"
       >
         <TooltipProvider delayDuration={200}>
           <Tooltip>
@@ -156,21 +156,21 @@ export function HistoryStats({ stats }: HistoryStatsProps) {
                   strokeWidth={2}
                   fill="currentColor"
                 />
-                <span className="text-lg font-bold text-white/90 tabular-nums">
+                <span className="text-lg font-bold text-fg/90 tabular-nums">
                   {perfectScores}
                 </span>
               </div>
             </TooltipTrigger>
             <TooltipContent
               side="bottom"
-              className="bg-white/10 text-white border-white/10 backdrop-blur-md"
+              className="bg-fg/10 text-fg border-fg/10 backdrop-blur-md"
             >
-              <span className="text-white/90 font-semibold">Perfect score</span>
-              <span className="text-white/40"> = win on the first guess</span>
+              <span className="text-fg/90 font-semibold">Perfect score</span>
+              <span className="text-fg/40"> = win on the first guess</span>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <span className="font-black text-[10px] uppercase tracking-widest text-white/40">
+        <span className="font-black text-[10px] uppercase tracking-widest text-fg/40">
           Perfect scores
         </span>
       </motion.div>

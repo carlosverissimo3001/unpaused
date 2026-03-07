@@ -59,29 +59,29 @@ export function GuessHistoryList({
                 exit="exit"
                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 ${
                   isSkip
-                    ? 'bg-white/[0.02]'
-                    : 'bg-white/[0.04] border border-white/[0.06]'
+                    ? 'bg-fg/[0.05]'
+                    : 'bg-fg/[0.07] border border-fg/[0.10]'
                 }`}
               >
                 <span
                   className={`flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 ${
                     isSkip
-                      ? 'bg-white/[0.06] text-white/25'
+                      ? 'bg-fg/10 text-fg/40'
                       : `${style.dotClass} text-black`
                   }`}
                 >
                   {i + 1}
                 </span>
-                <p className="min-w-0 flex-1 text-sm sm:text-base text-white/90">
+                <p className="min-w-0 flex-1 text-sm sm:text-base text-fg/90">
                   {isSkip ? (
-                    <span className="text-white/30 italic text-sm">Skipped</span>
+                    <span className="text-fg/30 italic text-sm">Skipped</span>
                   ) : (
                     <>
                       <span className="font-medium">
                         {guess.trackName ?? '—'}
                       </span>
                       {guess.artistName && (
-                        <span className="text-white/40">
+                        <span className="text-fg/40">
                           {' · '}
                           {guess.artistName}
                         </span>
@@ -90,7 +90,7 @@ export function GuessHistoryList({
                   )}
                 </p>
                 {!isSkip && (
-                  <span className="flex shrink-0 items-center gap-1.5 text-xs text-white/50">
+                  <span className="flex shrink-0 items-center gap-1.5 text-xs text-fg/50">
                     {style.label}
                   </span>
                 )}

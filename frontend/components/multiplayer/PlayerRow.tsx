@@ -31,10 +31,10 @@ function PlayerRow(props: PlayerRowProps) {
             alt={player.displayName}
             width={40}
             height={40}
-            className="w-10 h-10 rounded-full object-cover border-2 border-white/10"
+            className="w-10 h-10 rounded-full object-cover border-2 border-fg/10"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-white/10 border-2 border-white/10 flex items-center justify-center text-sm font-bold text-white/60">
+          <div className="w-10 h-10 rounded-full bg-fg/10 border-2 border-fg/10 flex items-center justify-center text-sm font-bold text-fg/60">
             {player.displayName.charAt(0).toUpperCase()}
           </div>
         )}
@@ -45,8 +45,8 @@ function PlayerRow(props: PlayerRowProps) {
         )}
         {isOnline !== undefined && (
           <div
-            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#121212] ${
-              isOnline ? 'bg-green-500' : 'bg-white/30'
+            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-bg ${
+              isOnline ? 'bg-green-500' : 'bg-fg/30'
             }`}
           />
         )}
@@ -54,12 +54,10 @@ function PlayerRow(props: PlayerRowProps) {
 
       {/* Name */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white truncate">
+        <p className="text-sm font-semibold text-fg truncate">
           {player.displayName}
           {isCurrentUser && (
-            <span className="ml-2 text-xs font-normal text-white/30">
-              (you)
-            </span>
+            <span className="ml-2 text-xs font-normal text-fg/30">(you)</span>
           )}
         </p>
       </div>
@@ -70,7 +68,7 @@ function PlayerRow(props: PlayerRowProps) {
           className={`shrink-0 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${
             isReady
               ? 'text-green-400/80 bg-green-500/10 border-green-500/20'
-              : 'text-white/30 bg-white/5 border-white/10'
+              : 'text-fg/30 bg-fg/5 border-fg/10'
           }`}
         >
           {isReady ? 'Ready' : 'Not Ready'}

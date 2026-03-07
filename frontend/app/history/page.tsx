@@ -202,11 +202,11 @@ function HistoryPageContent() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-8 items-start">
         <aside className="lg:col-span-4 lg:sticky lg:top-8">
           {stats && <HistoryStats stats={stats} />}
-          <div className="hidden lg:block mt-6 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-            <p className="text-xs text-white/30 leading-relaxed uppercase tracking-widest font-bold">
+          <div className="hidden lg:block mt-6 p-4 rounded-2xl bg-fg/[0.02] border border-fg/5">
+            <p className="text-xs text-fg/30 leading-relaxed uppercase tracking-widest font-bold">
               Your Vault
             </p>
-            <p className="text-sm text-white/50 mt-2">
+            <p className="text-sm text-fg/50 mt-2">
               Viewing {dailyOnly ? 'Daily Challenges' : 'all games'} across your
               entire history.
             </p>
@@ -250,21 +250,21 @@ function HistoryPageContent() {
               {Array.from({ length: pageSize }).map((_, i) => (
                 <div
                   key={i}
-                  className="animate-pulse rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden"
+                  className="animate-pulse rounded-2xl bg-fg/[0.03] border border-fg/10 overflow-hidden"
                 >
                   <div className="flex">
-                    <div className="w-1 shrink-0 bg-white/10" />
+                    <div className="w-1 shrink-0 bg-fg/10" />
                     <div className="p-4 flex-1 flex gap-4">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-white/[0.06] shrink-0" />
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-fg/[0.06] shrink-0" />
                       <div className="flex-1 space-y-3 py-1">
-                        <div className="h-2.5 w-20 rounded-full bg-white/[0.06]" />
-                        <div className="h-3.5 w-3/4 rounded-full bg-white/[0.08]" />
-                        <div className="h-3 w-1/2 rounded-full bg-white/[0.05]" />
+                        <div className="h-2.5 w-20 rounded-full bg-fg/[0.06]" />
+                        <div className="h-3.5 w-3/4 rounded-full bg-fg/[0.08]" />
+                        <div className="h-3 w-1/2 rounded-full bg-fg/[0.05]" />
                         <div className="flex gap-1.5 pt-1">
                           {Array.from({ length: 6 }).map((_, j) => (
                             <div
                               key={j}
-                              className="w-1.5 h-5 rounded-full bg-white/[0.06]"
+                              className="w-1.5 h-5 rounded-full bg-fg/[0.06]"
                             />
                           ))}
                         </div>

@@ -20,7 +20,7 @@ export function WaitingForPlayers({
   return (
     <div
       className="flex min-h-screen min-h-[100dvh] items-center justify-center"
-      style={{ background: '#121212' }}
+      style={{ background: 'rgb(var(--bg))' }}
     >
       <motion.div
         className="pointer-events-none fixed inset-0 -z-10"
@@ -52,10 +52,10 @@ export function WaitingForPlayers({
           >
             <Loader2 className="h-8 w-8 text-[#1DB954]" />
           </motion.div>
-          <h2 className="mb-2 text-xl font-bold text-white">
+          <h2 className="mb-2 text-xl font-bold text-fg">
             Waiting for other players
           </h2>
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-fg/40">
             Results will appear once everyone finishes
           </p>
         </motion.div>
@@ -71,7 +71,7 @@ export function WaitingForPlayers({
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden divide-y divide-white/5"
+            className="rounded-2xl border border-fg/10 bg-fg/[0.03] overflow-hidden divide-y divide-fg/5"
           >
             {players.map((player, index) => {
               const lastRoundIndex = playerProgress.get(player.userId);
@@ -95,22 +95,22 @@ export function WaitingForPlayers({
                         alt={player.displayName}
                         width={40}
                         height={40}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-white/10"
+                        className="w-10 h-10 rounded-full object-cover border-2 border-fg/10"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-white/10 border-2 border-white/10 flex items-center justify-center text-sm font-bold text-white/60">
+                      <div className="w-10 h-10 rounded-full bg-fg/10 border-2 border-fg/10 flex items-center justify-center text-sm font-bold text-fg/60">
                         {player.displayName.charAt(0).toUpperCase()}
                       </div>
                     )}
                     {/* Status indicator on avatar */}
                     <div
-                      className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-[#121212] flex items-center justify-center ${
-                        isDone ? 'bg-green-500' : 'bg-white/20'
+                      className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-bg flex items-center justify-center ${
+                        isDone ? 'bg-green-500' : 'bg-fg/20'
                       }`}
                     >
                       {isDone ? (
                         <Check
-                          className="w-2.5 h-2.5 text-white"
+                          className="w-2.5 h-2.5 text-fg"
                           strokeWidth={3}
                         />
                       ) : (
@@ -130,14 +130,12 @@ export function WaitingForPlayers({
                   {/* Name + progress */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-semibold text-white truncate">
+                      <span className="text-sm font-semibold text-fg truncate">
                         {player.displayName}
                       </span>
                       <span
                         className={`text-xs font-mono shrink-0 ml-2 ${
-                          isDone
-                            ? 'text-green-400 font-semibold'
-                            : 'text-white/30'
+                          isDone ? 'text-green-400 font-semibold' : 'text-fg/30'
                         }`}
                       >
                         {isDone ? 'Done' : `${completedRounds}/${totalRounds}`}
@@ -147,7 +145,7 @@ export function WaitingForPlayers({
                       {Array.from({ length: totalRounds }, (_, i) => (
                         <motion.div
                           key={i}
-                          className="h-1.5 flex-1 rounded-full bg-white/10 overflow-hidden"
+                          className="h-1.5 flex-1 rounded-full bg-fg/10 overflow-hidden"
                         >
                           <motion.div
                             className={`h-full rounded-full ${

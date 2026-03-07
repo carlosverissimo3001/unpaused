@@ -39,10 +39,10 @@ export default function GatePage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-spotify-black text-white p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+    <main className="min-h-screen flex items-center justify-center text-fg p-4">
+      <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
       <div
-        className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl backdrop-blur-xl"
+        className="relative w-full max-w-sm rounded-2xl border border-fg/10 bg-fg/5 p-8 shadow-xl backdrop-blur-xl"
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.3)' }}
       >
         <h1 className="text-xl font-semibold text-center mb-6">
@@ -58,7 +58,7 @@ export default function GatePage() {
                 setError(false);
               }}
               placeholder="Password"
-              className="w-full rounded-lg border border-white/20 bg-white/10 pl-4 pr-12 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-spotify-green"
+              className="w-full rounded-lg border border-fg/20 bg-fg/10 pl-4 pr-12 py-3 text-fg placeholder:text-fg/50 focus:outline-none focus:ring-2 focus:ring-spotify-green"
               autoFocus
               autoComplete="current-password"
               disabled={pending}
@@ -66,7 +66,7 @@ export default function GatePage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-fg/50 hover:text-fg transition-colors"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (

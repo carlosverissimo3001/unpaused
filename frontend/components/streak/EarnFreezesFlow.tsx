@@ -74,22 +74,22 @@ export function EarnFreezesFlow({
               className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                 filled
                   ? 'bg-cyan-500/20 border border-cyan-400/40'
-                  : 'bg-white/5 border border-white/10'
+                  : 'bg-fg/5 border border-fg/10'
               }`}
             >
               <Snowflake
-                className={`w-5 h-5 ${filled ? 'text-cyan-400' : 'text-white/20'}`}
+                className={`w-5 h-5 ${filled ? 'text-cyan-400' : 'text-fg/20'}`}
               />
             </motion.div>
           ))}
         </div>
         <div>
-          <h3 className="text-lg font-bold text-white">
+          <h3 className="text-lg font-bold text-fg">
             {freezeCount >= MAX_FREEZES
               ? 'All slots filled!'
               : 'No more questions!'}
           </h3>
-          <p className="text-white/60 text-sm mt-1">
+          <p className="text-fg/60 text-sm mt-1">
             You have {freezeCount} {freezeCount === 1 ? 'freeze' : 'freezes'}{' '}
             ready.
           </p>
@@ -105,7 +105,7 @@ export function EarnFreezesFlow({
   if (isLoading || !quizData?.question) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-6 h-6 border-2 border-white/20 border-t-spotify-green rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-fg/20 border-t-spotify-green rounded-full animate-spin" />
       </div>
     );
   }
@@ -118,7 +118,7 @@ export function EarnFreezesFlow({
       <div className="flex items-center justify-between">
         <button
           onClick={onClose}
-          className="text-white/50 hover:text-white transition-colors"
+          className="text-fg/50 hover:text-fg transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -129,11 +129,11 @@ export function EarnFreezesFlow({
               className={`w-7 h-7 rounded flex items-center justify-center ${
                 filled
                   ? 'bg-cyan-500/20 border border-cyan-400/40'
-                  : 'bg-white/5 border border-white/10'
+                  : 'bg-fg/5 border border-fg/10'
               }`}
             >
               <Snowflake
-                className={`w-3.5 h-3.5 ${filled ? 'text-cyan-400' : 'text-white/20'}`}
+                className={`w-3.5 h-3.5 ${filled ? 'text-cyan-400' : 'text-fg/20'}`}
               />
             </div>
           ))}
@@ -142,10 +142,10 @@ export function EarnFreezesFlow({
 
       {/* Question */}
       <div>
-        <span className="text-xs text-white/40 uppercase tracking-wider">
+        <span className="text-xs text-fg/40 uppercase tracking-wider">
           {question.category}
         </span>
-        <h3 className="text-lg font-semibold text-white mt-1">
+        <h3 className="text-lg font-semibold text-fg mt-1">
           {question.question}
         </h3>
       </div>
@@ -154,8 +154,7 @@ export function EarnFreezesFlow({
       <div className="space-y-2">
         <AnimatePresence mode="wait">
           {question.options.map((option, idx) => {
-            let optionStyle =
-              'border-white/15 hover:border-white/30 bg-white/5';
+            let optionStyle = 'border-fg/15 hover:border-fg/30 bg-fg/5';
 
             if (lastResult) {
               if (idx === lastResult.correctAnswerIndex) {
@@ -163,7 +162,7 @@ export function EarnFreezesFlow({
               } else if (idx === selectedAnswer && !lastResult.correct) {
                 optionStyle = 'border-red-400/60 bg-red-400/10';
               } else {
-                optionStyle = 'border-white/10 bg-white/3 opacity-50';
+                optionStyle = 'border-fg/10 bg-fg/3 opacity-50';
               }
             } else if (selectedAnswer === idx) {
               optionStyle = 'border-spotify-green/60 bg-spotify-green/10';
@@ -178,10 +177,10 @@ export function EarnFreezesFlow({
                 className={`w-full p-3.5 rounded-xl border text-left transition-colors text-sm ${optionStyle}`}
               >
                 <span className="flex items-center gap-3">
-                  <span className="text-white/40 font-mono text-xs w-4">
+                  <span className="text-fg/40 font-mono text-xs w-4">
                     {String.fromCharCode(65 + idx)}
                   </span>
-                  <span className="text-white">{option}</span>
+                  <span className="text-fg">{option}</span>
                   {lastResult && idx === lastResult.correctAnswerIndex && (
                     <Check className="w-4 h-4 text-green-400 ml-auto" />
                   )}

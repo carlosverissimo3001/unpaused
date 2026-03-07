@@ -89,20 +89,20 @@ export function StreakQuestionsAdmin() {
   const formUI = (
     <form onSubmit={editing ? handleEdit : handleCreate} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-white/80 mb-1">
+        <label className="block text-sm font-medium text-fg/80 mb-1">
           Question
         </label>
         <input
           type="text"
           value={form.question}
           onChange={(e) => setForm((p) => ({ ...p, question: e.target.value }))}
-          className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-white placeholder-white/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
+          className="w-full rounded-lg border border-fg/20 bg-fg/5 px-3 py-2 text-fg placeholder-fg/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
           placeholder="What's the inside joke question?"
           required
         />
       </div>
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-white/80">
+        <label className="block text-sm font-medium text-fg/80">
           Options (select correct answer)
         </label>
         {form.options.map((opt, idx) => (
@@ -115,7 +115,7 @@ export function StreakQuestionsAdmin() {
               className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
                 form.correctAnswerIndex === idx
                   ? 'bg-spotify-green/20 border-spotify-green text-spotify-green'
-                  : 'border-white/20 text-white/40 hover:border-white/40'
+                  : 'border-fg/20 text-fg/40 hover:border-fg/40'
               }`}
             >
               {String.fromCharCode(65 + idx)}
@@ -124,7 +124,7 @@ export function StreakQuestionsAdmin() {
               type="text"
               value={opt}
               onChange={(e) => updateOption(idx, e.target.value)}
-              className="flex-1 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-white text-sm placeholder-white/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
+              className="flex-1 rounded-lg border border-fg/20 bg-fg/5 px-3 py-2 text-fg text-sm placeholder-fg/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
               placeholder={`Option ${String.fromCharCode(65 + idx)}`}
               required
             />
@@ -133,7 +133,7 @@ export function StreakQuestionsAdmin() {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">
+          <label className="block text-sm font-medium text-fg/80 mb-1">
             Category
           </label>
           <input
@@ -142,12 +142,12 @@ export function StreakQuestionsAdmin() {
             onChange={(e) =>
               setForm((p) => ({ ...p, category: e.target.value }))
             }
-            className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-white text-sm placeholder-white/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
+            className="w-full rounded-lg border border-fg/20 bg-fg/5 px-3 py-2 text-fg text-sm placeholder-fg/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
             placeholder="e.g. classic-moments"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">
+          <label className="block text-sm font-medium text-fg/80 mb-1">
             Context (private note)
           </label>
           <input
@@ -156,7 +156,7 @@ export function StreakQuestionsAdmin() {
             onChange={(e) =>
               setForm((p) => ({ ...p, context: e.target.value }))
             }
-            className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-white text-sm placeholder-white/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
+            className="w-full rounded-lg border border-fg/20 bg-fg/5 px-3 py-2 text-fg text-sm placeholder-fg/40 focus:border-spotify-green focus:outline-none focus:ring-1 focus:ring-spotify-green"
             placeholder="Inside joke context"
           />
         </div>
@@ -195,7 +195,7 @@ export function StreakQuestionsAdmin() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Snowflake className="w-5 h-5 text-cyan-400" />
-          <h2 className="text-lg font-semibold text-white">
+          <h2 className="text-lg font-semibold text-fg">
             Streak Quiz Questions
           </h2>
         </div>
@@ -212,8 +212,8 @@ export function StreakQuestionsAdmin() {
       </div>
 
       {(createOpen || editing) && (
-        <div className="mb-6 p-4 rounded-xl border border-white/10 bg-white/5">
-          <h3 className="text-sm font-medium text-white/70 mb-3">
+        <div className="mb-6 p-4 rounded-xl border border-fg/10 bg-fg/5">
+          <h3 className="text-sm font-medium text-fg/70 mb-3">
             {editing ? 'Edit Question' : 'New Question'}
           </h3>
           {formUI}
@@ -235,7 +235,7 @@ export function StreakQuestionsAdmin() {
       {!isLoading && !error && questions && (
         <div className="space-y-2">
           {questions.length === 0 ? (
-            <p className="text-center text-white/50 py-8">
+            <p className="text-center text-fg/50 py-8">
               No questions yet. Add some inside jokes!
             </p>
           ) : (
@@ -244,15 +244,13 @@ export function StreakQuestionsAdmin() {
                 key={q.id}
                 className={`p-4 rounded-xl border ${
                   q.isActive
-                    ? 'border-white/10 bg-white/5'
-                    : 'border-white/5 bg-white/2 opacity-50'
+                    ? 'border-fg/10 bg-fg/5'
+                    : 'border-fg/5 bg-fg/2 opacity-50'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium text-sm">
-                      {q.question}
-                    </p>
+                    <p className="text-fg font-medium text-sm">{q.question}</p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {q.options.map((opt, idx) => (
                         <span
@@ -260,7 +258,7 @@ export function StreakQuestionsAdmin() {
                           className={`text-xs px-2 py-1 rounded ${
                             idx === q.correctAnswerIndex
                               ? 'bg-green-400/15 text-green-400 border border-green-400/20'
-                              : 'bg-white/5 text-white/60 border border-white/10'
+                              : 'bg-fg/5 text-fg/60 border border-fg/10'
                           }`}
                         >
                           {String.fromCharCode(65 + idx)}: {opt}
@@ -268,12 +266,12 @@ export function StreakQuestionsAdmin() {
                       ))}
                     </div>
                     {q.context && (
-                      <p className="mt-1.5 text-xs text-white/40 italic">
+                      <p className="mt-1.5 text-xs text-fg/40 italic">
                         {q.context}
                       </p>
                     )}
                     <div className="mt-1.5 flex items-center gap-2">
-                      <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded">
+                      <span className="text-xs text-fg/30 bg-fg/5 px-2 py-0.5 rounded">
                         {q.category}
                       </span>
                       {!q.isActive && (
@@ -288,7 +286,7 @@ export function StreakQuestionsAdmin() {
                       variant="ghost"
                       size="icon"
                       onClick={() => openEdit(q)}
-                      className="text-white/60 hover:text-white"
+                      className="text-fg/60 hover:text-fg"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>

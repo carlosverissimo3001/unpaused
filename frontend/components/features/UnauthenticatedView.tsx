@@ -41,14 +41,14 @@ function UnauthenticatedViewComponent({
         className="relative z-10 text-center flex flex-col gap-8 sm:gap-12 max-w-2xl px-6"
       >
         <div className="flex flex-col gap-4 sm:gap-6">
-          <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-white leading-[0.9]">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-fg leading-[0.9]">
             Song guessing,
             <br />
             <span className="text-spotify-green drop-shadow-[0_0_40px_rgba(30,215,96,0.35)]">
               reimagined.
             </span>
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-white/50 max-w-[280px] sm:max-w-md mx-auto leading-relaxed font-medium">
+          <p className="text-sm sm:text-base md:text-lg text-fg/50 max-w-[280px] sm:max-w-md mx-auto leading-relaxed font-medium">
             Test your musical ear. Connect your Spotify account and start the
             challenge.
           </p>
@@ -73,12 +73,12 @@ function UnauthenticatedViewComponent({
           </a>
 
           {isDev && (
-            <div className="w-full max-w-sm flex flex-col gap-4 pt-4 sm:pt-8 border-t border-white/5">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold text-center">
+            <div className="w-full max-w-sm flex flex-col gap-4 pt-4 sm:pt-8 border-t border-fg/5">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-fg/30 font-bold text-center">
                 Developer Access
               </p>
 
-              <div className="relative flex items-center p-1.5 bg-white/[0.03] backdrop-blur-xl rounded-full border border-white/10 focus-within:border-spotify-green/40 focus-within:bg-white/[0.06] transition-all duration-500 shadow-2xl">
+              <div className="relative flex items-center p-1.5 bg-fg/[0.03] backdrop-blur-xl rounded-full border border-fg/10 focus-within:border-spotify-green/40 focus-within:bg-fg/[0.06] transition-all duration-500 shadow-2xl">
                 <input
                   autoFocus
                   inputMode="text"
@@ -92,7 +92,7 @@ function UnauthenticatedViewComponent({
                     if (e.key === 'Enter') void handleTokenLogin();
                   }}
                   placeholder="Paste access token..."
-                  className="flex-1 bg-transparent pl-4 pr-2 py-2 text-sm outline-none placeholder:text-white/10 text-white min-w-0"
+                  className="flex-1 bg-transparent pl-4 pr-2 py-2 text-sm outline-none placeholder:text-fg/10 text-fg min-w-0"
                 />
 
                 <Button

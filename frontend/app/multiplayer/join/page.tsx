@@ -59,17 +59,17 @@ export default function JoinManualPage() {
 
   if (isLoadingUser || !user) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-spotify-black">
+      <main className="min-h-screen flex items-center justify-center ">
         <LoadingSpinner size="md" />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-spotify-black text-white p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+    <main className="min-h-screen flex items-center justify-center  text-fg p-4">
+      <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
       <div
-        className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl backdrop-blur-xl"
+        className="relative w-full max-w-sm rounded-2xl border border-fg/10 bg-fg/5 p-8 shadow-xl backdrop-blur-xl"
         style={{ boxShadow: '0 0 40px rgba(0,0,0,0.3)' }}
       >
         <h1 className="text-xl font-semibold text-center mb-6">Join a Room</h1>
@@ -80,7 +80,7 @@ export default function JoinManualPage() {
             onChange={(e) => handleInput(e.target.value)}
             placeholder="Enter invite code"
             maxLength={8}
-            className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-center font-mono text-lg tracking-widest text-white uppercase placeholder:text-white/50 placeholder:tracking-normal placeholder:font-sans placeholder:text-base focus:outline-none focus:ring-2 focus:ring-spotify-green"
+            className="w-full rounded-lg border border-fg/20 bg-fg/10 px-4 py-3 text-center font-mono text-lg tracking-widest text-fg uppercase placeholder:text-fg/50 placeholder:tracking-normal placeholder:font-sans placeholder:text-base focus:outline-none focus:ring-2 focus:ring-spotify-green"
             autoFocus
             disabled={joinMutation.isPending}
           />

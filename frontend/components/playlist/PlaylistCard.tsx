@@ -37,7 +37,7 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
           onHover?.(null);
         }}
         whileHover={{ y: -12 }}
-        className="group relative bg-[#181818]/40 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5 transition-all duration-500 hover:bg-white/[0.08] max-w-[400px] mx-auto w-full h-full md:h-auto transform-gpu"
+        className="group relative bg-surface/40 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-fg/5 transition-all duration-500 hover:bg-fg/[0.08] max-w-[400px] mx-auto w-full h-full md:h-auto transform-gpu"
         style={{
           boxShadow: isHovered
             ? `0 30px 60px -12px rgba(0,0,0,0.6), 0 0 20px ${glowColor}`
@@ -56,12 +56,12 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
               />
             ) : (
               <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-                <ListMusic className="text-white/10 w-12 h-12" />
+                <ListMusic className="text-fg/10 w-12 h-12" />
               </div>
             )}
 
             {isLikedSongs && (
-              <div className="absolute top-2 right-2 z-20 bg-black/60 backdrop-blur-sm rounded-full p-1.5 border border-white/10">
+              <div className="absolute top-2 right-2 z-20 bg-black/60 backdrop-blur-sm rounded-full p-1.5 border border-fg/10">
                 <Pin
                   className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-spotify-green rotate-45"
                   fill="currentColor"
@@ -84,11 +84,11 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
           </div>
 
           <div className="flex flex-col min-w-0 flex-1">
-            <h3 className="font-black text-sm sm:text-xl text-white line-clamp-1 leading-tight group-hover:text-spotify-green transition-colors">
+            <h3 className="font-black text-sm sm:text-xl text-fg line-clamp-1 leading-tight group-hover:text-spotify-green transition-colors">
               {playlist.name}
             </h3>
 
-            <div className="mt-auto pt-2 sm:pt-4 flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-white/30">
+            <div className="mt-auto pt-2 sm:pt-4 flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-fg/30">
               <div className="flex items-center gap-1.5">
                 <ListMusic className="w-3 h-3 opacity-60" />
                 <span>{playlist.totalTracks} tracks</span>
@@ -96,7 +96,7 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
 
               {!isLikedSongs && (
                 <>
-                  <span className="text-white/15">·</span>
+                  <span className="text-fg/15">·</span>
                   <div className="flex items-center gap-1.5">
                     {playlist.isPublic ? (
                       <Globe className="w-3 h-3 opacity-60" />

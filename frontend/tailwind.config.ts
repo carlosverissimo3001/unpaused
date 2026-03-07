@@ -16,6 +16,10 @@ const config: Config = {
         sans: ['Quicksand', 'system-ui', 'sans-serif'],
       },
       colors: {
+        // Semantic theme tokens — driven by CSS custom properties
+        fg: 'rgb(var(--fg) / <alpha-value>)',
+        bg: 'rgb(var(--bg) / <alpha-value>)',
+        surface: 'rgb(var(--surface) / <alpha-value>)',
         spotify: {
           green: '#1DB954',
           black: '#191414',

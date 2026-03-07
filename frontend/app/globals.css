@@ -6,10 +6,32 @@
   box-sizing: border-box;
 }
 
+/* ─── Semantic color tokens ─────────────────────────────────────────────── */
+/* Space-separated RGB triplets so Tailwind opacity modifiers (/40, /5) work */
+
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 25, 20, 20;
-  --background-end-rgb: 10, 10, 10;
+  /* Light mode (default) */
+  --fg: 0 0 0;
+  --bg: 255 255 255;
+  --surface: 246 246 246;
+  color-scheme: light;
+}
+
+/* Boost muted text contrast in light mode.
+   Dark-mode opacity values (e.g. /40, /50) are designed for white-on-black
+   and produce low-contrast gray when applied to black-on-white. */
+html:not(.dark) .text-fg\/60,
+html:not(.dark) .text-fg\/50 { color: rgb(0 0 0 / 0.75) !important; }
+html:not(.dark) .text-fg\/40 { color: rgb(0 0 0 / 0.60) !important; }
+html:not(.dark) .text-fg\/30 { color: rgb(0 0 0 / 0.50) !important; }
+html:not(.dark) .text-fg\/25 { color: rgb(0 0 0 / 0.42) !important; }
+html:not(.dark) .text-fg\/20 { color: rgb(0 0 0 / 0.35) !important; }
+
+.dark {
+  --fg: 255 255 255;
+  --bg: 18 18 18;
+  --surface: 24 24 24;
+  color-scheme: dark;
 }
 
 html {
@@ -24,17 +46,14 @@ input, textarea, select {
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
+  color: rgb(var(--fg));
+  background: rgb(var(--bg));
   min-height: 100dvh;
   max-width: 100vw;
   overflow-x: hidden;
   position: relative;
   touch-action: pan-x pan-y;
+  transition: background-color 0.2s ease, color 0.2s ease;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,13 +80,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgb(var(--fg) / 0.1);
   border-radius: 10px;
   transition: background 0.3s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgb(var(--fg) / 0.2);
 }
 
 .safe-area-inset {

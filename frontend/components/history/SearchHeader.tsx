@@ -96,22 +96,21 @@ export function SearchHeader({
   return (
     <div className="relative mb-6 lg:mb-8 select-none">
       <div className="flex items-center justify-between mb-2 lg:mb-2 px-1">
-        <div className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-white/20">
-          Showing{' '}
-          <span className="text-white/60 tabular-nums">{totalItems}</span>{' '}
+        <div className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-fg/20">
+          Showing <span className="text-fg/60 tabular-nums">{totalItems}</span>{' '}
           Sessions
         </div>
       </div>
 
       <div className="group relative">
         <div
-          className={`absolute -inset-[1px] bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded-xl transition-opacity duration-500 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute -inset-[1px] bg-gradient-to-r from-fg/10 via-fg/5 to-fg/10 rounded-xl transition-opacity duration-500 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
         />
 
-        <div className="relative flex items-center bg-[#0A0A0A] border border-white/10 rounded-xl overflow-hidden transition-all duration-300 group-focus-within:border-white/20 shadow-2xl">
+        <div className="relative flex items-center bg-bg border border-fg/10 rounded-xl overflow-hidden transition-all duration-300 group-focus-within:border-fg/20 shadow-2xl">
           <div className="pl-3 sm:pl-5 pr-2 sm:pr-4 py-3 sm:py-4">
             <Search
-              className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300 ${isFocused ? 'text-white' : 'text-white/20'}`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300 ${isFocused ? 'text-fg' : 'text-fg/20'}`}
             />
           </div>
 
@@ -123,7 +122,7 @@ export function SearchHeader({
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder="FILTER BY TRACK, ARTIST..."
-            className="w-full bg-transparent py-3 sm:py-4 pr-3 text-xs sm:text-sm font-medium tracking-wide sm:tracking-wider uppercase text-white placeholder:text-white/10 outline-none"
+            className="w-full bg-transparent py-3 sm:py-4 pr-3 text-xs sm:text-sm font-medium tracking-wide sm:tracking-wider uppercase text-fg placeholder:text-fg/10 outline-none"
           />
 
           <div className="flex items-center gap-2 mr-4">
@@ -134,7 +133,7 @@ export function SearchHeader({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 5 }}
                   onClick={clearInput}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/5 text-white/40 hover:text-white/80 transition-all active:scale-90"
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-fg/5 text-fg/40 hover:text-fg/80 transition-all active:scale-90"
                 >
                   <X className="w-3.5 h-3.5" />
                   <span className="hidden md:inline text-[10px] font-bold tracking-tighter uppercase">
@@ -144,7 +143,7 @@ export function SearchHeader({
               )}
             </AnimatePresence>
 
-            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 border border-white/10 bg-gradient-to-b from-white/[0.05] to-transparent rounded shadow-inner text-[9px] font-bold text-white/30 min-w-fit justify-center whitespace-nowrap">
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 border border-fg/10 bg-gradient-to-b from-fg/[0.05] to-transparent rounded shadow-inner text-[9px] font-bold text-fg/30 min-w-fit justify-center whitespace-nowrap">
               {isMac ? (
                 <>
                   <Command className="w-2.5 h-2.5 opacity-50" />
@@ -175,7 +174,7 @@ export function SearchHeader({
             <button
               key={chip.value}
               onClick={handleClick}
-              className="group relative flex items-center gap-2 sm:gap-3 pl-2.5 sm:pl-3 pr-3 sm:pr-4 py-2 bg-white/[0.02] border border-white/5 rounded-lg transition-all active:scale-95 hover:border-white/10 touch-manipulation"
+              className="group relative flex items-center gap-2 sm:gap-3 pl-2.5 sm:pl-3 pr-3 sm:pr-4 py-2 bg-fg/[0.02] border border-fg/5 rounded-lg transition-all active:scale-95 hover:border-fg/10 touch-manipulation"
             >
               {/* Active Indicator Strip */}
               <div
@@ -183,11 +182,11 @@ export function SearchHeader({
               />
 
               <Icon
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isActive ? chip.activeColor : 'text-white/20 group-hover:text-white/40'}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isActive ? chip.activeColor : 'text-fg/20 group-hover:text-fg/40'}`}
               />
 
               <span
-                className={`text-[10px] sm:text-[11px] font-black uppercase tracking-wide sm:tracking-widest transition-colors ${isActive ? 'text-white' : 'text-white/30 group-hover:text-white/50'}`}
+                className={`text-[10px] sm:text-[11px] font-black uppercase tracking-wide sm:tracking-widest transition-colors ${isActive ? 'text-fg' : 'text-fg/30 group-hover:text-fg/50'}`}
               >
                 {chip.label}
               </span>
@@ -195,7 +194,7 @@ export function SearchHeader({
               <AnimatePresence>
                 {isActive && (
                   <motion.div
-                    className="absolute inset-0 border border-white/20 rounded-lg pointer-events-none"
+                    className="absolute inset-0 border border-fg/20 rounded-lg pointer-events-none"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

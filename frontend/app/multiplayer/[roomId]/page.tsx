@@ -126,9 +126,9 @@ export default function RoomLobbyPage() {
   // Loading state
   if (isLoading) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-spotify-black text-white">
+      <main className="min-h-screen flex flex-col items-center justify-center gap-4 text-fg">
         <LoadingSpinner size="md" />
-        <p className="text-white/50 text-sm">Loading room...</p>
+        <p className="text-fg/50 text-sm">Loading room...</p>
       </main>
     );
   }
@@ -136,20 +136,20 @@ export default function RoomLobbyPage() {
   // Error / expired / completed
   if (isError || !room || room.status === 'EXPIRED') {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-spotify-black text-white p-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+      <main className="min-h-screen flex items-center justify-center text-fg p-4">
+        <div className="absolute inset-0 bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl backdrop-blur-xl text-center"
+          className="relative w-full max-w-sm rounded-2xl border border-fg/10 bg-fg/5 p-8 shadow-xl backdrop-blur-xl text-center"
         >
           <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
             <Users className="w-6 h-6 text-red-400" />
           </div>
-          <h2 className="text-lg font-bold text-white mb-2">
+          <h2 className="text-lg font-bold text-fg mb-2">
             {room?.status === 'EXPIRED' ? 'Room Expired' : 'Room Not Found'}
           </h2>
-          <p className="text-white/50 text-sm mb-6">
+          <p className="text-fg/50 text-sm mb-6">
             {isError
               ? (error?.message ?? 'Could not load room.')
               : 'This room is no longer available.'}
@@ -169,18 +169,18 @@ export default function RoomLobbyPage() {
   // Completed state
   if (room.status === 'COMPLETED') {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-spotify-black text-white p-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+      <main className="min-h-screen flex items-center justify-center text-fg p-4">
+        <div className="absolute inset-0 bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl backdrop-blur-xl text-center"
+          className="relative w-full max-w-sm rounded-2xl border border-fg/10 bg-fg/5 p-8 shadow-xl backdrop-blur-xl text-center"
         >
           <div className="w-12 h-12 rounded-full bg-spotify-green/10 border border-spotify-green/20 flex items-center justify-center mx-auto mb-4">
             <Music className="w-6 h-6 text-spotify-green" />
           </div>
-          <h2 className="text-lg font-bold text-white mb-2">Game Complete</h2>
-          <p className="text-white/50 text-sm mb-6">
+          <h2 className="text-lg font-bold text-fg mb-2">Game Complete</h2>
+          <p className="text-fg/50 text-sm mb-6">
             This room has finished playing.
           </p>
           <button
@@ -196,21 +196,21 @@ export default function RoomLobbyPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-spotify-black text-white relative overflow-hidden">
+    <main className="min-h-screen flex flex-col text-fg relative overflow-hidden">
       {/* Background */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-spotify-black via-[#0d1117] to-[#161b22]" />
+        <div className="absolute inset-0 bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
         <div className="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-purple-500/8 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute -bottom-[150px] left-1/4 w-[400px] h-[400px] bg-spotify-green/5 rounded-full blur-[100px] pointer-events-none" />
       </div>
 
       {/* Header bar */}
-      <div className="sticky top-0 z-20 border-b border-white/5 bg-spotify-black/80 backdrop-blur-xl">
+      <div className="sticky top-0 z-20 border-b border-fg/5 bg-bg/80 backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={handleLeaveRoom}
             disabled={leaveRoom.isPending}
-            className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-sm text-fg/60 hover:text-fg transition-colors"
           >
             {leaveRoom.isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -220,7 +220,7 @@ export default function RoomLobbyPage() {
             Leave
           </button>
 
-          <div className="flex items-center gap-2 text-xs text-white/40">
+          <div className="flex items-center gap-2 text-xs text-fg/40">
             <motion.div
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{ duration: 2, repeat: Infinity }}
@@ -239,12 +239,12 @@ export default function RoomLobbyPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 text-center"
+            className="relative overflow-hidden rounded-2xl border border-fg/10 bg-fg/[0.03] p-6 sm:p-8 text-center"
           >
             {/* Card glow */}
             <div className="absolute -top-20 -right-20 w-40 h-40 bg-spotify-green/10 rounded-full blur-[60px] pointer-events-none" />
 
-            <p className="text-xs uppercase tracking-[0.2em] text-white/40 font-semibold mb-3">
+            <p className="text-xs uppercase tracking-[0.2em] text-fg/40 font-semibold mb-3">
               Invite Code
             </p>
             <p className="text-4xl sm:text-5xl font-mono font-black text-spotify-green tracking-[0.3em] mb-6 select-all">
@@ -256,7 +256,7 @@ export default function RoomLobbyPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleCopyLink}
-                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 transition-colors"
+                className="flex items-center gap-2 rounded-xl border border-fg/10 bg-fg/5 px-4 py-2.5 text-sm text-fg/80 hover:bg-fg/10 transition-colors"
               >
                 {copied ? (
                   <Check className="h-4 w-4 text-spotify-green" />
@@ -269,7 +269,7 @@ export default function RoomLobbyPage() {
 
             {/* Room info pills */}
             <div className="flex items-center justify-center gap-2 mt-5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white/50">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-fg/5 border border-fg/10 text-xs text-fg/50">
                 <Music className="w-3 h-3" />
                 {room.roundCount} rounds
               </span>
@@ -289,16 +289,16 @@ export default function RoomLobbyPage() {
             className="space-y-3"
           >
             <div className="flex items-center justify-between px-1">
-              <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-fg/70 flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 Players
               </h3>
-              <span className="text-xs font-mono text-white/30">
+              <span className="text-xs font-mono text-fg/30">
                 {room.players.length}
               </span>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden divide-y divide-white/5">
+            <div className="rounded-2xl border border-fg/10 bg-fg/[0.03] overflow-hidden divide-y divide-fg/5">
               <AnimatePresence mode="popLayout">
                 {room.players.map((player, index) => (
                   <PlayerRow
@@ -329,7 +329,7 @@ export default function RoomLobbyPage() {
               className={`w-full flex items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-bold transition-all ${
                 currentPlayer?.isReady
                   ? 'bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20'
-                  : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
+                  : 'bg-fg/5 border border-fg/10 text-fg/70 hover:bg-fg/10'
               }`}
             >
               {toggleReady.isPending ? (
@@ -360,7 +360,7 @@ export default function RoomLobbyPage() {
                   )}
                 </button>
                 {!canStart && (
-                  <p className="text-xs text-white/30 text-center">
+                  <p className="text-xs text-fg/30 text-center">
                     {(room?.players.length ?? 0) < 2
                       ? 'Need at least 2 players to start'
                       : 'All players must be ready'}
@@ -379,7 +379,7 @@ export default function RoomLobbyPage() {
                 <motion.p
                   animate={{ opacity: [0.4, 0.7, 0.4] }}
                   transition={{ duration: 3, repeat: Infinity }}
-                  className="text-sm text-white/40"
+                  className="text-sm text-fg/40"
                 >
                   Waiting for host to start the game...
                 </motion.p>
@@ -396,13 +396,13 @@ export default function RoomLobbyPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-spotify-black/90 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg/90 backdrop-blur-md"
           >
             <motion.div
               initial={{ opacity: 0, y: 12, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.25 }}
-              className="rounded-2xl border border-spotify-green/20 bg-white/[0.04] px-8 py-7 text-center"
+              className="rounded-2xl border border-spotify-green/20 bg-fg/[0.04] px-8 py-7 text-center"
             >
               <motion.div
                 className="mx-auto mb-4 h-10 w-10 rounded-full border-2 border-spotify-green/50 border-t-spotify-green"
@@ -412,11 +412,11 @@ export default function RoomLobbyPage() {
               <motion.h2
                 animate={{ scale: [1, 1.03, 1] }}
                 transition={{ duration: 0.9, repeat: Infinity }}
-                className="text-xl font-bold text-white"
+                className="text-xl font-bold text-fg"
               >
                 Game Starting!
               </motion.h2>
-              <p className="mt-2 text-sm text-white/60">Loading round...</p>
+              <p className="mt-2 text-sm text-fg/60">Loading round...</p>
             </motion.div>
           </motion.div>
         )}

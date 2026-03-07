@@ -38,6 +38,8 @@ All URIs are relative to *http://localhost*
 | [**streakControllerGetStatus**](ApiApi.md#streakcontrollergetstatus) | **GET** /streak/status | Get streak status including freeze info |
 | [**streakControllerSubmitAnswer**](ApiApi.md#streakcontrollersubmitanswer) | **POST** /streak/quiz/answer | Submit a quiz answer to earn a streak freeze |
 | [**streakControllerUseFreeze**](ApiApi.md#streakcontrollerusefreeze) | **POST** /streak/use-freeze | Apply streak freezes to bridge a gap |
+| [**userPreferencesControllerGet**](ApiApi.md#userpreferencescontrollerget) | **GET** /user-preferences | Get user preferences |
+| [**userPreferencesControllerUpdate**](ApiApi.md#userpreferencescontrollerupdate) | **PATCH** /user-preferences | Update user preferences |
 
 
 
@@ -2345,6 +2347,136 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## userPreferencesControllerGet
+
+> UserPreferenceDto userPreferencesControllerGet()
+
+Get user preferences
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { UserPreferencesControllerGetRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.userPreferencesControllerGet();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**UserPreferenceDto**](UserPreferenceDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## userPreferencesControllerUpdate
+
+> UserPreferenceDto userPreferencesControllerUpdate(updateUserPreferenceDto)
+
+Update user preferences
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { UserPreferencesControllerUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // UpdateUserPreferenceDto
+    updateUserPreferenceDto: ...,
+  } satisfies UserPreferencesControllerUpdateRequest;
+
+  try {
+    const data = await api.userPreferencesControllerUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **updateUserPreferenceDto** | [UpdateUserPreferenceDto](UpdateUserPreferenceDto.md) |  | |
+
+### Return type
+
+[**UserPreferenceDto**](UserPreferenceDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

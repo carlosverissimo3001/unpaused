@@ -25,22 +25,42 @@ export function useAudioAmplitude(
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const rafRef = useRef<number | null>(null);
   const dataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
+  // Track which element is connected so we never call createMediaElementSource twice on it.
+  // The browser permanently "claims" an element on first connection — re-connecting it to a
+  // new AudioContext (even after the old one is closed) throws an InvalidStateError.
+  const connectedElementRef = useRef<HTMLAudioElement | null>(null);
 
   const init = useCallback(() => {
-    if (ctxRef.current) return; // already initialised
     if (!audioRef.current) return;
+    const el = audioRef.current;
+
+    // Same element, context already wired up — just resume if suspended and bail
+    if (ctxRef.current && connectedElementRef.current === el) {
+      if (ctxRef.current.state === 'suspended') {
+        void ctxRef.current.resume();
+      }
+      return;
+    }
+
+    // Element changed (e.g. Play Again swap) — close the stale context so we can
+    // wire up the new element. This is safe because the old element is gone.
+    if (ctxRef.current) {
+      void ctxRef.current.close();
+      ctxRef.current = null;
+    }
 
     const ctx = new AudioContext();
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 256;
 
-    const source = ctx.createMediaElementSource(audioRef.current);
+    const source = ctx.createMediaElementSource(el);
     source.connect(analyser);
     analyser.connect(ctx.destination);
 
     ctxRef.current = ctx;
     analyserRef.current = analyser;
     sourceRef.current = source;
+    connectedElementRef.current = el;
     dataRef.current = new Uint8Array(
       analyser.fftSize,
     ) as Uint8Array<ArrayBuffer>;
@@ -67,7 +87,6 @@ export function useAudioAmplitude(
 
   const start = useCallback(() => {
     if (rafRef.current !== null) return; // already running
-    // Resume AudioContext if suspended (browser autoplay policy)
     if (ctxRef.current?.state === 'suspended') {
       void ctxRef.current.resume();
     }
@@ -82,16 +101,20 @@ export function useAudioAmplitude(
     amplitude.set(0);
   }, [amplitude]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount: suspend rather than close the AudioContext.
+  // Closing it would permanently disconnect the element — if React Strict Mode
+  // (or any future remount) calls init() again for the same element, the browser
+  // would refuse to create a second MediaElementSourceNode for it and throw.
+  // Suspension is reversible; the context (and element claim) persist until the
+  // hook instance itself is GC'd after true unmount.
   useEffect(() => {
     return () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
-      if (ctxRef.current) {
-        void ctxRef.current.close();
-        ctxRef.current = null;
+      if (ctxRef.current?.state === 'running') {
+        void ctxRef.current.suspend();
       }
     };
   }, []);

@@ -31,6 +31,8 @@ model User {
   hostedRooms MultiplayerRoom[] @relation("hostedRooms")
   roomPlayers RoomPlayer[]
 
+  preferences UserPreference?
+
   @@map("users")
 }
 
@@ -72,22 +74,22 @@ model GameSession {
 }
 
 model Track {
-  id            String  @id
+  id            String   @id
   name          String
-  artistName    String  @map("artist_name")
-  albumImageUrl String? @map("album_image_url")
-  albumName     String? @map("album_name")
-  albumUrl      String? @map("album_url")
-  releaseYear   Int?    @map("release_year")
-  previewUrl    String? @map("preview_url")
+  artistName    String   @map("artist_name")
+  albumImageUrl String?  @map("album_image_url")
+  albumName     String?  @map("album_name")
+  albumUrl      String?  @map("album_url")
+  releaseYear   Int?     @map("release_year")
+  previewUrl    String?  @map("preview_url")
   allArtists    String[] @default([]) @map("all_artists")
-  metadata      Json?   @default("{}") @map("metadata")
+  metadata      Json?    @default("{}") @map("metadata")
 
   lastScrapedAt DateTime @default(now()) @map("last_scraped_at")
   createdAt     DateTime @default(now()) @map("created_at")
 
   // Need the default since I added this field after the table already had data
-  updatedAt     DateTime @updatedAt @map("updated_at") @default(now())
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   gameSessions GameSession[]
 
@@ -158,10 +160,10 @@ enum RoomStatus {
 }
 
 model MultiplayerRoom {
-  id         String     @id @default(uuid())
-  inviteCode String     @unique @map("invite_code")
-  hostId     String     @map("host_id")
-  host       User       @relation("hostedRooms", fields: [hostId], references: [id], onDelete: Cascade)
+  id         String @id @default(uuid())
+  inviteCode String @unique @map("invite_code")
+  hostId     String @map("host_id")
+  host       User   @relation("hostedRooms", fields: [hostId], references: [id], onDelete: Cascade)
 
   roundCount Int        @map("round_count")
   status     RoomStatus @default(WAITING)
@@ -178,6 +180,17 @@ model MultiplayerRoom {
 
   @@index([hostId])
   @@map("multiplayer_rooms")
+}
+
+model UserPreference {
+  userId           String  @id @map("user_id")
+  showAlbumHint    Boolean @default(true) @map("show_album_hint")
+  showTextHints    Boolean @default(true) @map("show_text_hints")
+  reducedMotion    Boolean @default(false) @map("reduced_motion")
+  showGuessHistory Boolean @default(true) @map("show_guess_history")
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
 }
 
 model RoomPlayer {

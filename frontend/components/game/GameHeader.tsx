@@ -27,14 +27,14 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
     <div className="flex items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
       <Link
         href="/"
-        className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+        className="flex items-center gap-2 text-fg/60 hover:text-fg transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
         Back
       </Link>
       {isPlaylist && playlist && (
         <div className="flex items-center gap-2.5 ml-2 min-w-0">
-          <div className="relative w-8 h-8 rounded-md overflow-hidden bg-white/10 flex-shrink-0">
+          <div className="relative w-8 h-8 rounded-md overflow-hidden bg-fg/10 flex-shrink-0">
             {playlist.imageUrl ? (
               <Image
                 src={playlist.imageUrl}
@@ -45,7 +45,7 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <Play className="w-4 h-4 text-white/40" />
+                <Play className="w-4 h-4 text-fg/40" />
               </div>
             )}
           </div>
@@ -53,7 +53,7 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
             href={playlist.externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group text-sm text-white/40 hover:text-white/80 transition-colors truncate flex items-center gap-1.5"
+            className="group text-sm text-fg/40 hover:text-fg/80 transition-colors truncate flex items-center gap-1.5"
           >
             <span className="truncate max-w-[180px]">{playlist.name}</span>
             <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -70,14 +70,14 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
           )}
           <Link
             href="/daily/stats"
-            className="flex items-center gap-2 text-white/60 hover:text-white text-sm"
+            className="flex items-center gap-2 text-fg/60 hover:text-fg text-sm"
           >
             <BarChart3 className="w-4 h-4" />
             Stats
           </Link>
           <Link
             href="/history?filter=daily"
-            className="flex items-center gap-2 text-white/60 hover:text-white text-sm"
+            className="flex items-center gap-2 text-fg/60 hover:text-fg text-sm"
           >
             <History className="w-4 h-4" />
             <span className="hidden sm:inline">History</span>

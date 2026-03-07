@@ -30,9 +30,9 @@ const SORT_OPTIONS = [
 const PILL_BASE =
   'relative overflow-hidden min-w-[72px] sm:min-w-[88px] h-8 sm:h-9 px-4 sm:px-5 rounded-full border text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-500 active:scale-90 flex items-center justify-center';
 const PILL_ACTIVE =
-  'bg-spotify-green border-white/20 text-black shadow-[0_10px_20px_-10px_rgba(30,215,96,0.5)]';
+  'bg-spotify-green border-fg/20 text-black shadow-[0_10px_20px_-10px_rgba(30,215,96,0.5)]';
 const PILL_INACTIVE =
-  'bg-white/[0.03] border-white/10 text-white/40 hover:bg-white/[0.08] hover:border-white/20';
+  'bg-fg/[0.03] border-fg/10 text-fg/40 hover:bg-fg/[0.08] hover:border-fg/20';
 
 const FilterPill = ({
   active,
@@ -104,12 +104,12 @@ function PlaylistFiltersComponent({
 
         <DropdownMenuContent
           align="end"
-          className="min-w-[160px] bg-[#1a1a2e]/80 backdrop-blur-md border border-white/10"
+          className="min-w-[160px] bg-surface/80 backdrop-blur-md border border-fg/10"
         >
-          <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-white/30 font-bold">
+          <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-fg/30 font-bold">
             Sort by
           </DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-white/5" />
+          <DropdownMenuSeparator className="bg-fg/5" />
           <DropdownMenuRadioGroup
             value={sortBy}
             onValueChange={(v) => onSortByChange(v as SortPlaylistsBy)}
@@ -118,7 +118,7 @@ function PlaylistFiltersComponent({
               <DropdownMenuRadioItem
                 key={option.value}
                 value={option.value}
-                className="text-xs text-white/70 focus:bg-white/[0.08] focus:text-white data-[state=checked]:text-white cursor-pointer gap-2"
+                className="text-xs text-fg/70 focus:bg-fg/[0.08] focus:text-fg data-[state=checked]:text-fg cursor-pointer gap-2"
               >
                 <option.icon className="size-3.5 opacity-50" />
                 {option.label}

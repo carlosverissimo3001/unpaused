@@ -58,11 +58,11 @@ export function HintPanel({ hints, currentRound }: HintPanelProps) {
                 ease: [0.34, 1.56, 0.64, 1],
               }}
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
-                bg-white/[0.06] border border-white/[0.08]
+                bg-fg/10 border border-fg/[0.15]
                 shadow-[0_0_8px_rgba(29,185,84,0.06)]"
             >
               <Icon className="w-3.5 h-3.5 shrink-0 text-[#1DB954]" />
-              <span className="text-[13px] text-zinc-300 leading-none whitespace-nowrap">
+              <span className="text-[13px] text-fg/70 leading-none whitespace-nowrap">
                 {hint.value}
               </span>
             </motion.div>

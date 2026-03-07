@@ -60,7 +60,7 @@ export function TrackSelectOptions({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full pl-12 pr-4 py-4 bg-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-spotify-green"
+            className="w-full pl-12 pr-4 py-4 bg-fg/10 rounded-lg text-fg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-spotify-green"
           />
         </div>
       )}
@@ -70,7 +70,7 @@ export function TrackSelectOptions({
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="mb-4 max-h-60 overflow-y-auto rounded-lg bg-zinc-800/90 border border-white/10"
+            className="mb-4 max-h-60 overflow-y-auto rounded-lg bg-zinc-800/90 border border-fg/10"
           >
             {filtered.length > 0 ? (
               filtered.map((track) => (
@@ -78,7 +78,7 @@ export function TrackSelectOptions({
                   key={track.id}
                   type="button"
                   onClick={() => onSelectTrack(track)}
-                  className="w-full p-4 flex items-center gap-3 text-left hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors"
+                  className="w-full p-4 flex items-center gap-3 text-left hover:bg-fg/10 border-b border-fg/5 last:border-b-0 transition-colors"
                 >
                   {track.albumImageUrl ? (
                     <Image
@@ -89,7 +89,7 @@ export function TrackSelectOptions({
                       className="rounded flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded bg-fg/10 flex items-center justify-center flex-shrink-0">
                       <Disc3 className="w-5 h-5 text-gray-500" />
                     </div>
                   )}

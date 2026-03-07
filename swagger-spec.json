@@ -1304,6 +1304,68 @@
           "Api"
         ]
       }
+    },
+    "/user-preferences": {
+      "get": {
+        "operationId": "UserPreferencesController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferenceDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get user preferences",
+        "tags": [
+          "Api"
+        ]
+      },
+      "patch": {
+        "operationId": "UserPreferencesController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserPreferenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferenceDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Update user preferences",
+        "tags": [
+          "Api"
+        ]
+      }
     }
   },
   "info": {
@@ -1640,6 +1702,10 @@
                 "$ref": "#/components/schemas/TrackOptionDto"
               }
             ]
+          },
+          "albumImageUrl": {
+            "type": "string",
+            "description": "Album art URL, exposed progressively during gameplay"
           },
           "rankTitle": {
             "type": "string",
@@ -2664,6 +2730,54 @@
           "roomStatus",
           "isComplete"
         ]
+      },
+      "UserPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "showAlbumHint": {
+            "type": "boolean",
+            "description": "Show progressively blurred album art hint"
+          },
+          "showTextHints": {
+            "type": "boolean",
+            "description": "Show genre, decade, and other text hints"
+          },
+          "reducedMotion": {
+            "type": "boolean",
+            "description": "Reduce motion and animations"
+          },
+          "showGuessHistory": {
+            "type": "boolean",
+            "description": "Show guess history during gameplay"
+          }
+        },
+        "required": [
+          "showAlbumHint",
+          "showTextHints",
+          "reducedMotion",
+          "showGuessHistory"
+        ]
+      },
+      "UpdateUserPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "showAlbumHint": {
+            "type": "boolean",
+            "description": "Show progressively blurred album art hint"
+          },
+          "showTextHints": {
+            "type": "boolean",
+            "description": "Show genre, decade, and other text hints"
+          },
+          "reducedMotion": {
+            "type": "boolean",
+            "description": "Reduce motion and animations"
+          },
+          "showGuessHistory": {
+            "type": "boolean",
+            "description": "Show guess history during gameplay"
+          }
+        }
       }
     }
   }

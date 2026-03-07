@@ -18,7 +18,7 @@ export function ScoreDistributionChart({
 
   return (
     <div className={className}>
-      <h3 className="text-sm font-medium text-white/80 mb-3">
+      <h3 className="text-sm font-medium text-fg/80 mb-3">
         Score distribution
       </h3>
       <div className="space-y-2">
@@ -28,8 +28,8 @@ export function ScoreDistributionChart({
             const pct = max > 0 ? (value / max) * 100 : 0;
             return (
               <div key={i} className="flex items-center gap-2">
-                <span className="w-4 text-xs text-white/60">{label}</span>
-                <div className="flex-1 h-6 bg-white/10 rounded overflow-hidden">
+                <span className="w-4 text-xs text-fg/60">{label}</span>
+                <div className="flex-1 h-6 bg-fg/10 rounded overflow-hidden">
                   <motion.div
                     className="h-full bg-spotify-green rounded"
                     initial={{ width: 0 }}
@@ -42,7 +42,7 @@ export function ScoreDistributionChart({
                     }}
                   />
                 </div>
-                <span className="text-xs text-white/60 w-6 text-right">
+                <span className="text-xs text-fg/60 w-6 text-right">
                   {value}
                 </span>
               </div>

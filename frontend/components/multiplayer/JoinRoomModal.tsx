@@ -85,7 +85,7 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
           />
 
           <motion.div
-            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl"
+            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-fg/10 bg-surface shadow-2xl"
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -104,7 +104,7 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
               <button
                 onClick={onClose}
                 aria-label="Close join room modal"
-                className="absolute top-4 right-4 p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-spotify-green/50"
+                className="absolute top-4 right-4 p-2 rounded-lg text-fg/40 hover:text-fg hover:bg-fg/10 transition-colors focus:outline-none focus:ring-2 focus:ring-spotify-green/50"
               >
                 <X className="w-5 h-5" aria-hidden="true" />
               </button>
@@ -119,11 +119,11 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
                 <div>
                   <h2
                     id={titleId}
-                    className="text-xl font-bold text-white tracking-tight"
+                    className="text-xl font-bold text-fg tracking-tight"
                   >
                     Join Room
                   </h2>
-                  <p id={descriptionId} className="text-sm text-white/50">
+                  <p id={descriptionId} className="text-sm text-fg/50">
                     Enter the invite code to join your friends.
                   </p>
                 </div>
@@ -145,7 +145,7 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
                     autoFocus
                     autoComplete="off"
                     spellCheck="false"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-4 text-center text-3xl font-mono font-bold tracking-[0.4em] text-white placeholder:text-white/10 focus:border-spotify-green/50 focus:outline-none focus:ring-1 focus:ring-spotify-green/30 transition-all uppercase"
+                    className="w-full rounded-xl border border-fg/10 bg-fg/5 px-4 py-4 text-center text-3xl font-mono font-bold tracking-[0.4em] text-fg placeholder:text-fg/10 focus:border-spotify-green/50 focus:outline-none focus:ring-1 focus:ring-spotify-green/30 transition-all uppercase"
                   />
                 </div>
 

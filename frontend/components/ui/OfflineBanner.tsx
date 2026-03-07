@@ -5,14 +5,13 @@ import { WifiOff } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export function OfflineBanner() {
-  const [isOffline, setIsOffline] = useState(false);
+  const [isOffline, setIsOffline] = useState(() =>
+    typeof navigator !== 'undefined' ? !navigator.onLine : false,
+  );
 
   useEffect(() => {
     const goOffline = () => setIsOffline(true);
     const goOnline = () => setIsOffline(false);
-
-    // Check initial state
-    if (!navigator.onLine) setIsOffline(true);
 
     window.addEventListener('offline', goOffline);
     window.addEventListener('online', goOnline);

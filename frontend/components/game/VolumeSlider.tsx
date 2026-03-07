@@ -28,10 +28,10 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
       <button
         type="button"
         onClick={toggleMute}
-        className="w-7 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors py-1"
+        className="w-7 flex items-center justify-center rounded-full hover:bg-fg/10 transition-colors py-1"
         aria-label={volume === 0 ? 'Unmute' : 'Mute'}
       >
-        <Icon className="w-4 h-4 text-white/70" />
+        <Icon className="w-4 h-4 text-fg/70" />
       </button>
       <input
         type="range"
@@ -40,13 +40,13 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
         step={0.01}
         value={volume}
         onChange={(e) => onVolumeChange(Number(e.target.value))}
-        className="volume-slider m-0 w-full h-1 appearance-none bg-white/20 rounded-full outline-none cursor-pointer"
+        className="volume-slider m-0 w-full h-1 appearance-none bg-fg/20 rounded-full outline-none cursor-pointer"
         aria-label="Volume"
         style={{
-          background: `linear-gradient(to right, #1DB954 0%, #1DB954 ${volume * 100}%, rgba(255,255,255,0.2) ${volume * 100}%, rgba(255,255,255,0.2) 100%)`,
+          background: `linear-gradient(to right, #1DB954 0%, #1DB954 ${volume * 100}%, rgb(var(--fg) / 0.18) ${volume * 100}%, rgb(var(--fg) / 0.18) 100%)`,
         }}
       />
-      <span className="text-[11px] tabular-nums text-white/40 w-7 text-center select-none">
+      <span className="text-[11px] tabular-nums text-fg/40 w-7 text-center select-none">
         {Math.round(volume * 100)}
       </span>
       <style>{`
@@ -56,7 +56,7 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          background: white;
+          background: rgb(var(--fg));
           cursor: pointer;
           border: none;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -65,7 +65,7 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          background: white;
+          background: rgb(var(--fg));
           cursor: pointer;
           border: none;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);

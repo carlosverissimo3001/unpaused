@@ -16,6 +16,8 @@ import { GameHeader } from './GameHeader';
 import { GameTitle } from './GameTitle';
 import { GuessInput } from './GuessInput';
 import { HintPanel } from './HintPanel';
+import { AlbumArtReveal } from './AlbumArtReveal';
+import { useUserPreferences } from '@/hooks/user-preferences/useUserPreferences';
 import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 const SHAKE_VARIANTS: Variants = {
@@ -32,6 +34,11 @@ interface GamePageProps {
 
 export function GamePage({ mode, playlistId }: GamePageProps) {
   const { volume, setVolume } = useVolume();
+  const { data: preferences } = useUserPreferences();
+  const showAlbumHint = preferences?.showAlbumHint ?? true;
+  const showTextHints = preferences?.showTextHints ?? true;
+  const reducedMotion = preferences?.reducedMotion ?? false;
+  const showGuessHistory = preferences?.showGuessHistory ?? true;
 
   const {
     playlist,
@@ -73,7 +80,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     return (
       <div
         className="h-screen h-[100dvh] flex items-center justify-center"
-        style={{ background: '#121212' }}
+        style={{ background: 'rgb(var(--bg))' }}
       >
         <LoadingSpinner size="lg" />
       </div>
@@ -84,7 +91,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     return (
       <div
         className="h-screen h-[100dvh] flex items-center justify-center p-4 sm:p-6"
-        style={{ background: '#121212' }}
+        style={{ background: 'rgb(var(--bg))' }}
       >
         <div className="text-center max-w-md">
           <p className="text-red-400 mb-4">
@@ -109,24 +116,33 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
   return (
     <div
       className="min-h-screen min-h-[100dvh] overflow-y-auto"
-      style={{ background: '#121212' }}
+      style={{ background: 'rgb(var(--bg))' }}
     >
       <motion.div
         className="fixed inset-0 -z-10 pointer-events-none"
-        animate={{
-          opacity: [0.6, 1, 0.6],
-          background: [
-            `radial-gradient(ellipse 120% 80% at 50% 0%, ${albumArtColor} 0%, transparent 50%),
+        animate={
+          reducedMotion
+            ? {
+                opacity: 1,
+                background: `radial-gradient(ellipse 120% 80% at 50% 0%, ${albumArtColor} 0%, transparent 50%),
              radial-gradient(ellipse 80% 120% at 80% 100%, rgba(29, 185, 84, 0.08) 0%, transparent 50%),
              radial-gradient(ellipse 80% 80% at 20% 80%, rgba(29, 185, 84, 0.05) 0%, transparent 45%)`,
-            `radial-gradient(ellipse 130% 90% at 50% 0%, ${albumArtColor} 0%, transparent 50%),
+              }
+            : {
+                opacity: [0.6, 1, 0.6],
+                background: [
+                  `radial-gradient(ellipse 120% 80% at 50% 0%, ${albumArtColor} 0%, transparent 50%),
+             radial-gradient(ellipse 80% 120% at 80% 100%, rgba(29, 185, 84, 0.08) 0%, transparent 50%),
+             radial-gradient(ellipse 80% 80% at 20% 80%, rgba(29, 185, 84, 0.05) 0%, transparent 45%)`,
+                  `radial-gradient(ellipse 130% 90% at 50% 0%, ${albumArtColor} 0%, transparent 50%),
              radial-gradient(ellipse 90% 130% at 80% 100%, rgba(29, 185, 84, 0.12) 0%, transparent 50%),
              radial-gradient(ellipse 90% 90% at 20% 80%, rgba(29, 185, 84, 0.08) 0%, transparent 45%)`,
-            `radial-gradient(ellipse 120% 80% at 50% 0%, ${albumArtColor} 0%, transparent 50%),
+                  `radial-gradient(ellipse 120% 80% at 50% 0%, ${albumArtColor} 0%, transparent 50%),
              radial-gradient(ellipse 80% 120% at 80% 100%, rgba(29, 185, 84, 0.08) 0%, transparent 50%),
              radial-gradient(ellipse 80% 80% at 20% 80%, rgba(29, 185, 84, 0.05) 0%, transparent 45%)`,
-          ],
-        }}
+                ],
+              }
+        }
         transition={{
           duration: 4,
           repeat: Infinity,
@@ -136,7 +152,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
 
       <motion.div
         variants={SHAKE_VARIANTS}
-        animate={shouldShake ? 'shake' : ''}
+        animate={shouldShake && !reducedMotion ? 'shake' : ''}
         className="p-3 sm:p-6 md:p-8 lg:p-10 relative z-10 flex flex-col min-h-screen min-h-[100dvh] safe-area-inset"
       >
         <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col gap-3 sm:gap-0">
@@ -172,6 +188,13 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             />
           )}
 
+          {!isGameOver && showAlbumHint && gameState.albumImageUrl && (
+            <AlbumArtReveal
+              albumImageUrl={gameState.albumImageUrl}
+              currentRound={gameState.currentRound}
+            />
+          )}
+
           {!isGameOver && (
             <PlaySnippetButton
               currentRound={gameState.currentRound}
@@ -184,7 +207,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             />
           )}
 
-          {!isGameOver && (
+          {!isGameOver && showTextHints && (
             <HintPanel
               hints={gameState.hints ?? []}
               currentRound={gameState.currentRound}
@@ -241,10 +264,12 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             )}
           </AnimatePresence>
 
-          <GuessHistoryList
-            guesses={gameState.guesses}
-            isGameOver={!!isGameOver}
-          />
+          {showGuessHistory && (
+            <GuessHistoryList
+              guesses={gameState.guesses}
+              isGameOver={!!isGameOver}
+            />
+          )}
         </div>
       </motion.div>
     </div>

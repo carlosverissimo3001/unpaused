@@ -21,7 +21,7 @@ const RANK_STYLES: Record<
     bar: 'bg-gray-300',
   },
   3: {
-    badge: 'bg-amber-700 text-white',
+    badge: 'bg-amber-700 text-fg',
     ring: 'ring-amber-700 ring-2',
     glow: '',
     bar: 'bg-amber-700',
@@ -55,7 +55,7 @@ function StandingsItemBase({
         show: { opacity: 1, y: 0 },
       }}
       transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-      className={`relative overflow-hidden rounded-xl border border-white/10 bg-black/35 backdrop-blur-xl ${
+      className={`relative overflow-hidden rounded-xl border border-fg/10 bg-black/35 backdrop-blur-xl ${
         isTopRank ? 'p-4 py-5' : 'p-4'
       }`}
       style={{
@@ -67,14 +67,14 @@ function StandingsItemBase({
       <div className="flex items-center gap-3">
         <div
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-            style?.badge ?? 'bg-white/10 text-white/40'
+            style?.badge ?? 'bg-fg/10 text-fg/40'
           }`}
         >
           {rank}
         </div>
 
         <div
-          className={`h-10 w-10 shrink-0 overflow-hidden rounded-full ${style?.ring ?? 'ring-1 ring-white/10'} ${
+          className={`h-10 w-10 shrink-0 overflow-hidden rounded-full ${style?.ring ?? 'ring-1 ring-fg/10'} ${
             style?.glow ?? ''
           }`}
         >
@@ -87,8 +87,8 @@ function StandingsItemBase({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-white/10">
-              <span className="text-sm font-bold text-white/50">
+            <div className="flex h-full w-full items-center justify-center bg-fg/10">
+              <span className="text-sm font-bold text-fg/50">
                 {player.displayName[0]?.toUpperCase()}
               </span>
             </div>
@@ -97,7 +97,7 @@ function StandingsItemBase({
 
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <p
-            className={`truncate font-semibold ${isTopRank ? 'text-base text-white' : 'text-sm text-white/85'}`}
+            className={`truncate font-semibold ${isTopRank ? 'text-base text-fg' : 'text-sm text-fg/85'}`}
           >
             {player.displayName}
           </p>
@@ -115,14 +115,12 @@ function StandingsItemBase({
           >
             {player.totalScore}
           </p>
-          <p className="text-[10px] uppercase tracking-wider text-white/35">
-            pts
-          </p>
+          <p className="text-[10px] uppercase tracking-wider text-fg/35">pts</p>
         </div>
       </div>
 
       {/* Score bar */}
-      <div className="mt-3 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+      <div className="mt-3 h-1 rounded-full bg-fg/[0.06] overflow-hidden">
         <motion.div
           className={`h-full rounded-full ${style?.bar ?? 'bg-[#1DB954]'}`}
           initial={{ width: 0 }}

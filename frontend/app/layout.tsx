@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/react';
 import './globals.css';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { MotionProvider } from '@/components/providers/MotionProvider';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
 
@@ -64,17 +65,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${quicksand.variable} font-sans antialiased max-w-[100vw] overflow-x-hidden`}
       >
-        <ErrorBoundary>
-          <MotionProvider>
-            <QueryProvider>{children}</QueryProvider>
-          </MotionProvider>
-        </ErrorBoundary>
-        <OfflineBanner />
-        <Toaster theme="dark" position="bottom-right" />
+        <ThemeProvider>
+          <ErrorBoundary>
+            <MotionProvider>
+              <QueryProvider>{children}</QueryProvider>
+            </MotionProvider>
+          </ErrorBoundary>
+          <OfflineBanner />
+          <Toaster theme="dark" position="bottom-right" />
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

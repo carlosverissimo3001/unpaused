@@ -17,7 +17,7 @@ export default function DailyPage() {
     return (
       <div
         className="h-screen h-[100dvh] flex items-center justify-center"
-        style={{ background: '#121212' }}
+        style={{ background: 'rgb(var(--bg))' }}
       >
         <LoadingSpinner size="lg" />
       </div>

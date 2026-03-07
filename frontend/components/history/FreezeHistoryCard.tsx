@@ -32,7 +32,7 @@ export function FreezeHistoryCard({
       custom={staggerIndex}
       className="group relative rounded-xl overflow-hidden border border-cyan-400/[0.12] backdrop-blur-sm"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-[#091520] via-[#0b1a28] to-[#060d14]" />
+      <div className="absolute inset-0 bg-surface dark:bg-gradient-to-r dark:from-[#091520] dark:via-[#0b1a28] dark:to-[#060d14]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_-10%,rgba(34,211,238,0.06),transparent)]" />
 
       <div className="relative flex">
@@ -45,7 +45,7 @@ export function FreezeHistoryCard({
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-white/80">
+              <span className="text-[13px] font-semibold text-fg/80">
                 Streak saved
               </span>
               <span className="text-[10px] text-cyan-400/40">
@@ -53,7 +53,7 @@ export function FreezeHistoryCard({
                 {usage.freezesUsed === 1 ? 'freeze' : 'freezes'} used
               </span>
             </div>
-            <p className="text-[11px] text-white/30">
+            <p className="text-[11px] text-fg/30">
               {formatDateRange(usage.coveredFrom, usage.coveredTo)}
               <span className="text-amber-400/40 ml-1.5">
                 · {usage.streakAtTime} day streak protected

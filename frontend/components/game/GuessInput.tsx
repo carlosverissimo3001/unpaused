@@ -56,8 +56,8 @@ export function GuessInput({
     <div
       className="rounded-2xl p-3 sm:p-4 space-y-3"
       style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgb(var(--fg) / 0.05)',
+        border: '1px solid rgb(var(--fg) / 0.09)',
       }}
     >
       <Popover open={dropdownOpen} modal={false}>
@@ -105,10 +105,10 @@ export function GuessInput({
                   }}
                   onFocus={() => setShowDropdown(true)}
                   placeholder="Search for a song..."
-                  className="w-full pl-12 pr-4 py-3.5 sm:py-4 rounded-xl text-base text-white placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all min-h-[48px] touch-manipulation"
+                  className="w-full pl-12 pr-4 py-3.5 sm:py-4 rounded-xl text-base text-fg placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all min-h-[48px] touch-manipulation"
                   style={{
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgb(var(--fg) / 0.06)',
+                    border: '1px solid rgb(var(--fg) / 0.08)',
                   }}
                 />
               </div>
@@ -117,13 +117,13 @@ export function GuessInput({
         </div>
 
         <PopoverContent
-          className="p-0 w-[--radix-popover-trigger-width] overflow-hidden rounded-xl border border-white/10 shadow-2xl"
+          className="p-0 w-[--radix-popover-trigger-width] overflow-hidden rounded-xl border border-fg/10 shadow-2xl"
           style={{
-            background: 'rgba(24, 24, 24, 0.95)',
+            background: 'rgb(var(--surface) / 0.95)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             boxShadow:
-              '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)',
+              '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgb(var(--fg) / 0.06)',
             maxHeight: 'var(--radix-popover-content-available-height, 60vh)',
           }}
           side="bottom"
@@ -153,7 +153,7 @@ export function GuessInput({
                   key={track.id}
                   type="button"
                   onClick={() => handleSelectTrack(track)}
-                  className="w-full p-3 sm:p-4 flex items-center gap-3 text-left hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl min-h-[56px] touch-manipulation active:bg-white/15"
+                  className="w-full p-3 sm:p-4 flex items-center gap-3 text-left hover:bg-fg/10 border-b border-fg/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl min-h-[56px] touch-manipulation active:bg-fg/15"
                 >
                   {track.albumImageUrl ? (
                     <Image
@@ -164,15 +164,13 @@ export function GuessInput({
                       className="rounded-lg flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-fg/10 flex items-center justify-center flex-shrink-0">
                       <Disc3 className="w-5 h-5 text-[#535353]" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-white truncate">
-                      {track.name}
-                    </p>
-                    <p className="text-sm text-[#b3b3b3] truncate">
+                    <p className="font-medium text-fg truncate">{track.name}</p>
+                    <p className="text-sm text-fg/50 truncate">
                       {track.artist}
                     </p>
                   </div>
@@ -202,7 +200,7 @@ export function GuessInput({
           className={`w-full py-2.5 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base transition-all min-h-[40px] sm:min-h-[48px] touch-manipulation ${
             selectedTrack && !submitPending
               ? 'bg-[#1DB954] hover:bg-[#1ed760] text-black shadow-lg shadow-[#1DB954]/20 active:scale-95'
-              : 'bg-white/[0.06] text-white/30 border border-white/[0.08] cursor-not-allowed'
+              : 'bg-fg/10 text-fg/30 border border-fg/[0.12] cursor-not-allowed'
           }`}
         >
           Submit
@@ -212,7 +210,7 @@ export function GuessInput({
           onClick={onSkip}
           disabled={submitPending}
           aria-label="Skip round"
-          className="text-white/40 hover:text-white/70 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors touch-manipulation"
+          className="text-fg/40 hover:text-fg/70 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors touch-manipulation"
         >
           Skip this round
         </button>

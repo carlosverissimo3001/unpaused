@@ -41,7 +41,7 @@ export function RoundProgressBar({
                   ? (style?.barClass ?? 'bg-red-500')
                   : isCurrent
                     ? 'bg-[#1DB954]'
-                    : 'bg-white/20'
+                    : 'bg-fg/20'
               }`}
               {...(isCurrent && {
                 animate: {

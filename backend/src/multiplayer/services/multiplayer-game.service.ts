@@ -39,7 +39,7 @@ export class MultiplayerGameService {
     private readonly roomsGateway: RoomsGateway,
   ) {}
 
-  /* async getRoundState(
+  async getRoundState(
     sessionId: string,
     roomId: string,
   ): Promise<MultiplayerRoundStateDto> {
@@ -325,5 +325,5 @@ export class MultiplayerGameService {
       { completedAt: new Date() },
     );
     this.roomsGateway.emitRoomUpdate(roomId, RoomDto.fromEntity(updated));
-  } */
+  }
 }

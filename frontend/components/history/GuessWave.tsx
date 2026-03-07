@@ -15,7 +15,7 @@ const RESULT_COLOR: Record<string, string> = {
   ARTIST_AND_ALBUM: 'bg-yellow-400',
   ALBUM: 'bg-amber-600',
   WRONG: 'bg-red-500',
-  SKIP: 'bg-white/20',
+  SKIP: 'bg-fg/20',
 };
 
 interface GuessWaveProps {
@@ -33,8 +33,8 @@ export function GuessWave({ results }: GuessWaveProps) {
           key={i}
           className={`w-[5px] rounded-full transition-all duration-300 ${
             r === 'EMPTY'
-              ? 'h-[3px] bg-white/[0.06]'
-              : `${RESULT_HEIGHT[r] ?? 'h-1/5'} ${RESULT_COLOR[r] ?? 'bg-white/20'}`
+              ? 'h-[3px] bg-fg/[0.06]'
+              : `${RESULT_HEIGHT[r] ?? 'h-1/5'} ${RESULT_COLOR[r] ?? 'bg-fg/20'}`
           }`}
         />
       ))}

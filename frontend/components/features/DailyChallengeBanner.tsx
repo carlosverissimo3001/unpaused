@@ -29,7 +29,7 @@ function DailyChallengeBannerComponent({
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50 p-4 sm:p-6 shadow-2xl group transform-gpu"
+      className="relative mb-6 overflow-hidden rounded-2xl border border-fg/10 bg-surface p-4 sm:p-6 shadow-2xl group transform-gpu"
     >
       <motion.div
         animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
@@ -39,15 +39,15 @@ function DailyChallengeBannerComponent({
 
       <div className="relative z-10 flex flex-row items-center justify-between gap-2 sm:gap-4">
         <div className="flex flex-col gap-1 sm:gap-3 flex-1 min-w-0">
-          <div className="hidden sm:inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/5 border border-white/10 w-fit text-[10px] uppercase tracking-wider font-bold text-white/70">
+          <div className="hidden sm:inline-flex items-center gap-2 px-2 py-1 rounded-full bg-fg/5 border border-fg/10 w-fit text-[10px] uppercase tracking-wider font-bold text-fg/70">
             <Sparkles className="w-3 h-3 fill-current" />
             Daily Event
           </div>
           <div className="space-y-0.5 sm:space-y-1 min-w-0">
-            <h2 className="text-lg sm:text-3xl font-black tracking-tighter text-white truncate leading-tight">
+            <h2 className="text-lg sm:text-3xl font-black tracking-tighter text-fg truncate leading-tight">
               The Daily <span className="text-spotify-green">Mystery.</span>
             </h2>
-            <p className="text-white/50 text-[10px] sm:text-base font-medium truncate sm:line-clamp-none">
+            <p className="text-fg/50 text-[10px] sm:text-base font-medium truncate sm:line-clamp-none">
               One song, six chances. Guess in 1s.
             </p>
           </div>
@@ -61,8 +61,8 @@ function DailyChallengeBannerComponent({
               asChild
               className={
                 showAsPlayed
-                  ? 'h-9 sm:h-11 px-4 sm:px-6 !rounded-full text-[11px] sm:text-base font-bold border-white/20 bg-white/5 hover:bg-white/10 text-white'
-                  : 'h-9 sm:h-11 px-4 sm:px-6 !rounded-full text-[11px] sm:text-base font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]'
+                  ? 'h-8 sm:h-10 px-3 sm:px-5 !rounded-full text-[11px] sm:text-sm font-bold border-fg/20 bg-fg/5 hover:bg-fg/10 text-fg'
+                  : 'h-8 sm:h-10 px-3 sm:px-5 !rounded-full text-[11px] sm:text-sm font-bold shadow-[0_0_20px_rgba(30,215,96,0.2)]'
               }
             >
               <Link
@@ -71,7 +71,7 @@ function DailyChallengeBannerComponent({
               >
                 {showAsPlayed ? (
                   <>
-                    <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span>Stats</span>
                     <ArrowRight className="hidden sm:block w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                   </>
@@ -79,7 +79,7 @@ function DailyChallengeBannerComponent({
                   <>
                     <Play
                       fill="currentColor"
-                      className="w-3 h-3 sm:w-4 sm:h-4"
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                     />
                     <span>Play</span>
                     <ArrowRight className="hidden sm:block w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />

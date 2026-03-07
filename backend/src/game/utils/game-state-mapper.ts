@@ -24,6 +24,7 @@ export function mapToGameStateDto(
     guesses,
     // Safe to do, we throw on the caller if the track is not found or has no preview URL
     previewUrl: track.previewUrl!,
+    albumImageUrl: track.albumImageUrl || undefined,
     answer:
       game.status !== GameStatus.PLAYING
         ? {

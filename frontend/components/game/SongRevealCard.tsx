@@ -88,7 +88,7 @@ export function SongRevealCard({
           style={{
             background: isWon
               ? 'linear-gradient(135deg, #1DB954 0%, #1ed760 50%, #91ed91 100%)'
-              : 'linear-gradient(135deg, #b3b3b3 0%, #535353 50%, #282828 100%)',
+              : 'linear-gradient(135deg, rgb(var(--fg) / 0.6) 0%, rgb(var(--fg) / 0.85) 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -114,10 +114,10 @@ export function SongRevealCard({
           className="mb-4 md:mb-6 space-y-1"
         >
           {rankTitle && (
-            <p className="text-sm font-medium text-[#b3b3b3]">{rankTitle}</p>
+            <p className="text-sm font-medium text-fg/50">{rankTitle}</p>
           )}
           {specialNote && (
-            <p className="text-xs text-[#737373] italic">{specialNote}</p>
+            <p className="text-xs text-fg/40 italic">{specialNote}</p>
           )}
         </motion.div>
       )}
@@ -136,7 +136,7 @@ export function SongRevealCard({
                 filter: `drop-shadow(0 0 28px 12px ${albumGlowColor})`,
               }}
             >
-              <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+              <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl ring-1 ring-fg/10">
                 <Image
                   src={answer.albumImageUrl}
                   alt={answer.name}
@@ -148,7 +148,7 @@ export function SongRevealCard({
             </motion.div>
           )}
           <motion.p
-            className="text-[#b3b3b3] text-sm mb-1"
+            className="text-fg/50 text-sm mb-1"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.3 }}
@@ -156,7 +156,7 @@ export function SongRevealCard({
             The song was
           </motion.p>
           <motion.p
-            className="font-semibold text-lg md:text-xl text-white"
+            className="font-semibold text-lg md:text-xl text-fg"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.3 }}
@@ -164,7 +164,7 @@ export function SongRevealCard({
             {answer.name}
           </motion.p>
           <motion.p
-            className="text-[#b3b3b3] text-sm"
+            className="text-fg/50 text-sm"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.3 }}
@@ -182,7 +182,7 @@ export function SongRevealCard({
         {showViewStats && (
           <Link href="/daily/stats">
             <motion.span
-              className="inline-block px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-sm font-medium text-white border border-white/10 transition-colors"
+              className="inline-block px-4 py-2 rounded-full bg-fg/10 hover:bg-fg/20 text-sm font-medium text-fg border border-fg/10 transition-colors"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -207,18 +207,18 @@ export function SongRevealCard({
           <motion.button
             type="button"
             onClick={onToggleFullSong}
-            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-colors"
+            className="p-2.5 rounded-full bg-fg/10 hover:bg-fg/20 border border-fg/10 transition-colors"
             aria-label={isFullSongPlaying ? 'Pause' : 'Play'}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             {isFullSongPlaying ? (
               <motion.span whileHover={{ rotate: 5 }}>
-                <Pause className="w-5 h-5 text-white" />
+                <Pause className="w-5 h-5 text-fg" />
               </motion.span>
             ) : (
               <motion.span whileHover={{ rotate: 5 }}>
-                <Play className="w-5 h-5 text-white" />
+                <Play className="w-5 h-5 text-fg" />
               </motion.span>
             )}
           </motion.button>
@@ -231,18 +231,18 @@ export function SongRevealCard({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.35 }}
-          className="mt-6 pt-6 border-t border-white/10 space-y-3"
+          className="mt-6 pt-6 border-t border-fg/10 space-y-3"
         >
-          <p className="text-sm text-[#b3b3b3] mb-3">Listen on Spotify:</p>
+          <p className="text-sm text-fg/50 mb-3">Listen on Spotify:</p>
 
           {songSpotifyUrl && (
             <a
               href={songSpotifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-colors group w-full max-w-md mx-auto"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-fg/5 hover:bg-fg/10 border border-fg/10 text-fg transition-colors group w-full max-w-md mx-auto"
             >
-              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-fg/10 flex-shrink-0">
                 {answer.albumImageUrl ? (
                   <Image
                     src={answer.albumImageUrl}
@@ -254,7 +254,7 @@ export function SongRevealCard({
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <motion.span whileHover={{ rotate: 15 }}>
-                      <Play className="w-5 h-5 text-white/40" />
+                      <Play className="w-5 h-5 text-fg/40" />
                     </motion.span>
                   </div>
                 )}
@@ -266,7 +266,7 @@ export function SongRevealCard({
                     SONG
                   </span>
                 </div>
-                <p className="text-xs text-[#b3b3b3] truncate">
+                <p className="text-xs text-fg/50 truncate">
                   by {answer.artist}
                 </p>
               </div>
@@ -274,7 +274,7 @@ export function SongRevealCard({
                 className="flex-shrink-0"
                 whileHover={{ rotate: 15 }}
               >
-                <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
+                <ExternalLink className="w-4 h-4 text-fg/50 group-hover:text-fg" />
               </motion.span>
             </a>
           )}
@@ -284,9 +284,9 @@ export function SongRevealCard({
               href={answer.albumUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-colors group w-full max-w-md mx-auto"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-fg/5 hover:bg-fg/10 border border-fg/10 text-fg transition-colors group w-full max-w-md mx-auto"
             >
-              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-fg/10 flex-shrink-0">
                 {answer.albumImageUrl ? (
                   <Image
                     src={answer.albumImageUrl}
@@ -298,7 +298,7 @@ export function SongRevealCard({
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <motion.span whileHover={{ rotate: 15 }}>
-                      <Disc3 className="w-5 h-5 text-white/40" />
+                      <Disc3 className="w-5 h-5 text-fg/40" />
                     </motion.span>
                   </div>
                 )}
@@ -312,15 +312,13 @@ export function SongRevealCard({
                     ALBUM
                   </span>
                 </div>
-                <p className="text-xs text-[#b3b3b3] truncate">
-                  {answer.artist}
-                </p>
+                <p className="text-xs text-fg/50 truncate">{answer.artist}</p>
               </div>
               <motion.span
                 className="flex-shrink-0"
                 whileHover={{ rotate: 15 }}
               >
-                <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
+                <ExternalLink className="w-4 h-4 text-fg/50 group-hover:text-fg" />
               </motion.span>
             </a>
           )}
@@ -332,18 +330,18 @@ export function SongRevealCard({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-6 pt-6 border-t border-white/10"
+          className="mt-6 pt-6 border-t border-fg/10"
         >
-          <p className="text-sm text-[#b3b3b3] mb-3">
+          <p className="text-sm text-fg/50 mb-3">
             Listen to the full playlist:
           </p>
           <a
             href={playlistExternalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-colors group w-full max-w-md mx-auto"
+            className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-fg/5 hover:bg-fg/10 border border-fg/10 text-fg transition-colors group w-full max-w-md mx-auto"
           >
-            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
+            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-fg/10 flex-shrink-0">
               {playlistImageUrl ? (
                 <Image
                   src={playlistImageUrl}
@@ -355,7 +353,7 @@ export function SongRevealCard({
               ) : (
                 <div className="w-full h-full flex items-center justify-center min-w-[40px] min-h-[40px]">
                   <motion.span whileHover={{ rotate: 15 }}>
-                    <Play className="w-5 h-5 text-white/40" />
+                    <Play className="w-5 h-5 text-fg/40" />
                   </motion.span>
                 </div>
               )}
@@ -363,7 +361,7 @@ export function SongRevealCard({
             <div className="text-left min-w-0 flex-1">
               <p className="font-medium text-sm truncate">{playlistName}</p>
               {playlistTotalTracks != null && (
-                <p className="text-xs text-[#b3b3b3]">
+                <p className="text-xs text-fg/50">
                   {playlistTotalTracks} tracks
                 </p>
               )}
@@ -372,7 +370,7 @@ export function SongRevealCard({
               className="ml-auto flex-shrink-0"
               whileHover={{ rotate: 15 }}
             >
-              <ExternalLink className="w-4 h-4 text-[#b3b3b3] group-hover:text-white" />
+              <ExternalLink className="w-4 h-4 text-fg/50 group-hover:text-fg" />
             </motion.span>
           </a>
         </motion.div>

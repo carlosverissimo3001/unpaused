@@ -67,6 +67,11 @@ export const queryKeys = {
     scoreboard: (roomId: string) =>
       ['multiplayer', 'scoreboard', roomId] as const,
   },
+  // User preferences queries
+  userPreferences: {
+    all: ['userPreferences'] as const,
+    me: ['userPreferences', 'me'] as const,
+  },
   // Search queries
   search: {
     all: ['search'] as const,

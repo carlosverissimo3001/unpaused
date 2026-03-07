@@ -38,10 +38,8 @@ export function UsersAdmin() {
     <div>
       <div className="flex items-center gap-2 mb-4">
         <Users className="w-5 h-5 text-blue-400" />
-        <h2 className="text-lg font-semibold text-white">Users</h2>
-        {users && (
-          <span className="text-xs text-white/40">({users.length})</span>
-        )}
+        <h2 className="text-lg font-semibold text-fg">Users</h2>
+        {users && <span className="text-xs text-fg/40">({users.length})</span>}
       </div>
 
       {isLoading && (
@@ -59,12 +57,12 @@ export function UsersAdmin() {
       {!isLoading && !error && users && (
         <div className="space-y-2">
           {users.length === 0 ? (
-            <p className="text-center text-white/50 py-8">No users found.</p>
+            <p className="text-center text-fg/50 py-8">No users found.</p>
           ) : (
             users.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5"
+                className="flex items-center gap-3 p-3 rounded-xl border border-fg/10 bg-fg/5"
               >
                 {/* Avatar */}
                 {user.avatarUrl ? (
@@ -76,28 +74,26 @@ export function UsersAdmin() {
                     className="rounded-full shrink-0"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/60 text-sm font-medium shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-fg/10 flex items-center justify-center text-fg/60 text-sm font-medium shrink-0">
                     {user.displayName.charAt(0).toUpperCase()}
                   </div>
                 )}
 
                 {/* User info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-fg truncate">
                     {user.displayName}
                     {isSelf(user) && (
-                      <span className="ml-1.5 text-xs text-white/40">
-                        (you)
-                      </span>
+                      <span className="ml-1.5 text-xs text-fg/40">(you)</span>
                     )}
                   </p>
-                  <p className="text-xs text-white/40 truncate">
+                  <p className="text-xs text-fg/40 truncate">
                     {user.spotifyUserId}
                   </p>
                 </div>
 
                 {/* Joined date */}
-                <span className="text-xs text-white/30 shrink-0 hidden sm:block">
+                <span className="text-xs text-fg/30 shrink-0 hidden sm:block">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </span>
 
@@ -111,7 +107,7 @@ export function UsersAdmin() {
                     className={`text-xs gap-1 ${
                       user.isTrusted
                         ? 'text-green-400 hover:text-green-300'
-                        : 'text-white/40 hover:text-white/60'
+                        : 'text-fg/40 hover:text-fg/60'
                     }`}
                     title={user.isTrusted ? 'Revoke trusted' : 'Grant trusted'}
                   >
@@ -126,7 +122,7 @@ export function UsersAdmin() {
                     className={`text-xs gap-1 ${
                       user.isAdmin
                         ? 'text-amber-400 hover:text-amber-300'
-                        : 'text-white/40 hover:text-white/60'
+                        : 'text-fg/40 hover:text-fg/60'
                     }`}
                     title={
                       isSelf(user)

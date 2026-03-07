@@ -36,4 +36,6 @@ export * from './SubmitQuizAnswerDto';
 export * from './TokenLoginDto';
 export * from './TrackOptionDto';
 export * from './UpdateStreakQuestionDto';
+export * from './UpdateUserPreferenceDto';
 export * from './UpdateUserRoleDto';
+export * from './UserPreferenceDto';
