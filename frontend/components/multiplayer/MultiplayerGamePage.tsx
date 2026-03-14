@@ -31,6 +31,11 @@ import { ChevronRight, Trophy } from 'lucide-react';
 import { GLASS_STYLE } from '@/lib/styles';
 import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
 import { HostDisconnectedBanner } from './HostDisconnectedBanner';
+import { ReactionBar } from './ReactionBar';
+import {
+  FloatingReactions,
+  useFloatingReactions,
+} from './FloatingReactions';
 
 const SHAKE_VARIANTS: Variants = {
   shake: {
@@ -147,17 +152,32 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
   const spotifySearch = useSpotifyTrackSearch();
   const { data: me } = useMe();
 
+  // Floating emoji reactions
+  const { floats, spawn, spawnOwn } = useFloatingReactions();
+
   // Socket must come before useRoom so `connected` is available
   const currentUserIdRef = useRef<string | undefined>(undefined);
-  const { connected, hostDisconnected } = useMultiplayerSocket(roomId, {
-    onPlayerRoundComplete: (data) => {
-      if (data.userId !== currentUserIdRef.current) {
-        toast(`${data.displayName} finished round ${data.roundIndex + 1}`, {
-          duration: 3000,
-        });
-      }
+  const { connected, hostDisconnected, sendReaction } = useMultiplayerSocket(
+    roomId,
+    {
+      onPlayerRoundComplete: (data) => {
+        if (data.userId !== currentUserIdRef.current) {
+          toast(`${data.displayName} finished round ${data.roundIndex + 1}`, {
+            duration: 3000,
+          });
+        }
+      },
+      onReaction: spawn,
     },
-  });
+  );
+
+  const handleReaction = useCallback(
+    (emoji: string) => {
+      sendReaction(emoji);
+      spawnOwn(emoji);
+    },
+    [sendReaction, spawnOwn],
+  );
 
   const { data: room, isLoading: roomLoading } = useRoom(roomId, connected);
 
@@ -313,6 +333,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
       className="min-h-screen min-h-[100dvh] overflow-y-auto"
       style={{ background: 'rgb(var(--bg))' }}
     >
+      <FloatingReactions floats={floats} />
       <motion.div
         className="fixed inset-0 -z-10 pointer-events-none"
         animate={{
@@ -503,6 +524,11 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
             guesses={roundState.guesses}
             isGameOver={!!isRoundComplete}
           />
+
+          {/* Emoji reactions */}
+          <div className="mt-4 mb-2">
+            <ReactionBar onReaction={handleReaction} />
+          </div>
         </div>
       </motion.div>
     </div>

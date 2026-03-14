@@ -1,10 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { queryKeys } from '@/lib/queryKeys';
 import type { RoomDto } from '@/sdk';
+
+export interface Reaction {
+  userId: string;
+  emoji: string;
+}
 
 interface UseMultiplayerSocketOptions {
   onPlayerRoundComplete?: (data: {
@@ -12,6 +17,7 @@ interface UseMultiplayerSocketOptions {
     displayName: string;
     roundIndex: number;
   }) => void;
+  onReaction?: (reaction: Reaction) => void;
 }
 
 export function useMultiplayerSocket(
@@ -23,9 +29,16 @@ export function useMultiplayerSocket(
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
   const [hostDisconnected, setHostDisconnected] = useState(false);
 
+  const socketRef = useRef<Socket | null>(null);
+
   const onPlayerRoundCompleteRef = useRef(options?.onPlayerRoundComplete);
   useEffect(() => {
     onPlayerRoundCompleteRef.current = options?.onPlayerRoundComplete;
+  });
+
+  const onReactionRef = useRef(options?.onReaction);
+  useEffect(() => {
+    onReactionRef.current = options?.onReaction;
   });
 
   const roomIdRef = useRef(roomId);
@@ -48,6 +61,8 @@ export function useMultiplayerSocket(
       withCredentials: true,
       transports: ['websocket', 'polling'],
     });
+
+    socketRef.current = socket;
 
     socket.on('authenticated', () => {
       setConnected(true);
@@ -85,16 +100,28 @@ export function useMultiplayerSocket(
       },
     );
 
+    socket.on('reaction', (data: Reaction) => {
+      onReactionRef.current?.(data);
+    });
+
     socket.on('hostDisconnected', () => setHostDisconnected(true));
     socket.on('hostReconnected', () => setHostDisconnected(false));
 
     return () => {
       socket.disconnect();
+      socketRef.current = null;
       setConnected(false);
       setOnlineUserIds([]);
       setHostDisconnected(false);
     };
   }, [roomId, queryClient]);
 
-  return { connected, onlineUserIds, hostDisconnected };
+  const sendReaction = useCallback((emoji: string) => {
+    socketRef.current?.emit('sendReaction', {
+      roomId: roomIdRef.current,
+      emoji,
+    });
+  }, []);
+
+  return { connected, onlineUserIds, hostDisconnected, sendReaction };
 }

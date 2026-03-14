@@ -162,6 +162,24 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.debug(`Client ${client.id} joined room ${payload.roomId}`);
   }
 
+  @SubscribeMessage('sendReaction')
+  handleSendReaction(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { roomId: string; emoji: string },
+  ): void {
+    const userId = client.data.userId as string | undefined;
+    if (!userId || !payload.roomId || !payload.emoji) return;
+
+    const roomIds = client.data.roomIds as Set<string> | undefined;
+    if (!roomIds?.has(payload.roomId)) return;
+
+    // Broadcast to all others in the room
+    client.to(payload.roomId).emit('reaction', {
+      userId,
+      emoji: payload.emoji,
+    });
+  }
+
   @SubscribeMessage('leaveRoom')
   async handleLeaveRoom(
     @ConnectedSocket() client: Socket,
