@@ -21,13 +21,8 @@ import {
   Users,
   Wifi,
 } from 'lucide-react';
-import { ReactionBar } from '@/components/multiplayer/ReactionBar';
-import {
-  FloatingReactions,
-  useFloatingReactions,
-} from '@/components/multiplayer/FloatingReactions';
 import { useParams, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function RoomLobbyPage() {
@@ -35,17 +30,8 @@ export default function RoomLobbyPage() {
   const roomId = params.roomId;
   const router = useRouter();
   const { data: user } = useMe();
-  const { floats, spawn, spawnOwn } = useFloatingReactions();
-  const { connected, onlineUserIds, hostDisconnected, sendReaction } =
-    useMultiplayerSocket(roomId, { onReaction: spawn });
-
-  const handleReaction = useCallback(
-    (emoji: string) => {
-      sendReaction(emoji);
-      spawnOwn(emoji);
-    },
-    [sendReaction, spawnOwn],
-  );
+  const { connected, onlineUserIds, hostDisconnected } =
+    useMultiplayerSocket(roomId);
   const { data: room, isLoading, isError, error } = useRoom(roomId, connected);
   const startRoom = useStartRoom();
   const leaveRoom = useLeaveRoom();
@@ -211,7 +197,6 @@ export default function RoomLobbyPage() {
 
   return (
     <main className="min-h-screen flex flex-col text-fg relative overflow-hidden">
-      <FloatingReactions floats={floats} />
       {/* Background */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
@@ -400,15 +385,6 @@ export default function RoomLobbyPage() {
                 </motion.p>
               </div>
             )}
-          </motion.div>
-
-          {/* Emoji reactions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <ReactionBar onReaction={handleReaction} />
           </motion.div>
         </div>
       </div>
