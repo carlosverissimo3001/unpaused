@@ -236,11 +236,11 @@ describe('guess-evaluator', () => {
 
   describe('getSnippetDuration', () => {
     it('should return first duration for round 0', () => {
-      expect(getSnippetDuration(0)).toBe(0.1);
+      expect(getSnippetDuration(0)).toBe(0.5);
     });
 
     it('should return last duration for round >= MAX_ROUNDS', () => {
-      expect(getSnippetDuration(10)).toBe(8);
+      expect(getSnippetDuration(10)).toBe(10);
     });
   });
 });

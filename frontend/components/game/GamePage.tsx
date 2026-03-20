@@ -63,7 +63,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     audioRef,
     fullAudioRef,
     isPlaying,
-    amplitude,
     playSnippet,
     pauseSnippet,
   } = gameAudio;
@@ -199,7 +198,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             <PlaySnippetButton
               currentRound={gameState.currentRound}
               isPlaying={isPlaying}
-              amplitude={amplitude}
               onPlay={playSnippet}
               onPause={pauseSnippet}
               volume={volume}

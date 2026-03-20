@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useTransform, type MotionValue } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Play, Pause } from 'lucide-react';
 import { ROUND_DURATIONS } from '@/consts/consts';
 import { VolumeSlider } from './VolumeSlider';
@@ -10,7 +10,6 @@ const SPRING = { type: 'spring' as const, stiffness: 100, damping: 15 };
 interface PlaySnippetButtonProps {
   currentRound: number;
   isPlaying: boolean;
-  amplitude: MotionValue<number>;
   onPlay: () => void;
   onPause: () => void;
   volume: number;
@@ -20,7 +19,6 @@ interface PlaySnippetButtonProps {
 export function PlaySnippetButton({
   currentRound,
   isPlaying,
-  amplitude,
   onPlay,
   onPause,
   volume,
@@ -28,30 +26,10 @@ export function PlaySnippetButton({
 }: PlaySnippetButtonProps) {
   const duration = ROUND_DURATIONS[currentRound];
 
-  const ring1Scale = useTransform(amplitude, [0, 1], [1, 1.75]);
-  const ring1Opacity = useTransform(amplitude, [0, 1], [0, 0.6]);
-
-  const ring2Scale = useTransform(amplitude, [0, 1], [1, 1.5]);
-  const ring2Opacity = useTransform(amplitude, [0, 1], [0, 0.4]);
-
   return (
     <div className="text-center mb-4 sm:mb-6">
       <div className="inline-flex flex-col items-center">
         <div className="relative flex items-center justify-center">
-          <div
-            className="absolute inset-0 pointer-events-none rounded-full"
-            aria-hidden
-          >
-            <motion.div
-              className="absolute inset-0 rounded-full border-2 border-[#1DB954]/30"
-              style={{ scale: ring1Scale, opacity: ring1Opacity }}
-            />
-            <motion.div
-              className="absolute inset-0 rounded-full border-2 border-[#1DB954]/30"
-              style={{ scale: ring2Scale, opacity: ring2Opacity }}
-            />
-          </div>
-
           {!isPlaying && (
             <motion.div
               className="absolute inset-0 rounded-full z-0"

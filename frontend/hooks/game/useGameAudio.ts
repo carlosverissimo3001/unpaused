@@ -2,7 +2,6 @@
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { ROUND_DURATIONS } from '@/consts/consts';
-import { useAudioAmplitude } from './useAudioAmplitude';
 import { useMediaSession } from '../useMediaSession';
 
 interface UseGameAudioOptions {
@@ -23,20 +22,25 @@ export function useGameAudio({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullSongPlaying, setIsFullSongPlaying] = useState(false);
 
-  // Use a Ref to track the animation frame for high-precision stopping
   const requestRef = useRef<number | null>(null);
-  // Track if audio pipeline is warmed up (mobile specific)
+
+  // True once the iOS audio hardware session has been initialized.
+  // Reset on each new track and whenever the audio session may have been
+  // interrupted (tab hidden, incoming call, etc.).
   const isWarmedUp = useRef(false);
-  const warmupPromiseRef = useRef<Promise<void> | null>(null);
-  // Monotonically increasing ID so only the latest playSnippet call can start playback
+
+  // Set to true when the user taps play while background warmup is still
+  // running, so the warmup setTimeout knows to bail instead of conflicting.
+  const warmupAbortRef = useRef(false);
+
+  // Monotonically increasing ID — only the latest playSnippet call may start
+  // playback; prevents stale callbacks from queued rapid taps.
   const playRequestIdRef = useRef(0);
 
-  const {
-    amplitude,
-    init: initAmplitude,
-    start: startAmplitude,
-    stop: stopAmplitude,
-  } = useAudioAmplitude(audioRef);
+  // Separate timer refs for background vs inline warmup so they never
+  // clobber each other's handles.
+  const bgWarmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inlineWarmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const volumeRef = useRef(volume);
 
@@ -46,55 +50,93 @@ export function useGameAudio({
     if (fullAudioRef.current) fullAudioRef.current.volume = volume;
   }, [volume]);
 
-  // Pre-warm the audio pipeline on mobile once the audio element has data.
-  // This silently plays and pauses the audio so the OS audio session is
-  // initialized before the user clicks play, eliminating the ~200ms warmup
-  // delay that swallows short snippets (0.1s, 0.5s).
+  // ─── Reset warmup whenever the track changes (new game) ───────────────────
+  // The iOS audio session is scoped to the current playback context. When the
+  // src changes, the old warmup is invalidated. Cancel any in-flight warmup
+  // timer so its callback cannot set isWarmedUp for the new track.
+  useEffect(() => {
+    if (bgWarmupTimerRef.current !== null) {
+      clearTimeout(bgWarmupTimerRef.current);
+      bgWarmupTimerRef.current = null;
+    }
+    if (inlineWarmupTimerRef.current !== null) {
+      clearTimeout(inlineWarmupTimerRef.current);
+      inlineWarmupTimerRef.current = null;
+    }
+    isWarmedUp.current = false;
+    warmupAbortRef.current = false;
+  }, [previewUrl]);
+
+  // ─── Reset warmup when the tab regains visibility ─────────────────────────
+  // iOS interrupts the audio session when the user backgrounds the app,
+  // locks the screen, or takes a phone call. visibilitychange is the most
+  // reliable cross-browser signal for this.
+  useEffect(() => {
+    if (!(navigator.maxTouchPoints > 0)) return;
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        isWarmedUp.current = false;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  // ─── Background warmup ────────────────────────────────────────────────────
+  // On mobile, silently play+pause the audio element as soon as it has data.
+  // This initialises the OS audio session so the first user-tapped snippet
+  // plays immediately instead of being swallowed by the ~200ms session startup.
+  // We rely on autoplay policy allowing a low-volume play here; if it's
+  // blocked the user's tap will trigger an inline warmup instead.
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !previewUrl || isWarmedUp.current) return;
+    if (!audio || !previewUrl) return;
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isMobile = navigator.maxTouchPoints > 0;
     if (!isMobile) {
       isWarmedUp.current = true;
       return;
     }
 
-    const handleCanPlay = () => {
-      if (isWarmedUp.current) return;
+    const runWarmup = () => {
+      // Bail if the user already tapped (inline warmup will handle it) or if
+      // the warmup was already completed for this track.
+      if (isWarmedUp.current || warmupAbortRef.current) return;
 
       audio.volume = 0;
       audio.currentTime = 0;
 
-      warmupPromiseRef.current = audio
+      audio
         .play()
         .then(() => {
-          // Let the audio session fully initialize, then pause
-          return new Promise<void>((resolve) => {
-            setTimeout(() => {
-              audio.pause();
-              audio.currentTime = 0;
-              // Use volumeRef.current so a volume change during warmup isn't overwritten
-              audio.volume = volumeRef.current;
-              isWarmedUp.current = true;
-              warmupPromiseRef.current = null;
-              resolve();
-            }, 150);
-          });
+          bgWarmupTimerRef.current = setTimeout(() => {
+            bgWarmupTimerRef.current = null;
+            if (warmupAbortRef.current) {
+              // User tapped while we were warming up — they already handled it.
+              warmupAbortRef.current = false;
+              return;
+            }
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = volumeRef.current;
+            isWarmedUp.current = true;
+          }, 150);
         })
         .catch(() => {
-          // Autoplay blocked — restore state; will warm up on first user-initiated play
+          // Autoplay blocked — warmup will happen inline on first tap instead.
           audio.volume = volumeRef.current;
           audio.currentTime = 0;
-          warmupPromiseRef.current = null;
         });
     };
 
     if (audio.readyState >= 3) {
-      handleCanPlay();
+      runWarmup();
     } else {
-      audio.addEventListener('canplaythrough', handleCanPlay, { once: true });
-      return () => audio.removeEventListener('canplaythrough', handleCanPlay);
+      audio.addEventListener('canplaythrough', runWarmup, { once: true });
+      return () => audio.removeEventListener('canplaythrough', runWarmup);
     }
   }, [previewUrl]);
 
@@ -103,13 +145,23 @@ export function useGameAudio({
       cancelAnimationFrame(requestRef.current);
       requestRef.current = null;
     }
-    stopAmplitude();
+    // Cancel any pending warmup timer and invalidate its startPlayback callback.
+    if (bgWarmupTimerRef.current !== null) {
+      clearTimeout(bgWarmupTimerRef.current);
+      bgWarmupTimerRef.current = null;
+    }
+    if (inlineWarmupTimerRef.current !== null) {
+      clearTimeout(inlineWarmupTimerRef.current);
+      inlineWarmupTimerRef.current = null;
+    }
+    // Bump the request ID so any in-flight startPlayback() call becomes stale.
+    ++playRequestIdRef.current;
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
     setIsPlaying(false);
-  }, [stopAmplitude]);
+  }, []);
 
   const playSnippet = useCallback(() => {
     const audio = audioRef.current;
@@ -117,14 +169,10 @@ export function useGameAudio({
 
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
+    const isMobile = navigator.maxTouchPoints > 0;
     const durationMs = ROUND_DURATIONS[currentRound] * 1000 + 100;
-
-    // Add a tiny buffer for mobile (iOS fade-in compensation)
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    // Add a small buffer on mobile to compensate for iOS fade-in latency.
     const adjustedDuration = isMobile ? durationMs + 60 : durationMs;
-
-    // Stamp this call — if a newer call arrives before we start, we bail out.
-    // This prevents rapid taps from queueing multiple startPlayback callbacks.
     const requestId = ++playRequestIdRef.current;
 
     const startPlayback = () => {
@@ -132,70 +180,78 @@ export function useGameAudio({
 
       audio.currentTime = 0;
       audio.volume = volumeRef.current;
-      initAmplitude();
 
       audio
         .play()
         .then(() => {
-          startAmplitude();
           setIsPlaying(true);
 
           const startTime = performance.now();
-
           const checkTime = () => {
-            const now = performance.now();
-            const elapsed = now - startTime;
-
-            if (elapsed >= adjustedDuration) {
+            if (performance.now() - startTime >= adjustedDuration) {
               stopAudioInternal();
             } else {
               requestRef.current = requestAnimationFrame(checkTime);
             }
           };
-
           requestRef.current = requestAnimationFrame(checkTime);
         })
-        .catch(console.error);
+        .catch((err: unknown) => {
+          console.warn('[useGameAudio] play() rejected:', err);
+          setIsPlaying(false);
+        });
     };
 
-    if (!isWarmedUp.current && isMobile && !warmupPromiseRef.current) {
-      // Warmup never ran (autoplay blocked) — do inline warmup under this user gesture
+    if (!isWarmedUp.current && isMobile) {
+      // Background warmup didn't complete (autoplay blocked, or still running).
+      // Signal any in-progress warmup to abort, then do an inline warmup under
+      // this user gesture. We wait 150ms — the same window the background
+      // warmup uses — to let iOS fully initialise the audio hardware session
+      // before starting real playback.
+      warmupAbortRef.current = true;
+
       audio.volume = 0;
       audio.currentTime = 0;
       audio
         .play()
         .then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-          isWarmedUp.current = true;
-          startPlayback();
+          inlineWarmupTimerRef.current = setTimeout(() => {
+            inlineWarmupTimerRef.current = null;
+            if (requestId !== playRequestIdRef.current) {
+              // A newer tap arrived during the warmup window — bail out cleanly.
+              audio.pause();
+              audio.currentTime = 0;
+              audio.volume = volumeRef.current;
+              return;
+            }
+            audio.pause();
+            audio.currentTime = 0;
+            isWarmedUp.current = true;
+            warmupAbortRef.current = false;
+            startPlayback();
+          }, 150);
         })
         .catch(() => {
-          // Fallback: just try to play directly
+          // play() failed even under user gesture — skip warmup and try direct.
+          isWarmedUp.current = true;
+          warmupAbortRef.current = false;
           startPlayback();
         });
     } else {
-      // Either warmed up, or warmup is in progress (audio session already initializing).
-      // Call startPlayback immediately to preserve the iOS user-gesture context —
-      // deferring via .then() can lose it and cause playback to be blocked.
       startPlayback();
     }
-  }, [
-    currentRound,
-    previewUrl,
-    initAmplitude,
-    startAmplitude,
-    stopAudioInternal,
-  ]);
+  }, [currentRound, previewUrl, stopAudioInternal]);
 
   const pauseSnippet = useCallback(() => {
     stopAudioInternal();
   }, [stopAudioInternal]);
 
-  // Clean up on unmount
+  // Clean up RAF and any pending warmup timers on unmount
   useEffect(() => {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (bgWarmupTimerRef.current !== null) clearTimeout(bgWarmupTimerRef.current);
+      if (inlineWarmupTimerRef.current !== null) clearTimeout(inlineWarmupTimerRef.current);
     };
   }, []);
 
@@ -246,7 +302,6 @@ export function useGameAudio({
       audioRef.current.currentTime = 0;
     }
 
-    // 2. Start the full song
     const fullAudio = fullAudioRef.current;
     if (fullAudio) {
       fullAudio.currentTime = 0;
@@ -255,7 +310,7 @@ export function useGameAudio({
         .play()
         .then(() => setIsFullSongPlaying(true))
         .catch(() => {
-          /* Autoplay block */
+          /* Autoplay block on game-over auto-play — user can tap manually */
         });
     }
 
@@ -267,7 +322,6 @@ export function useGameAudio({
     fullAudioRef,
     isPlaying,
     isFullSongPlaying,
-    amplitude,
     playSnippet,
     pauseSnippet,
     toggleFullSong,

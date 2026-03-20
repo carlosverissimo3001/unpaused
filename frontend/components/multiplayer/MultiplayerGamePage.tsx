@@ -233,7 +233,6 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     audioRef,
     fullAudioRef,
     isPlaying,
-    amplitude,
     playSnippet,
     pauseSnippet,
   } = gameAudio;
@@ -426,7 +425,6 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
             <PlaySnippetButton
               currentRound={roundState.currentGuess}
               isPlaying={isPlaying}
-              amplitude={amplitude}
               onPlay={playSnippet}
               onPause={pauseSnippet}
               volume={volume}
