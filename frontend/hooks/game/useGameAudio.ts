@@ -25,8 +25,11 @@ export function useGameAudio({
 
   // Use a Ref to track the animation frame for high-precision stopping
   const requestRef = useRef<number | null>(null);
-  // Track if hardware is "warmed up" (mobile specific)
+  // Track if audio pipeline is warmed up (mobile specific)
   const isWarmedUp = useRef(false);
+  const warmupPromiseRef = useRef<Promise<void> | null>(null);
+  // Monotonically increasing ID so only the latest playSnippet call can start playback
+  const playRequestIdRef = useRef(0);
 
   const {
     amplitude,
@@ -42,6 +45,58 @@ export function useGameAudio({
     if (audioRef.current) audioRef.current.volume = volume;
     if (fullAudioRef.current) fullAudioRef.current.volume = volume;
   }, [volume]);
+
+  // Pre-warm the audio pipeline on mobile once the audio element has data.
+  // This silently plays and pauses the audio so the OS audio session is
+  // initialized before the user clicks play, eliminating the ~200ms warmup
+  // delay that swallows short snippets (0.1s, 0.5s).
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !previewUrl || isWarmedUp.current) return;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (!isMobile) {
+      isWarmedUp.current = true;
+      return;
+    }
+
+    const handleCanPlay = () => {
+      if (isWarmedUp.current) return;
+
+      audio.volume = 0;
+      audio.currentTime = 0;
+
+      warmupPromiseRef.current = audio
+        .play()
+        .then(() => {
+          // Let the audio session fully initialize, then pause
+          return new Promise<void>((resolve) => {
+            setTimeout(() => {
+              audio.pause();
+              audio.currentTime = 0;
+              // Use volumeRef.current so a volume change during warmup isn't overwritten
+              audio.volume = volumeRef.current;
+              isWarmedUp.current = true;
+              warmupPromiseRef.current = null;
+              resolve();
+            }, 150);
+          });
+        })
+        .catch(() => {
+          // Autoplay blocked — restore state; will warm up on first user-initiated play
+          audio.volume = volumeRef.current;
+          audio.currentTime = 0;
+          warmupPromiseRef.current = null;
+        });
+    };
+
+    if (audio.readyState >= 3) {
+      handleCanPlay();
+    } else {
+      audio.addEventListener('canplaythrough', handleCanPlay, { once: true });
+      return () => audio.removeEventListener('canplaythrough', handleCanPlay);
+    }
+  }, [previewUrl]);
 
   const stopAudioInternal = useCallback(() => {
     if (requestRef.current) {
@@ -60,14 +115,6 @@ export function useGameAudio({
     const audio = audioRef.current;
     if (!audio || !previewUrl) return;
 
-    // 1. Mobile "Warm-up" / Playback unlock
-    // We play and immediately continue our logic to ensure the OS
-    // doesn't suppress the short snippet.
-    if (!isWarmedUp.current) {
-      audio.play().catch(() => {});
-      isWarmedUp.current = true;
-    }
-
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
     const durationMs = ROUND_DURATIONS[currentRound] * 1000 + 100;
@@ -76,32 +123,63 @@ export function useGameAudio({
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const adjustedDuration = isMobile ? durationMs + 60 : durationMs;
 
-    audio.currentTime = 0;
-    audio.volume = volumeRef.current;
-    initAmplitude();
+    // Stamp this call — if a newer call arrives before we start, we bail out.
+    // This prevents rapid taps from queueing multiple startPlayback callbacks.
+    const requestId = ++playRequestIdRef.current;
 
-    audio
-      .play()
-      .then(() => {
-        startAmplitude();
-        setIsPlaying(true);
+    const startPlayback = () => {
+      if (requestId !== playRequestIdRef.current) return;
 
-        const startTime = performance.now();
+      audio.currentTime = 0;
+      audio.volume = volumeRef.current;
+      initAmplitude();
 
-        const checkTime = () => {
-          const now = performance.now();
-          const elapsed = now - startTime;
+      audio
+        .play()
+        .then(() => {
+          startAmplitude();
+          setIsPlaying(true);
 
-          if (elapsed >= adjustedDuration) {
-            stopAudioInternal();
-          } else {
-            requestRef.current = requestAnimationFrame(checkTime);
-          }
-        };
+          const startTime = performance.now();
 
-        requestRef.current = requestAnimationFrame(checkTime);
-      })
-      .catch(console.error);
+          const checkTime = () => {
+            const now = performance.now();
+            const elapsed = now - startTime;
+
+            if (elapsed >= adjustedDuration) {
+              stopAudioInternal();
+            } else {
+              requestRef.current = requestAnimationFrame(checkTime);
+            }
+          };
+
+          requestRef.current = requestAnimationFrame(checkTime);
+        })
+        .catch(console.error);
+    };
+
+    if (!isWarmedUp.current && isMobile && !warmupPromiseRef.current) {
+      // Warmup never ran (autoplay blocked) — do inline warmup under this user gesture
+      audio.volume = 0;
+      audio.currentTime = 0;
+      audio
+        .play()
+        .then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+          isWarmedUp.current = true;
+          startPlayback();
+        })
+        .catch(() => {
+          // Fallback: just try to play directly
+          startPlayback();
+        });
+    } else {
+      // Either warmed up, or warmup is in progress (audio session already initializing).
+      // Call startPlayback immediately to preserve the iOS user-gesture context —
+      // deferring via .then() can lose it and cause playback to be blocked.
+      startPlayback();
+    }
   }, [
     currentRound,
     previewUrl,

@@ -19,7 +19,9 @@ export class PrismaService
     }
 
     const pool = new Pool({ connectionString });
-    const adapter = new PrismaPg(pool);
+    // Cast needed: @prisma/adapter-pg bundles its own @types/pg which can
+    // drift from the project-level @types/pg, causing a TS error on CI.
+    const adapter = new PrismaPg(pool as any);
 
     super({
       adapter,

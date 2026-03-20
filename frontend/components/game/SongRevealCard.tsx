@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -67,6 +67,7 @@ export function SongRevealCard({
   const albumColor = useImageColor(answer?.albumImageUrl ?? null);
   const albumGlowColor = albumColor.replace(/[\d.]+\)$/, '0.5)');
   const confettiFiredRef = useRef(false);
+  const [albumLoaded, setAlbumLoaded] = useState(false);
 
   useEffect(() => {
     if (isWon && !confettiFiredRef.current) {
@@ -136,13 +137,19 @@ export function SongRevealCard({
                 filter: `drop-shadow(0 0 28px 12px ${albumGlowColor})`,
               }}
             >
-              <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl ring-1 ring-fg/10">
+              <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl ring-1 ring-fg/10 bg-fg/10">
+                {!albumLoaded && (
+                  <div className="absolute inset-0 animate-pulse bg-fg/10" />
+                )}
                 <Image
                   src={answer.albumImageUrl}
                   alt={answer.name}
                   fill
-                  className="object-cover"
+                  className={`object-cover transition-opacity duration-300 ${albumLoaded ? 'opacity-100' : 'opacity-0'}`}
                   sizes="(max-width: 768px) 128px, 160px"
+                  priority
+                  onLoad={() => setAlbumLoaded(true)}
+                  onError={() => setAlbumLoaded(true)}
                 />
               </div>
             </motion.div>
