@@ -101,7 +101,7 @@ export class AuthService {
     return {
       spotifyUserId: session.spotifyUserId,
       displayName: session.displayName,
-      isTrusted: session.isTrusted,
+      isTrusted: user.isTrusted,
       isAdmin: user.isAdmin,
       avatarUrl: user.avatarUrl,
     };
