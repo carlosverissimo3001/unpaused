@@ -56,8 +56,8 @@ export function useGameSession(mode: GameMode, playlistId?: string) {
 
   const sessionId =
     startGameMutation.data?.sessionId ?? cachedSessionId ?? undefined;
-  const isLoading = shouldStart && !sessionId;
   const error = startGameMutation.error;
+  const isLoading = shouldStart && !sessionId && !error;
 
   return {
     sessionId,
