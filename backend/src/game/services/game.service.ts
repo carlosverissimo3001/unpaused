@@ -1,6 +1,7 @@
 import { AuthService } from '@auth/services/auth.service';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -75,7 +76,14 @@ export class GameService {
     params: StartGameDto,
   ): Promise<GameStateDto> {
     const { playlistId, mode } = params;
-    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const { id: userId, isTrusted } =
+      await this.authService.getUserBySessionId(sessionId);
+
+    if (mode === GameMode.DAILY && !isTrusted) {
+      throw new ForbiddenException(
+        'Daily challenge requires a trusted account',
+      );
+    }
 
     const existing =
       mode === GameMode.DAILY
