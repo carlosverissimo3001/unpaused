@@ -10,6 +10,7 @@ const DEFAULT_PREFERENCES: UserPreferenceDto = {
   showTextHints: true,
   reducedMotion: false,
   showGuessHistory: true,
+  timezone: 'UTC',
 };
 
 export function useUserPreferences() {

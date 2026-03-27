@@ -2849,13 +2849,19 @@
           "showGuessHistory": {
             "type": "boolean",
             "description": "Show guess history during gameplay"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone string (e.g. America/New_York)",
+            "default": "UTC"
           }
         },
         "required": [
           "showAlbumHint",
           "showTextHints",
           "reducedMotion",
-          "showGuessHistory"
+          "showGuessHistory",
+          "timezone"
         ]
       },
       "UpdateUserPreferenceDto": {
@@ -2876,6 +2882,10 @@
           "showGuessHistory": {
             "type": "boolean",
             "description": "Show guess history during gameplay"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone string (e.g. America/New_York)"
           }
         }
       },

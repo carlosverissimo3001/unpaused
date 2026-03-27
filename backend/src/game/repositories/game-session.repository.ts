@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { startOfDay } from 'date-fns';
+import { TZDate } from '@date-fns/tz';
 import { PrismaService } from '@prisma/prisma.service';
 import { Prisma, GameStatus, GameMode } from '@prisma/client';
 import { InputJsonValue } from '@prisma/client/runtime/client';
@@ -102,8 +103,9 @@ export class GameSessionRepository {
    */
   async findTodayDailySession(
     userId: string,
+    timezone: string,
   ): Promise<GameSessionEntity | null> {
-    const today = startOfDay(new Date());
+    const today = startOfDay(new TZDate(new Date(), timezone));
     const session = await this.prisma.gameSession.findFirst({
       where: {
         userId,

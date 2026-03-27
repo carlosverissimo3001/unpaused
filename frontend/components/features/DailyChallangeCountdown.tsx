@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { addDays, startOfDay, differenceInSeconds } from 'date-fns';
 
 export function DailyChallengeCountdown() {
   const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
@@ -13,19 +14,10 @@ export function DailyChallengeCountdown() {
   useEffect(() => {
     const calculateTime = () => {
       const now = new Date();
-      const targetUtc = Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate() + 1,
-        0,
-        0,
-        0,
-      );
-      const currentUtc = now.getTime();
-      const totalSeconds = Math.max(
-        0,
-        Math.floor((targetUtc - currentUtc) / 1000),
-      );
+
+      const tomorrow = startOfDay(addDays(now, 1));
+
+      const totalSeconds = Math.max(0, differenceInSeconds(tomorrow, now));
 
       if (totalSeconds <= 0) {
         void queryClient.invalidateQueries({ queryKey: ['playedToday'] });

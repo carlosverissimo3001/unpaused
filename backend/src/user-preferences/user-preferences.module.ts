@@ -8,5 +8,6 @@ import { UserPreferencesRepository } from './repositories/user-preferences.repos
   imports: [AuthModule],
   controllers: [UserPreferencesController],
   providers: [UserPreferencesService, UserPreferencesRepository],
+  exports: [UserPreferencesRepository],
 })
 export class UserPreferencesModule {}

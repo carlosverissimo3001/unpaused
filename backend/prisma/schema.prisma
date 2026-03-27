@@ -195,6 +195,7 @@ model UserPreference {
   showTextHints    Boolean @default(true) @map("show_text_hints")
   reducedMotion    Boolean @default(false) @map("reduced_motion")
   showGuessHistory Boolean @default(true) @map("show_guess_history")
+  timezone         String  @default("UTC") @map("timezone")
   user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_preferences")

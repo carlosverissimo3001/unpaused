@@ -15,4 +15,10 @@ export class UserPreferenceDto {
 
   @ApiProperty({ description: 'Show guess history during gameplay' })
   showGuessHistory: boolean;
+
+  @ApiProperty({
+    description: 'IANA timezone string (e.g. America/New_York)',
+    default: 'UTC',
+  })
+  timezone: string;
 }

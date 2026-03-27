@@ -20,6 +20,7 @@ import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
 import { AppFooter } from '@/components/features/AppFooter';
 import { MultiplayerBanner } from '@/components/multiplayer/MultiplayerBanner';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
 
 export default function Home() {
   const [tokenInput, setTokenInput] = useState('');
@@ -32,6 +33,8 @@ export default function Home() {
   const { error } = useAuthError();
 
   const { data: user, isLoading: isLoadingUser } = useMe();
+
+  useTimezoneSync({ enabled: !!user });
 
   // Handle post-OAuth redirect back to multiplayer join (or other) pages
   useEffect(() => {

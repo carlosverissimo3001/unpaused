@@ -43,6 +43,12 @@ export interface UserPreferenceDto {
      * @memberof UserPreferenceDto
      */
     showGuessHistory: boolean;
+    /**
+     * IANA timezone string (e.g. America/New_York)
+     * @type {string}
+     * @memberof UserPreferenceDto
+     */
+    timezone: string;
 }
 
 /**
@@ -53,6 +59,7 @@ export function instanceOfUserPreferenceDto(value: object): value is UserPrefere
     if (!('showTextHints' in value) || value['showTextHints'] === undefined) return false;
     if (!('reducedMotion' in value) || value['reducedMotion'] === undefined) return false;
     if (!('showGuessHistory' in value) || value['showGuessHistory'] === undefined) return false;
+    if (!('timezone' in value) || value['timezone'] === undefined) return false;
     return true;
 }
 
@@ -70,6 +77,7 @@ export function UserPreferenceDtoFromJSONTyped(json: any, ignoreDiscriminator: b
         'showTextHints': json['showTextHints'],
         'reducedMotion': json['reducedMotion'],
         'showGuessHistory': json['showGuessHistory'],
+        'timezone': json['timezone'],
     };
 }
 
@@ -88,6 +96,7 @@ export function UserPreferenceDtoToJSONTyped(value?: UserPreferenceDto | null, i
         'showTextHints': value['showTextHints'],
         'reducedMotion': value['reducedMotion'],
         'showGuessHistory': value['showGuessHistory'],
+        'timezone': value['timezone'],
     };
 }
 

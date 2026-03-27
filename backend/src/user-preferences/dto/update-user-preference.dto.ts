@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsOptional } from 'class-validator';
+import { IsIanaTimezone } from '@utils/decorators/isIanaTimezone.decorator';
 
 export class UpdateUserPreferenceDto {
   @ApiPropertyOptional({
@@ -25,4 +26,11 @@ export class UpdateUserPreferenceDto {
   @IsOptional()
   @IsBoolean()
   showGuessHistory?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'IANA timezone string (e.g. America/New_York)',
+  })
+  @IsOptional()
+  @IsIanaTimezone()
+  timezone?: string;
 }

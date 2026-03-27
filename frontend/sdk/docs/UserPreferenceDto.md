@@ -10,6 +10,7 @@ Name | Type
 `showTextHints` | boolean
 `reducedMotion` | boolean
 `showGuessHistory` | boolean
+`timezone` | string
 
 ## Example
 
@@ -22,6 +23,7 @@ const example = {
   "showTextHints": null,
   "reducedMotion": null,
   "showGuessHistory": null,
+  "timezone": null,
 } satisfies UserPreferenceDto
 
 console.log(example)

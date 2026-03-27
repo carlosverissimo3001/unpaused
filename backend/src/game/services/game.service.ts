@@ -51,6 +51,7 @@ import { buildShareText, guessToEmoji } from '../utils/share.utils';
 import { buildHintsForRound } from '../utils/hint-builder';
 import { GameStatsService } from './game-stats.service';
 import { TrackMetadataVo } from '../../track/vo/track-metadata.vo';
+import { UserPreferencesRepository } from '../../user-preferences/repositories/user-preferences.repository';
 
 @Injectable()
 export class GameService {
@@ -65,9 +66,29 @@ export class GameService {
     private readonly prisma: PrismaService,
     private readonly gameStatsService: GameStatsService,
     private readonly lastfmService: LastfmService,
+    private readonly userPreferencesRepository: UserPreferencesRepository,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
+  }
+
+  private async getUserTimezone(userId: string): Promise<string> {
+    const prefs = await this.userPreferencesRepository.findByUserId(userId);
+    const timezone = prefs?.timezone;
+
+    if (!timezone) {
+      return 'UTC';
+    }
+
+    try {
+      Intl.DateTimeFormat('en-US', { timeZone: timezone });
+      return timezone;
+    } catch {
+      this.logger.warn(
+        `Invalid timezone "${timezone}" for user ${userId}; falling back to UTC`,
+      );
+      return 'UTC';
+    }
   }
 
   @Transactional()
@@ -87,7 +108,10 @@ export class GameService {
 
     const existing =
       mode === GameMode.DAILY
-        ? await this.gameSessionRepository.findTodayDailySession(userId)
+        ? await this.gameSessionRepository.findTodayDailySession(
+            userId,
+            await this.getUserTimezone(userId),
+          )
         : await this.gameSessionRepository.findActiveSession(
             userId,
             mode,
@@ -330,6 +354,7 @@ export class GameService {
         lastGameRound:
           result === GuessResult.Correct ? game.currentRound : nextRound,
         mode: game.mode,
+        timezone: await this.getUserTimezone(game.userId),
       });
     }
 
@@ -467,8 +492,11 @@ export class GameService {
 
   async getPlayedToday(sessionId: string): Promise<PlayedTodayDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const todaySession =
-      await this.gameSessionRepository.findTodayDailySession(userId);
+    const timezone = await this.getUserTimezone(userId);
+    const todaySession = await this.gameSessionRepository.findTodayDailySession(
+      userId,
+      timezone,
+    );
     return { playedToday: !!todaySession?.completedAt };
   }
 

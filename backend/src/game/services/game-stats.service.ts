@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GameMode } from '@prisma/client';
 import { differenceInCalendarDays, startOfDay } from 'date-fns';
+import { TZDate } from '@date-fns/tz';
 import { GameStatsRepository } from '../repositories/game-stats.repository';
 import { UpdateDailyStatsParams, UpdateGameStatsParams } from '../types';
 import { GameStatsDto } from '../dto/stats/game-stats.dto';
@@ -29,12 +30,12 @@ export class GameStatsService {
    * Always updates ALL mode stats, and additionally updates DAILY mode stats if applicable.
    */
   async updateGameStats(params: UpdateGameStatsParams): Promise<void> {
-    const { userId, lastGameRound, mode } = params;
+    const { userId, lastGameRound, mode, timezone } = params;
 
     await this.updateAllModeStats(userId, lastGameRound);
 
     if (mode === GameMode.DAILY) {
-      await this.updateDailyModeStats(userId, lastGameRound);
+      await this.updateDailyModeStats(userId, lastGameRound, timezone);
     }
   }
 
@@ -73,6 +74,7 @@ export class GameStatsService {
   private async updateDailyModeStats(
     userId: string,
     lastGameRound: number,
+    timezone: string,
   ): Promise<void> {
     const dailyStats = await this.gameStatsRepository.upsert(
       userId,
@@ -86,8 +88,13 @@ export class GameStatsService {
     );
 
     return won
-      ? this.updateDailyStatsForWin({ userId, dailyStats, dailyDist })
-      : this.updateDailyStatsForLoss({ userId, dailyStats, dailyDist });
+      ? this.updateDailyStatsForWin({ userId, dailyStats, dailyDist, timezone })
+      : this.updateDailyStatsForLoss({
+          userId,
+          dailyStats,
+          dailyDist,
+          timezone,
+        });
   }
 
   /**
@@ -97,16 +104,17 @@ export class GameStatsService {
   private async updateDailyStatsForWin(
     params: UpdateDailyStatsParams,
   ): Promise<void> {
-    const { userId, dailyStats, dailyDist } = params;
+    const { userId, dailyStats, dailyDist, timezone } = params;
 
-    const today = startOfDay(new Date());
+    const today = startOfDay(new TZDate(new Date(), timezone));
     const lastWin = dailyStats.lastWinDate
-      ? startOfDay(dailyStats.lastWinDate)
+      ? startOfDay(new TZDate(dailyStats.lastWinDate, timezone))
       : undefined;
 
     const newDailyStreak = this.calculateDailyStreak(
       dailyStats.currentStreak,
       lastWin,
+      timezone,
     );
 
     await this.gameStatsRepository.update(
@@ -150,15 +158,22 @@ export class GameStatsService {
    * 2. Won yesterday → consecutive day, increment streak
    * 3. Gap exists → reset to 1 (unless freeze was applied by StreakService)
    */
-  private calculateDailyStreak(currentStreak: number, lastWin?: Date): number {
-    const today = startOfDay(new Date());
+  private calculateDailyStreak(
+    currentStreak: number,
+    lastWin: Date | undefined,
+    timezone: string,
+  ): number {
+    const today = startOfDay(new TZDate(new Date(), timezone));
 
     if (!lastWin) {
       // First win ever
       return 1;
     }
 
-    const daysDiff = differenceInCalendarDays(today, lastWin);
+    const daysDiff = differenceInCalendarDays(
+      today,
+      startOfDay(new TZDate(lastWin, timezone)),
+    );
 
     if (daysDiff === 0) {
       // Already won today — don't double-count, maintain current streak

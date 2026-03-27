@@ -54,6 +54,7 @@ export function PreferencesPage() {
     showTextHints: true,
     reducedMotion: false,
     showGuessHistory: true,
+    timezone: 'UTC',
   };
 
   function handleToggle(key: keyof UserPreferenceDto, value: boolean) {

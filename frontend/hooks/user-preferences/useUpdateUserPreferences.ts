@@ -20,6 +20,7 @@ export function useUpdateUserPreferences() {
         showTextHints: old?.showTextHints ?? true,
         reducedMotion: old?.reducedMotion ?? false,
         showGuessHistory: old?.showGuessHistory ?? true,
+        timezone: old?.timezone ?? 'UTC',
         ...variables,
       }));
       return { previous };

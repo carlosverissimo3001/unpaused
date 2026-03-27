@@ -8,12 +8,14 @@ export type UpdateGameStatsParams = {
   userId: string;
   lastGameRound: number;
   mode: GameMode;
+  timezone: string;
 };
 
 export type UpdateDailyStatsParams = {
   userId: string;
   dailyStats: GameStatsEntity;
   dailyDist: number[];
+  timezone: string;
 };
 
 export type AddGuessToHistoryParams = {

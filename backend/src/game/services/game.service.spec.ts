@@ -11,6 +11,7 @@ import { PlaylistService } from '@/playlist/services/playlist.service';
 import { PrismaService } from '@prisma/prisma.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { GameSessionEntity } from '../entities/game-session.entity';
+import { UserPreferencesRepository } from '../../user-preferences/repositories/user-preferences.repository';
 
 jest.mock('@/playlist/services/playlist.service');
 jest.mock('@/track/services/track.service');
@@ -79,6 +80,9 @@ describe('GameService', () => {
   const mockPlaylistService = {};
   const mockTrackService = {};
   const mockPrismaService = {};
+  const mockUserPreferencesRepository = {
+    findByUserId: jest.fn().mockResolvedValue({ timezone: 'UTC' }),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -94,6 +98,10 @@ describe('GameService', () => {
         { provide: PlaylistService, useValue: mockPlaylistService },
         { provide: TrackService, useValue: mockTrackService },
         { provide: PrismaService, useValue: mockPrismaService },
+        {
+          provide: UserPreferencesRepository,
+          useValue: mockUserPreferencesRepository,
+        },
         { provide: AppLoggerService, useValue: new AppLoggerService() },
       ],
     }).compile();

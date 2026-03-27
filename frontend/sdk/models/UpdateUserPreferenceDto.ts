@@ -43,6 +43,12 @@ export interface UpdateUserPreferenceDto {
      * @memberof UpdateUserPreferenceDto
      */
     showGuessHistory?: boolean;
+    /**
+     * IANA timezone string (e.g. America/New_York)
+     * @type {string}
+     * @memberof UpdateUserPreferenceDto
+     */
+    timezone?: string;
 }
 
 /**
@@ -66,6 +72,7 @@ export function UpdateUserPreferenceDtoFromJSONTyped(json: any, ignoreDiscrimina
         'showTextHints': json['showTextHints'] == null ? undefined : json['showTextHints'],
         'reducedMotion': json['reducedMotion'] == null ? undefined : json['reducedMotion'],
         'showGuessHistory': json['showGuessHistory'] == null ? undefined : json['showGuessHistory'],
+        'timezone': json['timezone'] == null ? undefined : json['timezone'],
     };
 }
 
@@ -84,6 +91,7 @@ export function UpdateUserPreferenceDtoToJSONTyped(value?: UpdateUserPreferenceD
         'showTextHints': value['showTextHints'],
         'reducedMotion': value['reducedMotion'],
         'showGuessHistory': value['showGuessHistory'],
+        'timezone': value['timezone'],
     };
 }
 

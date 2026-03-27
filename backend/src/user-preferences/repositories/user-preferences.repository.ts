@@ -19,7 +19,11 @@ export class UserPreferencesRepository {
     data: Partial<
       Pick<
         UserPreference,
-        'showAlbumHint' | 'showTextHints' | 'reducedMotion' | 'showGuessHistory'
+        | 'showAlbumHint'
+        | 'showTextHints'
+        | 'reducedMotion'
+        | 'showGuessHistory'
+        | 'timezone'
       >
     >,
   ): Promise<UserPreferenceDto> {
