@@ -20,58 +20,6 @@ import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
 import { AppFooter } from '@/components/features/AppFooter';
 import { MultiplayerBanner } from '@/components/multiplayer/MultiplayerBanner';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { X, ImagePlus } from 'lucide-react';
-import Link from 'next/link';
-
-// Shown until 2026-03-30, then automatically stops rendering.
-const AVATAR_BANNER_EXPIRY = new Date('2026-03-30T23:59:59Z').getTime();
-const AVATAR_BANNER_KEY = 'avatar_banner_dismissed';
-
-function AvatarFeatureBanner() {
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return (
-      Date.now() <= AVATAR_BANNER_EXPIRY &&
-      !localStorage.getItem(AVATAR_BANNER_KEY)
-    );
-  });
-
-  if (!visible) return null;
-
-  function dismiss() {
-    localStorage.setItem(AVATAR_BANNER_KEY, '1');
-    setVisible(false);
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.3 }}
-      className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#1DB954]/10 border border-[#1DB954]/25 text-sm"
-    >
-      <ImagePlus className="w-4 h-4 text-[#1DB954] shrink-0" />
-      <p className="flex-1 text-fg/80">
-        You can now{' '}
-        <Link
-          href="/preferences"
-          className="text-[#1DB954] font-semibold hover:underline"
-        >
-          upload your own profile photo
-        </Link>{' '}
-        :)
-      </p>
-      <button
-        onClick={dismiss}
-        className="shrink-0 text-fg/30 hover:text-fg/60 transition-colors"
-        aria-label="Dismiss"
-      >
-        <X className="w-4 h-4" />
-      </button>
-    </motion.div>
-  );
-}
 
 export default function Home() {
   const [tokenInput, setTokenInput] = useState('');
@@ -160,8 +108,7 @@ export default function Home() {
               transition={{ duration: 0.4 }}
               className="space-y-4 sm:space-y-6"
             >
-              <AvatarFeatureBanner />
-              <DailyChallengeBanner isTrusted={user.isTrusted} />
+              {user.isTrusted && <DailyChallengeBanner />}
               <MultiplayerBanner />
 
               {/* Main Content Header */}

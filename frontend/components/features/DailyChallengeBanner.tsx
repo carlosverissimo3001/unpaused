@@ -8,22 +8,12 @@ import { Button } from '@/components/ui/button';
 import { usePlayedToday } from '@/hooks/game/usePlayedToday';
 import { DailyChallengeCountdown } from './DailyChallangeCountdown';
 
-interface DailyChallengeBannerProps {
-  isTrusted: boolean;
-}
-
-function DailyChallengeBannerComponent({
-  isTrusted,
-}: DailyChallengeBannerProps) {
+function DailyChallengeBannerComponent() {
   const { data: playedTodayData, isLoading: playedTodayLoading } =
-    usePlayedToday({
-      enabled: isTrusted,
-    });
+    usePlayedToday();
 
   const playedToday = playedTodayData?.playedToday ?? false;
   const showAsPlayed = playedTodayLoading ? true : playedToday;
-
-  if (!isTrusted) return null;
 
   return (
     <motion.div
