@@ -32,11 +32,29 @@ export interface AuthMeResponseDto {
      */
     displayName: string;
     /**
-     * Avatar URL, if available
+     * Effective avatar URL for display (resolves to custom or Spotify)
      * @type {string}
      * @memberof AuthMeResponseDto
      */
     avatarUrl?: string;
+    /**
+     * Cloudinary URL of the custom avatar, if uploaded
+     * @type {string}
+     * @memberof AuthMeResponseDto
+     */
+    customAvatarUrl?: string;
+    /**
+     * Spotify avatar URL from the user profile
+     * @type {string}
+     * @memberof AuthMeResponseDto
+     */
+    spotifyAvatarUrl?: string;
+    /**
+     * Which avatar source is currently active
+     * @type {string}
+     * @memberof AuthMeResponseDto
+     */
+    avatarSource: AuthMeResponseDtoAvatarSourceEnum;
     /**
      * 
      * @type {boolean}
@@ -51,12 +69,24 @@ export interface AuthMeResponseDto {
     isAdmin: boolean;
 }
 
+
+/**
+ * @export
+ */
+export const AuthMeResponseDtoAvatarSourceEnum = {
+    Spotify: 'SPOTIFY',
+    Custom: 'CUSTOM'
+} as const;
+export type AuthMeResponseDtoAvatarSourceEnum = typeof AuthMeResponseDtoAvatarSourceEnum[keyof typeof AuthMeResponseDtoAvatarSourceEnum];
+
+
 /**
  * Check if a given object implements the AuthMeResponseDto interface.
  */
 export function instanceOfAuthMeResponseDto(value: object): value is AuthMeResponseDto {
     if (!('spotifyUserId' in value) || value['spotifyUserId'] === undefined) return false;
     if (!('displayName' in value) || value['displayName'] === undefined) return false;
+    if (!('avatarSource' in value) || value['avatarSource'] === undefined) return false;
     if (!('isTrusted' in value) || value['isTrusted'] === undefined) return false;
     if (!('isAdmin' in value) || value['isAdmin'] === undefined) return false;
     return true;
@@ -75,6 +105,9 @@ export function AuthMeResponseDtoFromJSONTyped(json: any, ignoreDiscriminator: b
         'spotifyUserId': json['spotifyUserId'],
         'displayName': json['displayName'],
         'avatarUrl': json['avatarUrl'] == null ? undefined : json['avatarUrl'],
+        'customAvatarUrl': json['customAvatarUrl'] == null ? undefined : json['customAvatarUrl'],
+        'spotifyAvatarUrl': json['spotifyAvatarUrl'] == null ? undefined : json['spotifyAvatarUrl'],
+        'avatarSource': json['avatarSource'],
         'isTrusted': json['isTrusted'],
         'isAdmin': json['isAdmin'],
     };
@@ -94,6 +127,9 @@ export function AuthMeResponseDtoToJSONTyped(value?: AuthMeResponseDto | null, i
         'spotifyUserId': value['spotifyUserId'],
         'displayName': value['displayName'],
         'avatarUrl': value['avatarUrl'],
+        'customAvatarUrl': value['customAvatarUrl'],
+        'spotifyAvatarUrl': value['spotifyAvatarUrl'],
+        'avatarSource': value['avatarSource'],
         'isTrusted': value['isTrusted'],
         'isAdmin': value['isAdmin'],
     };

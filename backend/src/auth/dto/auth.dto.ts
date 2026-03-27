@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { AvatarSource } from '@prisma/client';
 
 export class AuthMeResponseDto {
   @ApiProperty({ description: 'Unique identifier for the user' })
@@ -7,8 +8,27 @@ export class AuthMeResponseDto {
   @ApiProperty({ description: 'John Doe' })
   displayName: string;
 
-  @ApiPropertyOptional({ description: 'Avatar URL, if available' })
+  @ApiPropertyOptional({
+    description:
+      'Effective avatar URL for display (resolves to custom or Spotify)',
+  })
   avatarUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Cloudinary URL of the custom avatar, if uploaded',
+  })
+  customAvatarUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Spotify avatar URL from the user profile',
+  })
+  spotifyAvatarUrl?: string;
+
+  @ApiProperty({
+    enum: AvatarSource,
+    description: 'Which avatar source is currently active',
+  })
+  avatarSource: AvatarSource;
 
   @ApiProperty({ example: false })
   isTrusted: boolean;

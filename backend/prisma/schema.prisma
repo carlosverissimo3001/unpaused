@@ -6,11 +6,18 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AvatarSource {
+  SPOTIFY
+  CUSTOM
+}
+
 model User {
   id                    String  @id @default(uuid())
   spotifyUserId         String  @unique @map("spotify_user_id")
   displayName           String  @map("display_name")
   avatarUrl             String? @map("avatar_url")
+  customAvatarUrl       String? @map("custom_avatar_url")
+  avatarSource          AvatarSource @default(SPOTIFY) @map("avatar_source")
   encryptedRefreshToken String? @map("encrypted_refresh_token")
 
   isTrusted Boolean @default(false) @map("is_trusted")

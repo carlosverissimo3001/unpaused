@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { AvatarSource } from '@prisma/client';
 
 export class UserEntity {
   @ApiProperty({ description: 'Unique identifier for the user' })
@@ -12,6 +13,14 @@ export class UserEntity {
 
   @ApiPropertyOptional({ description: 'https://example.com/avatar.jpg' })
   avatarUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Cloudinary URL of uploaded custom avatar',
+  })
+  customAvatarUrl?: string;
+
+  @ApiProperty({ enum: AvatarSource })
+  avatarSource: AvatarSource;
 
   @ApiProperty({ description: 'Indicates if the user is trusted' })
   isTrusted: boolean;

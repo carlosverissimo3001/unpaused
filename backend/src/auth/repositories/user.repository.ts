@@ -55,6 +55,7 @@ export class UserRepository {
     return {
       ...user,
       avatarUrl: user.avatarUrl ?? undefined,
+      customAvatarUrl: user.customAvatarUrl ?? undefined,
     };
   }
 

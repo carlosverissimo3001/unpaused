@@ -1366,6 +1366,89 @@
           "Api"
         ]
       }
+    },
+    "/user-avatar/upload": {
+      "post": {
+        "operationId": "UserAvatarController_upload",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadAvatarResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Upload a custom avatar image",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/user-avatar/source": {
+      "patch": {
+        "operationId": "UserAvatarController_updateSource",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAvatarSourceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadAvatarResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Switch between Spotify and custom avatar",
+        "tags": [
+          "Api"
+        ]
+      }
     }
   },
   "info": {
@@ -1402,7 +1485,23 @@
           },
           "avatarUrl": {
             "type": "string",
-            "description": "Avatar URL, if available"
+            "description": "Effective avatar URL for display (resolves to custom or Spotify)"
+          },
+          "customAvatarUrl": {
+            "type": "string",
+            "description": "Cloudinary URL of the custom avatar, if uploaded"
+          },
+          "spotifyAvatarUrl": {
+            "type": "string",
+            "description": "Spotify avatar URL from the user profile"
+          },
+          "avatarSource": {
+            "type": "string",
+            "enum": [
+              "SPOTIFY",
+              "CUSTOM"
+            ],
+            "description": "Which avatar source is currently active"
           },
           "isTrusted": {
             "type": "boolean",
@@ -1416,6 +1515,7 @@
         "required": [
           "spotifyUserId",
           "displayName",
+          "avatarSource",
           "isTrusted",
           "isAdmin"
         ]
@@ -2778,6 +2878,45 @@
             "description": "Show guess history during gameplay"
           }
         }
+      },
+      "UploadAvatarResponseDto": {
+        "type": "object",
+        "properties": {
+          "customAvatarUrl": {
+            "type": "string",
+            "description": "The Cloudinary URL of the uploaded avatar"
+          },
+          "avatarSource": {
+            "type": "string",
+            "enum": [
+              "SPOTIFY",
+              "CUSTOM"
+            ]
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Effective avatar URL for display"
+          }
+        },
+        "required": [
+          "avatarSource"
+        ]
+      },
+      "UpdateAvatarSourceDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "SPOTIFY",
+              "CUSTOM"
+            ],
+            "description": "Which avatar to use"
+          }
+        },
+        "required": [
+          "source"
+        ]
       }
     }
   }

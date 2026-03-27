@@ -39,9 +39,11 @@ import type {
   SubmitQuizAnswerDto,
   TokenLoginDto,
   TrackOptionDto,
+  UpdateAvatarSourceDto,
   UpdateStreakQuestionDto,
   UpdateUserPreferenceDto,
   UpdateUserRoleDto,
+  UploadAvatarResponseDto,
   UserPreferenceDto,
 } from '../models/index';
 import {
@@ -93,12 +95,16 @@ import {
     TokenLoginDtoToJSON,
     TrackOptionDtoFromJSON,
     TrackOptionDtoToJSON,
+    UpdateAvatarSourceDtoFromJSON,
+    UpdateAvatarSourceDtoToJSON,
     UpdateStreakQuestionDtoFromJSON,
     UpdateStreakQuestionDtoToJSON,
     UpdateUserPreferenceDtoFromJSON,
     UpdateUserPreferenceDtoToJSON,
     UpdateUserRoleDtoFromJSON,
     UpdateUserRoleDtoToJSON,
+    UploadAvatarResponseDtoFromJSON,
+    UploadAvatarResponseDtoToJSON,
     UserPreferenceDtoFromJSON,
     UserPreferenceDtoToJSON,
 } from '../models/index';
@@ -217,6 +223,14 @@ export interface SearchControllerSearchTracksRequest {
 
 export interface StreakControllerSubmitAnswerRequest {
     submitQuizAnswerDto: SubmitQuizAnswerDto;
+}
+
+export interface UserAvatarControllerUpdateSourceRequest {
+    updateAvatarSourceDto: UpdateAvatarSourceDto;
+}
+
+export interface UserAvatarControllerUploadRequest {
+    file: Blob;
 }
 
 export interface UserPreferencesControllerUpdateRequest {
@@ -1513,6 +1527,102 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async streakControllerUseFreeze(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakStatusDto> {
         const response = await this.streakControllerUseFreezeRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Switch between Spotify and custom avatar
+     */
+    async userAvatarControllerUpdateSourceRaw(requestParameters: UserAvatarControllerUpdateSourceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UploadAvatarResponseDto>> {
+        if (requestParameters['updateAvatarSourceDto'] == null) {
+            throw new runtime.RequiredError(
+                'updateAvatarSourceDto',
+                'Required parameter "updateAvatarSourceDto" was null or undefined when calling userAvatarControllerUpdateSource().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/user-avatar/source`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateAvatarSourceDtoToJSON(requestParameters['updateAvatarSourceDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UploadAvatarResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Switch between Spotify and custom avatar
+     */
+    async userAvatarControllerUpdateSource(requestParameters: UserAvatarControllerUpdateSourceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UploadAvatarResponseDto> {
+        const response = await this.userAvatarControllerUpdateSourceRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Upload a custom avatar image
+     */
+    async userAvatarControllerUploadRaw(requestParameters: UserAvatarControllerUploadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UploadAvatarResponseDto>> {
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling userAvatarControllerUpload().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+
+        let urlPath = `/user-avatar/upload`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UploadAvatarResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Upload a custom avatar image
+     */
+    async userAvatarControllerUpload(requestParameters: UserAvatarControllerUploadRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UploadAvatarResponseDto> {
+        const response = await this.userAvatarControllerUploadRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -13,6 +13,7 @@ import { StreakModule } from './streak/streak.module';
 import { ThrottleModule } from './throttle/throttle.module';
 import { MultiplayerModule } from './multiplayer/multiplayer.module';
 import { UserPreferencesModule } from './user-preferences/user-preferences.module';
+import { UserAvatarModule } from './user-avatar/user-avatar.module';
 import { BullModule } from '@nestjs/bullmq';
 import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
 
@@ -34,6 +35,7 @@ import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
     StreakModule,
     MultiplayerModule,
     UserPreferencesModule,
+    UserAvatarModule,
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

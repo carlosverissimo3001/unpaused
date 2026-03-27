@@ -9,7 +9,7 @@ import { UserRepository } from '../repositories/user.repository';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { MS_IN_HOUR } from '../consts';
 import { UserSessionDto } from '../dto/user-session.dto';
-import { User } from '@prisma/client';
+import { AvatarSource, User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -98,12 +98,20 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
+    const effectiveAvatarUrl =
+      user.avatarSource === AvatarSource.CUSTOM
+        ? user.customAvatarUrl
+        : user.avatarUrl;
+
     return {
       spotifyUserId: session.spotifyUserId,
       displayName: session.displayName,
       isTrusted: user.isTrusted,
       isAdmin: user.isAdmin,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: effectiveAvatarUrl ?? undefined,
+      customAvatarUrl: user.customAvatarUrl ?? undefined,
+      spotifyAvatarUrl: user.avatarUrl ?? undefined,
+      avatarSource: user.avatarSource,
     };
   }
 

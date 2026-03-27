@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'i.scdn.co' },
       { protocol: 'https', hostname: '*.scdn.co' },
       { protocol: 'https', hostname: '*.spotifycdn.com' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
     ],
   },
 };

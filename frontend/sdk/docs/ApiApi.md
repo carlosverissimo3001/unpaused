@@ -38,6 +38,8 @@ All URIs are relative to *http://localhost*
 | [**streakControllerGetStatus**](ApiApi.md#streakcontrollergetstatus) | **GET** /streak/status | Get streak status including freeze info |
 | [**streakControllerSubmitAnswer**](ApiApi.md#streakcontrollersubmitanswer) | **POST** /streak/quiz/answer | Submit a quiz answer to earn a streak freeze |
 | [**streakControllerUseFreeze**](ApiApi.md#streakcontrollerusefreeze) | **POST** /streak/use-freeze | Apply streak freezes to bridge a gap |
+| [**userAvatarControllerUpdateSource**](ApiApi.md#useravatarcontrollerupdatesource) | **PATCH** /user-avatar/source | Switch between Spotify and custom avatar |
+| [**userAvatarControllerUpload**](ApiApi.md#useravatarcontrollerupload) | **POST** /user-avatar/upload | Upload a custom avatar image |
 | [**userPreferencesControllerGet**](ApiApi.md#userpreferencescontrollerget) | **GET** /user-preferences | Get user preferences |
 | [**userPreferencesControllerUpdate**](ApiApi.md#userpreferencescontrollerupdate) | **PATCH** /user-preferences | Update user preferences |
 
@@ -2354,6 +2356,144 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## userAvatarControllerUpdateSource
+
+> UploadAvatarResponseDto userAvatarControllerUpdateSource(updateAvatarSourceDto)
+
+Switch between Spotify and custom avatar
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { UserAvatarControllerUpdateSourceRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // UpdateAvatarSourceDto
+    updateAvatarSourceDto: ...,
+  } satisfies UserAvatarControllerUpdateSourceRequest;
+
+  try {
+    const data = await api.userAvatarControllerUpdateSource(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **updateAvatarSourceDto** | [UpdateAvatarSourceDto](UpdateAvatarSourceDto.md) |  | |
+
+### Return type
+
+[**UploadAvatarResponseDto**](UploadAvatarResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## userAvatarControllerUpload
+
+> UploadAvatarResponseDto userAvatarControllerUpload(file)
+
+Upload a custom avatar image
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { UserAvatarControllerUploadRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // Blob
+    file: BINARY_DATA_HERE,
+  } satisfies UserAvatarControllerUploadRequest;
+
+  try {
+    const data = await api.userAvatarControllerUpload(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **file** | `Blob` |  | [Defaults to `undefined`] |
+
+### Return type
+
+[**UploadAvatarResponseDto**](UploadAvatarResponseDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `multipart/form-data`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

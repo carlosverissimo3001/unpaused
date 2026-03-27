@@ -1,36 +1,26 @@
 
-# AuthMeResponseDto
+# UploadAvatarResponseDto
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`spotifyUserId` | string
-`displayName` | string
-`avatarUrl` | string
 `customAvatarUrl` | string
-`spotifyAvatarUrl` | string
 `avatarSource` | string
-`isTrusted` | boolean
-`isAdmin` | boolean
+`avatarUrl` | string
 
 ## Example
 
 ```typescript
-import type { AuthMeResponseDto } from ''
+import type { UploadAvatarResponseDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "spotifyUserId": null,
-  "displayName": null,
-  "avatarUrl": null,
   "customAvatarUrl": null,
-  "spotifyAvatarUrl": null,
   "avatarSource": null,
-  "isTrusted": false,
-  "isAdmin": false,
-} satisfies AuthMeResponseDto
+  "avatarUrl": null,
+} satisfies UploadAvatarResponseDto
 
 console.log(example)
 
@@ -39,7 +29,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as AuthMeResponseDto
+const exampleParsed = JSON.parse(exampleJSON) as UploadAvatarResponseDto
 console.log(exampleParsed)
 ```
 

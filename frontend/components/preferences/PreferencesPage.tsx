@@ -9,6 +9,7 @@ import { useUserPreferences } from '@/hooks/user-preferences/useUserPreferences'
 import { useUpdateUserPreferences } from '@/hooks/user-preferences/useUpdateUserPreferences';
 import { GLASS_STYLE } from '@/lib/styles';
 import type { UserPreferenceDto } from '@/sdk';
+import { AvatarSection } from './AvatarSection';
 
 interface ToggleRowProps {
   label: string;
@@ -109,6 +110,11 @@ export function PreferencesPage() {
               {user?.isTrusted ? 'Pro Member' : 'Player'}
             </p>
           </div>
+        </div>
+
+        {/* Avatar */}
+        <div className="px-6 border-b border-fg/10">
+          <AvatarSection />
         </div>
 
         {/* Preferences */}
