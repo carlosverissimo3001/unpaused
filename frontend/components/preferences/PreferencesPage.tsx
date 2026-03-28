@@ -136,16 +136,9 @@ export function PreferencesPage() {
 
         {/* Preferences */}
         <div className="px-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-5 pb-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-4 pb-1">
             Gameplay
           </p>
-
-          <ToggleRow
-            label="Show guess history"
-            description="Display your previous guesses during a game"
-            checked={prefs.showGuessHistory}
-            onChange={(value) => handleToggle('showGuessHistory', value)}
-          />
 
           <DailyPlaylistSection
             selected={prefs.dailyChallengePlaylists}
@@ -154,8 +147,16 @@ export function PreferencesPage() {
               updatePreferences({ dailyChallengePlaylists: validIds })
             }
           />
+          <ToggleRow
+            label="Show guess history"
+            description="Display your previous guesses during a game"
+            checked={prefs.showGuessHistory}
+            onChange={(value) => handleToggle('showGuessHistory', value)}
+          />
 
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-5 pb-1">
+          <div className="-mx-6 border-t border-fg/10" />
+
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-4 pb-1">
             Hints
           </p>
 
@@ -166,8 +167,6 @@ export function PreferencesPage() {
             onChange={(value) => handleToggle('showAlbumHint', value)}
           />
 
-          <div className="border-t border-fg/5" />
-
           <ToggleRow
             label="Text hints"
             description="Show genre, decade, and other clues as rounds progress"
@@ -175,7 +174,9 @@ export function PreferencesPage() {
             onChange={(value) => handleToggle('showTextHints', value)}
           />
 
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-5 pb-1">
+          <div className="-mx-6 border-t border-fg/10" />
+
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-4 pb-1">
             Accessibility
           </p>
 
@@ -186,7 +187,9 @@ export function PreferencesPage() {
             onChange={(value) => handleToggle('reducedMotion', value)}
           />
 
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-5 pb-1">
+          <div className="-mx-6 border-t border-fg/10" />
+
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-4 pb-1">
             Appearance
           </p>
 
