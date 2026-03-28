@@ -150,6 +150,25 @@ export class SessionService {
   }
 
   /**
+   * Update the display name stored in an active session.
+   * Preserves the remaining TTL so the session expiry is unchanged.
+   */
+  async updateSessionDisplayName(
+    sessionId: string,
+    displayName: string,
+  ): Promise<void> {
+    const key = `session:${sessionId}`;
+    const remaining = await this.redisService.ttl(key);
+    const session = await this.getSession(sessionId);
+    const updated: UserSessionDto = { ...session, displayName };
+    await this.redisService.set(
+      key,
+      JSON.stringify(updated),
+      remaining > 0 ? remaining : this.sessionMaxAge,
+    );
+  }
+
+  /**
    * Delete session (logout)
    */
   async deleteSession(sessionId: string): Promise<void> {

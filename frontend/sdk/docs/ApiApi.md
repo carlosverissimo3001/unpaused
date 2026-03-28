@@ -14,7 +14,7 @@ All URIs are relative to *http://localhost*
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
 | [**authControllerLogout**](ApiApi.md#authcontrollerlogout) | **POST** /auth/logout | Logout and clear session |
 | [**authControllerMe**](ApiApi.md#authcontrollerme) | **GET** /auth/me | Get current authenticated user |
-| [**authControllerTokenLogin**](ApiApi.md#authcontrollertokenlogin) | **POST** /auth/token-login | Dev-only: Login with a manually obtained Spotify token |
+| [**authControllerUpdateMe**](ApiApi.md#authcontrollerupdateme) | **PATCH** /auth/me | Update current user profile |
 | [**gameControllerGetGameState**](ApiApi.md#gamecontrollergetgamestate) | **GET** /game/{id} | Get current game state |
 | [**gameControllerGetHistory**](ApiApi.md#gamecontrollergethistory) | **GET** /game/history | Get user\&#39;s game session history (paginated) |
 | [**gameControllerGetPlayedToday**](ApiApi.md#gamecontrollergetplayedtoday) | **GET** /game/daily/played-today | Whether the user has played today\&#39;s daily |
@@ -699,13 +699,11 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## authControllerTokenLogin
+## authControllerUpdateMe
 
-> authControllerTokenLogin(tokenLoginDto)
+> AuthMeResponseDto authControllerUpdateMe(patchUserDto)
 
-Dev-only: Login with a manually obtained Spotify token
-
-Use this when you have a Spotify access token but can\&#39;t use OAuth flow. The token is validated by fetching your Spotify profile.
+Update current user profile
 
 ### Example
 
@@ -714,19 +712,23 @@ import {
   Configuration,
   ApiApi,
 } from '';
-import type { AuthControllerTokenLoginRequest } from '';
+import type { AuthControllerUpdateMeRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const api = new ApiApi();
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
 
   const body = {
-    // TokenLoginDto
-    tokenLoginDto: ...,
-  } satisfies AuthControllerTokenLoginRequest;
+    // PatchUserDto
+    patchUserDto: ...,
+  } satisfies AuthControllerUpdateMeRequest;
 
   try {
-    const data = await api.authControllerTokenLogin(body);
+    const data = await api.authControllerUpdateMe(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -742,26 +744,26 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **tokenLoginDto** | [TokenLoginDto](TokenLoginDto.md) |  | |
+| **patchUserDto** | [PatchUserDto](PatchUserDto.md) |  | |
 
 ### Return type
 
-`void` (Empty response body)
+[**AuthMeResponseDto**](AuthMeResponseDto.md)
 
 ### Authorization
 
-No authorization required
+[cookie](../README.md#cookie)
 
 ### HTTP request headers
 
 - **Content-Type**: `application/json`
-- **Accept**: Not defined
+- **Accept**: `application/json`
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | Successfully logged in |  -  |
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

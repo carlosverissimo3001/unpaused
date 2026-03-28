@@ -21,6 +21,16 @@ export function getCookieOptions(config: SessionCookieConfig): CookieOptions {
   };
 }
 
+export function getClearCookieOptions(): CookieOptions {
+  const isProd = process.env.NODE_ENV === 'production';
+  return {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'lax',
+    path: '/',
+  };
+}
+
 /**
  * Build error redirect URL for OAuth failures
  * @param frontendUrl - Base frontend URL

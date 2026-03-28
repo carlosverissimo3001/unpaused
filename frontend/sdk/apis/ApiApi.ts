@@ -25,6 +25,7 @@ import type {
   GuessDto,
   GuessResultDto,
   MultiplayerRoundStateDto,
+  PatchUserDto,
   PlayedTodayDto,
   PlaylistDto,
   PlaylistsResponseDto,
@@ -37,7 +38,6 @@ import type {
   StreakQuestionDto,
   StreakStatusDto,
   SubmitQuizAnswerDto,
-  TokenLoginDto,
   TrackOptionDto,
   UpdateAvatarSourceDto,
   UpdateStreakQuestionDto,
@@ -67,6 +67,8 @@ import {
     GuessResultDtoToJSON,
     MultiplayerRoundStateDtoFromJSON,
     MultiplayerRoundStateDtoToJSON,
+    PatchUserDtoFromJSON,
+    PatchUserDtoToJSON,
     PlayedTodayDtoFromJSON,
     PlayedTodayDtoToJSON,
     PlaylistDtoFromJSON,
@@ -91,8 +93,6 @@ import {
     StreakStatusDtoToJSON,
     SubmitQuizAnswerDtoFromJSON,
     SubmitQuizAnswerDtoToJSON,
-    TokenLoginDtoFromJSON,
-    TokenLoginDtoToJSON,
     TrackOptionDtoFromJSON,
     TrackOptionDtoToJSON,
     UpdateAvatarSourceDtoFromJSON,
@@ -133,8 +133,8 @@ export interface AuthControllerCallbackRequest {
     error?: object;
 }
 
-export interface AuthControllerTokenLoginRequest {
-    tokenLoginDto: TokenLoginDto;
+export interface AuthControllerUpdateMeRequest {
+    patchUserDto: PatchUserDto;
 }
 
 export interface GameControllerGetGameStateRequest {
@@ -609,14 +609,13 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Use this when you have a Spotify access token but can\'t use OAuth flow. The token is validated by fetching your Spotify profile.
-     * Dev-only: Login with a manually obtained Spotify token
+     * Update current user profile
      */
-    async authControllerTokenLoginRaw(requestParameters: AuthControllerTokenLoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['tokenLoginDto'] == null) {
+    async authControllerUpdateMeRaw(requestParameters: AuthControllerUpdateMeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthMeResponseDto>> {
+        if (requestParameters['patchUserDto'] == null) {
             throw new runtime.RequiredError(
-                'tokenLoginDto',
-                'Required parameter "tokenLoginDto" was null or undefined when calling authControllerTokenLogin().'
+                'patchUserDto',
+                'Required parameter "patchUserDto" was null or undefined when calling authControllerUpdateMe().'
             );
         }
 
@@ -627,25 +626,25 @@ export class ApiApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
 
-        let urlPath = `/auth/token-login`;
+        let urlPath = `/auth/me`;
 
         const response = await this.request({
             path: urlPath,
-            method: 'POST',
+            method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: TokenLoginDtoToJSON(requestParameters['tokenLoginDto']),
+            body: PatchUserDtoToJSON(requestParameters['patchUserDto']),
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthMeResponseDtoFromJSON(jsonValue));
     }
 
     /**
-     * Use this when you have a Spotify access token but can\'t use OAuth flow. The token is validated by fetching your Spotify profile.
-     * Dev-only: Login with a manually obtained Spotify token
+     * Update current user profile
      */
-    async authControllerTokenLogin(requestParameters: AuthControllerTokenLoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.authControllerTokenLoginRaw(requestParameters, initOverrides);
+    async authControllerUpdateMe(requestParameters: AuthControllerUpdateMeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthMeResponseDto> {
+        const response = await this.authControllerUpdateMeRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

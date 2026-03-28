@@ -33,17 +33,42 @@ export class UserRepository {
   }
 
   /**
-   * Upserts a user
-   * @param data - The data to upsert the user with
-   * @returns The UserEntity
+   * Upserts a user. On create: sets all fields including displayName.
+   * On update: only syncs Spotify-owned fields (avatar, country, isTrusted)
+   * so any custom displayName the user has set is preserved.
    */
   async upsert(data: UpsertUserDto): Promise<UserEntity> {
-    const user = await this.prismaService.user.upsert({
+    const existing = await this.prismaService.user.findUnique({
       where: { spotifyUserId: data.spotifyUserId },
-      create: data,
-      update: data,
+    });
+
+    if (!existing) {
+      const user = await this.prismaService.user.create({ data });
+      return this.fromPrisma(user);
+    }
+
+    const user = await this.prismaService.user.update({
+      where: { spotifyUserId: data.spotifyUserId },
+      data: {
+        avatarUrl: data.avatarUrl,
+        country: data.country,
+        ...(data.isTrusted !== undefined && { isTrusted: data.isTrusted }),
+      },
     });
     return this.fromPrisma(user);
+  }
+
+  /**
+   * Updates the display name for a user.
+   */
+  async updateDisplayName(
+    spotifyUserId: string,
+    displayName: string,
+  ): Promise<void> {
+    await this.prismaService.user.update({
+      where: { spotifyUserId },
+      data: { displayName },
+    });
   }
 
   /**
@@ -56,6 +81,7 @@ export class UserRepository {
       ...user,
       avatarUrl: user.avatarUrl ?? undefined,
       customAvatarUrl: user.customAvatarUrl ?? undefined,
+      country: user.country ?? undefined,
     };
   }
 

@@ -8,7 +8,6 @@ import { consumeAuthReturnUrl } from '@/lib/auth-return';
 import { StreakFreezePrompt } from '@/components/streak/StreakFreezePrompt';
 import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
 import { useLogout } from '@/hooks/auth/useLogout';
-import { useTokenLogin } from '@/hooks/auth/useTokenLogin';
 import { usePlaylistFilters } from '@/hooks/playlists/usePlaylistFilters';
 import { useAuthError } from '@/hooks/auth/useAuthError';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
@@ -23,7 +22,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
 
 export default function Home() {
-  const [tokenInput, setTokenInput] = useState('');
   const [ambientColor, setAmbientColor] = useState<string>(
     'rgba(30, 215, 96, 0.1)',
   );
@@ -53,17 +51,10 @@ export default function Home() {
       enabled: !!user,
     });
   const logoutMutation = useLogout();
-  const tokenLoginMutation = useTokenLogin();
   const [streakDismissed, setStreakDismissed] = useState(false);
 
   const handleLogout = async () => {
     logoutMutation.mutate();
-  };
-
-  const handleTokenLogin = async (token: string) => {
-    await tokenLoginMutation.mutateAsync({
-      accessToken: token,
-    });
   };
 
   const playlists = playlistsResponse?.items || [];
@@ -151,13 +142,7 @@ export default function Home() {
               />
             </motion.div>
           ) : (
-            <UnauthenticatedView
-              onTokenLogin={handleTokenLogin}
-              tokenInput={tokenInput}
-              setTokenInput={setTokenInput}
-              isTokenLoginPending={tokenLoginMutation.isPending}
-              tokenLoginError={tokenLoginMutation.error || null}
-            />
+            <UnauthenticatedView />
           )}
         </div>
       </div>

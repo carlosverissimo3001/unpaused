@@ -84,6 +84,41 @@
         "tags": [
           "Api"
         ]
+      },
+      "patch": {
+        "operationId": "AuthController_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Update current user profile",
+        "tags": [
+          "Api"
+        ]
       }
     },
     "/auth/logout": {
@@ -101,32 +136,6 @@
           }
         ],
         "summary": "Logout and clear session",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
-    "/auth/token-login": {
-      "post": {
-        "description": "Use this when you have a Spotify access token but can't use OAuth flow. The token is validated by fetching your Spotify profile.",
-        "operationId": "AuthController_tokenLogin",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TokenLoginDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successfully logged in"
-          }
-        },
-        "summary": "Dev-only: Login with a manually obtained Spotify token",
         "tags": [
           "Api"
         ]
@@ -1510,6 +1519,10 @@
           "isAdmin": {
             "type": "boolean",
             "example": false
+          },
+          "country": {
+            "type": "string",
+            "description": "The country of the user, as set in the user's account profile. An ISO 3166-1 alpha-2 country code."
           }
         },
         "required": [
@@ -1520,20 +1533,17 @@
           "isAdmin"
         ]
       },
-      "TokenLoginDto": {
+      "PatchUserDto": {
         "type": "object",
         "properties": {
-          "accessToken": {
+          "displayName": {
             "type": "string",
-            "description": "Spotify access token"
-          },
-          "refreshToken": {
-            "type": "string",
-            "description": "Spotify refresh token (optional)"
+            "description": "Custom display name",
+            "maxLength": 50
           }
         },
         "required": [
-          "accessToken"
+          "displayName"
         ]
       },
       "PlaylistDto": {

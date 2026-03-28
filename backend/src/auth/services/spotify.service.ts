@@ -176,6 +176,7 @@ export class SpotifyService {
       id: profileResponse.id,
       displayName: profileResponse.display_name,
       avatarUrl: profileResponse.images?.[0]?.url ?? undefined,
+      country: profileResponse.country ?? undefined,
     };
   }
 }

@@ -67,6 +67,12 @@ export interface AuthMeResponseDto {
      * @memberof AuthMeResponseDto
      */
     isAdmin: boolean;
+    /**
+     * The country of the user, as set in the user's account profile. An ISO 3166-1 alpha-2 country code.
+     * @type {string}
+     * @memberof AuthMeResponseDto
+     */
+    country?: string;
 }
 
 
@@ -110,6 +116,7 @@ export function AuthMeResponseDtoFromJSONTyped(json: any, ignoreDiscriminator: b
         'avatarSource': json['avatarSource'],
         'isTrusted': json['isTrusted'],
         'isAdmin': json['isAdmin'],
+        'country': json['country'] == null ? undefined : json['country'],
     };
 }
 
@@ -132,6 +139,7 @@ export function AuthMeResponseDtoToJSONTyped(value?: AuthMeResponseDto | null, i
         'avatarSource': value['avatarSource'],
         'isTrusted': value['isTrusted'],
         'isAdmin': value['isAdmin'],
+        'country': value['country'],
     };
 }
 

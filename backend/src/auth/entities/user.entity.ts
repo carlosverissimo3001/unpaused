@@ -33,4 +33,10 @@ export class UserEntity {
 
   @ApiProperty({ description: 'Date when the user was last updated' })
   updatedAt: Date;
+
+  @ApiPropertyOptional({
+    description:
+      "The country of the user, as set in the user's account profile. An ISO 3166-1 alpha-2 country code.",
+  })
+  country?: string;
 }

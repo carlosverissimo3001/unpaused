@@ -1,9 +1,9 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   HttpCode,
+  Patch,
   Post,
   Query,
   Req,
@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
-  ApiBody,
   ApiCookieAuth,
   ApiOperation,
   ApiResponse,
@@ -21,12 +20,16 @@ import {
 import { Request, Response } from 'express';
 import { SESSION_COOKIE_NAME } from '../../consts';
 import { AuthMeResponseDto } from '../dto/auth.dto';
+import { PatchUserDto } from '../dto/patch-user.dto';
 import { AuthService } from '../services/auth.service';
-import { TokenLoginDto } from '../dto/token-login.dto';
 import { AppLoggerService } from '../../logger/logger.service';
 import { SessionId } from '../../utils/decorators/sessionId.decorator';
 import { SpotifyOAuthCallbackDto } from '../dto/spotify/spotify-oauth-callback.dto';
-import { buildErrorRedirect, getCookieOptions } from '../utils/http-helpers';
+import {
+  buildErrorRedirect,
+  getClearCookieOptions,
+  getCookieOptions,
+} from '../utils/http-helpers';
 
 @ApiTags('Api')
 @Controller('auth')
@@ -99,6 +102,18 @@ export class AuthController {
     return user;
   }
 
+  @Patch('me')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiCookieAuth()
+  @ApiResponse({ status: 200, type: AuthMeResponseDto })
+  async updateMe(
+    @SessionId() sessionId: string,
+    @Body() dto: PatchUserDto,
+  ): Promise<AuthMeResponseDto> {
+    return this.authService.updateProfile(sessionId, dto);
+  }
+
   @Post('logout')
   @HttpCode(200)
   @ApiOperation({ summary: 'Logout and clear session' })
@@ -110,53 +125,8 @@ export class AuthController {
       await this.authService.logout(sessionId);
     }
 
-    res.clearCookie(
-      SESSION_COOKIE_NAME,
-      getCookieOptions({ sessionMaxAge: this.sessionMaxAge }),
-    );
+    res.clearCookie(SESSION_COOKIE_NAME, getClearCookieOptions());
 
     res.json({ success: true });
-  }
-
-  @Post('token-login')
-  @ApiOperation({
-    summary: 'Dev-only: Login with a manually obtained Spotify token',
-    description:
-      "Use this when you have a Spotify access token but can't use OAuth flow. " +
-      'The token is validated by fetching your Spotify profile.',
-  })
-  @ApiBody({ type: TokenLoginDto })
-  @ApiResponse({ status: 200, description: 'Successfully logged in' })
-  async tokenLogin(@Body() body: TokenLoginDto, @Res() res: Response) {
-    if (this.configService.get<string>('ENABLE_TOKEN_LOGIN') !== 'true') {
-      throw new ForbiddenException(
-        'Token login not available in this environment',
-      );
-    }
-
-    try {
-      const sessionId = await this.authService.createSessionFromToken(
-        body.accessToken,
-        body.refreshToken,
-      );
-
-      const isProd =
-        this.configService.get<string>('NODE_ENV') === 'production';
-      const sameSite = isProd ? 'none' : 'lax';
-
-      res.cookie(
-        SESSION_COOKIE_NAME,
-        sessionId,
-        getCookieOptions({
-          sessionMaxAge: this.sessionMaxAge,
-          sameSiteOverride: sameSite,
-        }),
-      );
-
-      res.json({ success: true });
-    } catch (err) {
-      this.logger.error('Token login error:', err);
-      throw new UnauthorizedException('Invalid or expired token');
-    }
   }
 }

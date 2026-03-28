@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.scdn.co' },
       { protocol: 'https', hostname: '*.spotifycdn.com' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'flagcdn.com' },
     ],
   },
 };

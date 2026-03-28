@@ -2,9 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check, Pencil, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useState } from 'react';
 import { useMe } from '@/hooks/auth/useMe';
+import { useUpdateProfile } from '@/hooks/auth/useUpdateProfile';
 import { useUserPreferences } from '@/hooks/user-preferences/useUserPreferences';
 import { useUpdateUserPreferences } from '@/hooks/user-preferences/useUpdateUserPreferences';
 import { GLASS_STYLE } from '@/lib/styles';
@@ -49,6 +51,10 @@ export function PreferencesPage() {
   const { data: preferences } = useUserPreferences();
   const { mutate: updatePreferences } = useUpdateUserPreferences();
   const { theme, setTheme } = useTheme();
+  const { mutate: updateProfile, isPending: isSavingName } = useUpdateProfile();
+
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState('');
 
   const prefs: UserPreferenceDto = preferences ?? {
     showAlbumHint: true,
@@ -103,7 +109,7 @@ export function PreferencesPage() {
 
       <div className="rounded-2xl overflow-hidden" style={GLASS_STYLE}>
         {/* User header */}
-        <div className="p-6 border-b border-fg/10 flex items-center gap-4">
+        <div className="relative p-6 border-b border-fg/10 flex items-center gap-4">
           <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-fg/5 border border-fg/10 shrink-0">
             {user?.avatarUrl ? (
               <Image
@@ -119,10 +125,65 @@ export function PreferencesPage() {
               </div>
             )}
           </div>
-          <div>
-            <p className="text-base font-black text-fg leading-tight">
-              {user?.displayName ?? '—'}
-            </p>
+          <div className="min-w-0">
+            {editingName ? (
+              <form
+                className="flex items-center gap-1.5"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const name = draftName.trim();
+                  if (!name) return;
+                  updateProfile(name, { onSuccess: () => setEditingName(false) });
+                }}
+              >
+                <input
+                  autoFocus
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                  maxLength={50}
+                  className="text-base font-black text-fg bg-transparent border-b border-fg/30 focus:border-[#1DB954] outline-none leading-tight w-40"
+                />
+                <button
+                  type="submit"
+                  disabled={isSavingName || !draftName.trim()}
+                  className="text-[#1DB954] disabled:opacity-40"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingName(false)}
+                  className="text-fg/40 hover:text-fg/70"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </form>
+            ) : (
+              <p className="text-base font-black text-fg leading-tight flex items-center gap-2">
+                {user?.displayName ?? '—'}
+                {user?.country && (
+                  <Image
+                    src={`https://flagcdn.com/16x12/${user.country.toLowerCase()}.png`}
+                    alt={user.country}
+                    width={16}
+                    height={12}
+                    className="rounded-[2px] font-normal"
+                  />
+                )}
+              </p>
+            )}
+            {!editingName && (
+              <button
+                onClick={() => {
+                  setDraftName(user?.displayName ?? '');
+                  setEditingName(true);
+                }}
+                className="absolute top-3 right-3 p-2 text-fg/30 hover:text-fg/60 transition-colors"
+                aria-label="Edit display name"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            )}
             <p className="text-xs font-bold text-[#1DB954] uppercase tracking-wider opacity-80 mt-0.5">
               {user?.isTrusted ? 'Pro Member' : 'Player'}
             </p>

@@ -12,13 +12,14 @@ enum AvatarSource {
 }
 
 model User {
-  id                    String  @id @default(uuid())
-  spotifyUserId         String  @unique @map("spotify_user_id")
-  displayName           String  @map("display_name")
-  avatarUrl             String? @map("avatar_url")
-  customAvatarUrl       String? @map("custom_avatar_url")
+  id                    String       @id @default(uuid())
+  spotifyUserId         String       @unique @map("spotify_user_id")
+  displayName           String       @map("display_name")
+  avatarUrl             String?      @map("avatar_url")
+  customAvatarUrl       String?      @map("custom_avatar_url")
   avatarSource          AvatarSource @default(SPOTIFY) @map("avatar_source")
-  encryptedRefreshToken String? @map("encrypted_refresh_token")
+  encryptedRefreshToken String?      @map("encrypted_refresh_token")
+  country               String?      @map("country")
 
   isTrusted Boolean @default(false) @map("is_trusted")
   isAdmin   Boolean @default(false) @map("is_admin")
@@ -190,14 +191,14 @@ model MultiplayerRoom {
 }
 
 model UserPreference {
-  userId           String  @id @map("user_id")
-  showAlbumHint    Boolean @default(true) @map("show_album_hint")
-  showTextHints    Boolean @default(true) @map("show_text_hints")
-  reducedMotion    Boolean @default(false) @map("reduced_motion")
-  showGuessHistory           Boolean  @default(true) @map("show_guess_history")
-  dailyChallengePlaylists    String[] @default([]) @map("daily_challenge_playlists")
-  timezone         String  @default("UTC") @map("timezone")
-  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                  String   @id @map("user_id")
+  showAlbumHint           Boolean  @default(true) @map("show_album_hint")
+  showTextHints           Boolean  @default(true) @map("show_text_hints")
+  reducedMotion           Boolean  @default(false) @map("reduced_motion")
+  showGuessHistory        Boolean  @default(true) @map("show_guess_history")
+  dailyChallengePlaylists String[] @default([]) @map("daily_challenge_playlists")
+  timezone                String   @default("UTC") @map("timezone")
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_preferences")
 }

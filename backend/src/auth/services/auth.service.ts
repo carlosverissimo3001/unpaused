@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { LoginStartResult } from '../types';
 import { UserRepository } from '../repositories/user.repository';
 import { AuthMeResponseDto } from '../dto/auth.dto';
-import { MS_IN_HOUR } from '../consts';
 import { UserSessionDto } from '../dto/user-session.dto';
+import { PatchUserDto } from '../dto/patch-user.dto';
 import { AvatarSource, User } from '@prisma/client';
 
 @Injectable()
@@ -61,6 +61,7 @@ export class AuthService {
       spotifyUserId: profile.id,
       displayName,
       avatarUrl: profile.avatarUrl,
+      country: profile.country,
     });
 
     // Store tokens via SpotifyAuthService (Redis cache + encrypted DB)
@@ -112,6 +113,7 @@ export class AuthService {
       customAvatarUrl: user.customAvatarUrl ?? undefined,
       spotifyAvatarUrl: user.avatarUrl ?? undefined,
       avatarSource: user.avatarSource,
+      country: user.country ?? undefined,
     };
   }
 
@@ -165,6 +167,25 @@ export class AuthService {
   }
 
   /**
+   * Update the user's display name in DB and active session.
+   */
+  async updateProfile(
+    sessionId: string,
+    dto: PatchUserDto,
+  ): Promise<AuthMeResponseDto> {
+    const session = await this.sessionService.getSession(sessionId);
+    const displayName = dto.displayName.trim();
+
+    await this.userRepository.updateDisplayName(
+      session.spotifyUserId,
+      displayName,
+    );
+    await this.sessionService.updateSessionDisplayName(sessionId, displayName);
+
+    return this.getCurrentUser(sessionId);
+  }
+
+  /**
    * Logout: delete session and revoke cached tokens
    * @param sessionId - The session ID
    */
@@ -177,54 +198,5 @@ export class AuthService {
       // Session already expired — nothing to revoke
     }
     await this.sessionService.deleteSession(sessionId);
-  }
-
-  /**
-   * Dev-only: create a session using a manually provided Spotify token
-   * This validates the token by fetching the user profile from Spotify
-   * @param accessToken - A valid Spotify access token
-   * @param refreshToken - Optional refresh token (token won't auto-refresh without it)
-   * @returns The session ID
-   */
-  async createSessionFromToken(
-    accessToken: string,
-    refreshToken?: string,
-  ): Promise<string> {
-    const profile = await this.spotifyService.getUserProfile(accessToken);
-
-    // fyi: Move this to repo later
-    const user = await this.prismaService.user.upsert({
-      where: { spotifyUserId: profile.id },
-      create: {
-        spotifyUserId: profile.id,
-        displayName: profile.displayName || profile.id,
-      },
-      update: {
-        displayName: profile.displayName || profile.id,
-      },
-    });
-
-    const expiresInSeconds = MS_IN_HOUR / 1000;
-
-    if (refreshToken) {
-      await this.spotifyAuthService.storeTokens(
-        user.spotifyUserId,
-        accessToken,
-        refreshToken,
-        expiresInSeconds,
-      );
-    } else {
-      await this.spotifyAuthService.storeAccessTokenOnly(
-        user.spotifyUserId,
-        accessToken,
-        expiresInSeconds,
-      );
-    }
-
-    return this.sessionService.createSession(
-      user.spotifyUserId,
-      user.displayName,
-      user.isTrusted,
-    );
   }
 }

@@ -35,4 +35,10 @@ export class AuthMeResponseDto {
 
   @ApiProperty({ example: false })
   isAdmin: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      "The country of the user, as set in the user's account profile. An ISO 3166-1 alpha-2 country code.",
+  })
+  country?: string;
 }
