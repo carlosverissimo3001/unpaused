@@ -1,6 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotNullableOptional } from '../../../utils/decorators/notNullableOptional.decorator';
-import { IsNumber, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsISO31661Alpha2,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class SpotifyImageDto {
   @ApiProperty({ description: 'The image URL' })
@@ -11,7 +18,7 @@ export class SpotifyImageDto {
     type: Number,
   })
   @IsNumber()
-  @IsNotNullableOptional()
+  @IsOptional()
   height?: number | null;
 
   @ApiPropertyOptional({
@@ -19,7 +26,7 @@ export class SpotifyImageDto {
     type: Number,
   })
   @IsNumber()
-  @IsNotNullableOptional()
+  @IsOptional()
   width?: number | null;
 }
 
@@ -37,8 +44,11 @@ export class SpotifyUserProfileResponseDto {
     type: SpotifyImageDto,
     isArray: true,
   })
+  @IsOptional()
+  @IsArray()
+  @Type(() => SpotifyImageDto)
   @ValidateNested({ each: true })
-  images: SpotifyImageDto[];
+  images?: SpotifyImageDto[] | null;
 
   @ApiPropertyOptional({
     description:
@@ -46,6 +56,7 @@ export class SpotifyUserProfileResponseDto {
     type: String,
   })
   @IsString()
-  @IsNotNullableOptional()
-  country?: string;
+  @IsOptional()
+  @IsISO31661Alpha2()
+  country?: string | null;
 }

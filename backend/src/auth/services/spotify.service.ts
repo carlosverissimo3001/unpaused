@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   HttpException,
   HttpStatus,
@@ -13,6 +14,8 @@ import { SpotifyTokenDto } from '../dto/spotify/spotify-token.dto';
 import { SpotifyUserProfileResponseDto } from '../dto/spotify/spotify-user-profile-response.dto';
 import { SCOPES } from '../consts';
 import { AppLoggerService } from '../../logger/logger.service';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class SpotifyService {
@@ -27,6 +30,42 @@ export class SpotifyService {
     this.redirectUri = this.configService.getOrThrow<string>(
       'SPOTIFY_REDIRECT_URI',
     );
+  }
+
+  /**
+   * Validates external API responses against a DTO.
+   * This ensures DTO contracts are upheld at runtime.
+   */
+  private async validateExternalResponse<T extends object>(
+    cls: new (...args: unknown[]) => T,
+    plain: unknown,
+  ): Promise<T> {
+    const instance = plainToInstance(cls, plain, {
+      enableImplicitConversion: true,
+      excludeExtraneousValues: false,
+    });
+    const errors = await validate(instance, {
+      whitelist: true,
+      forbidUnknownValues: true,
+    });
+
+    if (errors.length > 0) {
+      const validationSummary = errors.map((error) => ({
+        property: error.property,
+        constraints: error.constraints
+          ? Object.keys(error.constraints)
+          : 'nested validation error',
+      }));
+
+      this.logger.error(
+        `External API Validation Failed: ${cls.name}`,
+        validationSummary,
+      );
+
+      throw new BadGatewayException('External API contract violation');
+    }
+
+    return instance;
   }
 
   /**
@@ -66,7 +105,7 @@ export class SpotifyService {
    * Exchange authorization code for tokens
    * @param code - The authorization code received from Spotify
    * @param codeVerifier - The PKCE code verifier
-   * @returns The Spotify tokens (inclues access and refresh tokens)
+   * @returns The Spotify tokens (includes access and refresh tokens)
    */
   async exchangeCodeForTokens(
     code: string,
@@ -87,14 +126,28 @@ export class SpotifyService {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Spotify token exchange failed: ${error}`);
+      const errorText = await response.text();
+      this.logger.error(
+        `Spotify token exchange failed: ${response.status}`,
+        errorText,
+      );
+
+      if (response.status >= 500) {
+        throw new BadGatewayException('Spotify is temporarily unavailable');
+      }
+      throw new BadRequestException('Spotify token exchange failed');
     }
 
-    const data = (await response.json()) as SpotifyTokenResponseDto;
+    const rawData = await response.json();
+
+    const data = await this.validateExternalResponse(
+      SpotifyTokenResponseDto,
+      rawData,
+    );
+
     return {
       accessToken: data.access_token,
-      refreshToken: data.refresh_token,
+      refreshToken: data.refresh_token ?? '',
       expiresIn: data.expires_in,
       expiresAt: Date.now() + data.expires_in * 1000,
     };
@@ -123,7 +176,12 @@ export class SpotifyService {
       throw new Error(`Spotify token refresh failed: ${error}`);
     }
 
-    const data = (await response.json()) as SpotifyTokenResponseDto;
+    const rawData = await response.json();
+
+    const data = await this.validateExternalResponse(
+      SpotifyTokenResponseDto,
+      rawData,
+    );
 
     return {
       accessToken: data.access_token,
@@ -169,8 +227,12 @@ export class SpotifyService {
       throw new BadRequestException(`Spotify API returned ${response.status}`);
     }
 
-    const profileResponse =
-      (await response.json()) as SpotifyUserProfileResponseDto;
+    const rawData = await response.json();
+
+    const profileResponse = await this.validateExternalResponse(
+      SpotifyUserProfileResponseDto,
+      rawData,
+    );
 
     return {
       id: profileResponse.id,

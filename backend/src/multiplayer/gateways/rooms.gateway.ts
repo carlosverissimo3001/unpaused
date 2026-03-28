@@ -183,18 +183,39 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private emitPresenceUpdate(roomId: string): void {
-    const onlineUserIds = [...(this.presence.get(roomId) ?? [])];
-    this.server.to(roomId).emit('presenceUpdate', { roomId, onlineUserIds });
+    try {
+      const onlineUserIds = [...(this.presence.get(roomId) ?? [])];
+      this.server.to(roomId).emit('presenceUpdate', { roomId, onlineUserIds });
+    } catch (err) {
+      this.logger.error(
+        `emitPresenceUpdate failed for room ${roomId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   emitRoomUpdate(roomId: string, room: RoomDto): void {
-    this.server.to(roomId).emit('roomUpdated', room);
+    try {
+      this.server.to(roomId).emit('roomUpdated', room);
+    } catch (err) {
+      this.logger.error(
+        `emitRoomUpdate failed for room ${roomId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   emitPlayerRoundComplete(
     roomId: string,
     data: { userId: string; displayName: string; roundIndex: number },
   ): void {
-    this.server.to(roomId).emit('playerRoundComplete', data);
+    try {
+      this.server.to(roomId).emit('playerRoundComplete', data);
+    } catch (err) {
+      this.logger.error(
+        `emitPlayerRoundComplete failed for room ${roomId}`,
+        err,
+      );
+    }
   }
 }

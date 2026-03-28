@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Search, X, Disc3 } from 'lucide-react';
+import { List, type RowComponentProps } from 'react-window';
 import type { TrackOptionDto } from '@/sdk';
 import { MIN_QUERY_LENGTH } from '@/consts/consts';
 import {
@@ -10,6 +11,9 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover';
+
+const ITEM_HEIGHT = 60;
+const MAX_VISIBLE_ITEMS = 5;
 
 export interface GuessSearchState {
   searchQuery: string;
@@ -29,6 +33,50 @@ interface GuessInputProps {
   onSubmit: () => void;
   onSkip: () => void;
   submitPending: boolean;
+}
+
+interface TrackRowProps {
+  tracks: TrackOptionDto[];
+  onSelect: (track: TrackOptionDto) => void;
+}
+
+function TrackRow({
+  index,
+  style,
+  tracks,
+  onSelect,
+}: RowComponentProps<TrackRowProps>) {
+  const track = tracks[index];
+  const isLast = index === tracks.length - 1;
+
+  return (
+    <button
+      type="button"
+      style={style}
+      onClick={() => onSelect(track)}
+      className={`w-full flex items-center gap-3 px-3 sm:px-4 text-left hover:bg-fg/10 transition-colors touch-manipulation active:bg-fg/15${
+        !isLast ? ' border-b border-fg/5' : ''
+      }`}
+    >
+      {track.albumImageUrl ? (
+        <Image
+          src={track.albumImageUrl}
+          alt=""
+          width={40}
+          height={40}
+          className="rounded-lg flex-shrink-0"
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-lg bg-fg/10 flex items-center justify-center flex-shrink-0">
+          <Disc3 className="w-5 h-5 text-[#535353]" />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="font-medium text-fg truncate">{track.name}</p>
+        <p className="text-sm text-fg/50 truncate">{track.artist}</p>
+      </div>
+    </button>
+  );
 }
 
 export function GuessInput({
@@ -51,6 +99,10 @@ export function GuessInput({
   } = search;
 
   const dropdownOpen = showDropdown && searchQuery.length > 0 && !selectedTrack;
+  const listHeight = Math.min(
+    filteredTracks.length * ITEM_HEIGHT,
+    MAX_VISIBLE_ITEMS * ITEM_HEIGHT,
+  );
 
   return (
     <div
@@ -124,7 +176,6 @@ export function GuessInput({
             WebkitBackdropFilter: 'blur(20px)',
             boxShadow:
               '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgb(var(--fg) / 0.06)',
-            maxHeight: 'var(--radix-popover-content-available-height, 60vh)',
           }}
           side="bottom"
           avoidCollisions={false}
@@ -143,49 +194,23 @@ export function GuessInput({
             setShowDropdown(false);
           }}
         >
-          <div
-            className="overflow-y-auto overscroll-contain"
-            style={{ maxHeight: 'inherit' }}
-          >
-            {filteredTracks.length > 0 ? (
-              filteredTracks.map((track) => (
-                <button
-                  key={track.id}
-                  type="button"
-                  onClick={() => handleSelectTrack(track)}
-                  className="w-full p-3 sm:p-4 flex items-center gap-3 text-left hover:bg-fg/10 border-b border-fg/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl min-h-[56px] touch-manipulation active:bg-fg/15"
-                >
-                  {track.albumImageUrl ? (
-                    <Image
-                      src={track.albumImageUrl}
-                      alt=""
-                      width={40}
-                      height={40}
-                      className="rounded-lg flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-lg bg-fg/10 flex items-center justify-center flex-shrink-0">
-                      <Disc3 className="w-5 h-5 text-[#535353]" />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-fg truncate">{track.name}</p>
-                    <p className="text-sm text-fg/50 truncate">
-                      {track.artist}
-                    </p>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="p-4 text-[#b3b3b3] text-center text-sm">
-                {isLoading
-                  ? 'Searching...'
-                  : searchQuery.trim().length < MIN_QUERY_LENGTH
-                    ? `Type at least ${MIN_QUERY_LENGTH} characters`
-                    : 'No songs found'}
-              </div>
-            )}
-          </div>
+          {filteredTracks.length > 0 ? (
+            <List<TrackRowProps>
+              rowComponent={TrackRow}
+              rowCount={filteredTracks.length}
+              rowHeight={ITEM_HEIGHT}
+              rowProps={{ tracks: filteredTracks, onSelect: handleSelectTrack }}
+              style={{ height: listHeight, overscrollBehavior: 'contain' }}
+            />
+          ) : (
+            <div className="p-4 text-[#b3b3b3] text-center text-sm">
+              {isLoading
+                ? 'Searching...'
+                : searchQuery.trim().length < MIN_QUERY_LENGTH
+                  ? `Type at least ${MIN_QUERY_LENGTH} characters`
+                  : 'No songs found'}
+            </div>
+          )}
         </PopoverContent>
       </Popover>
 

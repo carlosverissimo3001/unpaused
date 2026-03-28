@@ -335,6 +335,7 @@ function HistoryPageContent() {
         onPageChange={handlePageChange}
         pageSize={pageSize}
         onPageSizeChange={handlePageSizeChange}
+        isFetching={isPlaceholderData}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 // https://developer.spotify.com/documentation/web-api/tutorials/code-flow
 
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 // Check "Request Access Token" section
 export class SpotifyTokenResponseDto {
@@ -32,10 +32,11 @@ export class SpotifyTokenResponseDto {
   @IsNumber()
   expires_in: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
-      'A security credential that allows client applications to obtain new access tokens without requiring users to reauthorize the application.',
+      'A security credential that allows client applications to obtain new access tokens without requiring users to reauthorize the application. May be omitted on refresh responses.',
   })
   @IsString()
-  refresh_token: string;
+  @IsOptional()
+  refresh_token?: string;
 }
