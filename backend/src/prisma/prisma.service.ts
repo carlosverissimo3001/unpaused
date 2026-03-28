@@ -21,6 +21,7 @@ export class PrismaService
     const pool = new Pool({ connectionString });
     // Cast needed: @prisma/adapter-pg bundles its own @types/pg which can
     // drift from the project-level @types/pg, causing a TS error on CI.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const adapter = new PrismaPg(pool as any);
 
     super({

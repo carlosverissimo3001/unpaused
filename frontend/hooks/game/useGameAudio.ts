@@ -40,7 +40,9 @@ export function useGameAudio({
   // Separate timer refs for background vs inline warmup so they never
   // clobber each other's handles.
   const bgWarmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inlineWarmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inlineWarmupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const volumeRef = useRef(volume);
 
@@ -250,8 +252,10 @@ export function useGameAudio({
   useEffect(() => {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      if (bgWarmupTimerRef.current !== null) clearTimeout(bgWarmupTimerRef.current);
-      if (inlineWarmupTimerRef.current !== null) clearTimeout(inlineWarmupTimerRef.current);
+      if (bgWarmupTimerRef.current !== null)
+        clearTimeout(bgWarmupTimerRef.current);
+      if (inlineWarmupTimerRef.current !== null)
+        clearTimeout(inlineWarmupTimerRef.current);
     };
   }, []);
 

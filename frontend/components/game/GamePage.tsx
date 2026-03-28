@@ -59,13 +59,8 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
   } = useGameOrchestrator(mode, playlistId, { volume });
 
   // Destructure gameAudio to avoid ref access warnings
-  const {
-    audioRef,
-    fullAudioRef,
-    isPlaying,
-    playSnippet,
-    pauseSnippet,
-  } = gameAudio;
+  const { audioRef, fullAudioRef, isPlaying, playSnippet, pauseSnippet } =
+    gameAudio;
 
   useWarnOnLeave(!!gameState && !isGameOver);
 

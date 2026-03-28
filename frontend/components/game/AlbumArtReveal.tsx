@@ -7,8 +7,7 @@ import { ROUND_DURATIONS } from '@/consts/consts';
 
 const MAX_ROUNDS = ROUND_DURATIONS.length;
 
-// Blur decreases as rounds progress; only meaningfully recognizable on the last round
-const BLUR_PX = [60, 48, 36, 22, 12, 2];
+const BLUR_PX = [45, 35, 25, 15, 5, 2];
 
 function blurForRound(currentRound: number): number {
   const idx = Math.min(currentRound, MAX_ROUNDS - 1);

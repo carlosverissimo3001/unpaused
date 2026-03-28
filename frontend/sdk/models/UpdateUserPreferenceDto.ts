@@ -44,6 +44,12 @@ export interface UpdateUserPreferenceDto {
      */
     showGuessHistory?: boolean;
     /**
+     * Playlist IDs to source daily challenge songs from. Must have at least one entry when provided.
+     * @type {Array<string>}
+     * @memberof UpdateUserPreferenceDto
+     */
+    dailyChallengePlaylists?: Array<string>;
+    /**
      * IANA timezone string (e.g. America/New_York)
      * @type {string}
      * @memberof UpdateUserPreferenceDto
@@ -72,6 +78,7 @@ export function UpdateUserPreferenceDtoFromJSONTyped(json: any, ignoreDiscrimina
         'showTextHints': json['showTextHints'] == null ? undefined : json['showTextHints'],
         'reducedMotion': json['reducedMotion'] == null ? undefined : json['reducedMotion'],
         'showGuessHistory': json['showGuessHistory'] == null ? undefined : json['showGuessHistory'],
+        'dailyChallengePlaylists': json['dailyChallengePlaylists'] == null ? undefined : json['dailyChallengePlaylists'],
         'timezone': json['timezone'] == null ? undefined : json['timezone'],
     };
 }
@@ -91,6 +98,7 @@ export function UpdateUserPreferenceDtoToJSONTyped(value?: UpdateUserPreferenceD
         'showTextHints': value['showTextHints'],
         'reducedMotion': value['reducedMotion'],
         'showGuessHistory': value['showGuessHistory'],
+        'dailyChallengePlaylists': value['dailyChallengePlaylists'],
         'timezone': value['timezone'],
     };
 }

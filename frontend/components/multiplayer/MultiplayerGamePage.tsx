@@ -229,13 +229,8 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     volume,
   });
 
-  const {
-    audioRef,
-    fullAudioRef,
-    isPlaying,
-    playSnippet,
-    pauseSnippet,
-  } = gameAudio;
+  const { audioRef, fullAudioRef, isPlaying, playSnippet, pauseSnippet } =
+    gameAudio;
 
   const albumArtColor = useImageColor(
     isRoundComplete && roundState?.answer?.albumImageUrl

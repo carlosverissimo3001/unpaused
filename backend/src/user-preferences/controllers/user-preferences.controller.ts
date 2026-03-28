@@ -24,7 +24,7 @@ export class UserPreferencesController {
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: UserPreferenceDto })
   async get(@SessionId() sessionId: string): Promise<UserPreferenceDto> {
-    return this.userPreferencesService.get(sessionId);
+    return this.userPreferencesService.getBySessionId(sessionId);
   }
 
   @Patch()

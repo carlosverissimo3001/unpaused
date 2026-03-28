@@ -634,6 +634,68 @@
         ]
       }
     },
+    "/user-preferences": {
+      "get": {
+        "operationId": "UserPreferencesController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferenceDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get user preferences",
+        "tags": [
+          "Api"
+        ]
+      },
+      "patch": {
+        "operationId": "UserPreferencesController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserPreferenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferenceDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Update user preferences",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/admin/streak-questions": {
       "get": {
         "operationId": "AdminController_listStreakQuestions",
@@ -1300,68 +1362,6 @@
           }
         ],
         "summary": "Get scoreboard (only completed rounds visible)",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
-    "/user-preferences": {
-      "get": {
-        "operationId": "UserPreferencesController_get",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserPreferenceDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "summary": "Get user preferences",
-        "tags": [
-          "Api"
-        ]
-      },
-      "patch": {
-        "operationId": "UserPreferencesController_update",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserPreferenceDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserPreferenceDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "summary": "Update user preferences",
         "tags": [
           "Api"
         ]
@@ -2213,6 +2213,79 @@
           "snippetDuration"
         ]
       },
+      "UserPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "showAlbumHint": {
+            "type": "boolean",
+            "description": "Show progressively blurred album art hint"
+          },
+          "showTextHints": {
+            "type": "boolean",
+            "description": "Show genre, decade, and other text hints"
+          },
+          "reducedMotion": {
+            "type": "boolean",
+            "description": "Reduce motion and animations"
+          },
+          "showGuessHistory": {
+            "type": "boolean",
+            "description": "Show guess history during gameplay"
+          },
+          "dailyChallengePlaylists": {
+            "description": "Playlist IDs to source daily challenge songs from. Empty means Liked Songs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone string (e.g. America/New_York)",
+            "default": "UTC"
+          }
+        },
+        "required": [
+          "showAlbumHint",
+          "showTextHints",
+          "reducedMotion",
+          "showGuessHistory",
+          "dailyChallengePlaylists",
+          "timezone"
+        ]
+      },
+      "UpdateUserPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "showAlbumHint": {
+            "type": "boolean",
+            "description": "Show progressively blurred album art hint"
+          },
+          "showTextHints": {
+            "type": "boolean",
+            "description": "Show genre, decade, and other text hints"
+          },
+          "reducedMotion": {
+            "type": "boolean",
+            "description": "Reduce motion and animations"
+          },
+          "showGuessHistory": {
+            "type": "boolean",
+            "description": "Show guess history during gameplay"
+          },
+          "dailyChallengePlaylists": {
+            "description": "Playlist IDs to source daily challenge songs from. Must have at least one entry when provided.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone string (e.g. America/New_York)"
+          }
+        }
+      },
       "StreakQuestionDto": {
         "type": "object",
         "properties": {
@@ -2830,64 +2903,6 @@
           "roomStatus",
           "isComplete"
         ]
-      },
-      "UserPreferenceDto": {
-        "type": "object",
-        "properties": {
-          "showAlbumHint": {
-            "type": "boolean",
-            "description": "Show progressively blurred album art hint"
-          },
-          "showTextHints": {
-            "type": "boolean",
-            "description": "Show genre, decade, and other text hints"
-          },
-          "reducedMotion": {
-            "type": "boolean",
-            "description": "Reduce motion and animations"
-          },
-          "showGuessHistory": {
-            "type": "boolean",
-            "description": "Show guess history during gameplay"
-          },
-          "timezone": {
-            "type": "string",
-            "description": "IANA timezone string (e.g. America/New_York)",
-            "default": "UTC"
-          }
-        },
-        "required": [
-          "showAlbumHint",
-          "showTextHints",
-          "reducedMotion",
-          "showGuessHistory",
-          "timezone"
-        ]
-      },
-      "UpdateUserPreferenceDto": {
-        "type": "object",
-        "properties": {
-          "showAlbumHint": {
-            "type": "boolean",
-            "description": "Show progressively blurred album art hint"
-          },
-          "showTextHints": {
-            "type": "boolean",
-            "description": "Show genre, decade, and other text hints"
-          },
-          "reducedMotion": {
-            "type": "boolean",
-            "description": "Reduce motion and animations"
-          },
-          "showGuessHistory": {
-            "type": "boolean",
-            "description": "Show guess history during gameplay"
-          },
-          "timezone": {
-            "type": "string",
-            "description": "IANA timezone string (e.g. America/New_York)"
-          }
-        }
       },
       "UploadAvatarResponseDto": {
         "type": "object",

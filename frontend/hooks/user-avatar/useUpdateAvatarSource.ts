@@ -23,15 +23,18 @@ export function useUpdateAvatarSource() {
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.auth.me, (old: Record<string, unknown> | undefined) => {
-        if (!old) return old;
-        return {
-          ...old,
-          avatarSource: data.avatarSource,
-          avatarUrl: data.avatarUrl,
-          customAvatarUrl: data.customAvatarUrl,
-        };
-      });
+      queryClient.setQueryData(
+        queryKeys.auth.me,
+        (old: Record<string, unknown> | undefined) => {
+          if (!old) return old;
+          return {
+            ...old,
+            avatarSource: data.avatarSource,
+            avatarUrl: data.avatarUrl,
+            customAvatarUrl: data.customAvatarUrl,
+          };
+        },
+      );
     },
   });
 }

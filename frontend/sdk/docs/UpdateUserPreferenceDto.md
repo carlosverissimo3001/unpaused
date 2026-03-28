@@ -10,6 +10,7 @@ Name | Type
 `showTextHints` | boolean
 `reducedMotion` | boolean
 `showGuessHistory` | boolean
+`dailyChallengePlaylists` | Array&lt;string&gt;
 `timezone` | string
 
 ## Example
@@ -23,6 +24,7 @@ const example = {
   "showTextHints": null,
   "reducedMotion": null,
   "showGuessHistory": null,
+  "dailyChallengePlaylists": null,
   "timezone": null,
 } satisfies UpdateUserPreferenceDto
 

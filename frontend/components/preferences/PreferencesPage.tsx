@@ -10,6 +10,7 @@ import { useUpdateUserPreferences } from '@/hooks/user-preferences/useUpdateUser
 import { GLASS_STYLE } from '@/lib/styles';
 import type { UserPreferenceDto } from '@/sdk';
 import { AvatarSection } from './AvatarSection';
+import { DailyPlaylistSection } from './DailyPlaylistSection';
 
 interface ToggleRowProps {
   label: string;
@@ -54,11 +55,26 @@ export function PreferencesPage() {
     showTextHints: true,
     reducedMotion: false,
     showGuessHistory: true,
+    dailyChallengePlaylists: [],
     timezone: 'UTC',
   };
 
   function handleToggle(key: keyof UserPreferenceDto, value: boolean) {
     updatePreferences({ [key]: value });
+  }
+
+  function handlePlaylistToggle(playlistId: string) {
+    const current = prefs.dailyChallengePlaylists;
+    const isSelected = current.includes(playlistId);
+
+    // Enforce at least one selection once the user has configured something
+    if (isSelected && current.length <= 1) return;
+
+    const next = isSelected
+      ? current.filter((id) => id !== playlistId)
+      : [...current, playlistId];
+
+    updatePreferences({ dailyChallengePlaylists: next });
   }
 
   return (
@@ -129,6 +145,14 @@ export function PreferencesPage() {
             description="Display your previous guesses during a game"
             checked={prefs.showGuessHistory}
             onChange={(value) => handleToggle('showGuessHistory', value)}
+          />
+
+          <DailyPlaylistSection
+            selected={prefs.dailyChallengePlaylists}
+            onToggle={handlePlaylistToggle}
+            onReconcile={(validIds) =>
+              updatePreferences({ dailyChallengePlaylists: validIds })
+            }
           />
 
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-5 pb-1">

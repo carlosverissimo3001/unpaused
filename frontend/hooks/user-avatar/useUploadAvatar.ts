@@ -27,15 +27,18 @@ export function useUploadAvatar() {
     onSuccess: (data) => {
       // Patch the cache immediately with the response — avoids a full refetch
       // delay and the grey flash it causes while useMe reloads.
-      queryClient.setQueryData(queryKeys.auth.me, (old: Record<string, unknown> | undefined) => {
-        if (!old) return old;
-        return {
-          ...old,
-          customAvatarUrl: data.customAvatarUrl,
-          avatarSource: data.avatarSource,
-          avatarUrl: data.avatarUrl,
-        };
-      });
+      queryClient.setQueryData(
+        queryKeys.auth.me,
+        (old: Record<string, unknown> | undefined) => {
+          if (!old) return old;
+          return {
+            ...old,
+            customAvatarUrl: data.customAvatarUrl,
+            avatarSource: data.avatarSource,
+            avatarUrl: data.avatarUrl,
+          };
+        },
+      );
     },
   });
 }

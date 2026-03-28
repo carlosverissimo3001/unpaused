@@ -11,9 +11,23 @@ export class UserPreferencesService {
     private readonly userPreferencesRepository: UserPreferencesRepository,
   ) {}
 
-  async get(sessionId: string): Promise<UserPreferenceDto> {
+  /**
+   * Given a user ID, fetches the user's preferences. Returns default preferences if none are found.
+   * @param userId The ID of the user whose preferences are being fetched or created.
+   * @returns The user preferences for the given user ID, either fetched from the database or default values if no preferences exist.
+   */
+  async get(userId: string): Promise<UserPreferenceDto> {
+    return this.userPreferencesRepository.findByUserId(userId);
+  }
+
+  /**
+   *  Given a session ID, retrieves the associated user and then fetches that user's preferences. If no preferences are found, returns default preferences.
+   * @param sessionId The session ID used to identify the user whose preferences are being fetched or created.
+   * @returns The user preferences for the user associated with the given session ID, either fetched from the database or default values if no preferences exist.
+   */
+  async getBySessionId(sessionId: string): Promise<UserPreferenceDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    return await this.userPreferencesRepository.upsert(userId, {});
+    return this.get(userId);
   }
 
   async update(

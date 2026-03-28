@@ -194,7 +194,8 @@ model UserPreference {
   showAlbumHint    Boolean @default(true) @map("show_album_hint")
   showTextHints    Boolean @default(true) @map("show_text_hints")
   reducedMotion    Boolean @default(false) @map("reduced_motion")
-  showGuessHistory Boolean @default(true) @map("show_guess_history")
+  showGuessHistory           Boolean  @default(true) @map("show_guess_history")
+  dailyChallengePlaylists    String[] @default([]) @map("daily_challenge_playlists")
   timezone         String  @default("UTC") @map("timezone")
   user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 

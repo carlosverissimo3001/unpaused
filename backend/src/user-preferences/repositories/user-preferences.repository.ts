@@ -7,11 +7,11 @@ import { UserPreferenceDto } from '../dto/user-preference.dto';
 export class UserPreferencesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByUserId(userId: string): Promise<UserPreferenceDto | null> {
+  async findByUserId(userId: string): Promise<UserPreferenceDto> {
     const preference = await this.prisma.userPreference.findUnique({
       where: { userId },
     });
-    return preference ? this.fromPrisma(preference) : null;
+    return preference ? this.fromPrisma(preference) : this.defaultPreferences();
   }
 
   async upsert(
@@ -23,6 +23,7 @@ export class UserPreferencesRepository {
         | 'showTextHints'
         | 'reducedMotion'
         | 'showGuessHistory'
+        | 'dailyChallengePlaylists'
         | 'timezone'
       >
     >,
@@ -38,6 +39,17 @@ export class UserPreferencesRepository {
   fromPrisma(prefs: UserPreference): UserPreferenceDto {
     return {
       ...prefs,
+    };
+  }
+
+  defaultPreferences(): UserPreferenceDto {
+    return {
+      showAlbumHint: true,
+      showTextHints: true,
+      reducedMotion: false,
+      showGuessHistory: true,
+      dailyChallengePlaylists: [],
+      timezone: 'UTC',
     };
   }
 }

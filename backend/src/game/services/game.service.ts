@@ -51,7 +51,7 @@ import { buildShareText, guessToEmoji } from '../utils/share.utils';
 import { buildHintsForRound } from '../utils/hint-builder';
 import { GameStatsService } from './game-stats.service';
 import { TrackMetadataVo } from '../../track/vo/track-metadata.vo';
-import { UserPreferencesRepository } from '../../user-preferences/repositories/user-preferences.repository';
+import { UserPreferencesService } from '../../user-preferences/services/user-preferences.service';
 
 @Injectable()
 export class GameService {
@@ -62,18 +62,18 @@ export class GameService {
     private readonly trackService: TrackService,
     private readonly trackRepository: TrackRepository,
     private readonly gameSessionRepository: GameSessionRepository,
+    private readonly userPreferencesService: UserPreferencesService,
     private readonly authService: AuthService,
     private readonly prisma: PrismaService,
     private readonly gameStatsService: GameStatsService,
     private readonly lastfmService: LastfmService,
-    private readonly userPreferencesRepository: UserPreferencesRepository,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
   }
 
   private async getUserTimezone(userId: string): Promise<string> {
-    const prefs = await this.userPreferencesRepository.findByUserId(userId);
+    const prefs = await this.userPreferencesService.get(userId);
     const timezone = prefs?.timezone;
 
     if (!timezone) {
@@ -124,19 +124,52 @@ export class GameService {
       return this.getGameState(sessionId, existing.id);
     }
 
-    const targetPlaylistId =
-      mode === GameMode.DAILY
-        ? `${userId}-${LIKED_SONGS_ID_SUFFIX}`
-        : playlistId;
+    let targetPlaylistId: string | undefined;
+    if (mode === GameMode.DAILY) {
+      const prefs = await this.userPreferencesService.get(userId);
+      const selected = prefs?.dailyChallengePlaylists ?? [];
+
+      if (selected.length > 0) {
+        // Pick a random playlist from the user's selection.
+        // IDs ending in LIKED_SONGS_ID_SUFFIX are handled by resolveTrackWithPreview automatically.
+        targetPlaylistId =
+          selected[Math.floor(Math.random() * selected.length)];
+      } else {
+        targetPlaylistId = `${userId}-${LIKED_SONGS_ID_SUFFIX}`;
+      }
+    } else {
+      targetPlaylistId = playlistId;
+    }
 
     if (!targetPlaylistId) {
       throw new BadRequestException('Playlist ID is required');
     }
 
-    const { selectedTrack, previewUrl } = await this.resolveTrackWithPreview(
-      sessionId,
-      targetPlaylistId,
-    );
+    let resolveResult: Awaited<ReturnType<typeof this.resolveTrackWithPreview>>;
+    const likedSongsId = `${userId}-${LIKED_SONGS_ID_SUFFIX}`;
+    if (mode === GameMode.DAILY && targetPlaylistId !== likedSongsId) {
+      try {
+        resolveResult = await this.resolveTrackWithPreview(
+          sessionId,
+          targetPlaylistId,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `Playlist ${targetPlaylistId} unavailable for daily game (user ${userId}); falling back to Liked Songs. Reason: ${(err as Error).message}`,
+        );
+        targetPlaylistId = likedSongsId;
+        resolveResult = await this.resolveTrackWithPreview(
+          sessionId,
+          likedSongsId,
+        );
+      }
+    } else {
+      resolveResult = await this.resolveTrackWithPreview(
+        sessionId,
+        targetPlaylistId,
+      );
+    }
+    const { selectedTrack, previewUrl } = resolveResult;
 
     const metadata = await this.fetchOrReuseMetadata(
       selectedTrack.id,

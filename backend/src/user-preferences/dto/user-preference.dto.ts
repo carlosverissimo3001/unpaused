@@ -7,14 +7,19 @@ export class UserPreferenceDto {
   @ApiProperty({ description: 'Show genre, decade, and other text hints' })
   showTextHints: boolean;
 
-  /* @ApiProperty({ description: 'Auto-play snippet when a round starts' })
-  autoPlay: boolean; */
-
   @ApiProperty({ description: 'Reduce motion and animations' })
   reducedMotion: boolean;
 
   @ApiProperty({ description: 'Show guess history during gameplay' })
   showGuessHistory: boolean;
+
+  @ApiProperty({
+    description:
+      'Playlist IDs to source daily challenge songs from. Empty means Liked Songs.',
+    type: String,
+    isArray: true,
+  })
+  dailyChallengePlaylists: string[];
 
   @ApiProperty({
     description: 'IANA timezone string (e.g. America/New_York)',
