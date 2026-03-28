@@ -50,7 +50,7 @@ export function applyFilters(
 ): SimplifiedPlaylist[] {
   return playlists.filter((p) => {
     // Spotify only allows playing user-owned playlists
-    if (p.owner?.display_name !== session.displayName) {
+    if (p.owner?.id !== session.spotifyUserId) {
       return false;
     }
     if (filters.onlyPublic && !p.public) {
