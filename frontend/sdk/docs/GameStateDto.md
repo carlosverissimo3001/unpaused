@@ -9,6 +9,7 @@ Name | Type
 `sessionId` | string
 `currentRound` | number
 `snippetDuration` | number
+`maxRounds` | number
 `status` | string
 `guesses` | [Array&lt;GuessHistoryDto&gt;](GuessHistoryDto.md)
 `previewUrl` | string
@@ -29,6 +30,7 @@ const example = {
   "sessionId": null,
   "currentRound": null,
   "snippetDuration": null,
+  "maxRounds": null,
   "status": null,
   "guesses": null,
   "previewUrl": null,

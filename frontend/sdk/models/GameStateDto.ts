@@ -67,6 +67,12 @@ export interface GameStateDto {
      */
     snippetDuration: number;
     /**
+     * The maximum number of rounds in the game
+     * @type {number}
+     * @memberof GameStateDto
+     */
+    maxRounds: number;
+    /**
      * The status of the game
      * @type {string}
      * @memberof GameStateDto
@@ -142,6 +148,7 @@ export function instanceOfGameStateDto(value: object): value is GameStateDto {
     if (!('sessionId' in value) || value['sessionId'] === undefined) return false;
     if (!('currentRound' in value) || value['currentRound'] === undefined) return false;
     if (!('snippetDuration' in value) || value['snippetDuration'] === undefined) return false;
+    if (!('maxRounds' in value) || value['maxRounds'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('guesses' in value) || value['guesses'] === undefined) return false;
     if (!('previewUrl' in value) || value['previewUrl'] === undefined) return false;
@@ -161,6 +168,7 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'sessionId': json['sessionId'],
         'currentRound': json['currentRound'],
         'snippetDuration': json['snippetDuration'],
+        'maxRounds': json['maxRounds'],
         'status': json['status'],
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
         'previewUrl': json['previewUrl'],
@@ -187,6 +195,7 @@ export function GameStateDtoToJSONTyped(value?: GameStateDto | null, ignoreDiscr
         'sessionId': value['sessionId'],
         'currentRound': value['currentRound'],
         'snippetDuration': value['snippetDuration'],
+        'maxRounds': value['maxRounds'],
         'status': value['status'],
         'guesses': ((value['guesses'] as Array<any>).map(GuessHistoryDtoToJSON)),
         'previewUrl': value['previewUrl'],

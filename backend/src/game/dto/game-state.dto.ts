@@ -15,6 +15,9 @@ export class GameStateDto {
   @ApiProperty({ description: 'The duration of the current snippet' })
   snippetDuration: number;
 
+  @ApiProperty({ description: 'The maximum number of rounds in the game' })
+  maxRounds: number;
+
   @ApiProperty({ description: 'The status of the game', enum: GameStatus })
   status: GameStatus;
 

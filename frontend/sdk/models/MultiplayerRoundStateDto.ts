@@ -65,6 +65,12 @@ export interface MultiplayerRoundStateDto {
      */
     snippetDuration: number;
     /**
+     * Maximum number of guesses per song
+     * @type {number}
+     * @memberof MultiplayerRoundStateDto
+     */
+    maxGuessesPerSong: number;
+    /**
      * 
      * @type {string}
      * @memberof MultiplayerRoundStateDto
@@ -112,6 +118,7 @@ export function instanceOfMultiplayerRoundStateDto(value: object): value is Mult
     if (!('totalRounds' in value) || value['totalRounds'] === undefined) return false;
     if (!('currentGuess' in value) || value['currentGuess'] === undefined) return false;
     if (!('snippetDuration' in value) || value['snippetDuration'] === undefined) return false;
+    if (!('maxGuessesPerSong' in value) || value['maxGuessesPerSong'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('guesses' in value) || value['guesses'] === undefined) return false;
     if (!('previewUrl' in value) || value['previewUrl'] === undefined) return false;
@@ -133,6 +140,7 @@ export function MultiplayerRoundStateDtoFromJSONTyped(json: any, ignoreDiscrimin
         'totalRounds': json['totalRounds'],
         'currentGuess': json['currentGuess'],
         'snippetDuration': json['snippetDuration'],
+        'maxGuessesPerSong': json['maxGuessesPerSong'],
         'status': json['status'],
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
         'previewUrl': json['previewUrl'],
@@ -156,6 +164,7 @@ export function MultiplayerRoundStateDtoToJSONTyped(value?: MultiplayerRoundStat
         'totalRounds': value['totalRounds'],
         'currentGuess': value['currentGuess'],
         'snippetDuration': value['snippetDuration'],
+        'maxGuessesPerSong': value['maxGuessesPerSong'],
         'status': value['status'],
         'guesses': ((value['guesses'] as Array<any>).map(GuessHistoryDtoToJSON)),
         'previewUrl': value['previewUrl'],

@@ -19,6 +19,9 @@ export class MultiplayerRoundStateDto {
   @ApiProperty({ description: 'Snippet duration for the current guess' })
   snippetDuration: number;
 
+  @ApiProperty({ description: 'Maximum number of guesses per song' })
+  maxGuessesPerSong: number;
+
   @ApiProperty({ enum: GameStatus })
   status: GameStatus;
 

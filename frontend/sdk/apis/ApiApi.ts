@@ -243,7 +243,7 @@ export interface UserPreferencesControllerUpdateRequest {
 export class ApiApi extends runtime.BaseAPI {
 
     /**
-     * Create a streak quiz question (admin only)
+     * Create a streak quiz question
      */
     async adminControllerCreateStreakQuestionRaw(requestParameters: AdminControllerCreateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StreakQuestionDto>> {
         if (requestParameters['createStreakQuestionDto'] == null) {
@@ -274,7 +274,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Create a streak quiz question (admin only)
+     * Create a streak quiz question
      */
     async adminControllerCreateStreakQuestion(requestParameters: AdminControllerCreateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakQuestionDto> {
         const response = await this.adminControllerCreateStreakQuestionRaw(requestParameters, initOverrides);
@@ -282,7 +282,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Soft-delete a streak quiz question (admin only)
+     * Soft-delete a streak quiz question
      */
     async adminControllerDeleteStreakQuestionRaw(requestParameters: AdminControllerDeleteStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (requestParameters['id'] == null) {
@@ -311,14 +311,14 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Soft-delete a streak quiz question (admin only)
+     * Soft-delete a streak quiz question
      */
     async adminControllerDeleteStreakQuestion(requestParameters: AdminControllerDeleteStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.adminControllerDeleteStreakQuestionRaw(requestParameters, initOverrides);
     }
 
     /**
-     * List all streak quiz questions (admin only)
+     * List all streak quiz questions
      */
     async adminControllerListStreakQuestionsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<StreakQuestionDto>>> {
         const queryParameters: any = {};
@@ -339,7 +339,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * List all streak quiz questions (admin only)
+     * List all streak quiz questions
      */
     async adminControllerListStreakQuestions(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<StreakQuestionDto>> {
         const response = await this.adminControllerListStreakQuestionsRaw(initOverrides);
@@ -347,7 +347,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * List all users (admin only)
+     * List all users
      */
     async adminControllerListUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<AdminUserDto>>> {
         const queryParameters: any = {};
@@ -368,7 +368,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * List all users (admin only)
+     * List all users
      */
     async adminControllerListUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<AdminUserDto>> {
         const response = await this.adminControllerListUsersRaw(initOverrides);
@@ -376,7 +376,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update a streak quiz question (admin only)
+     * Update a streak quiz question
      */
     async adminControllerUpdateStreakQuestionRaw(requestParameters: AdminControllerUpdateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StreakQuestionDto>> {
         if (requestParameters['id'] == null) {
@@ -415,7 +415,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update a streak quiz question (admin only)
+     * Update a streak quiz question
      */
     async adminControllerUpdateStreakQuestion(requestParameters: AdminControllerUpdateStreakQuestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakQuestionDto> {
         const response = await this.adminControllerUpdateStreakQuestionRaw(requestParameters, initOverrides);
@@ -423,7 +423,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update user role flags (admin only)
+     * Update user role flags
      */
     async adminControllerUpdateUserRoleRaw(requestParameters: AdminControllerUpdateUserRoleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AdminUserDto>> {
         if (requestParameters['id'] == null) {
@@ -462,7 +462,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Update user role flags (admin only)
+     * Update user role flags
      */
     async adminControllerUpdateUserRole(requestParameters: AdminControllerUpdateUserRoleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AdminUserDto> {
         const response = await this.adminControllerUpdateUserRoleRaw(requestParameters, initOverrides);

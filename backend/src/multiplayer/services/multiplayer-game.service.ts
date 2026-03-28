@@ -100,6 +100,7 @@ export class MultiplayerGameService {
       totalRounds: room.roundCount,
       currentGuess: currentSession.currentRound,
       snippetDuration: getSnippetDuration(currentSession.currentRound),
+      maxGuessesPerSong: MAX_ROUNDS,
       status: currentSession.status,
       guesses,
       previewUrl: track.previewUrl!,
@@ -205,6 +206,7 @@ export class MultiplayerGameService {
       status,
       currentRound: nextRound,
       snippetDuration: getSnippetDuration(Math.min(nextRound, MAX_ROUNDS - 1)),
+      maxRounds: MAX_ROUNDS,
     };
   }
 

@@ -2,13 +2,12 @@
 
 import { motion } from 'framer-motion';
 import { Play, Pause } from 'lucide-react';
-import { ROUND_DURATIONS } from '@/consts/consts';
 import { VolumeSlider } from './VolumeSlider';
 
 const SPRING = { type: 'spring' as const, stiffness: 100, damping: 15 };
 
 interface PlaySnippetButtonProps {
-  currentRound: number;
+  snippetDuration: number;
   isPlaying: boolean;
   onPlay: () => void;
   onPause: () => void;
@@ -17,14 +16,14 @@ interface PlaySnippetButtonProps {
 }
 
 export function PlaySnippetButton({
-  currentRound,
+  snippetDuration,
   isPlaying,
   onPlay,
   onPause,
   volume,
   onVolumeChange,
 }: PlaySnippetButtonProps) {
-  const duration = ROUND_DURATIONS[currentRound];
+  const duration = snippetDuration;
 
   return (
     <div className="text-center mb-4 sm:mb-6">

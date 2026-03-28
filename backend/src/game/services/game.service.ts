@@ -398,6 +398,7 @@ export class GameService {
       status,
       currentRound: nextRound,
       snippetDuration: ROUND_DURATIONS[Math.min(nextRound, MAX_ROUNDS - 1)],
+      maxRounds: MAX_ROUNDS,
       hints,
     };
   }

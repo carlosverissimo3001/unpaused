@@ -1,20 +1,19 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { ROUND_DURATIONS } from '@/consts/consts';
 import { useMediaSession } from '../useMediaSession';
 
 interface UseGameAudioOptions {
   previewUrl: string | null | undefined;
   isGameOver: boolean;
-  currentRound: number;
+  snippetDuration: number;
   volume: number;
 }
 
 export function useGameAudio({
   previewUrl,
   isGameOver,
-  currentRound,
+  snippetDuration,
   volume,
 }: UseGameAudioOptions) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -172,7 +171,7 @@ export function useGameAudio({
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
     const isMobile = navigator.maxTouchPoints > 0;
-    const durationMs = ROUND_DURATIONS[currentRound] * 1000 + 100;
+    const durationMs = snippetDuration * 1000 + 100;
     // Add a small buffer on mobile to compensate for iOS fade-in latency.
     const adjustedDuration = isMobile ? durationMs + 60 : durationMs;
     const requestId = ++playRequestIdRef.current;
@@ -242,7 +241,7 @@ export function useGameAudio({
     } else {
       startPlayback();
     }
-  }, [currentRound, previewUrl, stopAudioInternal]);
+  }, [snippetDuration, previewUrl, stopAudioInternal]);
 
   const pauseSnippet = useCallback(() => {
     stopAudioInternal();

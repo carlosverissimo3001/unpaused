@@ -9,6 +9,7 @@ export interface GameViewState {
   sessionId: string;
   currentRound: number;
   snippetDuration: number;
+  maxRounds: number;
   status: string;
   guesses: GuessHistoryDto[];
   previewUrl?: string | null;

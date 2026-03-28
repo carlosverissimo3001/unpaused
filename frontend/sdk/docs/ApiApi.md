@@ -4,12 +4,12 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**adminControllerCreateStreakQuestion**](ApiApi.md#admincontrollercreatestreakquestion) | **POST** /admin/streak-questions | Create a streak quiz question (admin only) |
-| [**adminControllerDeleteStreakQuestion**](ApiApi.md#admincontrollerdeletestreakquestion) | **DELETE** /admin/streak-questions/{id} | Soft-delete a streak quiz question (admin only) |
-| [**adminControllerListStreakQuestions**](ApiApi.md#admincontrollerliststreakquestions) | **GET** /admin/streak-questions | List all streak quiz questions (admin only) |
-| [**adminControllerListUsers**](ApiApi.md#admincontrollerlistusers) | **GET** /admin/users | List all users (admin only) |
-| [**adminControllerUpdateStreakQuestion**](ApiApi.md#admincontrollerupdatestreakquestion) | **PATCH** /admin/streak-questions/{id} | Update a streak quiz question (admin only) |
-| [**adminControllerUpdateUserRole**](ApiApi.md#admincontrollerupdateuserrole) | **PATCH** /admin/users/{id} | Update user role flags (admin only) |
+| [**adminControllerCreateStreakQuestion**](ApiApi.md#admincontrollercreatestreakquestion) | **POST** /admin/streak-questions | Create a streak quiz question |
+| [**adminControllerDeleteStreakQuestion**](ApiApi.md#admincontrollerdeletestreakquestion) | **DELETE** /admin/streak-questions/{id} | Soft-delete a streak quiz question |
+| [**adminControllerListStreakQuestions**](ApiApi.md#admincontrollerliststreakquestions) | **GET** /admin/streak-questions | List all streak quiz questions |
+| [**adminControllerListUsers**](ApiApi.md#admincontrollerlistusers) | **GET** /admin/users | List all users |
+| [**adminControllerUpdateStreakQuestion**](ApiApi.md#admincontrollerupdatestreakquestion) | **PATCH** /admin/streak-questions/{id} | Update a streak quiz question |
+| [**adminControllerUpdateUserRole**](ApiApi.md#admincontrollerupdateuserrole) | **PATCH** /admin/users/{id} | Update user role flags |
 | [**authControllerCallback**](ApiApi.md#authcontrollercallback) | **GET** /auth/callback | Handle Spotify OAuth callback |
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
 | [**authControllerLogout**](ApiApi.md#authcontrollerlogout) | **POST** /auth/logout | Logout and clear session |
@@ -49,7 +49,7 @@ All URIs are relative to *http://localhost*
 
 > StreakQuestionDto adminControllerCreateStreakQuestion(createStreakQuestionDto)
 
-Create a streak quiz question (admin only)
+Create a streak quiz question
 
 ### Example
 
@@ -118,7 +118,7 @@ example().catch(console.error);
 
 > adminControllerDeleteStreakQuestion(id)
 
-Soft-delete a streak quiz question (admin only)
+Soft-delete a streak quiz question
 
 ### Example
 
@@ -187,7 +187,7 @@ example().catch(console.error);
 
 > Array&lt;StreakQuestionDto&gt; adminControllerListStreakQuestions()
 
-List all streak quiz questions (admin only)
+List all streak quiz questions
 
 ### Example
 
@@ -248,7 +248,7 @@ This endpoint does not need any parameter.
 
 > Array&lt;AdminUserDto&gt; adminControllerListUsers()
 
-List all users (admin only)
+List all users
 
 ### Example
 
@@ -309,7 +309,7 @@ This endpoint does not need any parameter.
 
 > StreakQuestionDto adminControllerUpdateStreakQuestion(id, updateStreakQuestionDto)
 
-Update a streak quiz question (admin only)
+Update a streak quiz question
 
 ### Example
 
@@ -381,7 +381,7 @@ example().catch(console.error);
 
 > AdminUserDto adminControllerUpdateUserRole(id, updateUserRoleDto)
 
-Update user role flags (admin only)
+Update user role flags
 
 ### Example
 

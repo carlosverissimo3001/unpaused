@@ -37,7 +37,7 @@ export class AdminController {
 
   @Get('streak-questions')
   @ApiCookieAuth()
-  @ApiOperation({ summary: 'List all streak quiz questions (admin only)' })
+  @ApiOperation({ summary: 'List all streak quiz questions' })
   @ApiResponse({ status: 200, type: [StreakQuestionDto] })
   async listStreakQuestions(): Promise<StreakQuestionDto[]> {
     return this.streakQuizService.listAllQuestions();
@@ -45,7 +45,7 @@ export class AdminController {
 
   @Post('streak-questions')
   @ApiCookieAuth()
-  @ApiOperation({ summary: 'Create a streak quiz question (admin only)' })
+  @ApiOperation({ summary: 'Create a streak quiz question' })
   @ApiResponse({ status: 201, type: StreakQuestionDto })
   async createStreakQuestion(
     @SessionId() sessionId: string,
@@ -56,7 +56,7 @@ export class AdminController {
 
   @Patch('streak-questions/:id')
   @ApiCookieAuth()
-  @ApiOperation({ summary: 'Update a streak quiz question (admin only)' })
+  @ApiOperation({ summary: 'Update a streak quiz question' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200, type: StreakQuestionDto })
   async updateStreakQuestion(
@@ -68,7 +68,7 @@ export class AdminController {
 
   @Delete('streak-questions/:id')
   @ApiCookieAuth()
-  @ApiOperation({ summary: 'Soft-delete a streak quiz question (admin only)' })
+  @ApiOperation({ summary: 'Soft-delete a streak quiz question' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 204 })
   async deleteStreakQuestion(@Param('id') id: string): Promise<void> {
@@ -77,7 +77,7 @@ export class AdminController {
 
   @Get('users')
   @ApiCookieAuth()
-  @ApiOperation({ summary: 'List all users (admin only)' })
+  @ApiOperation({ summary: 'List all users' })
   @ApiResponse({ status: 200, type: [AdminUserDto] })
   async listUsers(): Promise<AdminUserDto[]> {
     return this.adminUserService.listUsers();
@@ -85,7 +85,7 @@ export class AdminController {
 
   @Patch('users/:id')
   @ApiCookieAuth()
-  @ApiOperation({ summary: 'Update user role flags (admin only)' })
+  @ApiOperation({ summary: 'Update user role flags' })
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200, type: AdminUserDto })
   async updateUserRole(

@@ -58,6 +58,12 @@ export interface GuessResultDto {
      */
     snippetDuration: number;
     /**
+     * The maximum number of rounds in the game
+     * @type {number}
+     * @memberof GuessResultDto
+     */
+    maxRounds: number;
+    /**
      * Optional personalized rank title (easter egg)
      * @type {string}
      * @memberof GuessResultDto
@@ -118,6 +124,7 @@ export function instanceOfGuessResultDto(value: object): value is GuessResultDto
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('currentRound' in value) || value['currentRound'] === undefined) return false;
     if (!('snippetDuration' in value) || value['snippetDuration'] === undefined) return false;
+    if (!('maxRounds' in value) || value['maxRounds'] === undefined) return false;
     return true;
 }
 
@@ -136,6 +143,7 @@ export function GuessResultDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'status': json['status'],
         'currentRound': json['currentRound'],
         'snippetDuration': json['snippetDuration'],
+        'maxRounds': json['maxRounds'],
         'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
         'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
         'meta': json['meta'] == null ? undefined : json['meta'],
@@ -159,6 +167,7 @@ export function GuessResultDtoToJSONTyped(value?: GuessResultDto | null, ignoreD
         'status': value['status'],
         'currentRound': value['currentRound'],
         'snippetDuration': value['snippetDuration'],
+        'maxRounds': value['maxRounds'],
         'rankTitle': value['rankTitle'],
         'specialNote': value['specialNote'],
         'meta': value['meta'],

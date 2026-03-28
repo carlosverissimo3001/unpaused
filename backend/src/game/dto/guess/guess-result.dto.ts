@@ -20,6 +20,9 @@ export class GuessResultDto {
   @ApiProperty({ description: 'The duration of the current snippet' })
   snippetDuration: number;
 
+  @ApiProperty({ description: 'The maximum number of rounds in the game' })
+  maxRounds: number;
+
   @ApiProperty({
     description: 'Optional personalized rank title (easter egg)',
     required: false,

@@ -3,27 +3,32 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ROUND_DURATIONS } from '@/consts/consts';
 
-const MAX_ROUNDS = ROUND_DURATIONS.length;
+const MAX_BLUR = 45;
+const MIN_BLUR = 2;
 
-const BLUR_PX = [45, 35, 25, 15, 5, 2];
+function blurForRound(currentRound: number, maxRounds: number): number {
+  if (maxRounds <= 1) {
+    return currentRound <= 0 ? MAX_BLUR : MIN_BLUR;
+  }
 
-function blurForRound(currentRound: number): number {
-  const idx = Math.min(currentRound, MAX_ROUNDS - 1);
-  return BLUR_PX[idx] ?? 0;
+  const clamped = Math.max(0, Math.min(currentRound, maxRounds - 1));
+  const progress = clamped / (maxRounds - 1);
+  return Math.round(MAX_BLUR - progress * (MAX_BLUR - MIN_BLUR));
 }
 
 interface AlbumArtRevealProps {
   albumImageUrl: string;
   currentRound: number;
+  maxRounds: number;
 }
 
 export function AlbumArtReveal({
   albumImageUrl,
   currentRound,
+  maxRounds,
 }: AlbumArtRevealProps) {
-  const blur = blurForRound(currentRound);
+  const blur = blurForRound(currentRound, maxRounds);
   const [imageLoaded, setImageLoaded] = useState(false);
 
   return (

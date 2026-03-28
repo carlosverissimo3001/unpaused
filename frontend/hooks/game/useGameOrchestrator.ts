@@ -55,7 +55,7 @@ export function useGameOrchestrator(
   const gameAudio = useGameAudio({
     previewUrl: gameState?.previewUrl,
     isGameOver: !!isGameOver,
-    currentRound: gameState?.currentRound ?? 0,
+    snippetDuration: gameState?.snippetDuration ?? 0.5,
     volume,
   });
 

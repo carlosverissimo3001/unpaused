@@ -11,6 +11,7 @@ Name | Type
 `status` | string
 `currentRound` | number
 `snippetDuration` | number
+`maxRounds` | number
 `rankTitle` | string
 `specialNote` | string
 `meta` | object
@@ -28,6 +29,7 @@ const example = {
   "status": null,
   "currentRound": null,
   "snippetDuration": null,
+  "maxRounds": null,
   "rankTitle": null,
   "specialNote": null,
   "meta": null,

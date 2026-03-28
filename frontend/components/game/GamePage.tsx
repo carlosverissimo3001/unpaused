@@ -157,7 +157,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
           />
 
           {!isGameOver && (
-            <GameTitle mode={mode} currentRound={gameState.currentRound} />
+            <GameTitle mode={mode} currentRound={gameState.currentRound} maxRounds={gameState.maxRounds} />
           )}
 
           <audio
@@ -179,6 +179,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             <RoundProgressBar
               currentRound={gameState.currentRound}
               guesses={gameState.guesses}
+              totalRounds={gameState.maxRounds}
             />
           )}
 
@@ -186,12 +187,13 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             <AlbumArtReveal
               albumImageUrl={gameState.albumImageUrl}
               currentRound={gameState.currentRound}
+              maxRounds={gameState.maxRounds}
             />
           )}
 
           {!isGameOver && (
             <PlaySnippetButton
-              currentRound={gameState.currentRound}
+              snippetDuration={gameState.snippetDuration}
               isPlaying={isPlaying}
               onPlay={playSnippet}
               onPause={pauseSnippet}

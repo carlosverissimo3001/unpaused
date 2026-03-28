@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import { getGuessResultStyle } from './guess-result-styles';
 import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
-import { ROUND_DURATIONS } from '@/consts/consts';
 
 interface Guess {
   result: GuessHistoryDtoResultEnum | null;
@@ -12,17 +11,17 @@ interface Guess {
 interface RoundProgressBarProps {
   currentRound: number;
   guesses: Guess[];
-  totalRounds?: number;
+  totalRounds: number;
 }
 
 export function RoundProgressBar({
   currentRound,
   guesses,
-  totalRounds = ROUND_DURATIONS.length,
+  totalRounds,
 }: RoundProgressBarProps) {
   return (
     <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 md:mb-8">
-      {ROUND_DURATIONS.slice(0, totalRounds).map((_, index) => {
+      {Array.from({ length: totalRounds }, (_, index) => {
         const result = guesses[index]?.result;
         const style = result != null ? getGuessResultStyle(result) : null;
         const isCompleted = index < currentRound;

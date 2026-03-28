@@ -225,7 +225,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
   const gameAudio = useGameAudio({
     previewUrl: roundState?.previewUrl,
     isGameOver: !!isRoundComplete,
-    currentRound: roundState?.currentGuess ?? 0,
+    snippetDuration: roundState?.snippetDuration ?? 0.5,
     volume,
   });
 
@@ -413,12 +413,13 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
             <RoundProgressBar
               currentRound={roundState.currentGuess}
               guesses={roundState.guesses}
+              totalRounds={roundState.maxGuessesPerSong}
             />
           )}
 
           {!isRoundComplete && (
             <PlaySnippetButton
-              currentRound={roundState.currentGuess}
+              snippetDuration={roundState.snippetDuration}
               isPlaying={isPlaying}
               onPlay={playSnippet}
               onPause={pauseSnippet}
