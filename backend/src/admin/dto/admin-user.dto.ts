@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { User } from '@prisma/client';
+import { AvatarSource, User } from '@prisma/client';
 
 export class AdminUserDto {
   @ApiProperty()
@@ -27,11 +27,16 @@ export class AdminUserDto {
   updatedAt: Date;
 
   static fromEntity(entity: User): AdminUserDto {
+    const effectiveAvatarUrl =
+      entity.avatarSource === AvatarSource.CUSTOM
+        ? entity.customAvatarUrl
+        : entity.avatarUrl;
+
     return {
       id: entity.id,
       spotifyUserId: entity.spotifyUserId,
       displayName: entity.displayName,
-      avatarUrl: entity.avatarUrl ?? undefined,
+      avatarUrl: effectiveAvatarUrl ?? undefined,
       isTrusted: entity.isTrusted,
       isAdmin: entity.isAdmin,
       createdAt: entity.createdAt,
