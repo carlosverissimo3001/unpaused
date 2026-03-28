@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AuthService } from '../../auth/services/auth.service';
 import { UserPreferencesRepository } from '../repositories/user-preferences.repository';
 import { UserPreferenceDto } from '../dto/user-preference.dto';
@@ -6,6 +6,8 @@ import { UpdateUserPreferenceDto } from '../dto/update-user-preference.dto';
 
 @Injectable()
 export class UserPreferencesService {
+  private readonly logger = new Logger(UserPreferencesService.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly userPreferencesRepository: UserPreferencesRepository,
@@ -36,5 +38,27 @@ export class UserPreferencesService {
   ): Promise<UserPreferenceDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
     return await this.userPreferencesRepository.upsert(userId, dto);
+  }
+
+  /**
+   * Resolves the user's IANA timezone, falling back to 'UTC' if unset or invalid.
+   * @param userId The ID of the user whose timezone is being resolved.
+   * @returns The user's timezone if set and valid, or 'UTC' if unset or invalid.
+   */
+  async getUserTimezone(userId: string): Promise<string> {
+    const prefs = await this.get(userId);
+    const timezone = prefs?.timezone;
+    if (!timezone) {
+      return 'UTC';
+    }
+    try {
+      Intl.DateTimeFormat('en-US', { timeZone: timezone });
+      return timezone;
+    } catch {
+      this.logger.warn(
+        `Invalid timezone "${timezone}" for user ${userId}, falling back to UTC`,
+      );
+      return 'UTC';
+    }
   }
 }

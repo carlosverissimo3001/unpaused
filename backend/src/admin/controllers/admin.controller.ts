@@ -15,7 +15,7 @@ import {
   ApiCookieAuth,
   ApiParam,
 } from '@nestjs/swagger';
-import { StreakQuizService } from '../../streak/streak-quiz.service';
+import { StreakQuizService } from '../../streak/services/streak-quiz.service';
 import { StreakQuestionDto } from '../../streak/dto/streak-question.dto';
 import { CreateStreakQuestionDto } from '../../streak/dto/create-streak-question.dto';
 import { UpdateStreakQuestionDto } from '../../streak/dto/update-streak-question.dto';

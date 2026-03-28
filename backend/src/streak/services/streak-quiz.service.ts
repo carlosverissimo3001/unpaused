@@ -1,16 +1,16 @@
+import { AuthService } from '@auth/services/auth.service';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
-import { AuthService } from '@auth/services/auth.service';
-import { StreakQuizRepository } from './streak-quiz.repository';
-import { QuizNextResponseDto } from './dto/quiz-question.dto';
-import { QuizResultDto } from './dto/quiz-result.dto';
-import { StreakQuestionDto } from './dto/streak-question.dto';
-import { CreateStreakQuestionDto } from './dto/create-streak-question.dto';
-import { UpdateStreakQuestionDto } from './dto/update-streak-question.dto';
+import { CreateStreakQuestionDto } from '../dto/create-streak-question.dto';
+import { QuizNextResponseDto } from '../dto/quiz-question.dto';
+import { QuizResultDto } from '../dto/quiz-result.dto';
+import { StreakQuestionDto } from '../dto/streak-question.dto';
+import { UpdateStreakQuestionDto } from '../dto/update-streak-question.dto';
+import { StreakQuizRepository } from '../repositories/streak-quiz.repository';
 
 const MAX_FREEZES = 5;
 

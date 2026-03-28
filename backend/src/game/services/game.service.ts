@@ -1,3 +1,8 @@
+import { PlaylistService } from '@/playlist/services/playlist.service';
+import { TrackDto } from '@/track/dto/track.dto';
+import { TrackRepository } from '@/track/repositories/track.repository';
+import { LastfmService } from '@/track/services/lastfm.service';
+import { TrackService } from '@/track/services/track.service';
 import { AuthService } from '@auth/services/auth.service';
 import {
   BadRequestException,
@@ -5,18 +10,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PlaylistService } from '@/playlist/services/playlist.service';
 import { GameMode, GameStatus } from '@prisma/client';
-import { PrismaService } from '@prisma/prisma.service';
-import { TrackDto } from '@/track/dto/track.dto';
-import { TrackRepository } from '@/track/repositories/track.repository';
-import { TrackService } from '@/track/services/track.service';
-import { LastfmService } from '@/track/services/lastfm.service';
 import { Transactional } from '@transaction/transactional.decorator';
 import { formatDate, isAfter, subDays, subHours } from 'date-fns';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 import { AppLoggerService } from '../../logger/logger.service';
-import { GuessResult, ROUND_DURATIONS, MAX_ROUNDS } from '../consts';
+import { StreakService } from '../../streak/services/streak.service';
+import { TrackMetadataVo } from '../../track/vo/track-metadata.vo';
+import { UserPreferencesService } from '../../user-preferences/services/user-preferences.service';
+import { GuessResult, MAX_ROUNDS, ROUND_DURATIONS } from '../consts';
 import { PlayedTodayDto } from '../dto/daily/played-today.dto';
 import { ShareResultDto } from '../dto/daily/share-result.dto';
 import {
@@ -38,20 +40,18 @@ import {
   mapToGameStateDto,
 } from '../utils/game-state-mapper';
 import {
-  evaluateGuess,
   addGuessToHistory,
   calculateNextState,
+  evaluateGuess,
 } from '../utils/guess-evaluator';
+import { buildHintsForRound } from '../utils/hint-builder';
+import { buildShareText, guessToEmoji } from '../utils/share.utils';
 import {
   gameNumberFromDate,
   getUserExtras,
   shuffleInPlace,
 } from '../utils/utils';
-import { buildShareText, guessToEmoji } from '../utils/share.utils';
-import { buildHintsForRound } from '../utils/hint-builder';
 import { GameStatsService } from './game-stats.service';
-import { TrackMetadataVo } from '../../track/vo/track-metadata.vo';
-import { UserPreferencesService } from '../../user-preferences/services/user-preferences.service';
 
 @Injectable()
 export class GameService {
@@ -64,31 +64,12 @@ export class GameService {
     private readonly gameSessionRepository: GameSessionRepository,
     private readonly userPreferencesService: UserPreferencesService,
     private readonly authService: AuthService,
-    private readonly prisma: PrismaService,
     private readonly gameStatsService: GameStatsService,
+    private readonly streakService: StreakService,
     private readonly lastfmService: LastfmService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
-  }
-
-  private async getUserTimezone(userId: string): Promise<string> {
-    const prefs = await this.userPreferencesService.get(userId);
-    const timezone = prefs?.timezone;
-
-    if (!timezone) {
-      return 'UTC';
-    }
-
-    try {
-      Intl.DateTimeFormat('en-US', { timeZone: timezone });
-      return timezone;
-    } catch {
-      this.logger.warn(
-        `Invalid timezone "${timezone}" for user ${userId}; falling back to UTC`,
-      );
-      return 'UTC';
-    }
   }
 
   @Transactional()
@@ -100,6 +81,9 @@ export class GameService {
     const { id: userId, isTrusted } =
       await this.authService.getUserBySessionId(sessionId);
 
+    const userTimezone =
+      await this.userPreferencesService.getUserTimezone(userId);
+
     if (mode === GameMode.DAILY && !isTrusted) {
       throw new ForbiddenException(
         'Daily challenge requires a trusted account',
@@ -110,7 +94,7 @@ export class GameService {
       mode === GameMode.DAILY
         ? await this.gameSessionRepository.findTodayDailySession(
             userId,
-            await this.getUserTimezone(userId),
+            userTimezone,
           )
         : await this.gameSessionRepository.findActiveSession(
             userId,
@@ -382,13 +366,18 @@ export class GameService {
     const { status, gameOver } = calculateNextState(result, nextRound);
 
     if (gameOver && game.userId) {
+      const lastGameRound =
+        result === GuessResult.Correct ? game.currentRound : nextRound;
+
       await this.gameStatsService.updateGameStats({
         userId: game.userId,
-        lastGameRound:
-          result === GuessResult.Correct ? game.currentRound : nextRound,
+        lastGameRound,
         mode: game.mode,
-        timezone: await this.getUserTimezone(game.userId),
       });
+
+      if (game.mode === GameMode.DAILY) {
+        await this.streakService.updateDailyStreak(game.userId, lastGameRound);
+      }
     }
 
     await this.gameSessionRepository.updateSessionProgress(gameSessionId, {
@@ -481,15 +470,11 @@ export class GameService {
       const oldestDate = pageDates[pageDates.length - 1]; // sorted desc, last = oldest
       const newestDate = pageDates[0];
 
-      // TODO: move to StreakService, create a repo there
-      const usages = await this.prisma.streakFreezeUsage.findMany({
-        where: {
-          userId,
-          coveredFrom: { gte: new Date(oldestDate) },
-          coveredTo: { lte: new Date(newestDate + 'T23:59:59.999Z') },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
+      const usages = await this.streakService.getFreezeUsagesInRange(
+        userId,
+        oldestDate,
+        newestDate,
+      );
       streakFreezeUsages = usages.map((u) => ({
         id: u.id,
         coveredFrom: formatDate(u.coveredFrom, 'yyyy-MM-dd'),
@@ -525,7 +510,7 @@ export class GameService {
 
   async getPlayedToday(sessionId: string): Promise<PlayedTodayDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
-    const timezone = await this.getUserTimezone(userId);
+    const timezone = await this.userPreferencesService.getUserTimezone(userId);
     const todaySession = await this.gameSessionRepository.findTodayDailySession(
       userId,
       timezone,

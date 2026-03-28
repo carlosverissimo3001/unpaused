@@ -10,6 +10,7 @@ import { PlaylistModule } from '../playlist/playlist.module';
 import { SpotifyModule } from '../spotify/spotify.module';
 import { TrackModule } from '../track/track.module';
 import { UserPreferencesModule } from '../user-preferences/user-preferences.module';
+import { StreakModule } from '../streak/streak.module';
 import { GameStatsRepository } from './repositories/game-stats.repository';
 import { BullModule } from '@nestjs/bullmq';
 import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from '../consts';
@@ -22,6 +23,7 @@ import { GameConsumer } from './consumers/game.consumer';
     SpotifyModule,
     TrackModule,
     UserPreferencesModule,
+    StreakModule,
     BullModule.registerQueue({
       name: GAME_CLEANUP_QUEUE,
       defaultJobOptions: JOB_OPTIONS_WITH_BACKOFF,

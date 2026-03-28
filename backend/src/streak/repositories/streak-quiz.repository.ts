@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { StreakQuizQuestion } from '@prisma/client';
-import { StreakQuizQuestionEntity } from './entities/streak-quiz-question.entity';
+import { StreakQuizQuestionEntity } from '../entities/streak-quiz-question.entity';
 
 @Injectable()
 export class StreakQuizRepository {

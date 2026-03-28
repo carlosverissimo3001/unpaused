@@ -8,12 +8,12 @@ import {
 import { SessionId } from '@utils/decorators/sessionId.decorator';
 import { SessionGuard } from '@utils/guards/session-guard';
 import { TrustedUserGuard } from '@utils/guards/trusted-user-guard';
-import { StreakService } from './streak.service';
-import { StreakQuizService } from './streak-quiz.service';
-import { StreakStatusDto } from './dto/streak-status.dto';
-import { QuizNextResponseDto } from './dto/quiz-question.dto';
-import { SubmitQuizAnswerDto } from './dto/submit-quiz-answer.dto';
-import { QuizResultDto } from './dto/quiz-result.dto';
+import { QuizNextResponseDto } from '../dto/quiz-question.dto';
+import { QuizResultDto } from '../dto/quiz-result.dto';
+import { StreakStatusDto } from '../dto/streak-status.dto';
+import { SubmitQuizAnswerDto } from '../dto/submit-quiz-answer.dto';
+import { StreakQuizService } from '../services/streak-quiz.service';
+import { StreakService } from '../services/streak.service';
 
 @ApiTags('Api')
 @Controller('streak')

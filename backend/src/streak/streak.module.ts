@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
+import { UserPreferencesModule } from '../user-preferences/user-preferences.module';
 import { GameStatsRepository } from '../game/repositories/game-stats.repository';
-import { StreakController } from './streak.controller';
-import { StreakService } from './streak.service';
-import { StreakQuizService } from './streak-quiz.service';
-import { StreakQuizRepository } from './streak-quiz.repository';
+import { StreakController } from './controllers/streak.controller';
+import { StreakService } from './services/streak.service';
+import { StreakQuizService } from './services/streak-quiz.service';
+import { StreakQuizRepository } from './repositories/streak-quiz.repository';
 import { TrustedUserGuard } from '../utils/guards/trusted-user-guard';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, UserPreferencesModule],
   controllers: [StreakController],
   providers: [
     StreakService,
@@ -17,6 +18,6 @@ import { TrustedUserGuard } from '../utils/guards/trusted-user-guard';
     GameStatsRepository,
     TrustedUserGuard,
   ],
-  exports: [StreakQuizService],
+  exports: [StreakService, StreakQuizService],
 })
 export class StreakModule {}
