@@ -85,18 +85,9 @@ export function PreferencesPage() {
 
   return (
     <div
-      className="min-h-screen min-h-[100dvh] p-4 sm:p-8 max-w-lg mx-auto"
+      className="h-screen h-[100dvh] p-4 sm:p-8 max-w-2xl mx-auto"
       style={{ background: 'rgb(var(--bg))' }}
     >
-      <div
-        className="fixed inset-0 pointer-events-none -z-10"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(29,185,84,0.08) 0%, transparent 60%)',
-        }}
-        aria-hidden
-      />
-
       <div className="mb-6">
         <Link
           href="/"
@@ -133,7 +124,9 @@ export function PreferencesPage() {
                   e.preventDefault();
                   const name = draftName.trim();
                   if (!name) return;
-                  updateProfile(name, { onSuccess: () => setEditingName(false) });
+                  updateProfile(name, {
+                    onSuccess: () => setEditingName(false),
+                  });
                 }}
               >
                 <input
