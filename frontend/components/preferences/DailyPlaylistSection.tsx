@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Heart, Search, Shuffle } from 'lucide-react';
+import { Search, Shuffle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
 import type { PlaylistDto } from '@/sdk';
@@ -14,7 +14,6 @@ interface PlaylistRowProps {
   checked: boolean;
   disabled: boolean;
   onClick: () => void;
-  isLikedSongs?: boolean;
 }
 
 function PlaylistRow({
@@ -23,7 +22,6 @@ function PlaylistRow({
   checked,
   disabled,
   onClick,
-  isLikedSongs,
 }: PlaylistRowProps) {
   return (
     <button
@@ -36,11 +34,7 @@ function PlaylistRow({
       } ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <div className="w-8 h-8 rounded-md overflow-hidden shrink-0">
-        {isLikedSongs ? (
-          <div className="w-full h-full flex items-center justify-center bg-[#1DB954]/20">
-            <Heart className="w-4 h-4 text-[#1DB954]" fill="currentColor" />
-          </div>
-        ) : imageUrl ? (
+        {imageUrl ? (
           <Image
             src={imageUrl}
             alt={name}
@@ -104,21 +98,13 @@ function SelectedPreview({ selected, playlists }: SelectedPreviewProps) {
       <div className="flex items-center">
         {shown.map((id, i) => {
           const playlist = playlists.find((p) => p.id === id);
-          const isLiked = playlist?.id.endsWith('-liked-songs');
           return (
             <div
               key={id}
               className="w-6 h-6 rounded-full overflow-hidden border-2 border-bg shrink-0"
               style={{ marginLeft: i === 0 ? 0 : -6, zIndex: shown.length - i }}
             >
-              {isLiked ? (
-                <div className="w-full h-full flex items-center justify-center bg-[#1DB954]/20">
-                  <Heart
-                    className="w-3 h-3 text-[#1DB954]"
-                    fill="currentColor"
-                  />
-                </div>
-              ) : playlist?.imageUrl ? (
+              {playlist?.imageUrl ? (
                 <Image
                   src={playlist.imageUrl}
                   alt={playlist.name}
@@ -222,7 +208,7 @@ export function DailyPlaylistSection({
               aria-label="Clear search"
               className="text-fg/30 hover:text-fg/60 transition-colors text-xs leading-none"
             >
-              ✕
+              x
             </button>
           )}
         </div>
@@ -246,7 +232,6 @@ export function DailyPlaylistSection({
                   checked={validSelected.includes(playlist.id)}
                   disabled={isOnlyOne && validSelected.includes(playlist.id)}
                   onClick={() => onToggle(playlist.id)}
-                  isLikedSongs={playlist.id.endsWith('-liked-songs')}
                 />
               ))}
               {filteredPlaylists.length === 0 && (
