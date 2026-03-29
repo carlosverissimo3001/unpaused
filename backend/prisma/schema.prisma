@@ -39,7 +39,8 @@ model User {
   hostedRooms MultiplayerRoom[] @relation("hostedRooms")
   roomPlayers RoomPlayer[]
 
-  preferences UserPreference?
+  preferences  UserPreference?
+  gauntletRuns GauntletRun[]
 
   @@map("users")
 }
@@ -100,6 +101,7 @@ model Track {
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   gameSessions GameSession[]
+  gauntletRuns GauntletRun[]
 
   @@map("tracks")
 }
@@ -108,6 +110,41 @@ enum GameMode {
   DAILY
   ALL
   MULTIPLAYER
+  GAUNTLET
+}
+
+enum GauntletRunStatus {
+  PLAYING
+  ENDED
+}
+
+enum GauntletEndReason {
+  WRONG_GUESS
+  SKIP
+  QUIT
+}
+
+model GauntletRun {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  score     Int                @default(0)
+  status    GauntletRunStatus  @default(PLAYING)
+  endReason GauntletEndReason? @map("end_reason")
+
+  trackIds String[] @default([]) @map("track_ids")
+
+  currentTrackId String? @map("current_track_id")
+  currentTrack   Track?  @relation(fields: [currentTrackId], references: [id])
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@index([userId, score])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("gauntlet_runs")
 }
 
 model Stats {
