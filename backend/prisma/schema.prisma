@@ -124,14 +124,22 @@ enum GauntletEndReason {
   QUIT
 }
 
+enum GauntletDifficulty {
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
 model GauntletRun {
   id     String @id @default(uuid())
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  score     Int                @default(0)
-  status    GauntletRunStatus  @default(PLAYING)
-  endReason GauntletEndReason? @map("end_reason")
+  score      Int                 @default(0)
+  status     GauntletRunStatus   @default(PLAYING)
+  endReason  GauntletEndReason?  @map("end_reason")
+  difficulty GauntletDifficulty
 
   trackIds String[] @default([]) @map("track_ids")
 

@@ -8,6 +8,7 @@ import {
 import { TrackDto } from '../dto/track.dto';
 import { TrackRepository } from '../repositories/track.repository';
 import { TrackEntity } from '../entities/track.entity';
+import { UpsertTrackDto } from '../dto/upsert-track.dto';
 
 @Injectable()
 export class TrackService {
@@ -16,6 +17,18 @@ export class TrackService {
     private readonly previewScraper: PreviewScraperService,
     private readonly redis: RedisService,
   ) {}
+
+  async findById(id: string): Promise<TrackEntity | null> {
+    return this.trackRepository.findById(id);
+  }
+
+  async findMany(ids: string[]): Promise<TrackEntity[]> {
+    return this.trackRepository.findMany(ids);
+  }
+
+  async upsertTrack(id: string, data: UpsertTrackDto): Promise<TrackEntity> {
+    return this.trackRepository.upsertTrack(id, data);
+  }
 
   /**
    * Get a track with its preview URL

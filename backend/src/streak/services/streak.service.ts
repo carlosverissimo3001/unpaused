@@ -81,8 +81,7 @@ export class StreakService {
     from: string,
     to: string,
   ): Promise<StreakFreezeUsage[]> {
-    const timezone =
-      await this.userPreferencesService.getUserTimezone(userId);
+    const timezone = await this.userPreferencesService.getUserTimezone(userId);
     const fromDate = startOfDay(new TZDate(from, timezone));
     const toDateExclusive = addDays(startOfDay(new TZDate(to, timezone)), 1);
 

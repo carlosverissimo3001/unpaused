@@ -1,0 +1,44 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
+import { IsNotNullableOptional } from '@utils/decorators/notNullableOptional.decorator';
+import { Transform } from 'class-transformer';
+import { toBoolean } from '@utils/transformers/toBoolean.transform';
+
+export class SubmitGauntletGuessDto {
+  @ApiProperty({
+    description: 'The playlist ID (needed to pick the next track)',
+  })
+  @IsString()
+  playlistId: string;
+
+  @ApiPropertyOptional({
+    description: 'The ID of the track to guess',
+    type: String,
+  })
+  @IsNotNullableOptional()
+  @IsString()
+  trackId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Whether the current guess is a skip (ends the run)',
+    type: Boolean,
+  })
+  @IsNotNullableOptional()
+  @Transform(({ obj }) => toBoolean(obj.skip))
+  skip?: boolean = false;
+
+  @ApiPropertyOptional({ description: 'Track name', type: String })
+  @IsNotNullableOptional()
+  @IsString()
+  trackName?: string;
+
+  @ApiPropertyOptional({ description: 'Artist name', type: String })
+  @IsNotNullableOptional()
+  @IsString()
+  artistName?: string;
+
+  @ApiPropertyOptional({ description: 'Album name', type: String })
+  @IsNotNullableOptional()
+  @IsString()
+  albumName?: string;
+}
