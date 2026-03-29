@@ -178,7 +178,7 @@ export function PreferencesPage() {
               </button>
             )}
             <p className="text-xs font-bold text-[#1DB954] uppercase tracking-wider opacity-80 mt-0.5">
-              {user?.isTrusted ? 'Pro Member' : 'Player'}
+              {user?.isTrusted ? 'Trusted Player' : 'Player'}
             </p>
           </div>
         </div>

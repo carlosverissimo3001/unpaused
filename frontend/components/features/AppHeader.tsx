@@ -86,7 +86,7 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
                   {user.displayName}
                 </span>
                 <span className="text-[9px] font-bold text-spotify-green uppercase tracking-wider opacity-80">
-                  {user.isTrusted ? 'Pro Member' : 'Player'}
+                  {user.isTrusted ? 'Trusted Player' : 'Player'}
                 </span>
               </div>
 
