@@ -18,6 +18,7 @@ import { PlaylistGrid } from '@/components/features/playlist/PlaylistGrid';
 import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
 import { AppFooter } from '@/components/features/AppFooter';
 import { MultiplayerBanner } from '@/components/multiplayer/MultiplayerBanner';
+import { GauntletBanner } from '@/components/gauntlet/GauntletBanner';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
 
@@ -103,6 +104,7 @@ export default function Home() {
               className="space-y-4 sm:space-y-6"
             >
               {user.isTrusted && <DailyChallengeBanner />}
+              {user.isAdmin && <GauntletBanner />}
               <MultiplayerBanner />
 
               {/* Main Content Header */}

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Search, X, Disc3 } from 'lucide-react';
 import { List, type RowComponentProps } from 'react-window';
-import type { TrackOptionDto } from '@/sdk';
+import { StartGameDtoModeEnum as GameMode, TrackOptionDto } from '@/sdk';
 import { MIN_QUERY_LENGTH } from '@/consts/consts';
 import {
   Popover,
@@ -30,6 +30,7 @@ export interface GuessSearchState {
 
 interface GuessInputProps {
   search: GuessSearchState;
+  gameMode?: (typeof GameMode)[keyof typeof GameMode];
   onSubmit: () => void;
   onSkip: () => void;
   submitPending: boolean;
@@ -84,6 +85,7 @@ export function GuessInput({
   onSubmit,
   onSkip,
   submitPending,
+  gameMode,
 }: GuessInputProps) {
   const {
     searchQuery,
@@ -234,10 +236,12 @@ export function GuessInput({
           type="button"
           onClick={onSkip}
           disabled={submitPending}
-          aria-label="Skip round"
+          aria-label={
+            gameMode === GameMode.Gauntlet ? 'Give up' : 'Skip this round'
+          }
           className="text-fg/40 hover:text-fg/70 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors touch-manipulation"
         >
-          Skip this round
+          {gameMode === GameMode.Gauntlet ? 'Give up' : 'Skip this round'}
         </button>
       </div>
     </div>

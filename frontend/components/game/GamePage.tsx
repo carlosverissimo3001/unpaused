@@ -157,7 +157,11 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
           />
 
           {!isGameOver && (
-            <GameTitle mode={mode} currentRound={gameState.currentRound} maxRounds={gameState.maxRounds} />
+            <GameTitle
+              mode={mode}
+              currentRound={gameState.currentRound}
+              maxRounds={gameState.maxRounds}
+            />
           )}
 
           <audio
@@ -254,6 +258,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                   onSubmit={handleSubmit}
                   onSkip={handleSkip}
                   submitPending={submitPending}
+                  gameMode={mode}
                 />
               </div>
             )}

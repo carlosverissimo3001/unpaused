@@ -25,7 +25,8 @@ import { queryKeys } from '@/lib/queryKeys';
 import { useMe } from '@/hooks/auth/useMe';
 import {
   MultiplayerRoundStateDtoStatusEnum,
-  type MultiplayerRoundStateDto,
+  StartGameDtoModeEnum as GameMode,
+  MultiplayerRoundStateDto,
 } from '@/sdk';
 import { ChevronRight, Trophy } from 'lucide-react';
 import { GLASS_STYLE } from '@/lib/styles';
@@ -488,6 +489,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
                   onSubmit={handleSubmit}
                   onSkip={handleSkip}
                   submitPending={submitGuessMutation.isPending}
+                  gameMode={GameMode.Multiplayer}
                 />
               </motion.div>
             )}

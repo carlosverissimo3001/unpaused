@@ -77,6 +77,13 @@ export const queryKeys = {
     all: ['search'] as const,
     tracks: (query: string) => ['search', 'tracks', query] as const,
   },
+  // Gauntlet queries
+  gauntlet: {
+    all: ['gauntlet'] as const,
+    personalBest: ['gauntlet', 'personalBest'] as const,
+    leaderboard: (period?: string) =>
+      ['gauntlet', 'leaderboard', period] as const,
+  },
   // Daily game queries
   daily: {
     all: ['daily'] as const,

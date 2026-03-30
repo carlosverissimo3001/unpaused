@@ -22,10 +22,14 @@ import type {
   GameHistoryDto,
   GameStateDto,
   GameStatsDto,
+  GauntletGuessResultDto,
+  GauntletLeaderboardDto,
+  GauntletRunStateDto,
   GuessDto,
   GuessResultDto,
   MultiplayerRoundStateDto,
   PatchUserDto,
+  PersonalBestDto,
   PlayedTodayDto,
   PlaylistDto,
   PlaylistsResponseDto,
@@ -35,8 +39,10 @@ import type {
   ScoreboardDto,
   ShareResultDto,
   StartGameDto,
+  StartRunDto,
   StreakQuestionDto,
   StreakStatusDto,
+  SubmitGauntletGuessDto,
   SubmitQuizAnswerDto,
   TrackOptionDto,
   UpdateAvatarSourceDto,
@@ -61,6 +67,12 @@ import {
     GameStateDtoToJSON,
     GameStatsDtoFromJSON,
     GameStatsDtoToJSON,
+    GauntletGuessResultDtoFromJSON,
+    GauntletGuessResultDtoToJSON,
+    GauntletLeaderboardDtoFromJSON,
+    GauntletLeaderboardDtoToJSON,
+    GauntletRunStateDtoFromJSON,
+    GauntletRunStateDtoToJSON,
     GuessDtoFromJSON,
     GuessDtoToJSON,
     GuessResultDtoFromJSON,
@@ -69,6 +81,8 @@ import {
     MultiplayerRoundStateDtoToJSON,
     PatchUserDtoFromJSON,
     PatchUserDtoToJSON,
+    PersonalBestDtoFromJSON,
+    PersonalBestDtoToJSON,
     PlayedTodayDtoFromJSON,
     PlayedTodayDtoToJSON,
     PlaylistDtoFromJSON,
@@ -87,10 +101,14 @@ import {
     ShareResultDtoToJSON,
     StartGameDtoFromJSON,
     StartGameDtoToJSON,
+    StartRunDtoFromJSON,
+    StartRunDtoToJSON,
     StreakQuestionDtoFromJSON,
     StreakQuestionDtoToJSON,
     StreakStatusDtoFromJSON,
     StreakStatusDtoToJSON,
+    SubmitGauntletGuessDtoFromJSON,
+    SubmitGauntletGuessDtoToJSON,
     SubmitQuizAnswerDtoFromJSON,
     SubmitQuizAnswerDtoToJSON,
     TrackOptionDtoFromJSON,
@@ -166,6 +184,29 @@ export interface GameControllerStartGameRequest {
 export interface GameControllerSubmitGuessRequest {
     id: string;
     guessDto: GuessDto;
+}
+
+export interface GauntletControllerEndRunRequest {
+    id: string;
+}
+
+export interface GauntletControllerGetLeaderboardRequest {
+    period?: GauntletControllerGetLeaderboardPeriodEnum;
+    limit?: number;
+    offset?: number;
+}
+
+export interface GauntletControllerGetRunStateRequest {
+    id: string;
+}
+
+export interface GauntletControllerStartRunRequest {
+    startRunDto: StartRunDto;
+}
+
+export interface GauntletControllerSubmitGuessRequest {
+    id: string;
+    submitGauntletGuessDto: SubmitGauntletGuessDto;
 }
 
 export interface MultiplayerControllerCreateRoomRequest {
@@ -930,6 +971,236 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async gameControllerSubmitGuess(requestParameters: GameControllerSubmitGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GuessResultDto> {
         const response = await this.gameControllerSubmitGuessRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Voluntarily end a gauntlet run (quit)
+     */
+    async gauntletControllerEndRunRaw(requestParameters: GauntletControllerEndRunRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GauntletRunStateDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling gauntletControllerEndRun().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/gauntlet/{id}/end`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GauntletRunStateDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Voluntarily end a gauntlet run (quit)
+     */
+    async gauntletControllerEndRun(requestParameters: GauntletControllerEndRunRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GauntletRunStateDto> {
+        const response = await this.gauntletControllerEndRunRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get gauntlet leaderboard
+     */
+    async gauntletControllerGetLeaderboardRaw(requestParameters: GauntletControllerGetLeaderboardRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GauntletLeaderboardDto>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['period'] != null) {
+            queryParameters['period'] = requestParameters['period'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['offset'] != null) {
+            queryParameters['offset'] = requestParameters['offset'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/gauntlet/leaderboard`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GauntletLeaderboardDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get gauntlet leaderboard
+     */
+    async gauntletControllerGetLeaderboard(requestParameters: GauntletControllerGetLeaderboardRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GauntletLeaderboardDto> {
+        const response = await this.gauntletControllerGetLeaderboardRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get user\'s gauntlet personal best
+     */
+    async gauntletControllerGetPersonalBestRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonalBestDto>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/gauntlet/personal-best`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PersonalBestDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user\'s gauntlet personal best
+     */
+    async gauntletControllerGetPersonalBest(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonalBestDto> {
+        const response = await this.gauntletControllerGetPersonalBestRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get current gauntlet run state
+     */
+    async gauntletControllerGetRunStateRaw(requestParameters: GauntletControllerGetRunStateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GauntletRunStateDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling gauntletControllerGetRunState().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/gauntlet/{id}`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GauntletRunStateDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get current gauntlet run state
+     */
+    async gauntletControllerGetRunState(requestParameters: GauntletControllerGetRunStateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GauntletRunStateDto> {
+        const response = await this.gauntletControllerGetRunStateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Start a new gauntlet run
+     */
+    async gauntletControllerStartRunRaw(requestParameters: GauntletControllerStartRunRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GauntletRunStateDto>> {
+        if (requestParameters['startRunDto'] == null) {
+            throw new runtime.RequiredError(
+                'startRunDto',
+                'Required parameter "startRunDto" was null or undefined when calling gauntletControllerStartRun().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/gauntlet/start`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: StartRunDtoToJSON(requestParameters['startRunDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GauntletRunStateDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Start a new gauntlet run
+     */
+    async gauntletControllerStartRun(requestParameters: GauntletControllerStartRunRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GauntletRunStateDto> {
+        const response = await this.gauntletControllerStartRunRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Submit a guess for the current gauntlet track
+     */
+    async gauntletControllerSubmitGuessRaw(requestParameters: GauntletControllerSubmitGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GauntletGuessResultDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling gauntletControllerSubmitGuess().'
+            );
+        }
+
+        if (requestParameters['submitGauntletGuessDto'] == null) {
+            throw new runtime.RequiredError(
+                'submitGauntletGuessDto',
+                'Required parameter "submitGauntletGuessDto" was null or undefined when calling gauntletControllerSubmitGuess().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/gauntlet/{id}/guess`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SubmitGauntletGuessDtoToJSON(requestParameters['submitGauntletGuessDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GauntletGuessResultDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Submit a guess for the current gauntlet track
+     */
+    async gauntletControllerSubmitGuess(requestParameters: GauntletControllerSubmitGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GauntletGuessResultDto> {
+        const response = await this.gauntletControllerSubmitGuessRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1725,6 +1996,15 @@ export const GameControllerGetStatsModeEnum = {
     Gauntlet: 'GAUNTLET'
 } as const;
 export type GameControllerGetStatsModeEnum = typeof GameControllerGetStatsModeEnum[keyof typeof GameControllerGetStatsModeEnum];
+/**
+ * @export
+ */
+export const GauntletControllerGetLeaderboardPeriodEnum = {
+    Daily: 'daily',
+    Weekly: 'weekly',
+    Alltime: 'alltime'
+} as const;
+export type GauntletControllerGetLeaderboardPeriodEnum = typeof GauntletControllerGetLeaderboardPeriodEnum[keyof typeof GauntletControllerGetLeaderboardPeriodEnum];
 /**
  * @export
  */

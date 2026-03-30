@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import {
   ApiCookieAuth,
@@ -24,7 +32,7 @@ import { GauntletLeaderboardDto } from '../dto/gauntlet-leaderboard.dto';
 import { PersonalBestDto } from '../dto/personal-best.dto';
 import { GetLeaderboardDto } from '../dto/get-leaderboard.dto';
 
-@ApiTags('Gauntlet')
+@ApiTags('Api')
 @Controller('gauntlet')
 @UseGuards(SessionGuard)
 export class GauntletController {
@@ -91,7 +99,7 @@ export class GauntletController {
   @ApiResponse({ status: 200, type: GauntletLeaderboardDto })
   async getLeaderboard(
     @SessionId() sessionId: string,
-    @Body() dto: GetLeaderboardDto,
+    @Query() dto: GetLeaderboardDto,
   ): Promise<GauntletLeaderboardDto> {
     return this.gauntletService.getLeaderboard(
       sessionId,

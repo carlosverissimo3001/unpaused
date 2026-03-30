@@ -1494,7 +1494,7 @@
         ],
         "summary": "Start a new gauntlet run",
         "tags": [
-          "Gauntlet"
+          "Api"
         ]
       }
     },
@@ -1544,7 +1544,7 @@
         ],
         "summary": "Submit a guess for the current gauntlet track",
         "tags": [
-          "Gauntlet"
+          "Api"
         ]
       }
     },
@@ -1581,7 +1581,7 @@
         ],
         "summary": "Voluntarily end a gauntlet run (quit)",
         "tags": [
-          "Gauntlet"
+          "Api"
         ]
       }
     },
@@ -1608,24 +1608,51 @@
         ],
         "summary": "Get user's gauntlet personal best",
         "tags": [
-          "Gauntlet"
+          "Api"
         ]
       }
     },
     "/gauntlet/leaderboard": {
       "get": {
         "operationId": "GauntletController_getLeaderboard",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetLeaderboardDto"
-              }
+        "parameters": [
+          {
+            "name": "period",
+            "required": false,
+            "in": "query",
+            "description": "Time period for the leaderboard",
+            "schema": {
+              "default": "alltime",
+              "enum": [
+                "daily",
+                "weekly",
+                "alltime"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -1645,7 +1672,7 @@
         ],
         "summary": "Get gauntlet leaderboard",
         "tags": [
-          "Gauntlet"
+          "Api"
         ]
       }
     },
@@ -1682,7 +1709,7 @@
         ],
         "summary": "Get current gauntlet run state",
         "tags": [
-          "Gauntlet"
+          "Api"
         ]
       }
     }
@@ -3387,32 +3414,6 @@
         "required": [
           "personalBest"
         ]
-      },
-      "GetLeaderboardDto": {
-        "type": "object",
-        "properties": {
-          "period": {
-            "type": "string",
-            "enum": [
-              "daily",
-              "weekly",
-              "alltime"
-            ],
-            "default": "alltime",
-            "description": "Time period for the leaderboard"
-          },
-          "limit": {
-            "type": "number",
-            "default": 10,
-            "minimum": 1,
-            "maximum": 100
-          },
-          "offset": {
-            "type": "number",
-            "default": 0,
-            "minimum": 0
-          }
-        }
       },
       "GauntletLeaderboardEntryDto": {
         "type": "object",

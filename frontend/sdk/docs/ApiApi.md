@@ -22,6 +22,12 @@ All URIs are relative to *http://localhost*
 | [**gameControllerGetStats**](ApiApi.md#gamecontrollergetstats) | **GET** /game/stats | Get user\&#39;s daily stats |
 | [**gameControllerStartGame**](ApiApi.md#gamecontrollerstartgame) | **POST** /game/start | Start a new game from a playlist or daily |
 | [**gameControllerSubmitGuess**](ApiApi.md#gamecontrollersubmitguess) | **POST** /game/{id}/guess | Submit a guess for a specific session |
+| [**gauntletControllerEndRun**](ApiApi.md#gauntletcontrollerendrun) | **POST** /gauntlet/{id}/end | Voluntarily end a gauntlet run (quit) |
+| [**gauntletControllerGetLeaderboard**](ApiApi.md#gauntletcontrollergetleaderboard) | **GET** /gauntlet/leaderboard | Get gauntlet leaderboard |
+| [**gauntletControllerGetPersonalBest**](ApiApi.md#gauntletcontrollergetpersonalbest) | **GET** /gauntlet/personal-best | Get user\&#39;s gauntlet personal best |
+| [**gauntletControllerGetRunState**](ApiApi.md#gauntletcontrollergetrunstate) | **GET** /gauntlet/{id} | Get current gauntlet run state |
+| [**gauntletControllerStartRun**](ApiApi.md#gauntletcontrollerstartrun) | **POST** /gauntlet/start | Start a new gauntlet run |
+| [**gauntletControllerSubmitGuess**](ApiApi.md#gauntletcontrollersubmitguess) | **POST** /gauntlet/{id}/guess | Submit a guess for the current gauntlet track |
 | [**multiplayerControllerCreateRoom**](ApiApi.md#multiplayercontrollercreateroom) | **POST** /multiplayer/rooms | Create a new multiplayer room |
 | [**multiplayerControllerGetRoomState**](ApiApi.md#multiplayercontrollergetroomstate) | **GET** /multiplayer/rooms/{id} | Get room state with players |
 | [**multiplayerControllerGetRoundState**](ApiApi.md#multiplayercontrollergetroundstate) | **GET** /multiplayer/rooms/{id}/round | Get current round state for the player |
@@ -1245,6 +1251,422 @@ example().catch(console.error);
 ### Authorization
 
 No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+| **429** | Rate limit exceeded |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gauntletControllerEndRun
+
+> GauntletRunStateDto gauntletControllerEndRun(id)
+
+Voluntarily end a gauntlet run (quit)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GauntletControllerEndRunRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | The gauntlet run ID
+    id: id_example,
+  } satisfies GauntletControllerEndRunRequest;
+
+  try {
+    const data = await api.gauntletControllerEndRun(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | The gauntlet run ID | [Defaults to `undefined`] |
+
+### Return type
+
+[**GauntletRunStateDto**](GauntletRunStateDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gauntletControllerGetLeaderboard
+
+> GauntletLeaderboardDto gauntletControllerGetLeaderboard(period, limit, offset)
+
+Get gauntlet leaderboard
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GauntletControllerGetLeaderboardRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // 'daily' | 'weekly' | 'alltime' | Time period for the leaderboard (optional)
+    period: period_example,
+    // number (optional)
+    limit: 8.14,
+    // number (optional)
+    offset: 8.14,
+  } satisfies GauntletControllerGetLeaderboardRequest;
+
+  try {
+    const data = await api.gauntletControllerGetLeaderboard(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **period** | `daily`, `weekly`, `alltime` | Time period for the leaderboard | [Optional] [Defaults to `&#39;alltime&#39;`] [Enum: daily, weekly, alltime] |
+| **limit** | `number` |  | [Optional] [Defaults to `10`] |
+| **offset** | `number` |  | [Optional] [Defaults to `0`] |
+
+### Return type
+
+[**GauntletLeaderboardDto**](GauntletLeaderboardDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gauntletControllerGetPersonalBest
+
+> PersonalBestDto gauntletControllerGetPersonalBest()
+
+Get user\&#39;s gauntlet personal best
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GauntletControllerGetPersonalBestRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  try {
+    const data = await api.gauntletControllerGetPersonalBest();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**PersonalBestDto**](PersonalBestDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gauntletControllerGetRunState
+
+> GauntletRunStateDto gauntletControllerGetRunState(id)
+
+Get current gauntlet run state
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GauntletControllerGetRunStateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | The gauntlet run ID
+    id: id_example,
+  } satisfies GauntletControllerGetRunStateRequest;
+
+  try {
+    const data = await api.gauntletControllerGetRunState(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | The gauntlet run ID | [Defaults to `undefined`] |
+
+### Return type
+
+[**GauntletRunStateDto**](GauntletRunStateDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gauntletControllerStartRun
+
+> GauntletRunStateDto gauntletControllerStartRun(startRunDto)
+
+Start a new gauntlet run
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GauntletControllerStartRunRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // StartRunDto
+    startRunDto: ...,
+  } satisfies GauntletControllerStartRunRequest;
+
+  try {
+    const data = await api.gauntletControllerStartRun(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **startRunDto** | [StartRunDto](StartRunDto.md) |  | |
+
+### Return type
+
+[**GauntletRunStateDto**](GauntletRunStateDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gauntletControllerSubmitGuess
+
+> GauntletGuessResultDto gauntletControllerSubmitGuess(id, submitGauntletGuessDto)
+
+Submit a guess for the current gauntlet track
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GauntletControllerSubmitGuessRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | The gauntlet run ID
+    id: id_example,
+    // SubmitGauntletGuessDto
+    submitGauntletGuessDto: ...,
+  } satisfies GauntletControllerSubmitGuessRequest;
+
+  try {
+    const data = await api.gauntletControllerSubmitGuess(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | The gauntlet run ID | [Defaults to `undefined`] |
+| **submitGauntletGuessDto** | [SubmitGauntletGuessDto](SubmitGauntletGuessDto.md) |  | |
+
+### Return type
+
+[**GauntletGuessResultDto**](GauntletGuessResultDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
 
 ### HTTP request headers
 
