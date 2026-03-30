@@ -1701,7 +1701,8 @@ export class ApiApi extends runtime.BaseAPI {
 export const GameControllerGetHistoryModeEnum = {
     Daily: 'DAILY',
     All: 'ALL',
-    Multiplayer: 'MULTIPLAYER'
+    Multiplayer: 'MULTIPLAYER',
+    Gauntlet: 'GAUNTLET'
 } as const;
 export type GameControllerGetHistoryModeEnum = typeof GameControllerGetHistoryModeEnum[keyof typeof GameControllerGetHistoryModeEnum];
 /**
@@ -1720,7 +1721,8 @@ export type GameControllerGetHistoryStatusEnum = typeof GameControllerGetHistory
 export const GameControllerGetStatsModeEnum = {
     Daily: 'DAILY',
     All: 'ALL',
-    Multiplayer: 'MULTIPLAYER'
+    Multiplayer: 'MULTIPLAYER',
+    Gauntlet: 'GAUNTLET'
 } as const;
 export type GameControllerGetStatsModeEnum = typeof GameControllerGetStatsModeEnum[keyof typeof GameControllerGetStatsModeEnum];
 /**

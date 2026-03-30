@@ -76,7 +76,8 @@ export interface GameStatsDto {
 export const GameStatsDtoModeEnum = {
     Daily: 'DAILY',
     All: 'ALL',
-    Multiplayer: 'MULTIPLAYER'
+    Multiplayer: 'MULTIPLAYER',
+    Gauntlet: 'GAUNTLET'
 } as const;
 export type GameStatsDtoModeEnum = typeof GameStatsDtoModeEnum[keyof typeof GameStatsDtoModeEnum];
 

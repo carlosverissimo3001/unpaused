@@ -40,7 +40,8 @@ export interface StartGameDto {
 export const StartGameDtoModeEnum = {
     Daily: 'DAILY',
     All: 'ALL',
-    Multiplayer: 'MULTIPLAYER'
+    Multiplayer: 'MULTIPLAYER',
+    Gauntlet: 'GAUNTLET'
 } as const;
 export type StartGameDtoModeEnum = typeof StartGameDtoModeEnum[keyof typeof StartGameDtoModeEnum];
 

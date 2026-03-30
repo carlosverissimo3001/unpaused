@@ -1,6 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GauntletRunStatus } from '@prisma/client';
 
+export class ActualTrackDto {
+  @ApiProperty({ description: 'Track name' })
+  name: string;
+
+  @ApiProperty({ description: 'Artist name' })
+  artistName: string;
+
+  @ApiPropertyOptional({ description: 'Album art URL', type: String })
+  albumArt?: string;
+}
+
 export class GauntletGuessResultDto {
   @ApiProperty({
     description: 'Whether the guess was correct',
@@ -24,6 +35,12 @@ export class GauntletGuessResultDto {
   status: GauntletRunStatus;
 
   @ApiPropertyOptional({
+    description: 'The actual track that was being guessed (always revealed)',
+    type: ActualTrackDto,
+  })
+  actualTrack?: ActualTrackDto;
+
+  @ApiPropertyOptional({
     description: 'Preview URL for the next track (if run continues)',
     type: String,
   })
@@ -34,4 +51,17 @@ export class GauntletGuessResultDto {
     type: Number,
   })
   nextSnippetDuration?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Whether this score is a new all-time personal best (set when run ends)',
+    type: Boolean,
+  })
+  isNewPersonalBest?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Whether this score is a new daily best (set when run ends)',
+    type: Boolean,
+  })
+  isNewDailyBest?: boolean;
 }

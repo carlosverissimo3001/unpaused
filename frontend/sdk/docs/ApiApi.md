@@ -861,7 +861,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // 'DAILY' | 'ALL' | 'MULTIPLAYER' | The game mode to filter history by (e.g. daily, all) (optional)
+    // 'DAILY' | 'ALL' | 'MULTIPLAYER' | 'GAUNTLET' | The game mode to filter history by (e.g. daily, all) (optional)
     mode: mode_example,
     // number | Page number (1-indexed) (optional)
     page: 8.14,
@@ -894,7 +894,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mode** | `DAILY`, `ALL`, `MULTIPLAYER` | The game mode to filter history by (e.g. daily, all) | [Optional] [Defaults to `undefined`] [Enum: DAILY, ALL, MULTIPLAYER] |
+| **mode** | `DAILY`, `ALL`, `MULTIPLAYER`, `GAUNTLET` | The game mode to filter history by (e.g. daily, all) | [Optional] [Defaults to `undefined`] [Enum: DAILY, ALL, MULTIPLAYER, GAUNTLET] |
 | **page** | `number` | Page number (1-indexed) | [Optional] [Defaults to `1`] |
 | **limit** | `number` | Items per page | [Optional] [Defaults to `10`] |
 | **search** | `string` | Search by track name, artist name, or album name | [Optional] [Defaults to `undefined`] |
@@ -1078,7 +1078,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // 'DAILY' | 'ALL' | 'MULTIPLAYER' | The game mode
+    // 'DAILY' | 'ALL' | 'MULTIPLAYER' | 'GAUNTLET' | The game mode
     mode: mode_example,
   } satisfies GameControllerGetStatsRequest;
 
@@ -1099,7 +1099,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mode** | `DAILY`, `ALL`, `MULTIPLAYER` | The game mode | [Defaults to `undefined`] [Enum: DAILY, ALL, MULTIPLAYER] |
+| **mode** | `DAILY`, `ALL`, `MULTIPLAYER`, `GAUNTLET` | The game mode | [Defaults to `undefined`] [Enum: DAILY, ALL, MULTIPLAYER, GAUNTLET] |
 
 ### Return type
 

@@ -1,0 +1,43 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class GauntletLeaderboardEntryDto {
+  @ApiProperty({ description: 'Rank position (1-based)' })
+  rank: number;
+
+  @ApiProperty({ description: 'User ID' })
+  userId: string;
+
+  @ApiProperty({ description: 'User display name' })
+  displayName: string;
+
+  @ApiPropertyOptional({ description: 'User avatar URL', type: String })
+  avatarUrl?: string;
+
+  @ApiProperty({ description: 'Best score achieved in the period' })
+  score: number;
+}
+
+export class GauntletUserLeaderboardEntryDto {
+  @ApiProperty({ description: 'Rank position (1-based)' })
+  rank: number;
+
+  @ApiProperty({ description: 'Best score in the period' })
+  score: number;
+}
+
+export class GauntletLeaderboardDto {
+  @ApiProperty({ type: [GauntletLeaderboardEntryDto] })
+  entries: GauntletLeaderboardEntryDto[];
+
+  @ApiPropertyOptional({
+    description: "Requesting user's leaderboard position",
+    type: GauntletUserLeaderboardEntryDto,
+  })
+  userEntry?: GauntletUserLeaderboardEntryDto;
+
+  @ApiProperty({
+    description: 'The period this leaderboard covers',
+    enum: ['daily', 'weekly', 'alltime'],
+  })
+  period: 'daily' | 'weekly' | 'alltime';
+}

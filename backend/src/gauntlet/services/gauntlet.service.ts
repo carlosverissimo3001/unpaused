@@ -12,17 +12,22 @@ import { Transactional } from '@transaction/transactional.decorator';
 import { AuthService } from '@auth/services/auth.service';
 import { PlaylistService } from '@/playlist/services/playlist.service';
 import { TrackService } from '@/track/services/track.service';
-import { TrackRepository } from '@/track/repositories/track.repository';
 import { AppLoggerService } from '../../logger/logger.service';
 import { TrackDto } from '../../track/dto/track.dto';
 import { evaluateGuess } from '../../game/utils/guess-evaluator';
 import { GuessResult } from '../../game/consts';
 import { GauntletRunRepository } from '../repositories/gauntlet-run.repository';
-import { GAUNTLET_SNIPPET_DURATIONS, GAUNTLET_MAX_SAMPLING_BATCHES, GAUNTLET_MAX_PREVIEW_ATTEMPTS } from '../consts';
+import {
+  GAUNTLET_SNIPPET_DURATIONS,
+  GAUNTLET_MAX_SAMPLING_BATCHES,
+  GAUNTLET_MAX_PREVIEW_ATTEMPTS,
+} from '../consts';
 import { GauntletRunStateDto } from '../dto/gauntlet-run-state.dto';
 import { GauntletGuessResultDto } from '../dto/gauntlet-guess-result.dto';
+import { GauntletLeaderboardDto } from '../dto/gauntlet-leaderboard.dto';
 import { SubmitGauntletGuessDto } from '../dto/submit-gauntlet-guess.dto';
 import { PersonalBestDto } from '../dto/personal-best.dto';
+import { LeaderboardPeriod } from '../dto/get-leaderboard.dto';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
 
 @Injectable()
@@ -34,7 +39,6 @@ export class GauntletService {
     private readonly authService: AuthService,
     private readonly playlistService: PlaylistService,
     private readonly trackService: TrackService,
-    private readonly trackRepository: TrackRepository,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GauntletService.name);
@@ -124,16 +128,33 @@ export class GauntletService {
     const isCorrect = result === GuessResult.Correct;
     const isSkip = result === GuessResult.Skip;
 
+    const actualTrack = run.currentTrack
+      ? {
+          name: run.currentTrack.name,
+          artistName: run.currentTrack.artistName,
+          albumArt: run.currentTrack.albumImageUrl,
+        }
+      : undefined;
+
     if (!isCorrect) {
+      const [prevPersonalBest, prevDailyBest] = await Promise.all([
+        this.gauntletRunRepository.findPersonalBest(userId),
+        this.gauntletRunRepository.findDailyBest(userId),
+      ]);
+
       const endReason = isSkip
         ? GauntletEndReason.SKIP
         : GauntletEndReason.WRONG_GUESS;
       const ended = await this.gauntletRunRepository.endRun(run.id, endReason);
+
       return {
         correct: false,
         runOver: true,
         score: ended.score,
         status: ended.status,
+        actualTrack,
+        isNewPersonalBest: ended.score > prevPersonalBest,
+        isNewDailyBest: ended.score > prevDailyBest,
       };
     }
 
@@ -158,6 +179,7 @@ export class GauntletService {
         runOver: false,
         score: scored.score,
         status: scored.status,
+        actualTrack,
         nextPreviewUrl: next.previewUrl,
         nextSnippetDuration: snippetDuration,
       };
@@ -166,6 +188,10 @@ export class GauntletService {
       this.logger.warn(
         `Could not pick next track for run ${run.id}: ${(err as Error).message}`,
       );
+      const [prevPersonalBest, prevDailyBest] = await Promise.all([
+        this.gauntletRunRepository.findPersonalBest(userId),
+        this.gauntletRunRepository.findDailyBest(userId),
+      ]);
       const ended = await this.gauntletRunRepository.endRun(
         run.id,
         GauntletEndReason.QUIT,
@@ -175,6 +201,9 @@ export class GauntletService {
         runOver: true,
         score: ended.score,
         status: ended.status,
+        actualTrack,
+        isNewPersonalBest: ended.score > prevPersonalBest,
+        isNewDailyBest: ended.score > prevDailyBest,
       };
     }
   }
@@ -208,6 +237,30 @@ export class GauntletService {
     };
   }
 
+  async getRunState(
+    sessionId: string,
+    runId: string,
+  ): Promise<GauntletRunStateDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+
+    const run = await this.gauntletRunRepository.findById(runId);
+    if (!run) {
+      throw new NotFoundException('Gauntlet run not found');
+    }
+    if (run.userId !== userId) {
+      throw new NotFoundException('Gauntlet run not found');
+    }
+
+    return {
+      runId: run.id,
+      score: run.score,
+      status: run.status,
+      difficulty: run.difficulty,
+      previewUrl: run.currentTrack?.previewUrl ?? '',
+      snippetDuration: GAUNTLET_SNIPPET_DURATIONS[run.difficulty],
+    };
+  }
+
   async getPersonalBest(sessionId: string): Promise<PersonalBestDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
 
@@ -215,6 +268,62 @@ export class GauntletService {
       await this.gauntletRunRepository.findPersonalBest(userId);
 
     return { personalBest };
+  }
+
+  async getLeaderboard(
+    sessionId: string,
+    period: LeaderboardPeriod,
+    limit: number,
+    offset: number,
+  ): Promise<GauntletLeaderboardDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+
+    const startDate = this.getPeriodStartDate(period);
+
+    const rawEntries = await this.gauntletRunRepository.findLeaderboardEntries(
+      startDate,
+      limit,
+      offset,
+    );
+
+    const entries = rawEntries.map((entry, index) => ({
+      rank: offset + index + 1,
+      userId: entry.userId,
+      displayName: entry.displayName,
+      avatarUrl: entry.avatarUrl ?? undefined,
+      score: entry.score,
+    }));
+
+    const userBest = await this.gauntletRunRepository.findUserBestInPeriod(
+      userId,
+      startDate,
+    );
+
+    let userEntry: GauntletLeaderboardDto['userEntry'];
+    if (userBest !== null) {
+      const betterCount =
+        await this.gauntletRunRepository.countUsersWithHigherScore(
+          userBest,
+          startDate,
+        );
+      userEntry = { rank: betterCount + 1, score: userBest };
+    }
+
+    return { entries, userEntry, period };
+  }
+
+  private getPeriodStartDate(period: LeaderboardPeriod): Date | null {
+    if (period === 'alltime') {
+      return null;
+    }
+    const now = new Date();
+    now.setUTCHours(0, 0, 0, 0);
+    if (period === 'daily') {
+      return now;
+    }
+    // weekly: past 7 days
+    now.setUTCDate(now.getUTCDate() - 6);
+    return now;
   }
 
   /**
@@ -254,7 +363,10 @@ export class GauntletService {
       sawAnyUnusedTracks = true;
 
       const shuffled = [...unusedTracks].sort(() => Math.random() - 0.5);
-      const maxAttempts = Math.min(GAUNTLET_MAX_PREVIEW_ATTEMPTS, shuffled.length);
+      const maxAttempts = Math.min(
+        GAUNTLET_MAX_PREVIEW_ATTEMPTS,
+        shuffled.length,
+      );
 
       for (let i = 0; i < maxAttempts; i++) {
         const spotifyTrack = shuffled[i];
@@ -268,7 +380,7 @@ export class GauntletService {
           }
 
           // Persist track in DB for the guess evaluator
-          await this.trackRepository.upsertTrack(spotifyTrack.id, {
+          await this.trackService.upsertTrack(spotifyTrack.id, {
             name: spotifyTrack.name,
             artistName: spotifyTrack.primaryArtist,
             albumImageUrl: spotifyTrack.imageUrl,

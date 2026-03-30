@@ -314,7 +314,8 @@
               "enum": [
                 "DAILY",
                 "ALL",
-                "MULTIPLAYER"
+                "MULTIPLAYER",
+                "GAUNTLET"
               ],
               "type": "string"
             }
@@ -423,7 +424,8 @@
               "enum": [
                 "DAILY",
                 "ALL",
-                "MULTIPLAYER"
+                "MULTIPLAYER",
+                "GAUNTLET"
               ],
               "type": "string"
             }
@@ -1458,6 +1460,231 @@
           "Api"
         ]
       }
+    },
+    "/gauntlet/start": {
+      "post": {
+        "operationId": "GauntletController_startRun",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartRunDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GauntletRunStateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Start a new gauntlet run",
+        "tags": [
+          "Gauntlet"
+        ]
+      }
+    },
+    "/gauntlet/{id}/guess": {
+      "post": {
+        "operationId": "GauntletController_submitGuess",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The gauntlet run ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitGauntletGuessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GauntletGuessResultDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Submit a guess for the current gauntlet track",
+        "tags": [
+          "Gauntlet"
+        ]
+      }
+    },
+    "/gauntlet/{id}/end": {
+      "post": {
+        "operationId": "GauntletController_endRun",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The gauntlet run ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GauntletRunStateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Voluntarily end a gauntlet run (quit)",
+        "tags": [
+          "Gauntlet"
+        ]
+      }
+    },
+    "/gauntlet/personal-best": {
+      "get": {
+        "operationId": "GauntletController_getPersonalBest",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalBestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get user's gauntlet personal best",
+        "tags": [
+          "Gauntlet"
+        ]
+      }
+    },
+    "/gauntlet/leaderboard": {
+      "get": {
+        "operationId": "GauntletController_getLeaderboard",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetLeaderboardDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GauntletLeaderboardDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get gauntlet leaderboard",
+        "tags": [
+          "Gauntlet"
+        ]
+      }
+    },
+    "/gauntlet/{id}": {
+      "get": {
+        "operationId": "GauntletController_getRunState",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The gauntlet run ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GauntletRunStateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get current gauntlet run state",
+        "tags": [
+          "Gauntlet"
+        ]
+      }
     }
   },
   "info": {
@@ -1636,7 +1863,8 @@
             "enum": [
               "DAILY",
               "ALL",
-              "MULTIPLAYER"
+              "MULTIPLAYER",
+              "GAUNTLET"
             ]
           }
         },
@@ -1886,7 +2114,8 @@
             "enum": [
               "DAILY",
               "ALL",
-              "MULTIPLAYER"
+              "MULTIPLAYER",
+              "GAUNTLET"
             ]
           },
           "guesses": {
@@ -2059,7 +2288,8 @@
             "enum": [
               "DAILY",
               "ALL",
-              "MULTIPLAYER"
+              "MULTIPLAYER",
+              "GAUNTLET"
             ]
           },
           "winRate": {
@@ -2966,6 +3196,302 @@
         },
         "required": [
           "source"
+        ]
+      },
+      "StartRunDto": {
+        "type": "object",
+        "properties": {
+          "playlistId": {
+            "type": "string",
+            "description": "The playlist ID to pick tracks from"
+          },
+          "difficulty": {
+            "type": "string",
+            "description": "Difficulty level (controls snippet duration)",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD",
+              "EXPERT"
+            ]
+          }
+        },
+        "required": [
+          "playlistId",
+          "difficulty"
+        ]
+      },
+      "GauntletRunStateDto": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string",
+            "description": "The gauntlet run ID"
+          },
+          "score": {
+            "type": "number",
+            "description": "Current score (consecutive correct guesses)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the run",
+            "enum": [
+              "PLAYING",
+              "ENDED"
+            ]
+          },
+          "difficulty": {
+            "type": "string",
+            "description": "Difficulty level of the run",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD",
+              "EXPERT"
+            ]
+          },
+          "previewUrl": {
+            "type": "string",
+            "description": "Preview URL for the current track"
+          },
+          "snippetDuration": {
+            "type": "number",
+            "description": "Snippet duration in seconds for the current track"
+          }
+        },
+        "required": [
+          "runId",
+          "score",
+          "status",
+          "difficulty",
+          "previewUrl",
+          "snippetDuration"
+        ]
+      },
+      "SubmitGauntletGuessDto": {
+        "type": "object",
+        "properties": {
+          "playlistId": {
+            "type": "string",
+            "description": "The playlist ID (needed to pick the next track)"
+          },
+          "trackId": {
+            "type": "string",
+            "description": "The ID of the track to guess"
+          },
+          "skip": {
+            "type": "boolean",
+            "description": "Whether the current guess is a skip (ends the run)"
+          },
+          "trackName": {
+            "type": "string",
+            "description": "Track name"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Artist name"
+          },
+          "albumName": {
+            "type": "string",
+            "description": "Album name"
+          }
+        },
+        "required": [
+          "playlistId"
+        ]
+      },
+      "ActualTrackDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Track name"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Artist name"
+          },
+          "albumArt": {
+            "type": "string",
+            "description": "Album art URL"
+          }
+        },
+        "required": [
+          "name",
+          "artistName"
+        ]
+      },
+      "GauntletGuessResultDto": {
+        "type": "object",
+        "properties": {
+          "correct": {
+            "type": "boolean",
+            "description": "Whether the guess was correct"
+          },
+          "runOver": {
+            "type": "boolean",
+            "description": "Whether the run is over (wrong guess or skip)"
+          },
+          "score": {
+            "type": "number",
+            "description": "Current score (consecutive correct guesses)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the run after this guess",
+            "enum": [
+              "PLAYING",
+              "ENDED"
+            ]
+          },
+          "actualTrack": {
+            "description": "The actual track that was being guessed (always revealed)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActualTrackDto"
+              }
+            ]
+          },
+          "nextPreviewUrl": {
+            "type": "string",
+            "description": "Preview URL for the next track (if run continues)"
+          },
+          "nextSnippetDuration": {
+            "type": "number",
+            "description": "Snippet duration in seconds for the next track"
+          },
+          "isNewPersonalBest": {
+            "type": "boolean",
+            "description": "Whether this score is a new all-time personal best (set when run ends)"
+          },
+          "isNewDailyBest": {
+            "type": "boolean",
+            "description": "Whether this score is a new daily best (set when run ends)"
+          }
+        },
+        "required": [
+          "correct",
+          "runOver",
+          "score",
+          "status"
+        ]
+      },
+      "PersonalBestDto": {
+        "type": "object",
+        "properties": {
+          "personalBest": {
+            "type": "number",
+            "description": "The user's personal best gauntlet score"
+          }
+        },
+        "required": [
+          "personalBest"
+        ]
+      },
+      "GetLeaderboardDto": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string",
+            "enum": [
+              "daily",
+              "weekly",
+              "alltime"
+            ],
+            "default": "alltime",
+            "description": "Time period for the leaderboard"
+          },
+          "limit": {
+            "type": "number",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          }
+        }
+      },
+      "GauntletLeaderboardEntryDto": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "number",
+            "description": "Rank position (1-based)"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "User display name"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "User avatar URL"
+          },
+          "score": {
+            "type": "number",
+            "description": "Best score achieved in the period"
+          }
+        },
+        "required": [
+          "rank",
+          "userId",
+          "displayName",
+          "score"
+        ]
+      },
+      "GauntletUserLeaderboardEntryDto": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "number",
+            "description": "Rank position (1-based)"
+          },
+          "score": {
+            "type": "number",
+            "description": "Best score in the period"
+          }
+        },
+        "required": [
+          "rank",
+          "score"
+        ]
+      },
+      "GauntletLeaderboardDto": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GauntletLeaderboardEntryDto"
+            }
+          },
+          "userEntry": {
+            "description": "Requesting user's leaderboard position",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GauntletUserLeaderboardEntryDto"
+              }
+            ]
+          },
+          "period": {
+            "type": "string",
+            "description": "The period this leaderboard covers",
+            "enum": [
+              "daily",
+              "weekly",
+              "alltime"
+            ]
+          }
+        },
+        "required": [
+          "entries",
+          "period"
         ]
       }
     }
