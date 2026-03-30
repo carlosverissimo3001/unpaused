@@ -91,7 +91,7 @@ export function PreferencesPage() {
       <div className="mb-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-fg/40 hover:text-fg transition-colors text-sm font-semibold"
+          className="inline-flex items-center gap-2 text-fg/60 hover:text-fg transition-colors text-sm font-semibold"
         >
           <ArrowLeft className="w-4 h-4" />
           Back

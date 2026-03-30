@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Flame, Trophy, RotateCcw, Home } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -270,6 +271,7 @@ function GameOverPanel({
   recentTracks: RecentTrack[];
   onPlayAgain: () => void;
 }) {
+  const router = useRouter();
   const bestScore = Math.max(score, personalBest);
 
   useEffect(() => {
@@ -393,7 +395,7 @@ function GameOverPanel({
       {/* Actions */}
       <div className="flex gap-3 mt-5">
         <motion.button
-          onClick={() => (window.location.href = '/')}
+          onClick={() => router.push('/')}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="flex items-center justify-center gap-1.5 px-5 py-3.5 rounded-2xl font-semibold text-sm text-fg/50 bg-fg/[0.06] border border-fg/10 hover:text-fg/70 hover:bg-fg/10 transition-colors"

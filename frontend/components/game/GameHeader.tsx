@@ -27,9 +27,9 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
     <div className="flex items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
       <Link
         href="/"
-        className="flex items-center gap-2 text-fg/60 hover:text-fg transition-colors"
+        className="inline-flex items-center gap-2 text-fg/60 hover:text-fg transition-colors text-sm font-semibold shrink-0"
       >
-        <ArrowLeft className="w-5 h-5" />
+        <ArrowLeft className="w-4 h-4" />
         Back
       </Link>
       {isPlaylist && playlist && (

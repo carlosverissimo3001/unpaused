@@ -1,0 +1,304 @@
+'use client';
+
+import { memo, useState } from 'react';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Sparkles,
+  Play,
+  BarChart3,
+  Flame,
+  Users,
+  Plus,
+  Gamepad2,
+} from 'lucide-react';
+import { usePlayedToday } from '@/hooks/game/usePlayedToday';
+import { DailyChallengeCountdown } from './DailyChallangeCountdown';
+import { usePersonalBest } from '@/hooks/gauntlet/usePersonalBest';
+import { JoinRoomModal } from '@/components/multiplayer/JoinRoomModal';
+import { CreateRoomModal } from '@/components/multiplayer/CreateRoomModal';
+import { cn } from '@/lib/utils';
+
+const cardPadding = 'p-4 sm:p-6';
+
+// Animation variants for the stagger effect
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring' as const, damping: 20, stiffness: 300 },
+  },
+};
+
+function DailyCardContent() {
+  const { data: playedTodayData, isLoading: playedTodayLoading } =
+    usePlayedToday();
+  const playedToday = playedTodayData?.playedToday ?? false;
+  const showAsPlayed = playedTodayLoading ? true : playedToday;
+
+  return (
+    <div
+      className={cn(
+        'h-full flex flex-col justify-between relative z-10 w-full',
+        cardPadding,
+      )}
+    >
+      <div className="flex flex-col gap-1 sm:gap-2 mb-4">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-spotify-green/10 border border-spotify-green/20 w-fit text-[10px] uppercase tracking-widest font-black text-spotify-green">
+          <motion.div
+            animate={{ rotate: [0, 15, -15, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+          >
+            <Sparkles className="w-3 h-3 fill-current" />
+          </motion.div>
+          <span>Daily Event</span>
+        </div>
+        <div className="space-y-0.5">
+          <h2 className="font-black tracking-tighter text-fg text-2xl sm:text-3xl leading-tight">
+            The <span className="text-spotify-green">Mystery.</span>
+          </h2>
+          <p className="text-fg/50 text-xs sm:text-sm font-medium leading-relaxed">
+            One song. Six chances. <br className="hidden sm:block" /> Guess in
+            1s.
+          </p>
+        </div>
+      </div>
+
+      <div className="w-full flex justify-between items-end">
+        <Link
+          href={showAsPlayed ? '/daily/stats' : '/daily'}
+          className={cn(
+            'flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black transition-all hover:brightness-110 active:scale-90 w-fit',
+            showAsPlayed
+              ? 'bg-fg/10 text-fg border border-white/5'
+              : 'bg-spotify-green text-black shadow-[0_8px_20px_rgba(30,215,96,0.3)]',
+          )}
+        >
+          {showAsPlayed ? (
+            <>
+              <BarChart3 className="w-4 h-4" />
+              <span>Stats</span>
+            </>
+          ) : (
+            <>
+              <Play fill="currentColor" className="w-4 h-4" />
+              <span>Play Now</span>
+            </>
+          )}
+        </Link>
+
+        {showAsPlayed && !playedTodayLoading && (
+          <div className="shrink-0 flex flex-col items-end gap-1">
+            <span className="text-[9px] uppercase font-black text-fg/30 tracking-tighter">
+              Next Drop
+            </span>
+            <div className="text-xs sm:text-sm bg-white/5 px-3 py-1.5 rounded-xl font-mono font-bold text-fg/80 border border-white/5 backdrop-blur-sm">
+              <DailyChallengeCountdown />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function GauntletCardContent() {
+  const { data: pbData } = usePersonalBest(true);
+  const personalBest = pbData?.personalBest ?? 0;
+
+  return (
+    <div
+      className={cn(
+        'h-full flex flex-col justify-between relative z-10 w-full',
+        cardPadding,
+      )}
+    >
+      <div className="flex flex-col gap-1 sm:gap-2 mb-4">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 w-fit text-[10px] uppercase tracking-widest font-black text-orange-500">
+          <Flame className="w-3 h-3 fill-current" />
+          <span>Endless</span>
+        </div>
+        <div className="space-y-0.5">
+          <h2 className="font-black tracking-tighter text-fg text-xl sm:text-2xl leading-tight">
+            The{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-orange-400 to-red-500">
+              Gauntlet.
+            </span>
+          </h2>
+          <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
+            {personalBest > 0
+              ? `Personal Best: ${personalBest}`
+              : 'No limits. High stakes.'}
+          </p>
+        </div>
+      </div>
+
+      <Link
+        href="/gauntlet"
+        className="flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black text-white transition-all active:scale-90 w-fit shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
+        style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)' }}
+      >
+        <Play fill="currentColor" className="w-4 h-4" />
+        <span>Enter</span>
+      </Link>
+    </div>
+  );
+}
+
+function MultiplayerCardContent({
+  onJoin,
+  onCreate,
+}: {
+  onJoin: () => void;
+  onCreate: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        'h-full flex flex-col justify-between relative z-10 w-full',
+        cardPadding,
+      )}
+    >
+      <div className="flex flex-col gap-1 sm:gap-2 mb-4">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 w-fit text-[10px] uppercase tracking-widest font-black text-purple-400">
+          <Gamepad2 className="w-3 h-3" />
+          <span>Multiplayer</span>
+        </div>
+        <div className="space-y-0.5">
+          <h2 className="font-black tracking-tighter text-fg text-xl sm:text-2xl leading-tight">
+            With{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
+              Friends.
+            </span>
+          </h2>
+          <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
+            Compete in real-time.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 w-full">
+        <button
+          onClick={onJoin}
+          className="flex-1 flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black border border-white/10 bg-white/5 hover:bg-white/10 text-fg transition-all active:scale-95"
+        >
+          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Join</span>
+        </button>
+
+        <button
+          onClick={onCreate}
+          className="flex-1 flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
+        >
+          <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Create</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function GameModesGalleryComponent({
+  isTrusted,
+  isAdmin,
+}: {
+  isTrusted: boolean;
+  isAdmin: boolean;
+}) {
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const modes = [
+    { id: 'daily', show: isTrusted, render: () => <DailyCardContent /> },
+    { id: 'gauntlet', show: isAdmin, render: () => <GauntletCardContent /> },
+    {
+      id: 'multiplayer',
+      show: true,
+      render: () => (
+        <MultiplayerCardContent
+          onJoin={() => setShowJoinModal(true)}
+          onCreate={() => setShowCreateModal(true)}
+        />
+      ),
+    },
+  ].filter((m) => m.show);
+
+  const gridClass =
+    modes.length === 3
+      ? 'grid-cols-2 lg:grid-cols-3'
+      : 'grid-cols-1 sm:grid-cols-2';
+
+  return (
+    <>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className={cn('grid gap-3 sm:gap-3 mb-8 w-full', gridClass)}
+      >
+        {modes.map((mode) => {
+          const isFullWidth = modes.length === 3 && mode.id === 'daily';
+          return (
+            <motion.div
+              key={mode.id}
+              variants={itemVariants}
+              whileHover={{ y: -5 }}
+              whileTap={{ scale: 0.98 }}
+              className={cn(
+                'group relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0A0A0A] flex flex-col shadow-2xl',
+                isFullWidth ? 'col-span-2 lg:col-span-1' : 'col-span-1',
+              )}
+            >
+              {mode.render()}
+
+              {/* Dynamic Glow - Animated on hover/touch */}
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.15, 0.25, 0.15],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+                className={cn(
+                  'absolute -top-12 -right-12 w-48 h-48 blur-[60px] pointer-events-none -z-0',
+                  mode.id === 'daily' && 'bg-spotify-green',
+                  mode.id === 'gauntlet' && 'bg-orange-600',
+                  mode.id === 'multiplayer' && 'bg-purple-600',
+                )}
+              />
+
+              {/* Glass Reflection Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+            </motion.div>
+          );
+        })}
+      </motion.div>
+
+      <AnimatePresence>
+        <JoinRoomModal
+          open={showJoinModal}
+          onClose={() => setShowJoinModal(false)}
+        />
+        <CreateRoomModal
+          open={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+        />
+      </AnimatePresence>
+    </>
+  );
+}
+
+export const GameModesGallery = memo(GameModesGalleryComponent);

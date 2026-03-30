@@ -12,13 +12,11 @@ import { usePlaylistFilters } from '@/hooks/playlists/usePlaylistFilters';
 import { useAuthError } from '@/hooks/auth/useAuthError';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { AppHeader } from '@/components/features/AppHeader';
-import { DailyChallengeBanner } from '@/components/features/DailyChallengeBanner';
+import { GameModesGallery } from '@/components/features/GameModesGallery';
 import { PlaylistFilters } from '@/components/features/playlist/PlaylistFilters';
 import { PlaylistGrid } from '@/components/features/playlist/PlaylistGrid';
 import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
 import { AppFooter } from '@/components/features/AppFooter';
-import { MultiplayerBanner } from '@/components/multiplayer/MultiplayerBanner';
-import { GauntletBanner } from '@/components/gauntlet/GauntletBanner';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
 
@@ -103,9 +101,10 @@ export default function Home() {
               transition={{ duration: 0.4 }}
               className="space-y-4 sm:space-y-6"
             >
-              {user.isTrusted && <DailyChallengeBanner />}
-              {user.isAdmin && <GauntletBanner />}
-              <MultiplayerBanner />
+              <GameModesGallery
+                isTrusted={user.isTrusted}
+                isAdmin={user.isAdmin}
+              />
 
               {/* Main Content Header */}
               <div className="mt-1 sm:mt-2">

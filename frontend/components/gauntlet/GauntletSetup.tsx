@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, ListMusic, Zap, Check } from 'lucide-react';
+import { Flame, ListMusic, Zap, Check, ArrowLeft } from 'lucide-react';
 import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
 import { StartRunDtoDifficultyEnum as GauntletDifficulty } from '@/sdk';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -77,6 +78,17 @@ export function GauntletSetup({
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col gap-6"
     >
+      {/* Back Button */}
+      <div className="flex items-center">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-fg/60 hover:text-fg transition-colors text-sm font-semibold"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2 mb-1">

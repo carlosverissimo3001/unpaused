@@ -148,9 +148,9 @@ function DailyStatsContent() {
         >
           <Link
             href="/"
-            className="flex items-center gap-2 text-fg/60 hover:text-fg transition-colors"
+            className="inline-flex items-center gap-2 text-fg/60 hover:text-fg transition-colors text-sm font-semibold"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
             Back
           </Link>
           <h1 className="text-xl font-bold text-fg">Daily Stats</h1>
