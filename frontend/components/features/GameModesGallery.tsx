@@ -99,10 +99,7 @@ function DailyCardContent() {
 
         {showAsPlayed && !playedTodayLoading && (
           <div className="shrink-0 flex flex-col items-end gap-1">
-            <span className="text-[9px] uppercase font-black text-fg/30 tracking-tighter">
-              Next Drop
-            </span>
-            <div className="text-xs sm:text-sm bg-white/5 px-3 py-1.5 rounded-xl font-mono font-bold text-fg/80 border border-white/5 backdrop-blur-sm">
+            <div className="text-xs sm:text-sm rounded-xl font-mono font-bold text-fg/80 backdrop-blur-sm">
               <DailyChallengeCountdown />
             </div>
           </div>
