@@ -67,20 +67,19 @@ function DailyCardContent() {
           <h2 className="font-black tracking-tighter text-fg text-2xl sm:text-3xl leading-tight">
             The <span className="text-spotify-green">Mystery.</span>
           </h2>
-          <p className="text-fg/50 text-xs sm:text-sm font-medium leading-relaxed">
-            One song. Six chances. <br className="hidden sm:block" /> Guess in
-            1s.
+          <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
+            One song. Six chances. Guess in 1s.
           </p>
         </div>
       </div>
 
-      <div className="w-full flex justify-between items-end">
+      <div className="w-full flex flex-row items-center justify-between gap-3">
         <Link
           href={showAsPlayed ? '/daily/stats' : '/daily'}
           className={cn(
             'flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black transition-all hover:brightness-110 active:scale-90 w-fit',
             showAsPlayed
-              ? 'bg-fg/10 text-fg border border-white/5'
+              ? 'bg-spotify-green/10 text-spotify-green border border-spotify-green/30'
               : 'bg-spotify-green text-black shadow-[0_8px_20px_rgba(30,215,96,0.3)]',
           )}
         >
@@ -98,10 +97,8 @@ function DailyCardContent() {
         </Link>
 
         {showAsPlayed && !playedTodayLoading && (
-          <div className="shrink-0 flex flex-col items-end gap-1">
-            <div className="text-xs sm:text-sm rounded-xl font-mono font-bold text-fg/80 backdrop-blur-sm">
-              <DailyChallengeCountdown />
-            </div>
+          <div className="shrink-0 text-xs font-mono font-bold text-fg/50 pr-1">
+            <DailyChallengeCountdown />
           </div>
         )}
       </div>
@@ -286,10 +283,12 @@ function GameModesGalleryComponent({
 
       <AnimatePresence>
         <JoinRoomModal
+          key="join-modal"
           open={showJoinModal}
           onClose={() => setShowJoinModal(false)}
         />
         <CreateRoomModal
+          key="create-modal"
           open={showCreateModal}
           onClose={() => setShowCreateModal(false)}
         />

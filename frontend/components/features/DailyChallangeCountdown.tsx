@@ -39,17 +39,17 @@ export function DailyChallengeCountdown() {
   if (!isLoaded) return null;
 
   return (
-    <div className="flex items-center justify-end w-fit">
-      <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-2 bg-spotify-green/10 rounded-full border border-spotify-green/50 backdrop-blur-md shadow-[0_0_15px_rgba(30,215,96,0.1)]">
+    <div className="flex items-center w-fit">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <motion.div
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="shrink-0 hidden min-[350px]:inline"
+          className="shrink-0 self-center flex items-center"
         >
           <Clock className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-spotify-green" />
         </motion.div>
 
-        <span className="hidden min-[425px]:inline text-[9px] font-black uppercase tracking-widest text-spotify-green/90 mr-0.5 whitespace-nowrap">
+        <span className="lg:hidden text-[9px] font-black uppercase tracking-widest text-spotify-green/90 mr-0.5 whitespace-nowrap">
           Next Drop:
         </span>
 
