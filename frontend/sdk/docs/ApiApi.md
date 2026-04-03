@@ -23,6 +23,7 @@ All URIs are relative to *http://localhost*
 | [**gameControllerStartGame**](ApiApi.md#gamecontrollerstartgame) | **POST** /game/start | Start a new game from a playlist or daily |
 | [**gameControllerSubmitGuess**](ApiApi.md#gamecontrollersubmitguess) | **POST** /game/{id}/guess | Submit a guess for a specific session |
 | [**gauntletControllerEndRun**](ApiApi.md#gauntletcontrollerendrun) | **POST** /gauntlet/{id}/end | Voluntarily end a gauntlet run (quit) |
+| [**gauntletControllerGetHistory**](ApiApi.md#gauntletcontrollergethistory) | **GET** /gauntlet/history | Get user\&#39;s gauntlet run history (paginated) |
 | [**gauntletControllerGetLeaderboard**](ApiApi.md#gauntletcontrollergetleaderboard) | **GET** /gauntlet/leaderboard | Get gauntlet leaderboard |
 | [**gauntletControllerGetPersonalBest**](ApiApi.md#gauntletcontrollergetpersonalbest) | **GET** /gauntlet/personal-best | Get user\&#39;s gauntlet personal best |
 | [**gauntletControllerGetRunState**](ApiApi.md#gauntletcontrollergetrunstate) | **GET** /gauntlet/{id} | Get current gauntlet run state |
@@ -1317,6 +1318,81 @@ example().catch(console.error);
 ### Return type
 
 [**GauntletRunStateDto**](GauntletRunStateDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## gauntletControllerGetHistory
+
+> GauntletHistoryDto gauntletControllerGetHistory(page, limit, difficulty)
+
+Get user\&#39;s gauntlet run history (paginated)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GauntletControllerGetHistoryRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // number (optional)
+    page: 8.14,
+    // number (optional)
+    limit: 8.14,
+    // 'EASY' | 'MEDIUM' | 'HARD' | 'EXPERT' | Filter by difficulty (optional)
+    difficulty: difficulty_example,
+  } satisfies GauntletControllerGetHistoryRequest;
+
+  try {
+    const data = await api.gauntletControllerGetHistory(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **page** | `number` |  | [Optional] [Defaults to `1`] |
+| **limit** | `number` |  | [Optional] [Defaults to `10`] |
+| **difficulty** | `EASY`, `MEDIUM`, `HARD`, `EXPERT` | Filter by difficulty | [Optional] [Defaults to `undefined`] [Enum: EASY, MEDIUM, HARD, EXPERT] |
+
+### Return type
+
+[**GauntletHistoryDto**](GauntletHistoryDto.md)
 
 ### Authorization
 

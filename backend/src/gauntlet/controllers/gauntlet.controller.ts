@@ -29,6 +29,8 @@ import { SubmitGauntletGuessDto } from '../dto/submit-gauntlet-guess.dto';
 import { GauntletRunStateDto } from '../dto/gauntlet-run-state.dto';
 import { GauntletGuessResultDto } from '../dto/gauntlet-guess-result.dto';
 import { GauntletLeaderboardDto } from '../dto/gauntlet-leaderboard.dto';
+import { GauntletHistoryDto } from '../dto/gauntlet-history.dto';
+import { GetGauntletHistoryDto } from '../dto/get-gauntlet-history.dto';
 import { PersonalBestDto } from '../dto/personal-best.dto';
 import { GetLeaderboardDto } from '../dto/get-leaderboard.dto';
 
@@ -107,6 +109,17 @@ export class GauntletController {
       dto.limit ?? 10,
       dto.offset ?? 0,
     );
+  }
+
+  @Get('history')
+  @ApiOperation({ summary: "Get user's gauntlet run history (paginated)" })
+  @ApiCookieAuth()
+  @ApiResponse({ status: 200, type: GauntletHistoryDto })
+  async getHistory(
+    @SessionId() sessionId: string,
+    @Query() dto: GetGauntletHistoryDto,
+  ): Promise<GauntletHistoryDto> {
+    return this.gauntletService.getHistory(sessionId, dto);
   }
 
   @Get(':id')

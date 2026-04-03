@@ -4,17 +4,38 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+export type HistoryTab = 'all' | 'daily' | 'gauntlet';
+
 interface HistoryFilterProps {
-  dailyOnly: boolean;
+  activeTab: HistoryTab;
   isTrusted: boolean;
-  onDailyOnlyChange: (value: boolean) => void;
+  isAdmin: boolean;
+  onTabChange: (tab: HistoryTab) => void;
 }
 
+const TABS: {
+  value: HistoryTab;
+  label: string;
+  adminOnly?: boolean;
+  trustedOnly?: boolean;
+}[] = [
+  { value: 'all', label: 'All' },
+  { value: 'daily', label: 'Daily', trustedOnly: true },
+  { value: 'gauntlet', label: 'Gauntlet', adminOnly: true },
+];
+
 export function HistoryFilter({
-  dailyOnly,
+  activeTab,
   isTrusted,
-  onDailyOnlyChange,
+  isAdmin,
+  onTabChange,
 }: HistoryFilterProps) {
+  const visibleTabs = TABS.filter((tab) => {
+    if (tab.adminOnly && !isAdmin) return false;
+    if (tab.trustedOnly && !isTrusted) return false;
+    return true;
+  });
+
   return (
     <div className="flex items-center gap-4 mb-6 flex-wrap">
       <Button variant="ghost" size="default" asChild>
@@ -29,30 +50,30 @@ export function HistoryFilter({
       <h1 className="font-black italic uppercase text-xl text-fg tracking-tight">
         Vault
       </h1>
-      {isTrusted && (
+      {visibleTabs.length > 1 && (
         <div className="ml-auto flex items-center gap-1.5 p-1 rounded-xl bg-fg/[0.03] border border-fg/10 backdrop-blur-sm">
-          <button
-            type="button"
-            onClick={() => onDailyOnlyChange(false)}
-            className={`px-3 py-1.5 rounded-[10px] text-xs font-semibold uppercase tracking-widest transition-all ${
-              !dailyOnly
-                ? 'bg-fg/15 text-fg shadow-sm'
-                : 'text-fg/50 hover:text-fg/80'
-            }`}
-          >
-            All
-          </button>
-          <button
-            type="button"
-            onClick={() => onDailyOnlyChange(true)}
-            className={`px-3 py-1.5 rounded-[10px] text-xs font-semibold uppercase tracking-widest transition-all ${
-              dailyOnly
-                ? 'bg-spotify-green/30 text-spotify-green shadow-sm'
-                : 'text-fg/50 hover:text-fg/80'
-            }`}
-          >
-            Daily
-          </button>
+          {visibleTabs.map((tab) => {
+            const isActive = activeTab === tab.value;
+            const activeClasses =
+              tab.value === 'gauntlet'
+                ? 'bg-amber-500/20 text-amber-400 shadow-sm'
+                : tab.value === 'daily'
+                  ? 'bg-spotify-green/30 text-spotify-green shadow-sm'
+                  : 'bg-fg/15 text-fg shadow-sm';
+
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => onTabChange(tab.value)}
+                className={`px-3 py-1.5 rounded-[10px] text-xs font-semibold uppercase tracking-widest transition-all ${
+                  isActive ? activeClasses : 'text-fg/50 hover:text-fg/80'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

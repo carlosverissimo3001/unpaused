@@ -1676,6 +1676,70 @@
         ]
       }
     },
+    "/gauntlet/history": {
+      "get": {
+        "operationId": "GauntletController_getHistory",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "difficulty",
+            "required": false,
+            "in": "query",
+            "description": "Filter by difficulty",
+            "schema": {
+              "enum": [
+                "EASY",
+                "MEDIUM",
+                "HARD",
+                "EXPERT"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GauntletHistoryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get user's gauntlet run history (paginated)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/gauntlet/{id}": {
       "get": {
         "operationId": "GauntletController_getRunState",
@@ -3493,6 +3557,241 @@
         "required": [
           "entries",
           "period"
+        ]
+      },
+      "LastfmDataVo": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "description": "List of tags associated with the track",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "playcount": {
+            "type": "number",
+            "description": "Number of times the track has been played"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "Timestamp of when the data was fetched"
+          }
+        },
+        "required": [
+          "tags",
+          "fetchedAt"
+        ]
+      },
+      "TrackMetadataVo": {
+        "type": "object",
+        "properties": {
+          "lastfm": {
+            "description": "Last.fm data for the track",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LastfmDataVo"
+              }
+            ]
+          }
+        }
+      },
+      "TrackEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the track"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the track"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "The name of the artist"
+          },
+          "albumImageUrl": {
+            "type": "string",
+            "description": "The URL of the album image"
+          },
+          "albumName": {
+            "type": "string",
+            "description": "The name of the album"
+          },
+          "albumUrl": {
+            "type": "string",
+            "description": "The URL of the album"
+          },
+          "releaseYear": {
+            "type": "number",
+            "description": "The year the track was released"
+          },
+          "previewUrl": {
+            "type": "string",
+            "description": "The URL of the track preview"
+          },
+          "lastScrapedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Timestamp of when the track was last scraped"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Timestamp of when the track was created"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Timestamp of when the track was last updated"
+          },
+          "metadata": {
+            "description": "Metadata for the track",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrackMetadataVo"
+              }
+            ]
+          },
+          "allArtists": {
+            "description": "All artist names for the track",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "artistName",
+          "lastScrapedAt",
+          "createdAt",
+          "updatedAt",
+          "allArtists"
+        ]
+      },
+      "GauntletHistoryEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The gauntlet run ID"
+          },
+          "date": {
+            "type": "string",
+            "description": "Date of the run (yyyy-MM-dd)"
+          },
+          "score": {
+            "type": "number",
+            "description": "Final score (consecutive correct guesses)"
+          },
+          "difficulty": {
+            "type": "string",
+            "description": "Difficulty of the run",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD",
+              "EXPERT"
+            ]
+          },
+          "tracks": {
+            "description": "The tracks that were played in the run",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackEntity"
+            }
+          },
+          "durationSeconds": {
+            "type": "number",
+            "description": "How many seconds the run lasted"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "score",
+          "difficulty",
+          "tracks",
+          "durationSeconds"
+        ]
+      },
+      "GauntletHistoryMetaDto": {
+        "type": "object",
+        "properties": {
+          "totalItems": {
+            "type": "number"
+          },
+          "itemCount": {
+            "type": "number"
+          },
+          "itemsPerPage": {
+            "type": "number"
+          },
+          "totalPages": {
+            "type": "number"
+          },
+          "currentPage": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "totalItems",
+          "itemCount",
+          "itemsPerPage",
+          "totalPages",
+          "currentPage"
+        ]
+      },
+      "GauntletHistorySummaryDto": {
+        "type": "object",
+        "properties": {
+          "totalRuns": {
+            "type": "number",
+            "description": "Total runs in the selected scope"
+          },
+          "bestScore": {
+            "type": "number",
+            "description": "Best score in the selected scope"
+          },
+          "averageScore": {
+            "type": "number",
+            "description": "Average score in the selected scope"
+          },
+          "totalCorrectAnswers": {
+            "type": "number",
+            "description": "Total correct answers across all runs in scope"
+          }
+        },
+        "required": [
+          "totalRuns",
+          "bestScore",
+          "averageScore",
+          "totalCorrectAnswers"
+        ]
+      },
+      "GauntletHistoryDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GauntletHistoryEntryDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/GauntletHistoryMetaDto"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/GauntletHistorySummaryDto"
+          }
+        },
+        "required": [
+          "items",
+          "meta",
+          "summary"
         ]
       }
     }

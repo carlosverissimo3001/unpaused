@@ -3,9 +3,14 @@
 import { EmptyHistory } from '@/components/history/EmptyHistory';
 import { FloatingPaginationPill } from '@/components/history/FloatingPaginationPill';
 import { FreezeHistoryCard } from '@/components/history/FreezeHistoryCard';
+import { GauntletHistoryCard } from '@/components/history/GauntletHistoryCard';
+import { GauntletHistoryOverview } from '@/components/history/GauntletHistoryOverview';
 import { HistoryCard } from '@/components/history/HistoryCard';
 import { StreakLostCard } from '@/components/history/StreakLostCard';
-import { HistoryFilter } from '@/components/history/HistoryFilter';
+import {
+  HistoryFilter,
+  type HistoryTab,
+} from '@/components/history/HistoryFilter';
 import { HistoryStats } from '@/components/history/HistoryStats';
 import { SearchHeader } from '@/components/history/SearchHeader';
 import { useMe } from '@/hooks/auth/useMe';
@@ -15,6 +20,10 @@ import {
   DEFAULT_PAGE_SIZE,
   type PageSize,
 } from '@/hooks/game/useGameHistory';
+import {
+  useGauntletHistory,
+  type GauntletDifficultyFilter,
+} from '@/hooks/gauntlet/useGauntletHistory';
 import { usePlayedToday } from '@/hooks/game/usePlayedToday';
 import { GameHistoryEntryDtoStatusEnum } from '@/sdk/models/GameHistoryEntryDto';
 import { GameControllerGetHistoryStatusEnum as GameStatusFilter } from '@/sdk/apis/ApiApi';
@@ -24,7 +33,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { differenceInCalendarDays, parseISO, format, addDays } from 'date-fns';
 import { BarChart3, Play } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -47,26 +56,63 @@ function getEntryDate(e: TimelineEntry): string {
 
 function HistoryPageContent() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { data: user, isLoading: isAuthLoading } = useMe();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const [dailyOnly, setDailyOnly] = useState(
-    searchParams.get('filter') === 'daily',
+
+  const activeTab = useMemo<HistoryTab>(() => {
+    const filter = searchParams.get('filter');
+    return filter === 'daily'
+      ? 'daily'
+      : filter === 'gauntlet'
+        ? 'gauntlet'
+        : 'all';
+  }, [searchParams]);
+  const setActiveTab = useCallback(
+    (tab: HistoryTab) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (tab === 'all') {
+        params.delete('filter');
+      } else {
+        params.set('filter', tab);
+      }
+      const query = params.toString();
+      router.push(query ? `?${query}` : '?');
+    },
+    [router, searchParams],
   );
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<GameStatusFilter[]>([]);
   const [pageSize, setPageSize] = useState<PageSize>(DEFAULT_PAGE_SIZE);
+  const [gauntletDifficulty, setGauntletDifficulty] = useState<
+    GauntletDifficultyFilter | undefined
+  >(undefined);
+
+  const dailyOnly = activeTab === 'daily';
+  const isGauntlet = activeTab === 'gauntlet';
 
   const mode = dailyOnly ? GameMode.Daily : GameMode.All;
-  const { data: stats } = useGameStats({ mode, useCached: true });
+  const { data: stats } = useGameStats({
+    mode,
+    useCached: true,
+    enabled: !isGauntlet,
+  });
   const { data: playedTodayData } = usePlayedToday({
     enabled: dailyOnly && !!user,
   });
 
   const isFiltered = !!search || statusFilter.length > 0;
 
-  const { data, isLoading, isPlaceholderData, error } = useGameHistory(
+  // Game history (for all/daily tabs)
+  const {
+    data: gameData,
+    isLoading: isGameLoading,
+    isPlaceholderData: isGamePlaceholder,
+    error: gameError,
+  } = useGameHistory(
     {
       mode: dailyOnly ? GameMode.Daily : undefined,
       page,
@@ -74,20 +120,49 @@ function HistoryPageContent() {
       search: search || undefined,
       status: statusFilter,
     },
-    !!user,
+    !!user && !isGauntlet,
   );
 
-  const totalPages = data?.meta.totalPages ?? 0;
+  // Gauntlet history (for gauntlet tab)
+  const {
+    data: gauntletData,
+    isLoading: isGauntletLoading,
+    isPlaceholderData: isGauntletPlaceholder,
+    error: gauntletError,
+  } = useGauntletHistory(
+    { page, pageSize, difficulty: gauntletDifficulty },
+    !!user && isGauntlet,
+  );
+
+  const data = isGauntlet ? undefined : gameData;
+  const isLoading = isGauntlet ? isGauntletLoading : isGameLoading;
+  const isPlaceholderData = isGauntlet
+    ? isGauntletPlaceholder
+    : isGamePlaceholder;
+  const error = isGauntlet ? gauntletError : gameError;
+
+  const totalPages = isGauntlet
+    ? (gauntletData?.meta.totalPages ?? 0)
+    : (data?.meta.totalPages ?? 0);
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const handleFilterChange = useCallback((daily: boolean) => {
-    setDailyOnly(daily);
-    setPage(1);
-  }, []);
+  const handleTabChange = useCallback(
+    (tab: HistoryTab) => {
+      setActiveTab(tab);
+      setPage(1);
+      setSearch('');
+      setStatusFilter([]);
+      setGauntletDifficulty(undefined);
+      router.replace(tab === 'all' ? '/history' : `/history?filter=${tab}`, {
+        scroll: false,
+      });
+    },
+    [router],
+  );
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
@@ -103,6 +178,14 @@ function HistoryPageContent() {
     setPageSize(size);
     setPage(1);
   }, []);
+
+  const handleGauntletDifficultyChange = useCallback(
+    (difficulty?: GauntletDifficultyFilter) => {
+      setGauntletDifficulty(difficulty);
+      setPage(1);
+    },
+    [],
+  );
 
   const handleClearFilters = useCallback(() => {
     setSearch('');
@@ -186,6 +269,12 @@ function HistoryPageContent() {
     );
   }
 
+  const gauntletItems = gauntletData?.items ?? [];
+  const gauntletSummary = gauntletData?.summary;
+  const hasNoResults = isGauntlet
+    ? gauntletItems.length === 0
+    : timeline.length === 0;
+
   return (
     <div className="min-h-screen p-4 sm:p-8 lg:p-12 max-w-5xl mx-auto pb-24 relative">
       <div
@@ -194,56 +283,82 @@ function HistoryPageContent() {
       />
 
       <HistoryFilter
-        dailyOnly={dailyOnly}
+        activeTab={activeTab}
         isTrusted={user?.isTrusted ?? false}
-        onDailyOnlyChange={handleFilterChange}
+        isAdmin={user?.isAdmin ?? false}
+        onTabChange={handleTabChange}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-8 items-start">
-        <aside className="lg:col-span-4 lg:sticky lg:top-8">
-          {stats && <HistoryStats stats={stats} />}
-          <div className="hidden lg:block mt-6 p-4 rounded-2xl bg-fg/[0.02] border border-fg/5">
-            <p className="text-xs text-fg/30 leading-relaxed uppercase tracking-widest font-bold">
-              Your Vault
-            </p>
-            <p className="text-sm text-fg/50 mt-2">
-              Viewing {dailyOnly ? 'Daily Challenges' : 'all games'} across your
-              entire history.
-            </p>
-            {dailyOnly && playedTodayData && (
-              <Link
-                href={playedTodayData.playedToday ? '/daily/stats' : '/daily'}
-                className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.97] bg-spotify-green/10 border border-spotify-green/20 text-spotify-green hover:bg-spotify-green/15"
-              >
-                {playedTodayData.playedToday ? (
-                  <>
-                    <BarChart3 className="w-4 h-4" />
-                    Detailed Stats
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4" />
-                    Play Today&apos;s Daily
-                  </>
-                )}
-              </Link>
-            )}
-          </div>
-        </aside>
+        {!isGauntlet && (
+          <aside className="lg:col-span-4 lg:sticky lg:top-8">
+            {stats && <HistoryStats stats={stats} />}
+            <div className="hidden lg:block mt-6 p-4 rounded-2xl bg-fg/[0.02] border border-fg/5">
+              <p className="text-xs text-fg/30 leading-relaxed uppercase tracking-widest font-bold">
+                Your Vault
+              </p>
+              <p className="text-sm text-fg/50 mt-2">
+                Viewing {dailyOnly ? 'Daily Challenges' : 'all games'} across
+                your entire history.
+              </p>
+              {dailyOnly && playedTodayData && (
+                <Link
+                  href={playedTodayData.playedToday ? '/daily/stats' : '/daily'}
+                  className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.97] bg-spotify-green/10 border border-spotify-green/20 text-spotify-green hover:bg-spotify-green/15"
+                >
+                  {playedTodayData.playedToday ? (
+                    <>
+                      <BarChart3 className="w-4 h-4" />
+                      Detailed Stats
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      Play Today&apos;s Daily
+                    </>
+                  )}
+                </Link>
+              )}
+            </div>
+          </aside>
+        )}
 
-        <main className="lg:col-span-8">
-          <SearchHeader
-            search={search}
-            onSearchChange={handleSearchChange}
-            status={statusFilter}
-            onStatusChange={handleStatusChange}
-            totalItems={data?.meta.totalItems ?? 0}
-            isFiltered={isFiltered}
-            onClearFilters={handleClearFilters}
-          />
+        <main className={isGauntlet ? 'lg:col-span-12' : 'lg:col-span-8'}>
+          {isGauntlet && gauntletSummary ? (
+            <GauntletHistoryOverview
+              summary={gauntletSummary}
+              selectedDifficulty={gauntletDifficulty}
+              onDifficultyChange={handleGauntletDifficultyChange}
+            />
+          ) : null}
 
-          {timeline.length === 0 && !isPlaceholderData ? (
-            <EmptyHistory dailyOnly={dailyOnly} />
+          {!isGauntlet && (
+            <SearchHeader
+              search={search}
+              onSearchChange={handleSearchChange}
+              status={statusFilter}
+              onStatusChange={handleStatusChange}
+              totalItems={data?.meta.totalItems ?? 0}
+              isFiltered={isFiltered}
+              onClearFilters={handleClearFilters}
+            />
+          )}
+
+          {hasNoResults && !isPlaceholderData ? (
+            isGauntlet ? (
+              <div className="text-center py-16">
+                <p className="text-fg/40 text-sm">No gauntlet runs yet.</p>
+                <Link
+                  href="/gauntlet"
+                  className="mt-4 inline-flex items-center gap-2 text-amber-400 hover:underline text-sm"
+                >
+                  <Play className="w-4 h-4" />
+                  Start a Gauntlet Run
+                </Link>
+              </div>
+            ) : (
+              <EmptyHistory dailyOnly={dailyOnly} />
+            )
           ) : isPlaceholderData ? (
             /* Skeleton placeholders while the next page loads */
             <div className="space-y-3 sm:space-y-4">
@@ -274,6 +389,31 @@ function HistoryPageContent() {
                 </div>
               ))}
             </div>
+          ) : isGauntlet ? (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`gauntlet-${page}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <div className="space-y-3 sm:space-y-4">
+                  {gauntletItems.map((entry, index) => (
+                    <GauntletHistoryCard
+                      key={entry.id}
+                      entry={entry}
+                      highlightBest={
+                        gauntletSummary != null &&
+                        gauntletSummary.bestScore > 0 &&
+                        entry.score === gauntletSummary.bestScore
+                      }
+                      staggerIndex={index}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
           ) : (
             <AnimatePresence mode="wait">
               <motion.div
@@ -313,7 +453,7 @@ function HistoryPageContent() {
                         copied={copiedId === entry.data.id}
                         showWinnerGlow={
                           entry.data.status ===
-                            GameHistoryEntryDtoStatusEnum.Won &&
+                          GameHistoryEntryDtoStatusEnum.Won &&
                           entry.data.score != null &&
                           (entry.data.score === 6 || entry.data.score === 5)
                         }

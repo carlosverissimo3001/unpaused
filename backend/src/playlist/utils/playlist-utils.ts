@@ -49,17 +49,30 @@ export function applyFilters(
   session: UserSessionDto,
 ): SimplifiedPlaylist[] {
   return playlists.filter((p) => {
+    // Handle both new API (items) and old SDK types (tracks) for Feb 2026 API change
+    const playlist = p as PlaylistWithItems;
+
+    /**Note: Spotify playlist images are guaranteed to exist (i.e, even if the user has not set a custom one,
+    / Spotify generates one based on the playlist's tracks). If a playlist does not have one, then it's likely that
+    / it is either empty, or includes only local files, which are obvisouly songs we cannot play
+    / This is not 100% guaranteed, but I'm betting on it
+    */
+    const hasImage = playlist.images?.some((img) => !!img.url);
+    const hasTracks = (playlist.items?.total ?? 0) > 0;
     // Spotify only allows playing user-owned playlists
-    if (p.owner?.id !== session.spotifyUserId) {
-      return false;
-    }
-    if (filters.onlyPublic && !p.public) {
-      return false;
-    }
-    if (filters.onlyPrivate && p.public) {
-      return false;
-    }
-    return true;
+    const isOwnedByUser = playlist.owner?.id === session.spotifyUserId;
+    const matchesPublicFilter =
+      !filters.onlyPublic || playlist.public === true;
+    const matchesPrivateFilter =
+      !filters.onlyPrivate || playlist.public === false;
+
+    return (
+      hasImage &&
+      hasTracks &&
+      isOwnedByUser &&
+      matchesPublicFilter &&
+      matchesPrivateFilter
+    );
   });
 }
 

@@ -23,6 +23,7 @@ import type {
   GameStateDto,
   GameStatsDto,
   GauntletGuessResultDto,
+  GauntletHistoryDto,
   GauntletLeaderboardDto,
   GauntletRunStateDto,
   GuessDto,
@@ -69,6 +70,8 @@ import {
     GameStatsDtoToJSON,
     GauntletGuessResultDtoFromJSON,
     GauntletGuessResultDtoToJSON,
+    GauntletHistoryDtoFromJSON,
+    GauntletHistoryDtoToJSON,
     GauntletLeaderboardDtoFromJSON,
     GauntletLeaderboardDtoToJSON,
     GauntletRunStateDtoFromJSON,
@@ -188,6 +191,12 @@ export interface GameControllerSubmitGuessRequest {
 
 export interface GauntletControllerEndRunRequest {
     id: string;
+}
+
+export interface GauntletControllerGetHistoryRequest {
+    page?: number;
+    limit?: number;
+    difficulty?: GauntletControllerGetHistoryDifficultyEnum;
 }
 
 export interface GauntletControllerGetLeaderboardRequest {
@@ -1008,6 +1017,47 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async gauntletControllerEndRun(requestParameters: GauntletControllerEndRunRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GauntletRunStateDto> {
         const response = await this.gauntletControllerEndRunRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get user\'s gauntlet run history (paginated)
+     */
+    async gauntletControllerGetHistoryRaw(requestParameters: GauntletControllerGetHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GauntletHistoryDto>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['page'] != null) {
+            queryParameters['page'] = requestParameters['page'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['difficulty'] != null) {
+            queryParameters['difficulty'] = requestParameters['difficulty'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/gauntlet/history`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GauntletHistoryDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Get user\'s gauntlet run history (paginated)
+     */
+    async gauntletControllerGetHistory(requestParameters: GauntletControllerGetHistoryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GauntletHistoryDto> {
+        const response = await this.gauntletControllerGetHistoryRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1996,6 +2046,16 @@ export const GameControllerGetStatsModeEnum = {
     Gauntlet: 'GAUNTLET'
 } as const;
 export type GameControllerGetStatsModeEnum = typeof GameControllerGetStatsModeEnum[keyof typeof GameControllerGetStatsModeEnum];
+/**
+ * @export
+ */
+export const GauntletControllerGetHistoryDifficultyEnum = {
+    Easy: 'EASY',
+    Medium: 'MEDIUM',
+    Hard: 'HARD',
+    Expert: 'EXPERT'
+} as const;
+export type GauntletControllerGetHistoryDifficultyEnum = typeof GauntletControllerGetHistoryDifficultyEnum[keyof typeof GauntletControllerGetHistoryDifficultyEnum];
 /**
  * @export
  */

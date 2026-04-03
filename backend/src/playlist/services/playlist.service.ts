@@ -122,7 +122,7 @@ export class PlaylistService {
         { onlyPublic, onlyPrivate },
         session,
       );
-      savedMapped = saved.map((p) => mapPlaylistLite(p as Playlist<Track>));
+      savedMapped = saved.map((p) => mapPlaylistLite(p));
       savedMapped = sortPlaylists(savedMapped, sortBy);
       total = response.total ?? 0;
       responseLimit = response.limit ?? limit;

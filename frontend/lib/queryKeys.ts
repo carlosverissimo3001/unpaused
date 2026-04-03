@@ -1,4 +1,4 @@
-import { PlaylistControllerGetMyPlaylistsSortByEnum as PlaylistSortBy } from '@sdk';
+import { PlaylistControllerGetMyPlaylistsSortByEnum as PlaylistSortBy, StartRunDtoDifficultyEnum as GauntletDifficulty } from '@sdk';
 
 /**
  * Centralized query keys factory for consistent cache invalidation
@@ -83,6 +83,12 @@ export const queryKeys = {
     personalBest: ['gauntlet', 'personalBest'] as const,
     leaderboard: (period?: string) =>
       ['gauntlet', 'leaderboard', period] as const,
+    allHistory: ['gauntlet', 'history'] as const,
+    history: (params?: {
+      page?: number;
+      limit?: number;
+      difficulty?: GauntletDifficulty;
+    }) => ['gauntlet', 'history', params] as const,
   },
   // Daily game queries
   daily: {

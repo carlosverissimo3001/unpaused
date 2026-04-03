@@ -27,8 +27,15 @@ import { GauntletGuessResultDto } from '../dto/gauntlet-guess-result.dto';
 import { GauntletLeaderboardDto } from '../dto/gauntlet-leaderboard.dto';
 import { SubmitGauntletGuessDto } from '../dto/submit-gauntlet-guess.dto';
 import { PersonalBestDto } from '../dto/personal-best.dto';
+import {
+  GauntletHistoryDto,
+  GauntletHistoryEntryDto,
+  GauntletHistorySummaryDto,
+} from '../dto/gauntlet-history.dto';
+import { GetGauntletHistoryDto } from '../dto/get-gauntlet-history.dto';
 import { LeaderboardPeriod } from '../dto/get-leaderboard.dto';
 import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
+import { differenceInSeconds, formatDate } from 'date-fns';
 
 @Injectable()
 export class GauntletService {
@@ -268,6 +275,74 @@ export class GauntletService {
       await this.gauntletRunRepository.findPersonalBest(userId);
 
     return { personalBest };
+  }
+
+  async getHistory(
+    sessionId: string,
+    dto: GetGauntletHistoryDto,
+  ): Promise<GauntletHistoryDto> {
+    const { id: userId } =
+      await this.authService.getUserBySessionId(sessionId);
+
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
+
+    const [{ items, total }, summary] = await Promise.all([
+      this.gauntletRunRepository.findUserHistory({
+        userId,
+        page,
+        limit,
+        difficulty: dto.difficulty,
+      }),
+      this.gauntletRunRepository.findUserHistorySummary({
+        userId,
+        difficulty: dto.difficulty,
+      }),
+    ]);
+
+    const uniqueTrackIds = [...new Set(items.flatMap((run) => run.trackIds))];
+    const tracks = await this.trackService.findMany(uniqueTrackIds);
+    const trackMap = new Map(tracks.map((track) => [track.id, track]));
+
+    const entries: GauntletHistoryEntryDto[] = items.map((run) => {
+      const completedAt = run.completedAt ?? run.createdAt;
+      const playedTracks = run.trackIds
+        .map((trackId) => trackMap.get(trackId))
+        .filter((track): track is NonNullable<typeof track> => !!track);
+
+      return {
+        id: run.id,
+        date: formatDate(completedAt, 'yyyy-MM-dd'),
+        score: run.score,
+        difficulty: run.difficulty,
+        durationSeconds: Math.max(
+          differenceInSeconds(completedAt, run.createdAt),
+          0,
+        ),
+        tracks: playedTracks,
+      };
+    });
+
+    const historySummary: GauntletHistorySummaryDto = {
+      totalRuns: summary.totalRuns,
+      bestScore: summary.bestScore,
+      averageScore: summary.averageScore,
+      totalCorrectAnswers: summary.totalCorrectAnswers,
+    };
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: entries,
+      meta: {
+        totalItems: total,
+        itemCount: entries.length,
+        itemsPerPage: limit,
+        totalPages,
+        currentPage: page,
+      },
+      summary: historySummary,
+    };
   }
 
   async getLeaderboard(

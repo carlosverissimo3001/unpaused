@@ -17,6 +17,13 @@ export interface LeaderboardEntryRaw {
   score: number;
 }
 
+export interface GauntletHistorySummaryRaw {
+  totalRuns: number;
+  bestScore: number;
+  averageScore: number;
+  totalCorrectAnswers: number;
+}
+
 type PrismaGauntletRunResult = Prisma.GauntletRunGetPayload<{
   include: { currentTrack: true };
 }>;
@@ -247,5 +254,64 @@ export class GauntletRunRepository {
       take: limit,
     });
     return runs.map(fromPrismaBasic);
+  }
+
+  async findUserHistory(params: {
+    userId: string;
+    limit: number;
+    page: number;
+    difficulty?: GauntletDifficulty;
+  }): Promise<{ items: GauntletRunEntity[]; total: number }> {
+    const { userId, limit, page, difficulty } = params;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.GauntletRunWhereInput = {
+      userId,
+      status: GauntletRunStatus.ENDED,
+      ...(difficulty && { difficulty }),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.gauntletRun.findMany({
+        where,
+        orderBy: { completedAt: 'desc' },
+        take: limit,
+        skip,
+      }),
+      this.prisma.gauntletRun.count({ where }),
+    ]);
+
+    return {
+      items: items.map(fromPrismaBasic),
+      total,
+    };
+  }
+
+  async findUserHistorySummary(params: {
+    userId: string;
+    difficulty?: GauntletDifficulty;
+  }): Promise<GauntletHistorySummaryRaw> {
+    const { userId, difficulty } = params;
+
+    const where: Prisma.GauntletRunWhereInput = {
+      userId,
+      status: GauntletRunStatus.ENDED,
+      ...(difficulty && { difficulty }),
+    };
+
+    const aggregate = await this.prisma.gauntletRun.aggregate({
+      where,
+      _count: { _all: true },
+      _max: { score: true },
+      _avg: { score: true },
+      _sum: { score: true },
+    });
+
+    return {
+      totalRuns: aggregate._count._all,
+      bestScore: aggregate._max.score ?? 0,
+      averageScore: Number((aggregate._avg.score ?? 0).toFixed(1)),
+      totalCorrectAnswers: aggregate._sum.score ?? 0,
+    };
   }
 }
