@@ -8,6 +8,7 @@ import {
   Play,
   BarChart3,
   Flame,
+  Trophy,
   Users,
   Plus,
   Gamepad2,
@@ -137,14 +138,23 @@ function GauntletCardContent() {
         </div>
       </div>
 
+      <div className="flex items-center gap-2">
+        <Link
+          href="/gauntlet"
+          className="flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black text-white transition-all active:scale-90 w-fit shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
+          style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)' }}
+        >
+          <Play fill="currentColor" className="w-4 h-4" />
+          <span>Enter</span>
+        </Link>
       <Link
-        href="/gauntlet"
-        className="flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black text-white transition-all active:scale-90 w-fit shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
-        style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)' }}
+        href="/gauntlet/leaderboard"
+        className="flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-95 w-fit border border-orange-500/30 bg-orange-500/5 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
       >
-        <Play fill="currentColor" className="w-4 h-4" />
-        <span>Enter</span>
-      </Link>
+        <Trophy className="w-4 h-4" />
+        <span>Leaderboard</span>
+    </Link>
+      </div>
     </div>
   );
 }

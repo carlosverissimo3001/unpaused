@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, ListMusic, Zap, Check, ArrowLeft } from 'lucide-react';
+import { Flame, ListMusic, Trophy, Zap, Check, ArrowLeft } from 'lucide-react';
 import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
 import { StartRunDtoDifficultyEnum as GauntletDifficulty } from '@/sdk';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -114,6 +114,13 @@ export function GauntletSetup({
             Your best: {personalBest} 🔥
           </p>
         )}
+        <Link
+          href="/gauntlet/leaderboard"
+          className="inline-flex items-center gap-1.5 text-amber-400/70 hover:text-amber-400 transition-colors text-xs font-bold uppercase tracking-wider"
+        >
+          <Trophy className="w-3.5 h-3.5" />
+          Leaderboard
+        </Link>
       </div>
 
       {/* Difficulty */}
