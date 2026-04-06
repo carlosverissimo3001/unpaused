@@ -2,7 +2,7 @@
 
 import { AppHeader } from '@/components/features/AppHeader';
 import { AppFooter } from '@/components/features/AppFooter';
-import { GauntletLeaderboard } from '@/components/gauntlet/GauntletLeaderboard';
+import { SpeedRunLeaderboard } from '@/components/speed-run/SpeedRunLeaderboard';
 import { useMe } from '@/hooks/auth/useMe';
 import { useLogout } from '@/hooks/auth/useLogout';
 
@@ -31,7 +31,7 @@ export default function LeaderboardPage() {
 
       <div className="flex-1 px-4 sm:px-6 py-4 sm:py-8 relative z-10">
         <div className="max-w-lg mx-auto">
-          <GauntletLeaderboard />
+          <SpeedRunLeaderboard />
         </div>
       </div>
 

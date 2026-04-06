@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Crown, Flame, Medal, Trophy, Zap } from 'lucide-react';
 import { useMe } from '@/hooks/auth/useMe';
-import { useGauntletLeaderboard } from '@/hooks/gauntlet/useGauntletLeaderboard';
+import { useGauntletLeaderboard } from '@/hooks/speed-run/useSpeedrunLeaderboard';
 import { GauntletControllerGetLeaderboardPeriodEnum as Period } from '@/sdk/apis/ApiApi';
 import type { GauntletLeaderboardEntryDto } from '@/sdk/models/GauntletLeaderboardEntryDto';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -147,7 +147,7 @@ function LeaderboardRow({
   );
 }
 
-export function GauntletLeaderboard() {
+export function SpeedRunLeaderboard() {
   const [period, setPeriod] = useState<Period>(Period.Alltime);
   const { data: user } = useMe();
   const { data, isLoading, error } = useGauntletLeaderboard(period, !!user);
@@ -179,7 +179,7 @@ export function GauntletLeaderboard() {
           <Trophy className="w-5 h-5 text-amber-400" />
         </div>
         <p className="text-fg/40 text-sm">
-          The best gauntlet runs across all players
+          The best speed runs across all players
         </p>
       </div>
 
@@ -228,7 +228,7 @@ export function GauntletLeaderboard() {
             . Be the first!
           </p>
           <Link
-            href="/gauntlet"
+            href="/speed-run"
             className="inline-flex items-center gap-2 text-orange-400 hover:underline text-sm font-semibold"
           >
             <Zap className="w-4 h-4" />

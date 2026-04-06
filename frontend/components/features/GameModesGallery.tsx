@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { usePlayedToday } from '@/hooks/game/usePlayedToday';
 import { DailyChallengeCountdown } from './DailyChallangeCountdown';
-import { usePersonalBest } from '@/hooks/gauntlet/usePersonalBest';
+import { usePersonalBest } from '@/hooks/speed-run/useSpeedRunPersonalBest';
 import { JoinRoomModal } from '@/components/multiplayer/JoinRoomModal';
 import { CreateRoomModal } from '@/components/multiplayer/CreateRoomModal';
 import { cn } from '@/lib/utils';
@@ -66,7 +66,7 @@ function DailyCardContent() {
         </div>
         <div className="space-y-0.5">
           <h2 className="font-black tracking-tighter text-fg text-2xl sm:text-3xl leading-tight">
-            The <span className="text-spotify-green">Mystery.</span>
+            The <span className="text-spotify-green">Mystery</span>
           </h2>
           <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
             One song. Six chances. Guess in 1s.
@@ -107,7 +107,7 @@ function DailyCardContent() {
   );
 }
 
-function GauntletCardContent() {
+function SpeedrunCardContent() {
   const { data: pbData } = usePersonalBest(true);
   const personalBest = pbData?.personalBest ?? 0;
 
@@ -127,7 +127,7 @@ function GauntletCardContent() {
           <h2 className="font-black tracking-tighter text-fg text-xl sm:text-2xl leading-tight">
             The{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-br from-orange-400 to-red-500">
-              Gauntlet.
+              Speedrun
             </span>
           </h2>
           <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
@@ -138,22 +138,22 @@ function GauntletCardContent() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full">
         <Link
-          href="/gauntlet"
-          className="flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black text-white transition-all active:scale-90 w-fit shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
+          href="/speed-run"
+          className="flex-[2] flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black text-white transition-all active:scale-90 shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
           style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)' }}
         >
-          <Play fill="currentColor" className="w-4 h-4" />
+          <Play fill="currentColor" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>Enter</span>
         </Link>
-      <Link
-        href="/gauntlet/leaderboard"
-        className="flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-95 w-fit border border-orange-500/30 bg-orange-500/5 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
-      >
-        <Trophy className="w-4 h-4" />
-        <span>Leaderboard</span>
-    </Link>
+        <Link
+          href="/speed-run/leaderboard"
+          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black transition-all active:scale-95 border border-orange-500/30 bg-orange-500/5 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
+        >
+          <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span className="hidden sm:inline lg:hidden">Leaderboard</span>
+        </Link>
       </div>
     </div>
   );
@@ -182,7 +182,7 @@ function MultiplayerCardContent({
           <h2 className="font-black tracking-tighter text-fg text-xl sm:text-2xl leading-tight">
             With{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
-              Friends.
+              Friends
             </span>
           </h2>
           <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
@@ -194,15 +194,15 @@ function MultiplayerCardContent({
       <div className="flex items-center gap-2 w-full">
         <button
           onClick={onJoin}
-          className="flex-1 flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black border border-white/10 bg-white/5 hover:bg-white/10 text-fg transition-all active:scale-95"
+          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black border border-white/10 bg-white/5 hover:bg-white/10 text-fg transition-all active:scale-95"
         >
           <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span>Join</span>
+          <span className="hidden sm:inline lg:hidden">Join</span>
         </button>
 
         <button
           onClick={onCreate}
-          className="flex-1 flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
+          className="flex-[2] flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
         >
           <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>Create</span>
@@ -222,9 +222,14 @@ function GameModesGalleryComponent({
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  // Build-time feature flag for enabling speedrun for non-admins.
+  // Set NEXT_PUBLIC_SPEEDRUN_ENABLED=true to enable it in client bundles.
+  const isSpeedRunEnabled = process.env.NEXT_PUBLIC_SPEEDRUN_ENABLED === 'true';
+  const showSpeedRun = isAdmin || isSpeedRunEnabled;
+
   const modes = [
     { id: 'daily', show: isTrusted, render: () => <DailyCardContent /> },
-    { id: 'gauntlet', show: isAdmin, render: () => <GauntletCardContent /> },
+    { id: 'speedrun', show: showSpeedRun, render: () => <SpeedrunCardContent /> },
     {
       id: 'multiplayer',
       show: true,
@@ -279,7 +284,7 @@ function GameModesGalleryComponent({
                 className={cn(
                   'absolute -top-12 -right-12 w-48 h-48 blur-[60px] pointer-events-none -z-0',
                   mode.id === 'daily' && 'bg-spotify-green',
-                  mode.id === 'gauntlet' && 'bg-orange-600',
+                  mode.id === 'speedrun' && 'bg-orange-600',
                   mode.id === 'multiplayer' && 'bg-purple-600',
                 )}
               />

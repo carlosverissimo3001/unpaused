@@ -23,7 +23,7 @@ import {
 import {
   useGauntletHistory,
   type GauntletDifficultyFilter,
-} from '@/hooks/gauntlet/useGauntletHistory';
+} from '@/hooks/speed-run/useSpeedRunHistory';
 import { usePlayedToday } from '@/hooks/game/usePlayedToday';
 import { GameHistoryEntryDtoStatusEnum } from '@/sdk/models/GameHistoryEntryDto';
 import { GameControllerGetHistoryStatusEnum as GameStatusFilter } from '@/sdk/apis/ApiApi';
@@ -347,13 +347,13 @@ function HistoryPageContent() {
           {hasNoResults && !isPlaceholderData ? (
             isGauntlet ? (
               <div className="text-center py-16">
-                <p className="text-fg/40 text-sm">No gauntlet runs yet.</p>
+                <p className="text-fg/40 text-sm">No speed runs yet.</p>
                 <Link
-                  href="/gauntlet"
+                  href="/speed-run"
                   className="mt-4 inline-flex items-center gap-2 text-amber-400 hover:underline text-sm"
                 >
                   <Play className="w-4 h-4" />
-                  Start a Gauntlet Run
+                  Start a Speed Run
                 </Link>
               </div>
             ) : (

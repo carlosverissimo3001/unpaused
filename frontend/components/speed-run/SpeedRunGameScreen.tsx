@@ -8,11 +8,11 @@ import { Play, Pause, Flame, Trophy, RotateCcw, Home } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { GuessInput } from '@/components/game/GuessInput';
 import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
-import { useGauntletAudio } from '@/hooks/gauntlet/useGauntletAudio';
+import { useGauntletAudio } from '@/hooks/speed-run/useSpeedRunAudio';
 import type {
   useGauntletRun,
   RecentTrack,
-} from '@/hooks/gauntlet/useGauntletRun';
+} from '@/hooks/speed-run/useSpeedRun';
 import { GameStatsDtoModeEnum as GameMode } from '@/sdk';
 
 const MILESTONES = [5, 10, 15, 20];
@@ -37,18 +37,18 @@ function fireConfetti(score: number) {
   });
 }
 
-interface GauntletGameScreenProps {
+interface SpeedRunGameScreenProps {
   run: ReturnType<typeof useGauntletRun>;
   volume: number;
   onVolumeChange: (v: number) => void;
   personalBest: number;
 }
 
-export function GauntletGameScreen({
+export function SpeedRunGameScreen({
   run,
   volume,
   personalBest,
-}: GauntletGameScreenProps) {
+}: SpeedRunGameScreenProps) {
   const search = useSpotifyTrackSearch();
   const prevScoreRef = useRef(run.score);
   const hasShownMilestoneRef = useRef<Set<number>>(new Set());

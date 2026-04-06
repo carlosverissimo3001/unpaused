@@ -3,18 +3,18 @@
 import { BarChart3, Crown, Layers3, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { GauntletHistorySummaryDto } from '@/sdk/models/GauntletHistorySummaryDto';
-import type { GauntletDifficultyFilter } from '@/hooks/gauntlet/useGauntletHistory';
+import type { GauntletDifficultyFilter } from '@/hooks/speed-run/useSpeedRunHistory';
 
 const DIFFICULTY_OPTIONS: Array<{
   value?: GauntletDifficultyFilter;
   label: string;
 }> = [
-  { value: undefined, label: 'All' },
-  { value: 'EASY', label: 'Easy' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'HARD', label: 'Hard' },
-  { value: 'EXPERT', label: 'Expert' },
-];
+    { value: undefined, label: 'All' },
+    { value: 'EASY', label: 'Easy' },
+    { value: 'MEDIUM', label: 'Medium' },
+    { value: 'HARD', label: 'Hard' },
+    { value: 'EXPERT', label: 'Expert' },
+  ];
 
 function formatAverage(value: number): string {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
@@ -80,11 +80,10 @@ export function GauntletHistoryOverview({
                 key={option.label}
                 type="button"
                 onClick={() => onDifficultyChange(option.value)}
-                className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] transition-all ${
-                  active
-                    ? 'border-fg/20 bg-fg/10 text-fg'
-                    : 'border-transparent bg-transparent text-fg/35 hover:text-fg/60'
-                }`}
+                className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] transition-all ${active
+                  ? 'border-fg/20 bg-fg/10 text-fg'
+                  : 'border-transparent bg-transparent text-fg/35 hover:text-fg/60'
+                  }`}
               >
                 {option.label}
               </button>

@@ -46,19 +46,19 @@ const DIFFICULTIES: {
   },
 ];
 
-interface GauntletSetupProps {
+interface SpeedRunSetupProps {
   onStart: (playlistId: string, difficulty: GauntletDifficulty) => void;
   isStarting: boolean;
   startError?: string;
   personalBest: number;
 }
 
-export function GauntletSetup({
+export function SpeedRunSetup({
   onStart,
   isStarting,
   startError,
   personalBest,
-}: GauntletSetupProps) {
+}: SpeedRunSetupProps) {
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
     null,
   );
@@ -101,7 +101,7 @@ export function GauntletSetup({
                 backgroundImage: 'linear-gradient(135deg, #fb923c, #ef4444)',
               }}
             >
-              Gauntlet
+              Speed Run
             </span>
           </h1>
           <Flame className="w-6 h-6 fill-orange-500 text-orange-500" />
@@ -115,7 +115,7 @@ export function GauntletSetup({
           </p>
         )}
         <Link
-          href="/gauntlet/leaderboard"
+          href="/speed-run/leaderboard"
           className="inline-flex items-center gap-1.5 text-amber-400/70 hover:text-amber-400 transition-colors text-xs font-bold uppercase tracking-wider"
         >
           <Trophy className="w-3.5 h-3.5" />
@@ -263,7 +263,7 @@ export function GauntletSetup({
         ) : (
           <span className="flex items-center justify-center gap-2">
             <Zap className="w-5 h-5 fill-current" />
-            Start Gauntlet
+            Start Speed Run
           </span>
         )}
       </motion.button>
