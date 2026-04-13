@@ -24,7 +24,7 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
   const Icon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
-    <div className="hidden md:grid grid-cols-[28px_minmax(0,1fr)_28px] items-center gap-1.5 w-[160px]">
+    <div className="hidden md:grid grid-cols-[28px_minmax(0,1fr)] items-center gap-1.5 w-[130px]">
       <button
         type="button"
         onClick={toggleMute}
@@ -46,9 +46,6 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
           background: `linear-gradient(to right, #1DB954 0%, #1DB954 ${volume * 100}%, rgb(var(--fg) / 0.18) ${volume * 100}%, rgb(var(--fg) / 0.18) 100%)`,
         }}
       />
-      <span className="text-[11px] tabular-nums text-fg/40 w-7 text-center select-none">
-        {Math.round(volume * 100)}
-      </span>
       <style>{`
         .volume-slider::-webkit-slider-thumb {
           -webkit-appearance: none;

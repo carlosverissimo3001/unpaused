@@ -222,14 +222,9 @@ function GameModesGalleryComponent({
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Build-time feature flag for enabling speedrun for non-admins.
-  // Set NEXT_PUBLIC_SPEEDRUN_ENABLED=true to enable it in client bundles.
-  const isSpeedRunEnabled = process.env.NEXT_PUBLIC_SPEEDRUN_ENABLED === 'true';
-  const showSpeedRun = isAdmin || isSpeedRunEnabled;
-
   const modes = [
     { id: 'daily', show: isTrusted, render: () => <DailyCardContent /> },
-    { id: 'speedrun', show: showSpeedRun, render: () => <SpeedrunCardContent /> },
+    { id: 'speedrun', show: isTrusted, render: () => <SpeedrunCardContent /> },
     {
       id: 'multiplayer',
       show: true,
@@ -270,7 +265,6 @@ function GameModesGalleryComponent({
             >
               {mode.render()}
 
-              {/* Dynamic Glow - Animated on hover/touch */}
               <motion.div
                 animate={{
                   scale: [1, 1.2, 1],
@@ -289,7 +283,6 @@ function GameModesGalleryComponent({
                 )}
               />
 
-              {/* Glass Reflection Overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
             </motion.div>
           );

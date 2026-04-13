@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
@@ -107,11 +108,26 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     return null;
   }
 
+  // Pre-cache album art through next/image pipeline so it's instant on reveal
+  const preloadAlbumUrl =
+    !isGameOver && gameState.albumImageUrl ? gameState.albumImageUrl : null;
+
   return (
     <div
       className="min-h-screen min-h-[100dvh] overflow-y-auto"
       style={{ background: 'rgb(var(--bg))' }}
     >
+      {preloadAlbumUrl && (
+        <Image
+          src={preloadAlbumUrl}
+          alt=""
+          width={1}
+          height={1}
+          priority
+          className="absolute w-0 h-0 opacity-0 pointer-events-none"
+          sizes="(max-width: 768px) 144px, 176px"
+        />
+      )}
       <motion.div
         className="fixed inset-0 -z-10 pointer-events-none"
         animate={
@@ -221,12 +237,10 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="flex-1"
               >
                 <SongRevealCard
                   status={gameState.status}
                   answer={gameState.answer}
-                  guesses={gameState.guesses}
                   previewUrl={gameState.previewUrl}
                   shareGameId={isDaily ? gameState.sessionId : null}
                   showViewStats={isDaily}

@@ -2,13 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  ArrowLeft,
-  Play,
-  ExternalLink,
-  BarChart3,
-  History,
-} from 'lucide-react';
+import { ArrowLeft, Play, BarChart3, History } from 'lucide-react';
 import { StreakBadge } from '@/components/daily/StreakBadge';
 import type { PlaylistDto, GameStatsDto } from '@/sdk';
 import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
@@ -49,15 +43,9 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
               </div>
             )}
           </div>
-          <a
-            href={playlist.externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group text-sm text-fg/40 hover:text-fg/80 transition-colors truncate flex items-center gap-1.5"
-          >
-            <span className="truncate max-w-[180px]">{playlist.name}</span>
-            <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </a>
+          <span className="text-sm text-fg/40 truncate max-w-[180px]">
+            {playlist.name}
+          </span>
         </div>
       )}
       {isDaily && (

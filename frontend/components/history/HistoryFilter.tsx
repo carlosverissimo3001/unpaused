@@ -21,7 +21,7 @@ const TABS: {
 }[] = [
   { value: 'all', label: 'All' },
   { value: 'daily', label: 'Daily', trustedOnly: true },
-  { value: 'gauntlet', label: 'Speed Run', adminOnly: true },
+  { value: 'gauntlet', label: 'Speed Run', trustedOnly: true },
 ];
 
 export function HistoryFilter({

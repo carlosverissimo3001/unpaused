@@ -442,7 +442,6 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
                 <SongRevealCard
                   status={roundState.status}
                   answer={roundState.answer}
-                  guesses={roundState.guesses}
                   previewUrl={roundState.previewUrl}
                   shareGameId={null}
                   showViewStats={false}
