@@ -1776,6 +1776,159 @@
           "Api"
         ]
       }
+    },
+    "/special-event/ping": {
+      "get": {
+        "operationId": "SpecialEventController_ping",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Trusted session confirmed."
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "Not a trusted user."
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Health-check for the special-event module. Requires a trusted session.",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/special-event/start": {
+      "post": {
+        "operationId": "SpecialEventController_start",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventStateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Get or create the user's special-event run state. Idempotent — call on page load to resume.",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/special-event/state": {
+      "get": {
+        "operationId": "SpecialEventController_getState",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventStateDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Read the current run state without mutating.",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/special-event/guess": {
+      "post": {
+        "operationId": "SpecialEventController_guess",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecialEventGuessResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Run is already complete."
+          },
+          "404": {
+            "description": "No active run — call /start first."
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Submit a guess for the current track in the run.",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/special-event/next": {
+      "post": {
+        "operationId": "SpecialEventController_next",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Current track still in progress."
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Advance to the next track (after the dossier has been shown).",
+        "tags": [
+          "Api"
+        ]
+      }
     }
   },
   "info": {
@@ -3792,6 +3945,230 @@
           "items",
           "meta",
           "summary"
+        ]
+      },
+      "GameStatus": {
+        "type": "string",
+        "enum": [
+          "PLAYING",
+          "WON",
+          "LOST",
+          "ABANDONED"
+        ]
+      },
+      "TrackResultDto": {
+        "type": "object",
+        "properties": {
+          "trackIndex": {
+            "type": "number",
+            "description": "Index of the track in the run (0-based)"
+          },
+          "spotifyId": {
+            "type": "string",
+            "description": "Spotify track ID"
+          },
+          "status": {
+            "description": "Final status for this track",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GameStatus"
+              }
+            ]
+          },
+          "guesses": {
+            "description": "Full guess history for this track",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuessHistoryDto"
+            }
+          }
+        },
+        "required": [
+          "trackIndex",
+          "spotifyId",
+          "status",
+          "guesses"
+        ]
+      },
+      "EventStateDto": {
+        "type": "object",
+        "properties": {
+          "trackIndex": {
+            "type": "number",
+            "description": "Index of the current track (0-based)"
+          },
+          "totalTracks": {
+            "type": "number",
+            "description": "Total number of tracks in the run"
+          },
+          "currentRound": {
+            "type": "number",
+            "description": "Current round within the current track (0-based)"
+          },
+          "maxRounds": {
+            "type": "number",
+            "description": "Max rounds per track"
+          },
+          "snippetDuration": {
+            "type": "number",
+            "description": "Snippet duration in seconds for current round"
+          },
+          "previewUrl": {
+            "type": "string",
+            "description": "Preview URL for the current track (null when run is complete)"
+          },
+          "isComplete": {
+            "type": "boolean",
+            "description": "True when the entire 8-track run is finished"
+          },
+          "currentGuesses": {
+            "description": "Guess history for the current track in-progress",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuessHistoryDto"
+            }
+          },
+          "trackResults": {
+            "description": "Finalized results for tracks already played",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackResultDto"
+            }
+          }
+        },
+        "required": [
+          "trackIndex",
+          "totalTracks",
+          "currentRound",
+          "maxRounds",
+          "snippetDuration",
+          "isComplete",
+          "currentGuesses",
+          "trackResults"
+        ]
+      },
+      "GuessResult": {
+        "type": "string",
+        "enum": [
+          "CORRECT",
+          "ARTIST",
+          "ALBUM",
+          "WRONG",
+          "SKIP",
+          "ARTIST_AND_ALBUM"
+        ]
+      },
+      "TrackDossierDto": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "type": "string",
+            "description": "Journalistic context about the song/album"
+          },
+          "fact1996": {
+            "type": "string",
+            "description": "1996-specific anchor fact"
+          },
+          "stinger": {
+            "type": "string",
+            "description": "One-line tonal landing (joke / observation)"
+          }
+        },
+        "required": [
+          "context",
+          "fact1996",
+          "stinger"
+        ]
+      },
+      "TrackRevealDto": {
+        "type": "object",
+        "properties": {
+          "trackId": {
+            "type": "string",
+            "description": "Spotify track ID"
+          },
+          "trackName": {
+            "type": "string",
+            "description": "Track name"
+          },
+          "artistName": {
+            "type": "string",
+            "description": "Primary artist name"
+          },
+          "albumImageUrl": {
+            "type": "string",
+            "description": "Album cover URL"
+          },
+          "albumName": {
+            "type": "string",
+            "description": "Album name"
+          },
+          "dossier": {
+            "description": "Dossier copy for this track",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrackDossierDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "trackId",
+          "trackName",
+          "artistName",
+          "dossier"
+        ]
+      },
+      "SpecialEventGuessResultDto": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "description": "Evaluation result for this guess",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GuessResult"
+              }
+            ]
+          },
+          "trackOver": {
+            "type": "boolean",
+            "description": "True if this track is over (won or out of rounds)"
+          },
+          "runComplete": {
+            "type": "boolean",
+            "description": "True if the whole 8-track run is now complete"
+          },
+          "currentRound": {
+            "type": "number",
+            "description": "New current-round index for this track"
+          },
+          "snippetDuration": {
+            "type": "number",
+            "description": "Snippet duration in seconds for the new round"
+          },
+          "currentGuesses": {
+            "description": "Updated guess history for the current track",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuessHistoryDto"
+            }
+          },
+          "reveal": {
+            "description": "Reveal block — present only when the track is over",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrackRevealDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "result",
+          "trackOver",
+          "runComplete",
+          "currentRound",
+          "snippetDuration",
+          "currentGuesses"
         ]
       }
     }

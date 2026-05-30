@@ -11,3 +11,8 @@ export function consumeAuthReturnUrl(): string | null {
   }
   return url;
 }
+
+export function peekAuthReturnUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  return sessionStorage.getItem(AUTH_RETURN_KEY);
+}

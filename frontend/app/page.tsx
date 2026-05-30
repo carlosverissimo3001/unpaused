@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useMe } from '@/hooks/auth/useMe';
-import { consumeAuthReturnUrl } from '@/lib/auth-return';
+import { consumeAuthReturnUrl, peekAuthReturnUrl } from '@/lib/auth-return';
 import { StreakFreezePrompt } from '@/components/streak/StreakFreezePrompt';
 import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
 import { useLogout } from '@/hooks/auth/useLogout';
@@ -33,6 +33,16 @@ export default function Home() {
 
   useTimezoneSync({ enabled: !!user });
 
+  // Detect post-OAuth pending redirect synchronously on mount so we can
+  // render a blank overlay instead of a flash of the homepage while
+  // useMe resolves and consumeAuthReturnUrl fires below.
+  const [hasPendingReturn, setHasPendingReturn] = useState(false);
+  useEffect(() => {
+    if (peekAuthReturnUrl()) {
+      setHasPendingReturn(true);
+    }
+  }, []);
+
   // Handle post-OAuth redirect back to multiplayer join (or other) pages
   useEffect(() => {
     if (user) {
@@ -57,6 +67,17 @@ export default function Home() {
   };
 
   const playlists = playlistsResponse?.items || [];
+
+  // Suppress homepage flash when we know a returnTo redirect is queued.
+  // Renders a black full-bleed div until the router.replace effect above fires.
+  if (hasPendingReturn) {
+    return (
+      <main
+        aria-hidden="true"
+        className="min-h-screen bg-black"
+      />
+    );
+  }
 
   if (isLoadingUser) {
     return (
