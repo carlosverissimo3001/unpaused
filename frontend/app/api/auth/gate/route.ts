@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
 import { authGateRateLimiter } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/get-client-ip';
+import {
+  SITE_ACCESS_COOKIE,
+  constantTimeEqual,
+  getExpectedToken,
+} from '@/lib/site-access';
 
-const SITE_PASSWORD = process.env.SITE_PASSWORD;
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 export async function POST(request: Request) {
   const clientIP = getClientIP(request);
 
-  // Check rate limit before processing
   const rateLimitStatus = authGateRateLimiter.check(clientIP);
   if (rateLimitStatus.isBlocked) {
     return NextResponse.json(
@@ -24,7 +27,9 @@ export async function POST(request: Request) {
       },
     );
   }
-  if (!SITE_PASSWORD) {
+
+  const sitePassword = process.env.SITE_PASSWORD;
+  if (!sitePassword) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
   }
 
@@ -37,16 +42,20 @@ export async function POST(request: Request) {
   }
 
   const password = body.password;
-  if (typeof password !== 'string' || password !== SITE_PASSWORD) {
+  if (typeof password !== 'string' || !constantTimeEqual(password, sitePassword)) {
     authGateRateLimiter.recordAttempt(clientIP);
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
   }
 
-  // Reset rate limit on successful authentication
   authGateRateLimiter.reset(clientIP);
 
+  const token = await getExpectedToken();
+  if (!token) {
+    return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+  }
+
   const response = NextResponse.json({ success: true });
-  response.cookies.set('site-access', SITE_PASSWORD, {
+  response.cookies.set(SITE_ACCESS_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     path: '/',

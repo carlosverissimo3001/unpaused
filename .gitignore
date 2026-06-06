@@ -70,3 +70,5 @@ coverage/
 .claude/
 # Por alguna razón, Claude created this file and I can't f*** delete it, entonces aquí estamos :/
 nul
+# Local-only handoff notes
+*HANDOFF.md

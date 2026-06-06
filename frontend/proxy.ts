@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  SITE_ACCESS_COOKIE,
+  isAccessTokenValid,
+} from '@/lib/site-access';
 
-const SITE_PASSWORD = process.env.SITE_PASSWORD;
-
-export function proxy(request: NextRequest) {
-  const cookie = request.cookies.get('site-access');
-  const hasAccess =
-    SITE_PASSWORD && cookie?.value && cookie.value === SITE_PASSWORD;
-
-  if (hasAccess) {
+export async function proxy(request: NextRequest) {
+  const cookie = request.cookies.get(SITE_ACCESS_COOKIE);
+  if (await isAccessTokenValid(cookie?.value)) {
     return NextResponse.next();
   }
 
-  return NextResponse.redirect(new URL('/gate', request.url));
+  const gate = new URL('/gate', request.url);
+  const destination = request.nextUrl.pathname + request.nextUrl.search;
+  if (destination && destination !== '/') {
+    gate.searchParams.set('next', destination);
+  }
+  return NextResponse.redirect(gate);
 }
 
 export const config = {
