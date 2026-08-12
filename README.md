@@ -50,7 +50,7 @@
 
 Unpaused is a music guessing game built on top of the Spotify Web API. The core loop: you hear a snippet that starts at **0.1 seconds** and grows with every wrong guess or skip - up to 8 seconds across 6 rounds. Nail the track early for more points.
 
-It started as a random idea me a friend and I had while playing Songless and Bandle and ended up as a **production-grade, full-stack TypeScript application** with three distinct game modes, a real-time multiplayer layer, a daily streak system, and a generated type-safe SDK between the frontend and backend.
+It started as a random idea me and a friend had while playing Songless and Bandle and ended up as an application with three distinct game modes, a real-time multiplayer layer, a daily streak system and much more...
 
 ### What makes it interesting, technically
 
