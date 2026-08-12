@@ -19,7 +19,6 @@ import type {
   AuthMeResponseDto,
   CreateRoomDto,
   CreateStreakQuestionDto,
-  EventStateDto,
   GameHistoryDto,
   GameStateDto,
   GameStatsDto,
@@ -40,7 +39,6 @@ import type {
   RoomDto,
   ScoreboardDto,
   ShareResultDto,
-  SpecialEventGuessResultDto,
   StartGameDto,
   StartRunDto,
   StreakQuestionDto,
@@ -64,8 +62,6 @@ import {
     CreateRoomDtoToJSON,
     CreateStreakQuestionDtoFromJSON,
     CreateStreakQuestionDtoToJSON,
-    EventStateDtoFromJSON,
-    EventStateDtoToJSON,
     GameHistoryDtoFromJSON,
     GameHistoryDtoToJSON,
     GameStateDtoFromJSON,
@@ -106,8 +102,6 @@ import {
     ScoreboardDtoToJSON,
     ShareResultDtoFromJSON,
     ShareResultDtoToJSON,
-    SpecialEventGuessResultDtoFromJSON,
-    SpecialEventGuessResultDtoToJSON,
     StartGameDtoFromJSON,
     StartGameDtoToJSON,
     StartRunDtoFromJSON,
@@ -275,10 +269,6 @@ export interface PlaylistControllerGetPlaylistByIdRequest {
 
 export interface SearchControllerSearchTracksRequest {
     q: string;
-}
-
-export interface SpecialEventControllerGuessRequest {
-    guessDto: GuessDto;
 }
 
 export interface StreakControllerSubmitAnswerRequest {
@@ -1731,160 +1721,6 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async searchControllerSearchTracks(requestParameters: SearchControllerSearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TrackOptionDto>> {
         const response = await this.searchControllerSearchTracksRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Read the current run state without mutating.
-     */
-    async specialEventControllerGetStateRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EventStateDto>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/special-event/state`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => EventStateDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * Read the current run state without mutating.
-     */
-    async specialEventControllerGetState(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventStateDto> {
-        const response = await this.specialEventControllerGetStateRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Submit a guess for the current track in the run.
-     */
-    async specialEventControllerGuessRaw(requestParameters: SpecialEventControllerGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SpecialEventGuessResultDto>> {
-        if (requestParameters['guessDto'] == null) {
-            throw new runtime.RequiredError(
-                'guessDto',
-                'Required parameter "guessDto" was null or undefined when calling specialEventControllerGuess().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/special-event/guess`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: GuessDtoToJSON(requestParameters['guessDto']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => SpecialEventGuessResultDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * Submit a guess for the current track in the run.
-     */
-    async specialEventControllerGuess(requestParameters: SpecialEventControllerGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SpecialEventGuessResultDto> {
-        const response = await this.specialEventControllerGuessRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Advance to the next track (after the dossier has been shown).
-     */
-    async specialEventControllerNextRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EventStateDto>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/special-event/next`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => EventStateDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * Advance to the next track (after the dossier has been shown).
-     */
-    async specialEventControllerNext(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventStateDto> {
-        const response = await this.specialEventControllerNextRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Health-check for the special-event module. Requires a trusted session.
-     */
-    async specialEventControllerPingRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/special-event/ping`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Health-check for the special-event module. Requires a trusted session.
-     */
-    async specialEventControllerPing(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.specialEventControllerPingRaw(initOverrides);
-    }
-
-    /**
-     * Get or create the user\'s special-event run state. Idempotent — call on page load to resume.
-     */
-    async specialEventControllerStartRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EventStateDto>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/special-event/start`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => EventStateDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * Get or create the user\'s special-event run state. Idempotent — call on page load to resume.
-     */
-    async specialEventControllerStart(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventStateDto> {
-        const response = await this.specialEventControllerStartRaw(initOverrides);
         return await response.value();
     }
 
