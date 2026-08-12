@@ -259,6 +259,12 @@ This brings up Postgres 16 on `:5432` and Redis 7 on `:6379`, both with healthch
 
 ### 4. Configure env vars
 
+Start from the template, then fill in your Spotify client ID and generate the two secrets:
+
+```bash
+cp backend/env.template backend/.env
+```
+
 **`backend/.env`**
 ```env
 DATABASE_URL="postgresql://unpaused:unpaused_dev@localhost:5432/unpaused?schema=public"
