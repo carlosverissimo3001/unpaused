@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
     const zonePath = process.env.PRIVATE_ZONE_PATH;
     const zoneUrl = process.env.PRIVATE_ZONE_URL;
     const zoneAssets = process.env.PRIVATE_ZONE_ASSET_PREFIX;
+    // assetPrefix only covers /_next/*; files in the target's public/ dir are
+    // served at literal paths and need their own rule.
+    const zonePublic = process.env.PRIVATE_ZONE_PUBLIC_PREFIX;
 
     const beforeFiles = [];
 
@@ -30,6 +33,13 @@ const nextConfig: NextConfig = {
           destination: `${zoneUrl}${zonePath}/:path*`,
         },
       );
+
+      if (zonePublic) {
+        beforeFiles.push({
+          source: `${zonePublic}/:path*`,
+          destination: `${zoneUrl}${zonePublic}/:path*`,
+        });
+      }
     } else if (
       process.env.NODE_ENV === 'production' &&
       (zonePath || zoneUrl || zoneAssets)
