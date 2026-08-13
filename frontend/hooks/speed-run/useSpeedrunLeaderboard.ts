@@ -13,8 +13,7 @@ export function useGauntletLeaderboard(
 ) {
   return useQuery({
     queryKey: queryKeys.gauntlet.leaderboard(period),
-    queryFn: () =>
-      api.gauntletControllerGetLeaderboard({ period, limit: 50 }),
+    queryFn: () => api.gauntletControllerGetLeaderboard({ period, limit: 50 }),
     enabled,
   });
 }

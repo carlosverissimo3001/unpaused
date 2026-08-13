@@ -39,6 +39,9 @@ export default function Home() {
   const [hasPendingReturn, setHasPendingReturn] = useState(false);
   useEffect(() => {
     if (peekAuthReturnUrl()) {
+      // A useState initialiser would read sessionStorage during hydration and
+      // mismatch the server render, reintroducing the flash this prevents.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasPendingReturn(true);
     }
   }, []);
@@ -71,12 +74,7 @@ export default function Home() {
   // Suppress homepage flash when we know a returnTo redirect is queued.
   // Renders a black full-bleed div until the router.replace effect above fires.
   if (hasPendingReturn) {
-    return (
-      <main
-        aria-hidden="true"
-        className="min-h-screen bg-black"
-      />
-    );
+    return <main aria-hidden="true" className="min-h-screen bg-black" />;
   }
 
   if (isLoadingUser) {
@@ -122,10 +120,7 @@ export default function Home() {
               transition={{ duration: 0.4 }}
               className="space-y-4 sm:space-y-6"
             >
-              <GameModesGallery
-                isTrusted={user.isTrusted}
-                isAdmin={user.isAdmin}
-              />
+              <GameModesGallery isTrusted={user.isTrusted} />
 
               {/* Main Content Header */}
               <div className="mt-1 sm:mt-2">

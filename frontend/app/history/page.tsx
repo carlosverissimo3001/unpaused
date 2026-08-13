@@ -150,7 +150,9 @@ function HistoryPageContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Deps below are deliberate; the compiler cannot preserve this memoization.
   const handleTabChange = useCallback(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     (tab: HistoryTab) => {
       setActiveTab(tab);
       setPage(1);
@@ -453,7 +455,7 @@ function HistoryPageContent() {
                         copied={copiedId === entry.data.id}
                         showWinnerGlow={
                           entry.data.status ===
-                          GameHistoryEntryDtoStatusEnum.Won &&
+                            GameHistoryEntryDtoStatusEnum.Won &&
                           entry.data.score != null &&
                           (entry.data.score === 6 || entry.data.score === 5)
                         }

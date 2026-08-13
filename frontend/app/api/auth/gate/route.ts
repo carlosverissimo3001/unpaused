@@ -42,7 +42,10 @@ export async function POST(request: Request) {
   }
 
   const password = body.password;
-  if (typeof password !== 'string' || !constantTimeEqual(password, sitePassword)) {
+  if (
+    typeof password !== 'string' ||
+    !constantTimeEqual(password, sitePassword)
+  ) {
     authGateRateLimiter.recordAttempt(clientIP);
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
   }

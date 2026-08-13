@@ -122,9 +122,7 @@ export function GuessHistoryList({
                   {index + 1}
                 </span>
                 <p className="min-w-0 flex-1 text-sm sm:text-base text-fg/90">
-                  <span className="font-medium">
-                    {guess.trackName ?? '—'}
-                  </span>
+                  <span className="font-medium">{guess.trackName ?? '—'}</span>
                   {guess.artistName && (
                     <span className="text-fg/40">
                       {' · '}

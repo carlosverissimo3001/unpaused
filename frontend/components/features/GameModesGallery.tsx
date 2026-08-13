@@ -212,13 +212,7 @@ function MultiplayerCardContent({
   );
 }
 
-function GameModesGalleryComponent({
-  isTrusted,
-  isAdmin,
-}: {
-  isTrusted: boolean;
-  isAdmin: boolean;
-}) {
+function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 

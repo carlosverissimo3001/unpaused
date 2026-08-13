@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  SITE_ACCESS_COOKIE,
-  isAccessTokenValid,
-} from '@/lib/site-access';
+import { SITE_ACCESS_COOKIE, isAccessTokenValid } from '@/lib/site-access';
 
 export async function proxy(request: NextRequest) {
   const cookie = request.cookies.get(SITE_ACCESS_COOKIE);

@@ -280,7 +280,9 @@ export function SongRevealCard({
                     )}
                   </div>
                   <div className="text-left flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{answer.name}</p>
+                    <p className="font-medium text-sm truncate">
+                      {answer.name}
+                    </p>
                     <p className="text-xs text-fg/50 truncate">
                       {answer.artist}
                     </p>
@@ -350,7 +352,9 @@ export function SongRevealCard({
                     )}
                   </div>
                   <div className="text-left flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{playlistName}</p>
+                    <p className="font-medium text-sm truncate">
+                      {playlistName}
+                    </p>
                     {playlistTotalTracks != null && (
                       <p className="text-xs text-fg/50">
                         {playlistTotalTracks} tracks

@@ -9,12 +9,12 @@ const DIFFICULTY_OPTIONS: Array<{
   value?: GauntletDifficultyFilter;
   label: string;
 }> = [
-    { value: undefined, label: 'All' },
-    { value: 'EASY', label: 'Easy' },
-    { value: 'MEDIUM', label: 'Medium' },
-    { value: 'HARD', label: 'Hard' },
-    { value: 'EXPERT', label: 'Expert' },
-  ];
+  { value: undefined, label: 'All' },
+  { value: 'EASY', label: 'Easy' },
+  { value: 'MEDIUM', label: 'Medium' },
+  { value: 'HARD', label: 'Hard' },
+  { value: 'EXPERT', label: 'Expert' },
+];
 
 function formatAverage(value: number): string {
   return Number.isInteger(value) ? `${value}` : value.toFixed(1);
@@ -80,10 +80,11 @@ export function GauntletHistoryOverview({
                 key={option.label}
                 type="button"
                 onClick={() => onDifficultyChange(option.value)}
-                className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] transition-all ${active
-                  ? 'border-fg/20 bg-fg/10 text-fg'
-                  : 'border-transparent bg-transparent text-fg/35 hover:text-fg/60'
-                  }`}
+                className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] transition-all ${
+                  active
+                    ? 'border-fg/20 bg-fg/10 text-fg'
+                    : 'border-transparent bg-transparent text-fg/35 hover:text-fg/60'
+                }`}
               >
                 {option.label}
               </button>
@@ -92,7 +93,7 @@ export function GauntletHistoryOverview({
         </div>
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {stats.map((stat, index) => {
+          {stats.map((stat) => {
             const Icon = stat.icon;
             return (
               <motion.div

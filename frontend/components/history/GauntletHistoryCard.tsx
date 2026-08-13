@@ -134,30 +134,32 @@ export function GauntletHistoryCard({
                   className="mt-2 flex items-center gap-2 group/tracks"
                 >
                   <div className="flex items-center">
-                    {entry.tracks.slice(0, MAX_TRACK_AVATARS).map((track, i) => (
-                      <div
-                        key={`${entry.id}-av-${track.id}-${i}`}
-                        className="w-6 h-6 rounded-full overflow-hidden border-2 border-bg shrink-0"
-                        style={{
-                          marginLeft: i === 0 ? 0 : -6,
-                          zIndex: MAX_TRACK_AVATARS - i,
-                        }}
-                      >
-                        {track.albumImageUrl ? (
-                          <Image
-                            src={track.albumImageUrl}
-                            alt=""
-                            width={24}
-                            height={24}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-fg/10 flex items-center justify-center">
-                            <Music2 className="w-2.5 h-2.5 text-fg/25" />
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    {entry.tracks
+                      .slice(0, MAX_TRACK_AVATARS)
+                      .map((track, i) => (
+                        <div
+                          key={`${entry.id}-av-${track.id}-${i}`}
+                          className="w-6 h-6 rounded-full overflow-hidden border-2 border-bg shrink-0"
+                          style={{
+                            marginLeft: i === 0 ? 0 : -6,
+                            zIndex: MAX_TRACK_AVATARS - i,
+                          }}
+                        >
+                          {track.albumImageUrl ? (
+                            <Image
+                              src={track.albumImageUrl}
+                              alt=""
+                              width={24}
+                              height={24}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-fg/10 flex items-center justify-center">
+                              <Music2 className="w-2.5 h-2.5 text-fg/25" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     {entry.tracks.length > MAX_TRACK_AVATARS && (
                       <div
                         className="w-6 h-6 rounded-full bg-fg/10 border-2 border-bg flex items-center justify-center shrink-0"
@@ -170,7 +172,8 @@ export function GauntletHistoryCard({
                     )}
                   </div>
                   <span className="text-[10px] text-fg/35 group-hover/tracks:text-fg/60 transition-colors">
-                    {entry.tracks.length} {entry.tracks.length === 1 ? 'track' : 'tracks'}
+                    {entry.tracks.length}{' '}
+                    {entry.tracks.length === 1 ? 'track' : 'tracks'}
                   </span>
                   {expanded ? (
                     <ChevronUp className="h-3 w-3 text-fg/30 group-hover/tracks:text-fg/60 transition-colors" />
