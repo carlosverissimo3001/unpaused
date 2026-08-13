@@ -65,7 +65,7 @@ jobs:
 
       - run: pnpm exec prettier --check "src/**/*.{ts,js,json}"
       - run: pnpm run lint
-      - run: pnpm exec tsc --noEmit
+      - run: pnpm exec tsc --noEmit -p tsconfig.build.json
       - run: pnpm run test
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
