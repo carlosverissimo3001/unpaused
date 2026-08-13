@@ -12,6 +12,9 @@ import { PrismaService } from '@prisma/prisma.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { GameSessionEntity } from '../entities/game-session.entity';
 import { UserPreferencesRepository } from '../../user-preferences/repositories/user-preferences.repository';
+import { UserPreferencesService } from '../../user-preferences/services/user-preferences.service';
+import { StreakService } from '../../streak/services/streak.service';
+import { LastfmService } from '@/track/services/lastfm.service';
 
 jest.mock('@/playlist/services/playlist.service');
 jest.mock('@/track/services/track.service');
@@ -103,6 +106,24 @@ describe('GameService', () => {
           useValue: mockUserPreferencesRepository,
         },
         { provide: AppLoggerService, useValue: new AppLoggerService() },
+        {
+          provide: UserPreferencesService,
+          useValue: {
+            get: jest.fn(),
+            getUserTimezone: jest.fn().mockResolvedValue('UTC'),
+          },
+        },
+        {
+          provide: StreakService,
+          useValue: {
+            updateDailyStreak: jest.fn(),
+            getFreezeUsagesInRange: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: LastfmService,
+          useValue: { getTrackInfo: jest.fn().mockResolvedValue(null) },
+        },
       ],
     }).compile();
 
@@ -120,7 +141,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: mockTrack,
       });
 
@@ -137,7 +158,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: mockTrack,
       });
 
@@ -157,7 +178,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: mockTrack,
       });
 
@@ -184,7 +205,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: { ...mockTrack, previewUrl: null },
       });
 
@@ -199,7 +220,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: mockTrack,
       });
 
@@ -230,7 +251,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: mockTrack,
       });
       mockGameSessionRepository.updateSessionProgress.mockResolvedValue(
@@ -253,7 +274,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: mockTrack,
       });
       mockGameSessionRepository.updateSessionProgress.mockResolvedValue(
@@ -276,7 +297,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: mockTrack,
       });
 
@@ -303,7 +324,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession({ status: GameStatus.WON }),
+        ...makeGameSession({ status: GameStatus.WON }),
         track: mockTrack,
       });
 
@@ -318,7 +339,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: mockTrack,
       });
 
@@ -341,7 +362,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession(),
+        ...makeGameSession(),
         track: { ...mockTrack, ...trackOverrides },
       });
       mockGameSessionRepository.updateSessionProgress.mockResolvedValue(
@@ -444,7 +465,7 @@ describe('GameService', () => {
         isTrusted: false,
       });
       mockGameSessionRepository.findByIdWithTrack.mockResolvedValue({
-        game: makeGameSession({ status: GameStatus.WON }),
+        ...makeGameSession({ status: GameStatus.WON }),
         track: mockTrack,
       });
 

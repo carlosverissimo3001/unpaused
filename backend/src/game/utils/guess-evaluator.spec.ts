@@ -1,4 +1,5 @@
-import { GameStatus, Track } from '@prisma/client';
+import { GameStatus } from '@prisma/client';
+import { TrackEntity } from '../../track/entities/track.entity';
 import { GuessResult } from '../consts';
 import { GuessDto } from '../dto/guess/guess.dto';
 import {
@@ -9,20 +10,22 @@ import {
 } from './guess-evaluator';
 
 describe('guess-evaluator', () => {
-  const makeTrack = (overrides?: Partial<Track>): Track =>
+  const makeTrack = (overrides?: Partial<TrackEntity>): TrackEntity =>
     ({
       id: 'track-actual',
       name: 'Shape of You',
       artistName: 'Ed Sheeran',
       albumName: '÷ (Divide)',
-      albumImageUrl: null,
-      albumUrl: null,
+      albumImageUrl: undefined,
+      albumUrl: undefined,
       releaseYear: 2017,
       previewUrl: 'https://example.com/preview.mp3',
+      allArtists: ['Ed Sheeran'],
       lastScrapedAt: new Date(),
       createdAt: new Date(),
+      updatedAt: new Date(),
       ...overrides,
-    }) as Track;
+    }) as TrackEntity;
 
   describe('evaluateGuess', () => {
     const track = makeTrack();
@@ -134,7 +137,7 @@ describe('guess-evaluator', () => {
             artistName: 'Ed Sheeran',
             albumName: 'Some Album',
           } as GuessDto,
-          makeTrack({ albumName: null }),
+          makeTrack({ albumName: undefined }),
         ),
       ).toBe(GuessResult.Artist);
     });

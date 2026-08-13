@@ -21,6 +21,7 @@ function makeTrack(id: string, name = `Track ${id}`) {
     isPlayable: true,
     primaryArtist: 'Artist',
     releaseYear: 2024,
+    allArtists: ['Artist'],
   };
 }
 
@@ -94,14 +95,14 @@ describe('TrackPoolService', () => {
         previewUrl: `https://preview/${id}.mp3`,
         name: `Track ${id}`,
         artistName: 'Artist',
-        albumImageUrl: null,
-        albumName: null,
-        albumUrl: null,
-        releaseYear: null,
+        albumImageUrl: undefined,
+        albumName: undefined,
+        albumUrl: undefined,
+        releaseYear: undefined,
         metadata: {},
         lastScrapedAt: new Date(),
         createdAt: new Date(),
-      }),
+      }) as any,
     );
 
     const result = await service.selectTracksForRoom(
@@ -135,14 +136,14 @@ describe('TrackPoolService', () => {
       previewUrl: 'https://preview/1.mp3',
       name: track.name,
       artistName: 'Artist',
-      albumImageUrl: null,
-      albumName: null,
-      albumUrl: null,
-      releaseYear: null,
+      albumImageUrl: undefined,
+      albumName: undefined,
+      albumUrl: undefined,
+      releaseYear: undefined,
       metadata: {},
       lastScrapedAt: new Date(),
       createdAt: new Date(),
-    });
+    } as any);
 
     const result = await service.selectTracksForRoom(
       ['user-1', 'user-2'],
@@ -176,13 +177,13 @@ describe('TrackPoolService', () => {
     // Preview resolution fails
     trackService.getTrackWithPreview.mockResolvedValue({
       id: 'no-preview',
-      previewUrl: null,
+      previewUrl: undefined,
       name: 'No Preview',
       artistName: 'Artist',
-      albumImageUrl: null,
-      albumName: null,
-      albumUrl: null,
-      releaseYear: null,
+      albumImageUrl: undefined,
+      albumName: undefined,
+      albumUrl: undefined,
+      releaseYear: undefined,
       metadata: {},
       lastScrapedAt: new Date(),
       createdAt: new Date(),
@@ -217,14 +218,14 @@ describe('TrackPoolService', () => {
       previewUrl: 'https://preview/1.mp3',
       name: track.name,
       artistName: 'Artist',
-      albumImageUrl: null,
-      albumName: null,
-      albumUrl: null,
-      releaseYear: null,
+      albumImageUrl: undefined,
+      albumName: undefined,
+      albumUrl: undefined,
+      releaseYear: undefined,
       metadata: {},
       lastScrapedAt: new Date(),
       createdAt: new Date(),
-    });
+    } as any);
 
     const result = await service.selectTracksForRoom(
       ['user-1', 'user-2'],
@@ -249,14 +250,14 @@ describe('TrackPoolService', () => {
       previewUrl: 'https://preview/only.mp3',
       name: track.name,
       artistName: 'Artist',
-      albumImageUrl: null,
-      albumName: null,
-      albumUrl: null,
-      releaseYear: null,
+      albumImageUrl: undefined,
+      albumName: undefined,
+      albumUrl: undefined,
+      releaseYear: undefined,
       metadata: {},
       lastScrapedAt: new Date(),
       createdAt: new Date(),
-    });
+    } as any);
 
     // Asking for 5 but only 1 track available
     const result = await service.selectTracksForRoom(['user-1'], 5);

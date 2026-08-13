@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Playlist, Track } from '@spotify/web-api-ts-sdk';
+import { Track } from '@spotify/web-api-ts-sdk';
 import { PlaylistsResponseDto } from '../dto/playlist-response.dto';
 import { PlaylistDto } from '../dto/playlist.dto';
 import { GetPlaylistsDto } from '../dto/get-playlists-dto';

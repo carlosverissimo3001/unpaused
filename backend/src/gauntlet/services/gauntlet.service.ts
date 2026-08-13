@@ -281,8 +281,7 @@ export class GauntletService {
     sessionId: string,
     dto: GetGauntletHistoryDto,
   ): Promise<GauntletHistoryDto> {
-    const { id: userId } =
-      await this.authService.getUserBySessionId(sessionId);
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
 
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;

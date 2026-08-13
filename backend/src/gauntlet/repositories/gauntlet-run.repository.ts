@@ -183,7 +183,9 @@ export class GauntletRunRepository {
       skip: offset,
     });
 
-    if (!grouped.length) return [];
+    if (!grouped.length) {
+      return [];
+    }
 
     const userIds = grouped.map((r) => r.userId);
     const users = await this.prisma.user.findMany({

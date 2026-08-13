@@ -61,8 +61,7 @@ export function applyFilters(
     const hasTracks = (playlist.items?.total ?? 0) > 0;
     // Spotify only allows playing user-owned playlists
     const isOwnedByUser = playlist.owner?.id === session.spotifyUserId;
-    const matchesPublicFilter =
-      !filters.onlyPublic || playlist.public === true;
+    const matchesPublicFilter = !filters.onlyPublic || playlist.public === true;
     const matchesPrivateFilter =
       !filters.onlyPrivate || playlist.public === false;
 

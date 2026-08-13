@@ -9,6 +9,7 @@ import { MultiplayerGameService } from './multiplayer-game.service';
 import { RoomRepository } from '../repositories/room.repository';
 import { MultiplayerGameSessionRepository } from '../repositories/multiplayer-game-session.repository';
 import { AuthService } from '../../auth/services/auth.service';
+import { RoomsGateway } from '../gateways/rooms.gateway';
 
 describe('MultiplayerGameService', () => {
   let service: MultiplayerGameService;
@@ -103,6 +104,11 @@ describe('MultiplayerGameService', () => {
     countCompletedSessions: jest.fn(),
   };
 
+  const mockRoomsGateway = {
+    emitRoomUpdate: jest.fn(),
+    emitPlayerRoundComplete: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -113,6 +119,7 @@ describe('MultiplayerGameService', () => {
           provide: MultiplayerGameSessionRepository,
           useValue: mockGameSessionRepository,
         },
+        { provide: RoomsGateway, useValue: mockRoomsGateway },
       ],
     }).compile();
 
@@ -325,6 +332,9 @@ describe('MultiplayerGameService', () => {
         id: HOST_USER_ID,
       });
       mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      // The completed room is broadcast via RoomDto.fromEntity, so this must
+      // resolve to a room rather than undefined.
+      mockRoomRepository.updateStatus.mockResolvedValue(makeRoom());
       mockGameSessionRepository.findActiveSession.mockResolvedValue(
         makeSession(),
       );

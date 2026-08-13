@@ -9,6 +9,7 @@ import { RoomService } from './room.service';
 import { RoomRepository } from '../repositories/room.repository';
 import { AuthService } from '../../auth/services/auth.service';
 import { TrackPoolService } from './track-pool.service';
+import { RoomsGateway } from '../gateways/rooms.gateway';
 
 describe('RoomService', () => {
   let service: RoomService;
@@ -37,6 +38,7 @@ describe('RoomService', () => {
         roomId: ROOM_ID,
         userId: HOST_USER_ID,
         totalScore: 0,
+        isReady: true,
         joinedAt: new Date(),
         user: { displayName: 'Host', avatarUrl: null },
       },
@@ -70,6 +72,13 @@ describe('RoomService', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: RoomRepository, useValue: mockRoomRepository },
         { provide: TrackPoolService, useValue: mockTrackPoolService },
+        {
+          provide: RoomsGateway,
+          useValue: {
+            emitRoomUpdate: jest.fn(),
+            emitPlayerRoundComplete: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
