@@ -38,9 +38,11 @@ export const DEMO_PLAYLISTS: DemoPlaylist[] = [
 /**
  * Seconds of audio unlocked per attempt. Deliberately more generous than the
  * real game's ROUND_DURATIONS: demo players are guessing against a chart they
- * may not know, without their own library for context.
+ * may not know, without their own library for context. One second, which the
+ * real game can open with, is barely perceptible to someone who has never
+ * heard the track.
  */
-export const DEMO_SNIPPET_STEPS = [1, 2, 4, 7, 11, 16];
+export const DEMO_SNIPPET_STEPS = [2, 3, 5, 8, 12, 16];
 
 export const DEMO_OPTION_COUNT = 4;
 
