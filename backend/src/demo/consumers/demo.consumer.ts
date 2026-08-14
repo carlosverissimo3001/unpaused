@@ -27,7 +27,7 @@ export class DemoConsumer extends WorkerHost implements OnModuleInit {
       REFRESH_DEMO_TRACKS_JOB,
       {},
       {
-        repeat: { pattern: '0 8 * * *' },
+        repeat: { pattern: '0 8 * * *', tz: 'Europe/Lisbon' },
         jobId: REFRESH_DEMO_TRACKS_JOB,
       },
     );
@@ -36,7 +36,13 @@ export class DemoConsumer extends WorkerHost implements OnModuleInit {
     // serve nothing until 08:00. Seed it once instead.
     if (await this.demoService.isEmpty()) {
       this.logger.log('Demo pool is empty; seeding now');
-      await this.queue.add(REFRESH_DEMO_TRACKS_JOB, {});
+      // A fixed jobId keeps restarts, and multiple replicas, from each
+      // enqueueing their own full scrape.
+      await this.queue.add(
+        REFRESH_DEMO_TRACKS_JOB,
+        {},
+        { jobId: `${REFRESH_DEMO_TRACKS_JOB}-seed` },
+      );
     }
   }
 

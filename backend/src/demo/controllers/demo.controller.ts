@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { DemoService } from '../services/demo.service';
@@ -54,7 +62,7 @@ export class DemoController {
   @ApiResponse({ status: 201, type: DemoGuessResultDto })
   @ApiResponse({ status: 404, description: 'Round not found or expired' })
   guess(
-    @Param('roundId') roundId: string,
+    @Param('roundId', ParseUUIDPipe) roundId: string,
     @Body() dto: GuessDemoDto,
   ): Promise<DemoGuessResultDto> {
     return this.demoService.guess(roundId, dto.trackId);

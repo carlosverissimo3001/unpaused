@@ -110,7 +110,9 @@ model Track {
 /// Refreshed daily by a scheduled job, so the request path never touches
 /// Spotify and the last successful fetch survives an outage.
 model DemoTrack {
-  id            String @id
+  /// Spotify track id. Not unique on its own: charts overlap heavily, and the
+  /// same track legitimately appears in several of them.
+  id            String
   playlistSlug  String @map("playlist_slug")
   name          String
   artistName    String @map("artist_name")
@@ -122,6 +124,7 @@ model DemoTrack {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
+  @@id([playlistSlug, id])
   @@index([playlistSlug])
   @@map("demo_tracks")
 }

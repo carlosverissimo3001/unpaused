@@ -37,16 +37,18 @@ export class DemoTrackRepository {
     }
 
     await this.prisma.demoTrack.deleteMany({ where: { playlistSlug } });
-    await this.prisma.demoTrack.createMany({
+    const { count } = await this.prisma.demoTrack.createMany({
       data: tracks.map((track, position) => ({
         ...track,
         playlistSlug,
         position,
       })),
+      // Only absorbs a chart listing the same track twice; cross-playlist
+      // collisions are legal now that the key is (playlistSlug, id).
       skipDuplicates: true,
     });
 
-    return tracks.length;
+    return count;
   }
 
   private fromPrismaObject(row: PrismaDemoTrack): DemoTrackEntity {

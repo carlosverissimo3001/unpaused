@@ -35,16 +35,16 @@ export const DEMO_PLAYLISTS: DemoPlaylist[] = [
   },
 ];
 
-/** Seconds of audio unlocked per attempt, matching the real game. */
+/**
+ * Seconds of audio unlocked per attempt. Deliberately more generous than the
+ * real game's ROUND_DURATIONS: demo players are guessing against a chart they
+ * may not know, without their own library for context.
+ */
 export const DEMO_SNIPPET_STEPS = [1, 2, 4, 7, 11, 16];
 
 export const DEMO_OPTION_COUNT = 4;
 
 export const DEMO_ROUND_PREFIX = 'demo:round:';
-export const DEMO_PLAYLIST_PREFIX = 'demo:playlist:';
 
 /** Long enough to finish a round, short enough that abandoned ones evaporate. */
 export const DEMO_ROUND_TTL_SECONDS = 900;
-
-/** Charts move slowly; one fetch a day per playlist is plenty. */
-export const DEMO_PLAYLIST_TTL_SECONDS = 86_400;

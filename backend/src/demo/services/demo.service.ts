@@ -18,6 +18,19 @@ import {
   type DemoPlaylist,
 } from '../demo.constants';
 import { DemoTrackEntity } from '../entities/demo-track.entity';
+
+/**
+ * Only what a reveal needs. The full entity carried a `fetchedAt: Date` that
+ * became a string once round state round-tripped through JSON, so the type was
+ * lying, and it stored more per round than a 15-minute TTL should hold.
+ */
+type RoundAnswer = {
+  id: string;
+  name: string;
+  artistName: string;
+  albumImageUrl: string;
+  previewUrl: string;
+};
 import {
   DemoGuessResultDto,
   DemoRoundDto,
@@ -26,7 +39,7 @@ import {
 
 type RoundState = {
   playlistSlug: string;
-  answer: DemoTrackEntity;
+  answer: RoundAnswer;
   optionIds: string[];
   attempt: number;
   wrongIds: string[];
@@ -72,7 +85,7 @@ export class DemoService {
     const roundId = uuidv4();
     const state: RoundState = {
       playlistSlug,
-      answer,
+      answer: this.toAnswer(answer),
       optionIds: options.map((o) => o.id),
       attempt: 0,
       wrongIds: [],
@@ -123,30 +136,40 @@ export class DemoService {
 
   /** Refreshes every playlist. Called by the scheduled job. */
   async refreshAll(): Promise<Record<string, number>> {
-    const result: Record<string, number> = {};
-
-    for (const playlist of DEMO_PLAYLISTS) {
-      try {
-        const tracks = await this.playlists.fetchTracks(playlist.playlistId);
-        if (!tracks.length) {
-          this.logger.warn(
-            `No tracks parsed for ${playlist.slug}; keeping previous set`,
+    const entries = await Promise.all(
+      DEMO_PLAYLISTS.map(async (playlist) => {
+        try {
+          const tracks = await this.playlists.fetchTracks(playlist.playlistId);
+          if (!tracks.length) {
+            this.logger.warn(
+              `No tracks parsed for ${playlist.slug}; keeping previous set`,
+            );
+            return [playlist.slug, 0] as const;
+          }
+          const written = await this.repository.replacePlaylist(
+            playlist.slug,
+            tracks,
           );
-          result[playlist.slug] = 0;
-          continue;
+          return [playlist.slug, written] as const;
+        } catch (error) {
+          this.logger.warn(
+            `Refresh failed for ${playlist.slug}: ${(error as Error).message}`,
+          );
+          return [playlist.slug, 0] as const;
         }
-        result[playlist.slug] = await this.repository.replacePlaylist(
-          playlist.slug,
-          tracks,
-        );
-      } catch (error) {
-        // One playlist failing must not take the others down, and the previous
-        // set stays in place.
-        this.logger.warn(
-          `Refresh failed for ${playlist.slug}: ${(error as Error).message}`,
-        );
-        result[playlist.slug] = 0;
-      }
+      }),
+    );
+
+    const result = Object.fromEntries(entries);
+    const written = entries.reduce((sum, [, count]) => sum + count, 0);
+
+    if (!written) {
+      // Every playlist failed. Throwing lets the queue's configured backoff
+      // retry, instead of silently leaving the pool to go stale for a day.
+      this.logger.error(
+        `Demo refresh wrote nothing: ${JSON.stringify(result)}`,
+      );
+      throw new Error('Demo refresh failed for every playlist');
     }
 
     this.logger.log(`Demo refresh complete: ${JSON.stringify(result)}`);
@@ -159,6 +182,16 @@ export class DemoService {
       DEMO_PLAYLISTS.map((p) => this.repository.countByPlaylist(p.slug)),
     );
     return counts.every((c) => c === 0);
+  }
+
+  private toAnswer(track: DemoTrackEntity): RoundAnswer {
+    return {
+      id: track.id,
+      name: track.name,
+      artistName: track.artistName,
+      albumImageUrl: track.albumImageUrl,
+      previewUrl: track.previewUrl,
+    };
   }
 
   private toResult(state: RoundState): DemoGuessResultDto {

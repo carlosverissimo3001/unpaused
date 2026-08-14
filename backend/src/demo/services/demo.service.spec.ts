@@ -27,6 +27,7 @@ const track = (n: number): DemoTrackEntity => ({
 describe('DemoService', () => {
   let service: DemoService;
   let repository: jest.Mocked<DemoTrackRepository>;
+  let playlists: jest.Mocked<DemoPlaylistService>;
   let store: Map<string, string>;
 
   beforeEach(async () => {
@@ -41,7 +42,12 @@ describe('DemoService', () => {
     };
 
     const logger = {
-      child: () => ({ log: jest.fn(), warn: jest.fn(), debug: jest.fn() }),
+      child: () => ({
+        log: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -63,6 +69,7 @@ describe('DemoService', () => {
 
     service = module.get(DemoService);
     repository = module.get(DemoTrackRepository);
+    playlists = module.get(DemoPlaylistService);
   });
 
   describe('createRound', () => {
@@ -167,21 +174,42 @@ describe('DemoService', () => {
   });
 
   describe('refreshAll', () => {
-    it('keeps going when one playlist fails', async () => {
-      const playlists = DEMO_PLAYLISTS.length;
-      const fetch = jest
-        .fn()
-        .mockRejectedValueOnce(new Error('spotify changed'))
-        .mockResolvedValue([1, 2, 3, 4, 5].map(track));
-      (service as unknown as { playlists: { fetchTracks: jest.Mock } }).playlists.fetchTracks =
-        fetch;
+    it('leaves the previous set alone for a playlist that fails', async () => {
+      const [failing, ...rest] = DEMO_PLAYLISTS;
+      playlists.fetchTracks.mockImplementation((playlistId: string) =>
+        playlistId === failing.playlistId
+          ? Promise.reject(new Error('spotify changed'))
+          : Promise.resolve([1, 2, 3, 4, 5].map(track)),
+      );
       repository.replacePlaylist.mockResolvedValue(5);
 
       const result = await service.refreshAll();
 
-      expect(Object.keys(result)).toHaveLength(playlists);
-      expect(result.pt).toBe(0);
-      expect(fetch).toHaveBeenCalledTimes(playlists);
+      // The one that failed must not be touched, or a bad fetch would wipe
+      // yesterday's working tracks.
+      expect(repository.replacePlaylist).not.toHaveBeenCalledWith(
+        failing.slug,
+        expect.anything(),
+      );
+      expect(result[failing.slug]).toBe(0);
+
+      // Every other playlist still refreshed.
+      for (const playlist of rest) {
+        expect(repository.replacePlaylist).toHaveBeenCalledWith(
+          playlist.slug,
+          expect.any(Array),
+        );
+        expect(result[playlist.slug]).toBe(5);
+      }
+    });
+
+    it('throws when every playlist fails, so the queue retries', async () => {
+      playlists.fetchTracks.mockRejectedValue(new Error('spotify changed'));
+
+      await expect(service.refreshAll()).rejects.toThrow(
+        'Demo refresh failed for every playlist',
+      );
+      expect(repository.replacePlaylist).not.toHaveBeenCalled();
     });
   });
 });
