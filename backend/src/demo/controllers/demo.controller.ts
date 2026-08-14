@@ -43,10 +43,8 @@ export class DemoController {
   @Get('playlists')
   @ApiOperation({ summary: 'Playlists a demo round can be started from' })
   @ApiResponse({ status: 200, type: [DemoPlaylistDto] })
-  getPlaylists(): DemoPlaylistDto[] {
-    return this.demoService
-      .getPlaylists()
-      .map(({ slug, name }) => ({ slug, name }));
+  getPlaylists(): Promise<DemoPlaylistDto[]> {
+    return this.demoService.getPlaylists();
   }
 
   @Post('rounds')

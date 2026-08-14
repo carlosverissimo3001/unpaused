@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { RedisService } from '@redis/redis.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { DemoTrackRepository } from '../repositories/demo-track.repository';
+import { DemoPlaylistRepository } from '../repositories/demo-playlist.repository';
 import { DemoPlaylistService } from './demo-playlist.service';
 import {
   DEMO_OPTION_COUNT,
@@ -15,9 +16,15 @@ import {
   DEMO_ROUND_PREFIX,
   DEMO_ROUND_TTL_SECONDS,
   DEMO_SNIPPET_STEPS,
-  type DemoPlaylist,
 } from '../demo.constants';
 import { DemoTrackEntity } from '../entities/demo-track.entity';
+import { DemoPlaylistEntity } from '../entities/demo-playlist.entity';
+
+import {
+  DemoGuessResultDto,
+  DemoRoundDto,
+  DemoRoundStatus,
+} from '../dto/demo-round.dto';
 
 /**
  * Only what a reveal needs. The full entity carried a `fetchedAt: Date` that
@@ -31,11 +38,6 @@ type RoundAnswer = {
   albumImageUrl: string;
   previewUrl: string;
 };
-import {
-  DemoGuessResultDto,
-  DemoRoundDto,
-  DemoRoundStatus,
-} from '../dto/demo-round.dto';
 
 type RoundState = {
   playlistSlug: string;
@@ -53,14 +55,30 @@ export class DemoService {
   constructor(
     private readonly redis: RedisService,
     private readonly repository: DemoTrackRepository,
+    private readonly playlistRepository: DemoPlaylistRepository,
     private readonly playlists: DemoPlaylistService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(DemoService.name);
   }
 
-  getPlaylists(): DemoPlaylist[] {
-    return DEMO_PLAYLISTS;
+  /**
+   * Served from the database so covers and names follow Spotify. Falls back to
+   * the configured slugs before the first refresh has run, which keeps the
+   * picker usable rather than empty.
+   */
+  async getPlaylists(): Promise<DemoPlaylistEntity[]> {
+    const stored = await this.playlistRepository.findAll();
+    if (stored.length) {
+      return stored;
+    }
+
+    return DEMO_PLAYLISTS.map(({ slug, name }) => ({
+      slug,
+      name,
+      imageUrl: '',
+      description: null,
+    }));
   }
 
   async createRound(playlistSlug: string): Promise<DemoRoundDto> {
@@ -139,7 +157,10 @@ export class DemoService {
     const entries = await Promise.all(
       DEMO_PLAYLISTS.map(async (playlist) => {
         try {
-          const tracks = await this.playlists.fetchTracks(playlist.playlistId);
+          const fetched = await this.playlists.fetchPlaylist(
+            playlist.playlistId,
+          );
+          const tracks = fetched.tracks;
           if (!tracks.length) {
             this.logger.warn(
               `No tracks parsed for ${playlist.slug}; keeping previous set`,
@@ -150,6 +171,15 @@ export class DemoService {
             playlist.slug,
             tracks,
           );
+
+          // Names and covers come from Spotify, so the picker matches whatever
+          // the chart is actually called today.
+          await this.playlistRepository.upsert(playlist.slug, {
+            name: fetched.name || playlist.name,
+            imageUrl: fetched.imageUrl,
+            description: fetched.description,
+          });
+
           return [playlist.slug, written] as const;
         } catch (error) {
           this.logger.warn(
@@ -180,12 +210,20 @@ export class DemoService {
     return result;
   }
 
-  /** True when no playlist has any tracks, so a first run is needed. */
-  async isEmpty(): Promise<boolean> {
-    const counts = await Promise.all(
-      DEMO_PLAYLISTS.map((p) => this.repository.countByPlaylist(p.slug)),
-    );
-    return counts.every((c) => c === 0);
+  /**
+   * Whether a refresh should run at boot rather than waiting for the schedule.
+   * Checks the chart metadata as well as the tracks, so a deploy that adds a
+   * table self-heals instead of serving a picker with no covers all day.
+   */
+  async needsSeeding(): Promise<boolean> {
+    const [counts, playlists] = await Promise.all([
+      Promise.all(
+        DEMO_PLAYLISTS.map((p) => this.repository.countByPlaylist(p.slug)),
+      ),
+      this.playlistRepository.findAll(),
+    ]);
+
+    return counts.every((c) => c === 0) || playlists.length === 0;
   }
 
   private toAnswer(track: DemoTrackEntity): RoundAnswer {

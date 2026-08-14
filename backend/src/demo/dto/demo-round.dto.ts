@@ -13,6 +13,14 @@ export class DemoPlaylistDto {
 
   @ApiProperty()
   name: string;
+
+  @ApiProperty({
+    description: 'Chart cover art; empty before the first refresh',
+  })
+  imageUrl: string;
+
+  @ApiPropertyOptional({ type: String })
+  description: string | null;
 }
 
 export class DemoOptionDto {
