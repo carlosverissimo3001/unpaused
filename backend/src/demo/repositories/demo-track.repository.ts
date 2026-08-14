@@ -38,10 +38,11 @@ export class DemoTrackRepository {
 
     await this.prisma.demoTrack.deleteMany({ where: { playlistSlug } });
     const { count } = await this.prisma.demoTrack.createMany({
-      data: tracks.map((track, position) => ({
+      data: tracks.map((track, index) => ({
         ...track,
         playlistSlug,
-        position,
+        // Chart rank, so it reads the way the chart does: the top song is 1.
+        position: index + 1,
       })),
       // Only absorbs a chart listing the same track twice; cross-playlist
       // collisions are legal now that the key is (playlistSlug, id).

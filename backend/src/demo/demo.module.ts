@@ -7,6 +7,7 @@ import { DemoController } from './controllers/demo.controller';
 import { DemoService } from './services/demo.service';
 import { DemoPlaylistService } from './services/demo-playlist.service';
 import { DemoTrackRepository } from './repositories/demo-track.repository';
+import { DemoPlaylistRepository } from './repositories/demo-playlist.repository';
 import { DemoConsumer } from './consumers/demo.consumer';
 
 @Module({
@@ -23,6 +24,7 @@ import { DemoConsumer } from './consumers/demo.consumer';
     DemoService,
     DemoPlaylistService,
     DemoTrackRepository,
+    DemoPlaylistRepository,
     DemoConsumer,
   ],
 })

@@ -50,7 +50,14 @@ const page = (items: unknown[]) =>
   encode({
     entities: {
       items: {
-        [`spotify:playlist:${PLAYLIST_ID}`]: { content: { items } },
+        [`spotify:playlist:${PLAYLIST_ID}`]: {
+          name: 'Top 50 - Portugal',
+          description: 'Your daily update of the most played tracks right now.',
+          images: {
+            items: [{ sources: [{ url: 'https://charts-images/pt.jpg' }] }],
+          },
+          content: { items },
+        },
       },
     },
   });
@@ -84,7 +91,8 @@ describe('DemoPlaylistService', () => {
   it('extracts id, name, artists and the largest cover art', async () => {
     mockedAxios.get.mockResolvedValue({ data: page([item()]) });
 
-    const [track] = await service.fetchTracks(PLAYLIST_ID);
+    const { tracks } = await service.fetchPlaylist(PLAYLIST_ID);
+    const [track] = tracks;
 
     expect(track).toEqual({
       id: '0VjIjW4GlUZAMYd2vXMi3b',
@@ -95,12 +103,23 @@ describe('DemoPlaylistService', () => {
     });
   });
 
+  it('reads the chart name, description and cover art', async () => {
+    mockedAxios.get.mockResolvedValue({ data: page([item()]) });
+
+    const playlist = await service.fetchPlaylist(PLAYLIST_ID);
+
+    expect(playlist.name).toBe('Top 50 - Portugal');
+    expect(playlist.imageUrl).toBe('https://charts-images/pt.jpg');
+    expect(playlist.description).toContain('most played');
+  });
+
   it('survives the base64 round trip with non-ASCII titles', async () => {
     // The Portuguese and Spanish charts are full of accented titles; decoding
     // the blob as anything but UTF-8 mangles them silently.
     mockedAxios.get.mockResolvedValue({ data: page([item()]) });
 
-    const [track] = await service.fetchTracks(PLAYLIST_ID);
+    const { tracks } = await service.fetchPlaylist(PLAYLIST_ID);
+    const [track] = tracks;
 
     expect(track.name).toBe('Carnívoro');
     expect(track.name).not.toContain('�');
@@ -120,9 +139,9 @@ describe('DemoPlaylistService', () => {
       ]),
     });
 
-    const [track] = await service.fetchTracks(PLAYLIST_ID);
+    const { tracks } = await service.fetchPlaylist(PLAYLIST_ID);
 
-    expect(track.artistName).toBe('Shakira, Burna Boy');
+    expect(tracks[0].artistName).toBe('Shakira, Burna Boy');
   });
 
   it('drops tracks with no preview, which real charts contain', async () => {
@@ -134,7 +153,8 @@ describe('DemoPlaylistService', () => {
       ]),
     });
 
-    await expect(service.fetchTracks(PLAYLIST_ID)).resolves.toHaveLength(1);
+    const { tracks } = await service.fetchPlaylist(PLAYLIST_ID);
+    expect(tracks).toHaveLength(1);
   });
 
   it('skips malformed items instead of failing the whole playlist', async () => {
@@ -146,7 +166,9 @@ describe('DemoPlaylistService', () => {
       ]),
     });
 
-    await expect(service.fetchTracks(PLAYLIST_ID)).resolves.toEqual([]);
+    await expect(service.fetchPlaylist(PLAYLIST_ID)).resolves.toMatchObject({
+      tracks: [],
+    });
   });
 
   it('throws when the embedded state is missing', async () => {
@@ -154,7 +176,7 @@ describe('DemoPlaylistService', () => {
       data: '<html><body>nope</body></html>',
     });
 
-    await expect(service.fetchTracks(PLAYLIST_ID)).rejects.toThrow(
+    await expect(service.fetchPlaylist(PLAYLIST_ID)).rejects.toThrow(
       'initialState script not found',
     );
   });
@@ -164,7 +186,7 @@ describe('DemoPlaylistService', () => {
       data: '<script id="initialState">bm90LWpzb24=</script>',
     });
 
-    await expect(service.fetchTracks(PLAYLIST_ID)).rejects.toThrow();
+    await expect(service.fetchPlaylist(PLAYLIST_ID)).rejects.toThrow();
   });
 
   it('returns nothing when the JSON shape changes, rather than throwing', async () => {
@@ -175,12 +197,14 @@ describe('DemoPlaylistService', () => {
       data: encode({ entities: { items: {} } }),
     });
 
-    await expect(service.fetchTracks(PLAYLIST_ID)).resolves.toEqual([]);
+    await expect(service.fetchPlaylist(PLAYLIST_ID)).resolves.toMatchObject({
+      tracks: [],
+    });
   });
 
   it('propagates a network failure so the caller keeps the previous set', async () => {
     mockedAxios.get.mockRejectedValue(new Error('ETIMEDOUT'));
 
-    await expect(service.fetchTracks(PLAYLIST_ID)).rejects.toThrow('ETIMEDOUT');
+    await expect(service.fetchPlaylist(PLAYLIST_ID)).rejects.toThrow('ETIMEDOUT');
   });
 });

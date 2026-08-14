@@ -14,13 +14,22 @@ type EmbeddedTrack = {
   previews?: { audioPreviews?: { items?: { url: string }[] } };
 };
 
+type EmbeddedPlaylist = {
+  name?: string;
+  description?: string;
+  images?: { items?: { sources?: { url: string }[] }[] };
+  content?: { items?: { itemV2?: { data?: EmbeddedTrack } }[] };
+};
+
 type EmbeddedState = {
-  entities?: {
-    items?: Record<
-      string,
-      { content?: { items?: { itemV2?: { data?: EmbeddedTrack } }[] } }
-    >;
-  };
+  entities?: { items?: Record<string, EmbeddedPlaylist> };
+};
+
+export type FetchedPlaylist = {
+  name: string;
+  description: string | null;
+  imageUrl: string;
+  tracks: DemoTrack[];
 };
 
 /**
@@ -41,7 +50,7 @@ export class DemoPlaylistService {
     this.logger = appLogger.child(DemoPlaylistService.name);
   }
 
-  async fetchTracks(playlistId: string): Promise<DemoTrack[]> {
+  async fetchPlaylist(playlistId: string): Promise<FetchedPlaylist> {
     const { data } = await axios.get<string>(
       `https://open.spotify.com/playlist/${playlistId}`,
       { headers: { 'User-Agent': USER_AGENT }, timeout: 15_000 },
@@ -55,9 +64,8 @@ export class DemoPlaylistService {
     const decoded = Buffer.from(match[1], 'base64').toString('utf-8');
     const state = JSON.parse(decoded) as EmbeddedState;
 
-    const items =
-      state.entities?.items?.[`spotify:playlist:${playlistId}`]?.content
-        ?.items ?? [];
+    const playlist = state.entities?.items?.[`spotify:playlist:${playlistId}`];
+    const items = playlist?.content?.items ?? [];
 
     const tracks = items
       .map((item) => this.toTrack(item.itemV2?.data))
@@ -66,7 +74,13 @@ export class DemoPlaylistService {
     this.logger.log(
       `Parsed ${tracks.length} playable tracks from ${items.length} items`,
     );
-    return tracks;
+
+    return {
+      name: playlist?.name ?? '',
+      description: playlist?.description ?? null,
+      imageUrl: playlist?.images?.items?.[0]?.sources?.[0]?.url ?? '',
+      tracks,
+    };
   }
 
   private toTrack(data?: EmbeddedTrack): DemoTrack | null {

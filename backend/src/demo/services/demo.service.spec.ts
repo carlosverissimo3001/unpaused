@@ -7,11 +7,19 @@ import {
 import { DemoService } from './demo.service';
 import { DemoPlaylistService } from './demo-playlist.service';
 import { DemoTrackRepository } from '../repositories/demo-track.repository';
+import { DemoPlaylistRepository } from '../repositories/demo-playlist.repository';
 import { RedisService } from '@redis/redis.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { DEMO_PLAYLISTS, DEMO_SNIPPET_STEPS } from '../demo.constants';
 import { DemoTrackEntity } from '../entities/demo-track.entity';
 import { DemoRoundStatus } from '../dto/demo-round.dto';
+
+const fetched = () => ({
+  name: 'Top 50 - Portugal',
+  description: null,
+  imageUrl: 'https://charts-images/pt.jpg',
+  tracks: [1, 2, 3, 4, 5].map(track),
+});
 
 const track = (n: number): DemoTrackEntity => ({
   id: `track-${n}`,
@@ -28,6 +36,7 @@ describe('DemoService', () => {
   let service: DemoService;
   let repository: jest.Mocked<DemoTrackRepository>;
   let playlists: jest.Mocked<DemoPlaylistService>;
+  let playlistRepo: jest.Mocked<DemoPlaylistRepository>;
   let store: Map<string, string>;
 
   beforeEach(async () => {
@@ -62,14 +71,34 @@ describe('DemoService', () => {
             replacePlaylist: jest.fn(),
           },
         },
-        { provide: DemoPlaylistService, useValue: { fetchTracks: jest.fn() } },
+        {
+          provide: DemoPlaylistRepository,
+          useValue: { findAll: jest.fn().mockResolvedValue([]), upsert: jest.fn() },
+        },
+        { provide: DemoPlaylistService, useValue: { fetchPlaylist: jest.fn() } },
         { provide: AppLoggerService, useValue: logger },
       ],
     }).compile();
 
     service = module.get(DemoService);
+    playlistRepo = module.get(DemoPlaylistRepository);
     repository = module.get(DemoTrackRepository);
     playlists = module.get(DemoPlaylistService);
+  });
+
+  describe('getPlaylists', () => {
+    it('returns them in the configured order, not the database order', async () => {
+      playlistRepo.findAll.mockResolvedValue(
+        [...DEMO_PLAYLISTS]
+          .reverse()
+          .map(({ slug, name }) => ({ slug, name, imageUrl: '', description: null })),
+      );
+
+      const result = await service.getPlaylists();
+
+      expect(result.map((p) => p.slug)).toEqual(DEMO_PLAYLISTS.map((p) => p.slug));
+      expect(result[0].slug).toBe('pt');
+    });
   });
 
   describe('createRound', () => {
@@ -176,10 +205,10 @@ describe('DemoService', () => {
   describe('refreshAll', () => {
     it('leaves the previous set alone for a playlist that fails, and retries', async () => {
       const [failing, ...rest] = DEMO_PLAYLISTS;
-      playlists.fetchTracks.mockImplementation((playlistId: string) =>
+      playlists.fetchPlaylist.mockImplementation((playlistId: string) =>
         playlistId === failing.playlistId
           ? Promise.reject(new Error('spotify changed'))
-          : Promise.resolve([1, 2, 3, 4, 5].map(track)),
+          : Promise.resolve(fetched()),
       );
       repository.replacePlaylist.mockResolvedValue(5);
 
@@ -203,14 +232,14 @@ describe('DemoService', () => {
     });
 
     it('throws when every playlist fails, and writes nothing', async () => {
-      playlists.fetchTracks.mockRejectedValue(new Error('spotify changed'));
+      playlists.fetchPlaylist.mockRejectedValue(new Error('spotify changed'));
 
       await expect(service.refreshAll()).rejects.toThrow('Demo refresh failed');
       expect(repository.replacePlaylist).not.toHaveBeenCalled();
     });
 
     it('resolves quietly when every playlist succeeds', async () => {
-      playlists.fetchTracks.mockResolvedValue([1, 2, 3, 4, 5].map(track));
+      playlists.fetchPlaylist.mockResolvedValue(fetched());
       repository.replacePlaylist.mockResolvedValue(5);
 
       const result = await service.refreshAll();
