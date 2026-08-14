@@ -6,6 +6,9 @@ import {
   REFRESH_DEMO_TRACKS_JOB,
   JobNames,
 } from '../../consts';
+import { format } from 'date-fns';
+import { TZDate } from '@date-fns/tz';
+import { DEMO_REFRESH_CRON, DEMO_REFRESH_TZ } from '../demo.constants';
 import { DemoService } from '../services/demo.service';
 import { AppLoggerService } from '../../logger/logger.service';
 
@@ -27,7 +30,7 @@ export class DemoConsumer extends WorkerHost implements OnModuleInit {
       REFRESH_DEMO_TRACKS_JOB,
       {},
       {
-        repeat: { pattern: '0 8 * * *', tz: 'Europe/Lisbon' },
+        repeat: { pattern: DEMO_REFRESH_CRON, tz: DEMO_REFRESH_TZ },
         jobId: REFRESH_DEMO_TRACKS_JOB,
       },
     );
@@ -36,12 +39,22 @@ export class DemoConsumer extends WorkerHost implements OnModuleInit {
     // serve nothing until 08:00. Seed it once instead.
     if (await this.demoService.isEmpty()) {
       this.logger.log('Demo pool is empty; seeding now');
-      // A fixed jobId keeps restarts, and multiple replicas, from each
-      // enqueueing their own full scrape.
+      // Scoping the id to the day dedupes restarts and replicas without
+      // deduping forever: add() is ignored while an id exists, and completed
+      // jobs are retained for days, so a permanently fixed id would silently
+      // swallow every later seed. Failures drop their id so the next boot
+      // retries rather than waiting for tomorrow.
+      const today = format(
+        new TZDate(new Date(), DEMO_REFRESH_TZ),
+        'yyyy-MM-dd',
+      );
       await this.queue.add(
         REFRESH_DEMO_TRACKS_JOB,
         {},
-        { jobId: `${REFRESH_DEMO_TRACKS_JOB}-seed` },
+        {
+          jobId: `${REFRESH_DEMO_TRACKS_JOB}-seed-${today}`,
+          removeOnFail: true,
+        },
       );
     }
   }

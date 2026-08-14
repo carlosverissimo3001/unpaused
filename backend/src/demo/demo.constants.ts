@@ -46,5 +46,9 @@ export const DEMO_OPTION_COUNT = 4;
 
 export const DEMO_ROUND_PREFIX = 'demo:round:';
 
+/** The daily refresh, and the date its job id is scoped to, share this. */
+export const DEMO_REFRESH_CRON = '0 8 * * *';
+export const DEMO_REFRESH_TZ = 'Europe/Lisbon';
+
 /** Long enough to finish a round, short enough that abandoned ones evaporate. */
 export const DEMO_ROUND_TTL_SECONDS = 900;

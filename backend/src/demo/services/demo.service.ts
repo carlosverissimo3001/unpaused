@@ -161,15 +161,19 @@ export class DemoService {
     );
 
     const result = Object.fromEntries(entries);
-    const written = entries.reduce((sum, [, count]) => sum + count, 0);
+    const failed = entries
+      .filter(([, count]) => count === 0)
+      .map(([slug]) => slug);
 
-    if (!written) {
-      // Every playlist failed. Throwing lets the queue's configured backoff
-      // retry, instead of silently leaving the pool to go stale for a day.
+    if (failed.length) {
+      // Throwing is what makes the queue's configured backoff engage. A retry
+      // re-fetches the playlists that already succeeded, which is harmless:
+      // replacePlaylist is a full replace inside a transaction, so the work is
+      // idempotent, and a chart left stale for 24h is the worse outcome.
       this.logger.error(
-        `Demo refresh wrote nothing: ${JSON.stringify(result)}`,
+        `Demo refresh incomplete, retrying: ${JSON.stringify(result)}`,
       );
-      throw new Error('Demo refresh failed for every playlist');
+      throw new Error(`Demo refresh failed for: ${failed.join(', ')}`);
     }
 
     this.logger.log(`Demo refresh complete: ${JSON.stringify(result)}`);

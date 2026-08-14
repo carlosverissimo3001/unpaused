@@ -174,7 +174,7 @@ describe('DemoService', () => {
   });
 
   describe('refreshAll', () => {
-    it('leaves the previous set alone for a playlist that fails', async () => {
+    it('leaves the previous set alone for a playlist that fails, and retries', async () => {
       const [failing, ...rest] = DEMO_PLAYLISTS;
       playlists.fetchTracks.mockImplementation((playlistId: string) =>
         playlistId === failing.playlistId
@@ -183,7 +183,8 @@ describe('DemoService', () => {
       );
       repository.replacePlaylist.mockResolvedValue(5);
 
-      const result = await service.refreshAll();
+      // Any failure throws, so the queue's backoff retries the run.
+      await expect(service.refreshAll()).rejects.toThrow(failing.slug);
 
       // The one that failed must not be touched, or a bad fetch would wipe
       // yesterday's working tracks.
@@ -191,25 +192,30 @@ describe('DemoService', () => {
         failing.slug,
         expect.anything(),
       );
-      expect(result[failing.slug]).toBe(0);
 
-      // Every other playlist still refreshed.
+      // Every other playlist still refreshed, rather than being abandoned.
       for (const playlist of rest) {
         expect(repository.replacePlaylist).toHaveBeenCalledWith(
           playlist.slug,
           expect.any(Array),
         );
-        expect(result[playlist.slug]).toBe(5);
       }
     });
 
-    it('throws when every playlist fails, so the queue retries', async () => {
+    it('throws when every playlist fails, and writes nothing', async () => {
       playlists.fetchTracks.mockRejectedValue(new Error('spotify changed'));
 
-      await expect(service.refreshAll()).rejects.toThrow(
-        'Demo refresh failed for every playlist',
-      );
+      await expect(service.refreshAll()).rejects.toThrow('Demo refresh failed');
       expect(repository.replacePlaylist).not.toHaveBeenCalled();
+    });
+
+    it('resolves quietly when every playlist succeeds', async () => {
+      playlists.fetchTracks.mockResolvedValue([1, 2, 3, 4, 5].map(track));
+      repository.replacePlaylist.mockResolvedValue(5);
+
+      const result = await service.refreshAll();
+
+      expect(Object.values(result)).toEqual(DEMO_PLAYLISTS.map(() => 5));
     });
   });
 });
