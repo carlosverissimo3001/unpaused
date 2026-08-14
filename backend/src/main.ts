@@ -1,4 +1,6 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { VALIDATION_CONFIG } from './utils/validators/validators';
@@ -7,13 +9,44 @@ import { VALIDATION_CONFIG } from './utils/validators/validators';
 declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Railway terminates TLS at its own proxy, so without this every request
+  // looks like it came from the proxy. Rate limiting that falls back to the
+  // client IP would otherwise put every visitor in one bucket.
+  app.set('trust proxy', 1);
 
   app.use(cookieParser());
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const portfolioOrigins = (process.env.PORTFOLIO_URL?.split(',') ?? [])
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  /**
+   * The portfolio gets its own CORS treatment, scoped to /demo and without
+   * credentials. Adding it to the app-wide allow-list instead would let that
+   * origin make cookie-bearing requests to every authenticated route, which
+   * the demo neither needs nor should have: it is stateless and cookie-free.
+   */
+  if (portfolioOrigins.length) {
+    app.use('/demo', (req: Request, res: Response, next: NextFunction) => {
+      const origin = req.headers.origin;
+      if (origin && portfolioOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Vary', 'Origin');
+        res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type');
+      }
+      if (req.method === 'OPTIONS') {
+        res.sendStatus(204);
+        return;
+      }
+      next();
+    });
+  }
+
   app.enableCors({
-    origin: frontendUrl,
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
