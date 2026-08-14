@@ -37,8 +37,8 @@ export class DemoConsumer extends WorkerHost implements OnModuleInit {
 
     // A repeatable job does not run on registration, so a fresh database would
     // serve nothing until 08:00. Seed it once instead.
-    if (await this.demoService.isEmpty()) {
-      this.logger.log('Demo pool is empty; seeding now');
+    if (await this.demoService.needsSeeding()) {
+      this.logger.log('Demo pool needs seeding; running a refresh now');
       // Scoping the id to the day dedupes restarts and replicas without
       // deduping forever: add() is ignored while an id exists, and completed
       // jobs are retained for days, so a permanently fixed id would silently
