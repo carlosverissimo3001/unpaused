@@ -106,6 +106,26 @@ model Track {
   @@map("tracks")
 }
 
+/// Chart tracks for the public demo used by carlosverissimo.com.
+/// Refreshed daily by a scheduled job, so the request path never touches
+/// Spotify and the last successful fetch survives an outage.
+model DemoTrack {
+  id            String @id
+  playlistSlug  String @map("playlist_slug")
+  name          String
+  artistName    String @map("artist_name")
+  albumImageUrl String @map("album_image_url")
+  previewUrl    String @map("preview_url")
+  position      Int
+
+  fetchedAt DateTime @default(now()) @map("fetched_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([playlistSlug])
+  @@map("demo_tracks")
+}
+
 enum GameMode {
   DAILY
   ALL

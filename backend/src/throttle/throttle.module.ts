@@ -4,6 +4,7 @@ import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis'
 import { RedisService } from '@redis/redis.service';
 import { RedisModule } from '@redis/redis.module';
 import {
+  THROTTLE_DEMO,
   THROTTLE_GUESS,
   THROTTLE_SEARCH,
   THROTTLE_TTL,
@@ -24,6 +25,11 @@ import {
           },
           {
             name: THROTTLE_SEARCH,
+            ttl: THROTTLE_TTL,
+            limit: THROTTLE_DEFAULT_LIMIT,
+          },
+          {
+            name: THROTTLE_DEMO,
             ttl: THROTTLE_TTL,
             limit: THROTTLE_DEFAULT_LIMIT,
           },

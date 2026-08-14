@@ -21,9 +21,11 @@ export const MAX_JOB_HISTORY = 500; // Max number of completed/failed jobs to ke
 
 // Queues
 export const GAME_CLEANUP_QUEUE = 'game-cleanup';
+export const DEMO_REFRESH_QUEUE = 'demo-refresh';
 
 // Jobs
 export const CLEAN_UP_ABANDONED_GAMES_JOB = 'abandoned-games-task';
+export const REFRESH_DEMO_TRACKS_JOB = 'refresh-demo-tracks';
 export const JOB_OPTIONS_WITH_BACKOFF: JobsOptions = {
   attempts: 3,
   backoff: {
@@ -38,6 +40,7 @@ export const JOB_OPTIONS_WITH_BACKOFF: JobsOptions = {
 
 export type JobDataMap = {
   [CLEAN_UP_ABANDONED_GAMES_JOB]: Record<string, never>;
+  [REFRESH_DEMO_TRACKS_JOB]: Record<string, never>;
 };
 
 export type JobNames = keyof JobDataMap;

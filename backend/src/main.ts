@@ -11,9 +11,16 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  // The demo endpoints are called from the portfolio, a different origin.
+  const allowedOrigins = [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    ...(process.env.PORTFOLIO_URL?.split(',') ?? []),
+  ]
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: frontendUrl,
+    origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
