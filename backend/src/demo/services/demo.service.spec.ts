@@ -36,6 +36,7 @@ describe('DemoService', () => {
   let service: DemoService;
   let repository: jest.Mocked<DemoTrackRepository>;
   let playlists: jest.Mocked<DemoPlaylistService>;
+  let playlistRepo: jest.Mocked<DemoPlaylistRepository>;
   let store: Map<string, string>;
 
   beforeEach(async () => {
@@ -80,8 +81,24 @@ describe('DemoService', () => {
     }).compile();
 
     service = module.get(DemoService);
+    playlistRepo = module.get(DemoPlaylistRepository);
     repository = module.get(DemoTrackRepository);
     playlists = module.get(DemoPlaylistService);
+  });
+
+  describe('getPlaylists', () => {
+    it('returns them in the configured order, not the database order', async () => {
+      playlistRepo.findAll.mockResolvedValue(
+        [...DEMO_PLAYLISTS]
+          .reverse()
+          .map(({ slug, name }) => ({ slug, name, imageUrl: '', description: null })),
+      );
+
+      const result = await service.getPlaylists();
+
+      expect(result.map((p) => p.slug)).toEqual(DEMO_PLAYLISTS.map((p) => p.slug));
+      expect(result[0].slug).toBe('pt');
+    });
   });
 
   describe('createRound', () => {

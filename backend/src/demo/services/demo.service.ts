@@ -70,7 +70,12 @@ export class DemoService {
   async getPlaylists(): Promise<DemoPlaylistEntity[]> {
     const stored = await this.playlistRepository.findAll();
     if (stored.length) {
-      return stored;
+      // Order comes from the configured list, not the database: the picker
+      // leads with Portugal, which alphabetical order would bury in the middle.
+      const order = new Map(DEMO_PLAYLISTS.map((p, i) => [p.slug, i]));
+      return [...stored].sort(
+        (a, b) => (order.get(a.slug) ?? 99) - (order.get(b.slug) ?? 99),
+      );
     }
 
     return DEMO_PLAYLISTS.map(({ slug, name }) => ({
