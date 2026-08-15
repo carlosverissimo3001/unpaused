@@ -35,16 +35,8 @@ export class DemoConsumer extends WorkerHost implements OnModuleInit {
       },
     );
 
-    // A repeatable job does not run on registration, so a fresh database would
-    // serve nothing until 08:00. Seed it once instead.
     if (await this.demoService.needsSeeding()) {
       this.logger.log('Demo pool needs seeding; running a refresh now');
-      // The id dedupes concurrent boots and replicas, and then gets out of the
-      // way: add() is ignored while an id exists, and completed jobs are
-      // retained for days, so without removeOnComplete a second seed on the
-      // same day is swallowed. That is not hypothetical: a deploy that adds a
-      // table needs a fresh seed hours after the first one ran, and it silently
-      // did not get one.
       const today = format(
         new TZDate(new Date(), DEMO_REFRESH_TZ),
         'yyyy-MM-dd',
