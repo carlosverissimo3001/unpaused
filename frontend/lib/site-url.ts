@@ -1,7 +1,7 @@
-/**
- * Absolute origin, for the metadata routes that cannot use a relative URL.
- * Env driven so that moving to a custom domain is a variable, not a deploy.
- */
+/** Absolute origin for metadata routes. Vercel supplies the production alias. */
+const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://unpaused-game.vercel.app'
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (vercel ? `https://${vercel}` : 'http://localhost:3000')
 ).replace(/\/$/, '');

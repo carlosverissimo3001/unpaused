@@ -16,8 +16,7 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  // Without this, Next resolves the OG image against VERCEL_URL, which is the
-  // per deployment host. Shared links would carry a preview URL.
+  // Otherwise the OG image resolves against VERCEL_URL, the per deploy host.
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: '/' },
   title: 'Unpaused - Music Guessing Game',

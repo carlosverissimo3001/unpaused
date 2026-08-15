@@ -17,9 +17,7 @@ export function GateForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (await unlock(password)) {
-      // A hard navigation, not router.push: the private zone is a rewrite to
-      // another deployment, so there is no route here for the client router to
-      // resolve. Letting the server handle it is what makes the rewrite apply.
+      // Hard navigation, so the rewrite to the other deployment applies.
       window.location.href = next;
     }
   }

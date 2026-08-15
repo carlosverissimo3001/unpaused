@@ -44,11 +44,8 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
     }
   }, []);
 
-  // Handle post-OAuth redirect back to multiplayer join (or other) pages.
-  // A hard navigation, not router.replace: a return url can point at the
-  // private zone, which is a rewrite to another deployment and so has no route
-  // here for the client router to resolve. We have just come back from Spotify
-  // on a full page load anyway, so there is no SPA transition to lose.
+  // Hard navigation: a return url can point at a rewrite the client router
+  // cannot resolve locally.
   useEffect(() => {
     if (user) {
       const returnUrl = consumeAuthReturnUrl();
