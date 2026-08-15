@@ -119,14 +119,14 @@ function SpeedrunCardContent() {
       )}
     >
       <div className="flex flex-col gap-1 sm:gap-2 mb-4">
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 w-fit text-[10px] uppercase tracking-widest font-black text-orange-500">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 w-fit text-[10px] uppercase tracking-widest font-black text-orange-600 dark:text-orange-500">
           <Flame className="w-3 h-3 fill-current" />
           <span>Endless</span>
         </div>
         <div className="space-y-0.5">
           <h2 className="font-black tracking-tighter text-fg text-xl sm:text-2xl leading-tight">
             The{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-br from-orange-400 to-red-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-500">
               Speedrun
             </span>
           </h2>
@@ -149,7 +149,7 @@ function SpeedrunCardContent() {
         </Link>
         <Link
           href="/speed-run/leaderboard"
-          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black transition-all active:scale-95 border border-orange-500/30 bg-orange-500/5 text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
+          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black transition-all active:scale-95 border border-orange-500/30 bg-orange-500/5 text-orange-600 dark:text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
         >
           <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline lg:hidden">Leaderboard</span>
@@ -174,14 +174,14 @@ function MultiplayerCardContent({
       )}
     >
       <div className="flex flex-col gap-1 sm:gap-2 mb-4">
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 w-fit text-[10px] uppercase tracking-widest font-black text-purple-400">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 w-fit text-[10px] uppercase tracking-widest font-black text-purple-600 dark:text-purple-400">
           <Gamepad2 className="w-3 h-3" />
           <span>Multiplayer</span>
         </div>
         <div className="space-y-0.5">
           <h2 className="font-black tracking-tighter text-fg text-xl sm:text-2xl leading-tight">
             With{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
               Friends
             </span>
           </h2>
@@ -194,7 +194,7 @@ function MultiplayerCardContent({
       <div className="flex items-center gap-2 w-full">
         <button
           onClick={onJoin}
-          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black border border-white/10 bg-white/5 hover:bg-white/10 text-fg transition-all active:scale-95"
+          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black border border-fg/10 bg-fg/5 hover:bg-fg/10 text-fg transition-all active:scale-95"
         >
           <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline lg:hidden">Join</span>
@@ -253,7 +253,7 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
               whileHover={{ y: -5 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
-                'group relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0A0A0A] flex flex-col shadow-2xl',
+                'group relative overflow-hidden rounded-[2rem] border border-fg/10 bg-surface dark:bg-[#0A0A0A] flex flex-col shadow-2xl',
                 isFullWidth ? 'col-span-2 lg:col-span-1' : 'col-span-1',
               )}
             >
@@ -277,7 +277,7 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
                 )}
               />
 
-              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-fg/[0.03] to-transparent pointer-events-none" />
             </motion.div>
           );
         })}
