@@ -14,8 +14,7 @@ function InviteForm() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    // The homepage reads the cookie on the server, so a refresh is what turns
-    // the sign-in button back on.
+    // The cookie is read on the server, so only a refresh re-enables the button.
     if (await unlock(secret)) router.refresh();
   }
 

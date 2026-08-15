@@ -12,10 +12,7 @@ export function useLogout() {
       return api.authControllerLogout();
     },
     onSuccess: () => {
-      // A hard navigation rather than clearing the query cache. Pages such as
-      // the speed run leaderboard render whether or not anyone is signed in,
-      // so clearing alone left them mounted with their queries disabled, and
-      // an absent result reads on screen as "no runs yet".
+      // Hard, so pages that render without a user don't stay mounted.
       window.location.href = '/';
     },
   });

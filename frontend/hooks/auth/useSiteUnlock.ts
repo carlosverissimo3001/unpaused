@@ -2,11 +2,7 @@
 
 import { useState } from 'react';
 
-/**
- * Posts to the gate endpoint, which sets the httpOnly access cookie. Shared by
- * the private zone's gate page and the invite form on the homepage so the two
- * cannot drift apart.
- */
+/** Sets the httpOnly access cookie. Shared by the gate page and the invite form. */
 export function useSiteUnlock() {
   const [error, setError] = useState(false);
   const [pending, setPending] = useState(false);
