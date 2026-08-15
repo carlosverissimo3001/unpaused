@@ -30,6 +30,7 @@ import {
   getClearCookieOptions,
   getCookieOptions,
 } from '../utils/http-helpers';
+import { EXTERNAL_QUERY_VALIDATION } from '../../utils/validators/validators';
 
 @ApiTags('Api')
 @Controller('auth')
@@ -66,7 +67,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Handle Spotify OAuth callback' })
   @ApiResponse({ status: 302, description: 'Redirects to frontend after auth' })
   async callback(
-    @Query() params: SpotifyOAuthCallbackDto,
+    @Query(EXTERNAL_QUERY_VALIDATION) params: SpotifyOAuthCallbackDto,
     @Res() res: Response,
   ) {
     const { code, state, error } = params;
