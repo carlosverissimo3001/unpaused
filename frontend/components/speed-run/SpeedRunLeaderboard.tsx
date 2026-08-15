@@ -24,20 +24,20 @@ const PODIUM_STYLES: Record<
 > = {
   1: {
     ring: 'ring-amber-400/40',
-    bg: 'bg-gradient-to-br from-amber-400/15 to-amber-600/5 border-amber-400/25',
-    text: 'text-amber-300',
+    bg: 'bg-gradient-to-br from-amber-400/30 to-amber-500/15 border-amber-500/40 dark:from-amber-400/15 dark:to-amber-600/5 dark:border-amber-400/25',
+    text: 'text-amber-600 dark:text-amber-300',
     icon: Crown,
   },
   2: {
     ring: 'ring-slate-300/30',
-    bg: 'bg-gradient-to-br from-slate-300/10 to-slate-400/5 border-slate-400/20',
-    text: 'text-slate-300',
+    bg: 'bg-gradient-to-br from-slate-400/25 to-slate-500/12 border-slate-400/45 dark:from-slate-300/10 dark:to-slate-400/5 dark:border-slate-400/20',
+    text: 'text-slate-600 dark:text-slate-300',
     icon: Medal,
   },
   3: {
     ring: 'ring-orange-700/30',
-    bg: 'bg-gradient-to-br from-orange-700/12 to-orange-800/5 border-orange-700/20',
-    text: 'text-orange-400',
+    bg: 'bg-gradient-to-br from-orange-600/25 to-orange-700/12 border-orange-700/40 dark:from-orange-700/12 dark:to-orange-800/5 dark:border-orange-700/20',
+    text: 'text-orange-700 dark:text-orange-400',
     icon: Medal,
   },
 };
@@ -80,10 +80,10 @@ function LeaderboardRow({
       transition={{ duration: 0.25, delay: staggerIndex * 0.03 }}
       className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all ${
         isCurrentUser
-          ? 'bg-spotify-green/[0.06] border-spotify-green/20 shadow-[0_0_20px_rgba(30,215,96,0.06)]'
+          ? 'bg-spotify-green/[0.12] border-spotify-green/40 dark:bg-spotify-green/[0.06] dark:border-spotify-green/20 shadow-[0_0_20px_rgba(30,215,96,0.06)]'
           : isPodium
             ? `${podiumStyle!.bg}`
-            : 'bg-fg/[0.02] border-fg/6 hover:border-fg/12'
+            : 'bg-fg/[0.04] border-fg/12 dark:bg-fg/[0.02] dark:border-fg/6 hover:border-fg/20 dark:hover:border-fg/12'
       }`}
     >
       <RankBadge rank={entry.rank} />
@@ -170,11 +170,11 @@ export function SpeedRunLeaderboard() {
 
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
-          <Trophy className="w-5 h-5 text-amber-400" />
+          <Trophy className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           <h1 className="text-2xl sm:text-3xl font-black tracking-tighter">
             Leaderboard
           </h1>
-          <Trophy className="w-5 h-5 text-amber-400" />
+          <Trophy className="w-5 h-5 text-amber-600 dark:text-amber-400" />
         </div>
         <p className="text-fg/40 text-sm">
           The best speed runs across all players
@@ -193,7 +193,7 @@ export function SpeedRunLeaderboard() {
                 onClick={() => setPeriod(p.value)}
                 className={`px-4 py-1.5 rounded-[10px] text-xs font-semibold uppercase tracking-wider transition-all ${
                   isActive
-                    ? 'bg-amber-500/20 text-amber-400 shadow-sm'
+                    ? 'bg-amber-500/30 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400 shadow-sm'
                     : 'text-fg/40 hover:text-fg/70'
                 }`}
               >
@@ -211,7 +211,9 @@ export function SpeedRunLeaderboard() {
         </div>
       ) : error ? (
         <div className="text-center py-16">
-          <p className="text-red-400 text-sm">Failed to load leaderboard</p>
+          <p className="text-red-600 dark:text-red-400 text-sm">
+            Failed to load leaderboard
+          </p>
         </div>
       ) : entries.length === 0 ? (
         <div className="text-center py-16 space-y-3">
@@ -227,7 +229,7 @@ export function SpeedRunLeaderboard() {
           </p>
           <Link
             href="/speed-run"
-            className="inline-flex items-center gap-2 text-orange-400 hover:underline text-sm font-semibold"
+            className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:underline text-sm font-semibold"
           >
             <Zap className="w-4 h-4" />
             Start a Run
@@ -260,7 +262,7 @@ export function SpeedRunLeaderboard() {
                 </span>
                 <div className="flex-1 border-t border-dashed border-fg/10" />
               </div>
-              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-spotify-green/[0.06] border-spotify-green/20 shadow-[0_0_20px_rgba(30,215,96,0.06)]">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border bg-spotify-green/[0.12] border-spotify-green/40 dark:bg-spotify-green/[0.06] dark:border-spotify-green/20 shadow-[0_0_20px_rgba(30,215,96,0.06)]">
                 <RankBadge rank={userEntry.rank} />
 
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-fg/[0.06] border border-fg/8 shrink-0">

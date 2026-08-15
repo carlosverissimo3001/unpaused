@@ -1,31 +1,19 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
+import { useMutation } from '@tanstack/react-query';
 import { api } from '@/sdk/client';
 
 /**
- * Mutation hook to logout
- * Invalidates all auth and user-related queries on success
+ * Mutation hook to logout. Sends the user home once the session is gone.
  */
 export function useLogout() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async () => {
       return api.authControllerLogout();
     },
     onSuccess: () => {
-      // Invalidate all auth queries
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.auth.all,
-      });
-      // Invalidate playlists (user-specific)
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.playlists.all,
-      });
-      // Clear all queries
-      queryClient.clear();
+      // Hard, so pages that render without a user don't stay mounted.
+      window.location.href = '/';
     },
   });
 }

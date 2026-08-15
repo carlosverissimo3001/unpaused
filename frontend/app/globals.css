@@ -27,6 +27,14 @@ html:not(.dark) .text-fg\/30 { color: rgb(0 0 0 / 0.50) !important; }
 html:not(.dark) .text-fg\/25 { color: rgb(0 0 0 / 0.42) !important; }
 html:not(.dark) .text-fg\/20 { color: rgb(0 0 0 / 0.35) !important; }
 
+/* #1DB954 as text on a light surface is 2.4:1, under AA even for large text.
+   Backgrounds keep the brand green; only text is darkened. */
+html:not(.dark) .text-spotify-green { color: #0e7a37; }
+html:not(.dark) .text-spotify-green\/90 { color: rgb(14 122 55 / 0.9); }
+html:not(.dark) .text-spotify-green\/80 { color: rgb(14 122 55 / 0.85); }
+html:not(.dark) .text-spotify-green\/70 { color: rgb(14 122 55 / 0.8); }
+html:not(.dark) .text-spotify-green\/60 { color: rgb(14 122 55 / 0.75); }
+
 .dark {
   --fg: 255 255 255;
   --bg: 18 18 18;
