@@ -71,6 +71,12 @@ export class DemoRoundDto {
   @ApiProperty({ description: 'Seconds of audio unlocked so far' })
   snippetDuration: number;
 
+  @ApiProperty({
+    type: [Number],
+    description: 'Seconds unlocked at each attempt, so a client can mark them',
+  })
+  snippetSteps: number[];
+
   @ApiProperty({ type: [DemoOptionDto] })
   options: DemoOptionDto[];
 }

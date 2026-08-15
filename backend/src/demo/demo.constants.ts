@@ -35,14 +35,19 @@ export const DEMO_PLAYLISTS: DemoPlaylist[] = [
   },
 ];
 
-/**
- * Seconds of audio unlocked per attempt. Deliberately more generous than the
- * real game's ROUND_DURATIONS: demo players are guessing against a chart they
- * may not know, without their own library for context.
- */
-export const DEMO_SNIPPET_STEPS = [1, 2, 4, 7, 11, 16];
-
 export const DEMO_OPTION_COUNT = 4;
+
+/**
+ * Seconds of audio unlocked per attempt, one step per option.
+ *
+ * The count has to match DEMO_OPTION_COUNT: with four options a player can be
+ * wrong at most three times before the last one is forced, so any further
+ * steps are unreachable and the attempt counter would promise rounds that
+ * cannot happen. The durations are more generous than the real game's
+ * ROUND_DURATIONS, since demo players are guessing against a chart they may
+ * not know rather than their own library.
+ */
+export const DEMO_SNIPPET_STEPS = [1, 2, 4, 8];
 
 export const DEMO_ROUND_PREFIX = 'demo:round:';
 
