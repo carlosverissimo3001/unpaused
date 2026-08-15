@@ -20,4 +20,11 @@ export class SpotifyOAuthCallbackDto {
   @IsOptional()
   @IsString()
   error?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Spotify-specific parameter added during OAuth flow',
+  })
+  @IsOptional()
+  @IsString()
+  ubi?: string | null;
 }
