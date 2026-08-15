@@ -6,8 +6,6 @@ import {
   REFRESH_DEMO_TRACKS_JOB,
   JobNames,
 } from '../../consts';
-import { format } from 'date-fns';
-import { TZDate } from '@date-fns/tz';
 import { DEMO_REFRESH_CRON, DEMO_REFRESH_TZ } from '../demo.constants';
 import { DemoService } from '../services/demo.service';
 import { AppLoggerService } from '../../logger/logger.service';
@@ -36,20 +34,12 @@ export class DemoConsumer extends WorkerHost implements OnModuleInit {
     );
 
     if (await this.demoService.needsSeeding()) {
-      this.logger.log('Demo pool needs seeding; running a refresh now');
-      const today = format(
-        new TZDate(new Date(), DEMO_REFRESH_TZ),
-        'yyyy-MM-dd',
-      );
-      await this.queue.add(
-        REFRESH_DEMO_TRACKS_JOB,
-        {},
-        {
-          jobId: `${REFRESH_DEMO_TRACKS_JOB}-seed-${today}`,
-          removeOnComplete: true,
-          removeOnFail: true,
-        },
-      );
+      this.logger.log('Demo pool needs seeding; refreshing now');
+      void this.demoService
+        .refreshAll()
+        .catch((error: Error) =>
+          this.logger.error(`Seed refresh failed: ${error.message}`),
+        );
     }
   }
 

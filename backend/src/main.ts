@@ -10,10 +10,6 @@ declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
-  // Railway terminates TLS at its own proxy, so without this every request
-  // looks like it came from the proxy. Rate limiting that falls back to the
-  // client IP would otherwise put every visitor in one bucket.
   app.set('trust proxy', 1);
 
   app.use(cookieParser());
@@ -22,12 +18,6 @@ async function bootstrap() {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  /**
-   * The portfolio gets its own CORS treatment, scoped to /demo and without
-   * credentials. Adding it to the app-wide allow-list instead would let that
-   * origin make cookie-bearing requests to every authenticated route, which
-   * the demo neither needs nor should have: it is stateless and cookie-free.
-   */
   if (portfolioOrigins.length) {
     app.use('/demo', (req: Request, res: Response, next: NextFunction) => {
       const origin = req.headers.origin;
@@ -45,8 +35,10 @@ async function bootstrap() {
     });
   }
 
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => callback(null, origin === frontendUrl),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
