@@ -1,43 +1,26 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff } from 'lucide-react';
 import { safeNext } from '@/lib/safe-next';
+import { useSiteUnlock } from '@/hooks/auth/useSiteUnlock';
 
 export function GateForm() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(false);
-  const [pending, setPending] = useState(false);
-  const router = useRouter();
+  const { unlock, error, pending, clearError } = useSiteUnlock();
   const searchParams = useSearchParams();
   const next = safeNext(searchParams.get('next'));
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setError(false);
-    setPending(true);
-
-    try {
-      const res = await fetch('/api/auth/gate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-
-      if (!res.ok) {
-        setError(true);
-        return;
-      }
-
-      router.push(next);
-      router.refresh();
-    } catch {
-      setError(true);
-    } finally {
-      setPending(false);
+    if (await unlock(password)) {
+      // A hard navigation, not router.push: the private zone is a rewrite to
+      // another deployment, so there is no route here for the client router to
+      // resolve. Letting the server handle it is what makes the rewrite apply.
+      window.location.href = next;
     }
   }
 
@@ -58,7 +41,7 @@ export function GateForm() {
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
-                setError(false);
+                clearError();
               }}
               placeholder="Password"
               className="w-full rounded-lg border border-fg/20 bg-fg/10 pl-4 pr-12 py-3 text-fg placeholder:text-fg/50 focus:outline-none focus:ring-2 focus:ring-spotify-green"
