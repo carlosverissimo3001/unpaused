@@ -45,8 +45,18 @@ async function bootstrap() {
     });
   }
 
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    /**
+     * A callback rather than the string, so this stays silent for origins it
+     * does not own. Given a string, the cors package emits it as
+     * Access-Control-Allow-Origin unconditionally, which overwrote the header
+     * the /demo middleware had just set: preflight answered with the portfolio
+     * origin, the actual request answered with the frontend's, and the browser
+     * rejected the mismatch.
+     */
+    origin: (origin, callback) => callback(null, origin === frontendUrl),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
