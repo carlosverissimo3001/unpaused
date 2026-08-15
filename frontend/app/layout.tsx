@@ -8,6 +8,7 @@ import { MotionProvider } from '@/components/providers/MotionProvider';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { SITE_URL } from '@/lib/site-url';
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -15,6 +16,10 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
+  // Without this, Next resolves the OG image against VERCEL_URL, which is the
+  // per deployment host. Shared links would carry a preview URL.
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: '/' },
   title: 'Unpaused - Music Guessing Game',
   description:
     'Test your music knowledge with Unpaused. Guess the song from a snippet of your favorite playlists!',
@@ -37,6 +42,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
+    url: '/',
     title: 'Unpaused - Music Guessing Game',
     description:
       'Test your music knowledge! Guess the song from a snippet of your favorite playlists.',
