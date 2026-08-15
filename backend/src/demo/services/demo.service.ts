@@ -122,6 +122,7 @@ export class DemoService {
       attempt: 1,
       totalAttempts: DEMO_SNIPPET_STEPS.length,
       snippetDuration: DEMO_SNIPPET_STEPS[0],
+      snippetSteps: DEMO_SNIPPET_STEPS,
       options: options.map((o) => ({
         id: o.id,
         name: o.name,
