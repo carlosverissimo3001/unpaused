@@ -1,7 +1,7 @@
 <h1 align="center">⚡ Unpaused</h1>
 
 <p align="center">
-  <em>Hear 0.1 seconds of a song. Name the track. How fast can you guess?</em>
+  <em>Hear half a second of a song. Name the track. How fast can you guess?</em>
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@
 
 ## What is Unpaused?
 
-Unpaused is a music guessing game built on top of the Spotify Web API. The core loop: you hear a snippet that starts at **0.1 seconds** and grows with every wrong guess or skip - up to 8 seconds across 6 rounds. Nail the track early for more points.
+Unpaused is a music guessing game built on top of the Spotify Web API. The core loop: you hear a snippet that starts at **half a second** and grows with every wrong guess or skip - up to 10 seconds across 6 rounds. Nail the track early for more points.
 
 It started as a random idea me and a friend had while playing Songless and Bandle and ended up as an application with three distinct game modes, a real-time multiplayer layer, a daily streak system and much more...
 
@@ -69,7 +69,7 @@ Pick any playlist from your Spotify library (or your Liked Songs). The game pick
 
 | Round | 1 | 2 | 3 | 4 | 5 | 6 |
 |-------|---|---|---|---|---|---|
-| Duration | 0.1s | 0.5s | 1s | 2s | 4s | 8s |
+| Duration | 0.5s | 1s | 2s | 4s | 8s | 10s |
 
 Wrong guesses are evaluated for **partial matches** - if you guessed the right artist, the right album, or both, the game tells you so. Round durations are driven by the backend so the client can't cheat.
 
