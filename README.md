@@ -221,7 +221,9 @@ Submitting a guess optimistically adds it to the `guesses` list so the UI feels 
 
 ### Preview-URL resilience
 
-Spotify removed anonymous preview URLs from the public API in early 2026 (PR #79). The backend now uses a small scraper service (`PreviewScraperService`) that resolves preview URLs from the web player as a fallback, caches them on the `Track` row, and transparently keeps the game playable.
+Spotify removed anonymous preview URLs from the public API in early 2026 (PR #79). `PreviewLookupService` resolves them from open, unauthenticated catalogues instead, in order: Deezer by ISRC when one is known (an exact match), then the iTunes Search API, then Deezer search. Matching compares artist and title with Spotify's trailing qualifiers stripped, so `- Mono` and `(Remastered)` don't cause a miss. Results are cached in Redis for 7 days (1 day for a miss) and stored on the `Track` row.
+
+On a 45-track sample spanning the 1960s to the 2020s, iTunes and Deezer each resolved 45/45. The old web-player scraper (`PreviewScraperService`) remains as a last resort and logs whenever it is reached, so it can be retired on evidence.
 
 ---
 
@@ -327,7 +329,7 @@ unpaused/
 │       ├── playlist/             # Spotify playlist + Liked Songs integration
 │       ├── spotify/              # Spotify Web API wrapper with rate-limit handling
 │       ├── streak/               # Daily streak + freeze logic, trivia quiz service
-│       ├── track/                # Track catalog, preview URL fallback scraper, Last.fm enrichment
+│       ├── track/                # Track catalog, preview URL lookup (iTunes/Deezer), Last.fm enrichment
 │       ├── transaction/          # @Transactional decorator + AsyncLocalStorage
 │       ├── throttle/             # SessionThrottlerGuard (Redis-backed)
 │       ├── user-avatar/          # Cloudinary uploads
