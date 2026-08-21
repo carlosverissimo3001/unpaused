@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SITE_ACCESS_COOKIE, isAccessTokenValid } from '@/lib/site-access';
 
 const SESSION_COOKIE = 'unpaused_session';
+const GUEST_GAME_ROUTE = '/game/guest';
 
 // Presence only; the backend validates. Multiplayer join is absent on purpose:
 // it routes signed out visitors through login itself.
@@ -16,6 +17,8 @@ const NEEDS_SESSION = [
 
 function needsSession(pathname: string): boolean {
   if (pathname.startsWith('/multiplayer/join')) return false;
+  // Guest play is the whole point of being signed out.
+  if (pathname === GUEST_GAME_ROUTE) return false;
   if (pathname.startsWith('/multiplayer')) return true;
   return NEEDS_SESSION.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
