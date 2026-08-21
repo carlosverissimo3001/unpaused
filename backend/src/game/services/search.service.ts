@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SpotifyService } from '../../spotify/services/spotify.service';
 import { TrackOptionDto } from '../../track/dto/track-option.dto';
-import { normalizeText } from '@utils/text';
-import { getFirstImage } from '@utils/utils';
-import { Track } from '@spotify/web-api-ts-sdk';
+import { mapSpotifyTrackToOption } from '../utils/track-option-mapper';
 
 @Injectable()
 export class SearchService {
@@ -29,24 +27,6 @@ export class SearchService {
     const result = await sdk.search(trimmed, ['track'], undefined, 10);
 
     const items = result.tracks?.items ?? [];
-    return items.map((track: Track) => this.mapTrackToOption(track));
-  }
-
-  private mapTrackToOption(track: Track): TrackOptionDto {
-    const artist = track.artists?.[0]?.name ?? 'Unknown Artist';
-    const name = track.name ?? '';
-    const albumImageUrl = track.album?.images?.length
-      ? getFirstImage(track.album.images)
-      : undefined;
-
-    return {
-      id: track.id,
-      name,
-      normalizedName: normalizeText(name),
-      artist,
-      normalizedArtist: normalizeText(artist),
-      albumImageUrl: albumImageUrl || undefined,
-      albumName: track.album?.name ?? undefined,
-    };
+    return items.map(mapSpotifyTrackToOption);
   }
 }

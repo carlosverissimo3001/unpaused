@@ -46,6 +46,15 @@
             "schema": {
               "$ref": "#/components/schemas/Object"
             }
+          },
+          {
+            "name": "ubi",
+            "required": false,
+            "in": "query",
+            "description": "Spotify-specific parameter added during OAuth flow",
+            "schema": {
+              "$ref": "#/components/schemas/Object"
+            }
           }
         ],
         "responses": {
@@ -1772,6 +1781,243 @@
           }
         ],
         "summary": "Get current gauntlet run state",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/demo/playlists": {
+      "get": {
+        "operationId": "DemoController_getPlaylists",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DemoPlaylistDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Playlists a demo round can be started from",
+        "tags": [
+          "demo"
+        ]
+      }
+    },
+    "/demo/rounds": {
+      "post": {
+        "operationId": "DemoController_startRound",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartDemoRoundDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoRoundDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Track pool not populated yet"
+          }
+        },
+        "summary": "Start a round; the answer stays server-side",
+        "tags": [
+          "demo"
+        ]
+      }
+    },
+    "/demo/rounds/{roundId}/guesses": {
+      "post": {
+        "operationId": "DemoController_guess",
+        "parameters": [
+          {
+            "name": "roundId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuessDemoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoGuessResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Round not found or expired"
+          }
+        },
+        "summary": "Score a guess; reveals the answer when resolved",
+        "tags": [
+          "demo"
+        ]
+      }
+    },
+    "/guest/games": {
+      "post": {
+        "operationId": "GuestGameController_startGame",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Start a guest game from the curated pool",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/guest/games/{id}": {
+      "get": {
+        "operationId": "GuestGameController_getGameState",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The guest round id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current guest game state",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/guest/games/{id}/guess": {
+      "post": {
+        "operationId": "GuestGameController_submitGuess",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The guest round id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuessResultDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Submit a guess for a guest round",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/guest/search/tracks": {
+      "get": {
+        "operationId": "GuestSearchController_searchTracks",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackOptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Search Spotify tracks (guest guess options)",
         "tags": [
           "Api"
         ]
@@ -3792,6 +4038,188 @@
           "items",
           "meta",
           "summary"
+        ]
+      },
+      "DemoPlaylistDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Stable key used when starting a round"
+          },
+          "name": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "Chart cover art; empty before the first refresh"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "imageUrl"
+        ]
+      },
+      "StartDemoRoundDto": {
+        "type": "object",
+        "properties": {
+          "playlistSlug": {
+            "type": "string",
+            "description": "Playlist slug, e.g. \"pt\""
+          }
+        },
+        "required": [
+          "playlistSlug"
+        ]
+      },
+      "DemoOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "artistName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "artistName"
+        ]
+      },
+      "DemoRoundDto": {
+        "type": "object",
+        "properties": {
+          "roundId": {
+            "type": "string",
+            "description": "Opaque round id. Not a session."
+          },
+          "previewUrl": {
+            "type": "string"
+          },
+          "attempt": {
+            "type": "number",
+            "description": "1-based attempt number"
+          },
+          "totalAttempts": {
+            "type": "number"
+          },
+          "snippetDuration": {
+            "type": "number",
+            "description": "Seconds of audio unlocked so far"
+          },
+          "snippetSteps": {
+            "description": "Seconds unlocked at each attempt, so a client can mark them",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoOptionDto"
+            }
+          }
+        },
+        "required": [
+          "roundId",
+          "previewUrl",
+          "attempt",
+          "totalAttempts",
+          "snippetDuration",
+          "snippetSteps",
+          "options"
+        ]
+      },
+      "GuessDemoDto": {
+        "type": "object",
+        "properties": {
+          "trackId": {
+            "type": "string",
+            "description": "Spotify track id; must be one of the options"
+          }
+        },
+        "required": [
+          "trackId"
+        ]
+      },
+      "DemoAnswerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "artistName": {
+            "type": "string"
+          },
+          "albumImageUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "artistName",
+          "albumImageUrl"
+        ]
+      },
+      "DemoGuessResultDto": {
+        "type": "object",
+        "properties": {
+          "correct": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PLAYING",
+              "WON",
+              "LOST"
+            ]
+          },
+          "attempt": {
+            "type": "number"
+          },
+          "totalAttempts": {
+            "type": "number"
+          },
+          "snippetDuration": {
+            "type": "number"
+          },
+          "wrongIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "answer": {
+            "description": "Only present once the round is won or lost",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DemoAnswerDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "correct",
+          "status",
+          "attempt",
+          "totalAttempts",
+          "snippetDuration",
+          "wrongIds"
         ]
       }
     }

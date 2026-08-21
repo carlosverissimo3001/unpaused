@@ -4,6 +4,8 @@ export const THROTTLE_GUESS = 'guess';
 export const THROTTLE_SEARCH = 'search';
 /** Named throttler for the public demo endpoints */
 export const THROTTLE_DEMO = 'demo';
+/** Named throttler for the public guest game endpoints */
+export const THROTTLE_GUEST = 'guest';
 
 /** Sliding window duration in milliseconds (1 minute) */
 export const THROTTLE_TTL = 60_000;
@@ -19,6 +21,13 @@ export const THROTTLE_SEARCH_LIMIT = 60;
  * read plus a Redis write against a fixed pool.
  */
 export const THROTTLE_DEMO_LIMIT = 60;
+
+/**
+ * Per IP, same reasoning as the demo endpoints: guests have no session to
+ * key on. Slightly tighter than demo since guest play also drives Spotify
+ * search/catalog calls, not just a fixed pool read.
+ */
+export const THROTTLE_GUEST_LIMIT = 40;
 
 /**
  * High default limit for the module-level throttlers.

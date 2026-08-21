@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PreviewScraperService } from './preview-scraper.service';
+import { PreviewLookupService } from './preview-lookup.service';
 import { RedisService } from '@redis/redis.service';
 import {
   TRACK_PREVIEW_CACHE_PREFIX,
@@ -14,7 +14,7 @@ import { UpsertTrackDto } from '../dto/upsert-track.dto';
 export class TrackService {
   constructor(
     private readonly trackRepository: TrackRepository,
-    private readonly previewScraper: PreviewScraperService,
+    private readonly previewLookup: PreviewLookupService,
     private readonly redis: RedisService,
   ) {}
 
@@ -76,8 +76,10 @@ export class TrackService {
       return existingTrack;
     }
 
-    // Scrape fallback
-    const scrapedUrl = await this.previewScraper.getPreviewUrl(spotifyTrackId);
+    const resolvedUrl = await this.previewLookup.getPreviewUrl(spotifyTrackId, {
+      title: trackData.name,
+      artist: trackData.primaryArtist,
+    });
 
     return await this.trackRepository.upsertTrack(spotifyTrackId, {
       name: trackData.name,
@@ -88,7 +90,7 @@ export class TrackService {
         ? `https://open.spotify.com/album/${trackData.albumId}`
         : undefined,
       releaseYear: trackData.releaseYear,
-      previewUrl: scrapedUrl ?? undefined,
+      previewUrl: resolvedUrl ?? undefined,
       allArtists: trackData.allArtists,
     });
   }

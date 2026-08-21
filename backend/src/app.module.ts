@@ -16,6 +16,7 @@ import { UserPreferencesModule } from './user-preferences/user-preferences.modul
 import { UserAvatarModule } from './user-avatar/user-avatar.module';
 import { GauntletModule } from './gauntlet/gauntlet.module';
 import { DemoModule } from './demo/demo.module';
+import { GuestModule } from './guest/guest.module';
 import { BullModule } from '@nestjs/bullmq';
 import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
 
@@ -40,6 +41,7 @@ import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
     UserAvatarModule,
     GauntletModule,
     DemoModule,
+    GuestModule,
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
