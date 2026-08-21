@@ -80,6 +80,12 @@ export const queryKeys = {
     all: ['search'] as const,
     tracks: (query: string) => ['search', 'tracks', query] as const,
   },
+  // Guest (unauthenticated) play queries
+  guest: {
+    all: ['guest'] as const,
+    state: (roundId: string) => ['guest', 'game', roundId, 'state'] as const,
+    search: (query: string) => ['guest', 'search', 'tracks', query] as const,
+  },
   // Gauntlet queries
   gauntlet: {
     all: ['gauntlet'] as const,

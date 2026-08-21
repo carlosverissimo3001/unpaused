@@ -6,6 +6,7 @@ import { RedisModule } from '@redis/redis.module';
 import {
   THROTTLE_DEMO,
   THROTTLE_GUESS,
+  THROTTLE_GUEST,
   THROTTLE_SEARCH,
   THROTTLE_TTL,
   THROTTLE_DEFAULT_LIMIT,
@@ -30,6 +31,11 @@ import {
           },
           {
             name: THROTTLE_DEMO,
+            ttl: THROTTLE_TTL,
+            limit: THROTTLE_DEFAULT_LIMIT,
+          },
+          {
+            name: THROTTLE_GUEST,
             ttl: THROTTLE_TTL,
             limit: THROTTLE_DEFAULT_LIMIT,
           },

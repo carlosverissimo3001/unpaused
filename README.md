@@ -271,6 +271,7 @@ DATABASE_URL="postgresql://unpaused:unpaused_dev@localhost:5432/unpaused?schema=
 REDIS_URL="redis://localhost:6379"
 SPOTIFY_CLIENT_ID="your_client_id"
 SPOTIFY_REDIRECT_URI="http://localhost:3001/auth/callback"
+SPOTIFY_CLIENT_SECRET="your_client_secret"   # app-only auth for guest play
 SESSION_SECRET="generate-a-random-32-char-string"
 SESSION_MAX_AGE_SECONDS="604800"
 TOKEN_ENCRYPTION_KEY="64-character-hex-string"   # openssl rand -hex 32
