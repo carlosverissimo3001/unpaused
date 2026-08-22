@@ -458,7 +458,7 @@ example().catch(console.error);
 
 ## authControllerCallback
 
-> authControllerCallback(code, state, error)
+> authControllerCallback(code, state, error, ubi)
 
 Handle Spotify OAuth callback
 
@@ -482,6 +482,8 @@ async function example() {
     state: state_example,
     // object | Error message if authorization failed. (optional)
     error: Object,
+    // object | Spotify-specific parameter added during OAuth flow (optional)
+    ubi: Object,
   } satisfies AuthControllerCallbackRequest;
 
   try {
@@ -504,6 +506,7 @@ example().catch(console.error);
 | **code** | `string` | Authorization code from Spotify | [Defaults to `undefined`] |
 | **state** | `string` | State parameter for CSRF protection | [Defaults to `undefined`] |
 | **error** | `object` | Error message if authorization failed. | [Optional] [Defaults to `undefined`] |
+| **ubi** | `object` | Spotify-specific parameter added during OAuth flow | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

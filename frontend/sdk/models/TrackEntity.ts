@@ -70,6 +70,12 @@ export interface TrackEntity {
      */
     releaseYear?: number;
     /**
+     * International Standard Recording Code
+     * @type {string}
+     * @memberof TrackEntity
+     */
+    isrc?: string;
+    /**
      * The URL of the track preview
      * @type {string}
      * @memberof TrackEntity
@@ -138,6 +144,7 @@ export function TrackEntityFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'albumName': json['albumName'] == null ? undefined : json['albumName'],
         'albumUrl': json['albumUrl'] == null ? undefined : json['albumUrl'],
         'releaseYear': json['releaseYear'] == null ? undefined : json['releaseYear'],
+        'isrc': json['isrc'] == null ? undefined : json['isrc'],
         'previewUrl': json['previewUrl'] == null ? undefined : json['previewUrl'],
         'lastScrapedAt': (new Date(json['lastScrapedAt'])),
         'createdAt': (new Date(json['createdAt'])),
@@ -165,6 +172,7 @@ export function TrackEntityToJSONTyped(value?: TrackEntity | null, ignoreDiscrim
         'albumName': value['albumName'],
         'albumUrl': value['albumUrl'],
         'releaseYear': value['releaseYear'],
+        'isrc': value['isrc'],
         'previewUrl': value['previewUrl'],
         'lastScrapedAt': value['lastScrapedAt'].toISOString(),
         'createdAt': value['createdAt'].toISOString(),
