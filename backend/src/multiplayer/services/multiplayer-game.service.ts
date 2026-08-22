@@ -30,6 +30,7 @@ import { RoomsGateway } from '../gateways/rooms.gateway';
 import { RoomDto } from '../dto/room.dto';
 import { TrackEntity } from '../../track/entities/track.entity';
 import { TrackService } from '../../track/services/track.service';
+import { mapTrack } from '../../utils/mappers';
 
 @Injectable()
 export class MultiplayerGameService {
@@ -91,10 +92,11 @@ export class MultiplayerGameService {
       );
     }
 
-    const track = currentSession.track;
+    const track = mapTrack(currentSession.track);
     const guesses =
       (currentSession.guesses as unknown as GuessHistoryDto[]) ?? [];
     const isComplete = currentSession.status !== GameStatus.PLAYING;
+    const previewUrl = (await this.trackService.playableUrl(track)) ?? '';
 
     return {
       sessionId: currentSession.id,
@@ -105,7 +107,7 @@ export class MultiplayerGameService {
       maxGuessesPerSong: MAX_ROUNDS,
       status: currentSession.status,
       guesses,
-      previewUrl: (await this.trackService.playableUrl(track)) ?? '',
+      previewUrl,
       answer: isComplete
         ? {
             id: track.id,

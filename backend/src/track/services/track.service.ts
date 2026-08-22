@@ -72,14 +72,14 @@ export class TrackService {
   /**
    * The stored URL may have expired, so anything with a ref is re-minted.
    */
-  async playableUrl(track: {
-    previewUrl?: string | null;
-    previewRef?: string | null;
-  }): Promise<string | null> {
-    const ref = track.previewRef ? parseRef(track.previewRef) : null;
-    if (!ref) {
-      return track.previewUrl ?? null;
+  async playableUrl(track: TrackEntity): Promise<string | null> {
+    if (track.previewRef) {
+      const ref = parseRef(track.previewRef);
+      if (ref) {
+        return (await this.previewLookup.mint(ref)) ?? track.previewUrl ?? null;
+      }
     }
-    return (await this.previewLookup.mint(ref)) ?? track.previewUrl ?? null;
+
+    return track.previewUrl ?? null;
   }
 }
