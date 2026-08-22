@@ -2591,6 +2591,10 @@
             "type": "string",
             "description": "Artist name"
           },
+          "isrc": {
+            "type": "string",
+            "description": "ISRC of the guessed recording, when the catalogue supplies one"
+          },
           "albumName": {
             "type": "string",
             "description": "Album name"
