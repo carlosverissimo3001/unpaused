@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PreviewLookupService } from './preview-lookup.service';
-import { RedisService } from '@redis/redis.service';
 import {
-  TRACK_PREVIEW_CACHE_PREFIX,
-  TRACK_PREVIEW_CACHE_TTL,
-} from '../../consts';
+  PreviewLookupService,
+  parseRef,
+  serializeRef,
+} from './preview-lookup.service';
 import { TrackDto } from '../dto/track.dto';
 import { TrackRepository } from '../repositories/track.repository';
 import { TrackEntity } from '../entities/track.entity';
@@ -15,7 +14,6 @@ export class TrackService {
   constructor(
     private readonly trackRepository: TrackRepository,
     private readonly previewLookup: PreviewLookupService,
-    private readonly redis: RedisService,
   ) {}
 
   async findById(id: string): Promise<TrackEntity | null> {
@@ -40,48 +38,20 @@ export class TrackService {
     spotifyTrackId: string,
     trackData: TrackDto,
   ): Promise<TrackEntity> {
-    const cacheKey = `${TRACK_PREVIEW_CACHE_PREFIX}${spotifyTrackId}`;
-    const cachedUrl = await this.redis.get(cacheKey);
-
-    // Redis match
-    if (cachedUrl) {
-      // TODO: Do we really need this??
-      return {
-        id: spotifyTrackId,
-        previewUrl: cachedUrl,
-        name: trackData.name,
-        artistName: trackData.primaryArtist,
-        albumImageUrl: trackData.imageUrl ?? undefined,
-        albumName: trackData.albumName ?? undefined,
-        albumUrl: trackData.albumId
-          ? `https://open.spotify.com/album/${trackData.albumId}`
-          : undefined,
-        releaseYear: trackData.releaseYear ?? undefined,
-        isrc: trackData.isrc ?? undefined,
-        metadata: {},
-        lastScrapedAt: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        allArtists: trackData.allArtists,
-      };
-    }
-
-    // DB match
     const existingTrack = await this.trackRepository.findById(spotifyTrackId);
-    if (existingTrack?.previewUrl) {
-      await this.redis.set(
-        cacheKey,
-        existingTrack.previewUrl,
-        TRACK_PREVIEW_CACHE_TTL,
-      );
-      return existingTrack;
+    if (existingTrack?.previewRef) {
+      const url = await this.playableUrl(existingTrack);
+      if (url) {
+        return { ...existingTrack, previewUrl: url };
+      }
     }
 
-    const resolvedUrl = await this.previewLookup.getPreviewUrl(spotifyTrackId, {
+    const ref = await this.previewLookup.getPreviewRef(spotifyTrackId, {
       title: trackData.name,
       artist: trackData.primaryArtist,
       isrc: trackData.isrc,
     });
+    const resolvedUrl = ref ? await this.previewLookup.mint(ref) : null;
 
     return await this.trackRepository.upsertTrack(spotifyTrackId, {
       name: trackData.name,
@@ -94,7 +64,22 @@ export class TrackService {
       releaseYear: trackData.releaseYear,
       isrc: trackData.isrc,
       previewUrl: resolvedUrl ?? undefined,
+      previewRef: ref ? serializeRef(ref) : undefined,
       allArtists: trackData.allArtists,
     });
+  }
+
+  /**
+   * The stored URL may have expired, so anything with a ref is re-minted.
+   */
+  async playableUrl(track: TrackEntity): Promise<string | null> {
+    if (track.previewRef) {
+      const ref = parseRef(track.previewRef);
+      if (ref) {
+        return (await this.previewLookup.mint(ref)) ?? track.previewUrl ?? null;
+      }
+    }
+
+    return track.previewUrl ?? null;
   }
 }

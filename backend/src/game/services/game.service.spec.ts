@@ -81,7 +81,13 @@ describe('GameService', () => {
   };
 
   const mockPlaylistService = {};
-  const mockTrackService = {};
+  const mockTrackService = {
+    playableUrl: jest
+      .fn()
+      .mockImplementation((track: { previewUrl?: string | null }) =>
+        Promise.resolve(track?.previewUrl ?? null),
+      ),
+  };
   const mockPrismaService = {};
   const mockUserPreferencesRepository = {
     findByUserId: jest.fn().mockResolvedValue({ timezone: 'UTC' }),

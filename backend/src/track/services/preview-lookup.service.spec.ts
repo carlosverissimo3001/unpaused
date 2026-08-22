@@ -12,6 +12,7 @@ import {
 const QUERY = { title: 'Umbrella', artist: 'Rihanna' };
 const ITUNES_URL = 'https://audio.itunes/preview.m4a';
 const DEEZER_URL = 'https://cdns-preview.dzcdn.net/preview.mp3';
+const DEEZER_ID = 908604612;
 
 function itunesResponse(results: unknown[]) {
   return { ok: true, text: async () => JSON.stringify({ results }) };
@@ -19,6 +20,19 @@ function itunesResponse(results: unknown[]) {
 function deezerResponse(data: unknown[]) {
   return { ok: true, text: async () => JSON.stringify({ data }) };
 }
+/** Deezer signs its preview links, so the id is re-minted on every read. */
+function deezerMint() {
+  return {
+    ok: true,
+    text: async () => JSON.stringify({ id: DEEZER_ID, preview: DEEZER_URL }),
+  };
+}
+const deezerHit = {
+  id: DEEZER_ID,
+  title: 'Umbrella',
+  artist: { name: 'Rihanna' },
+  preview: DEEZER_URL,
+};
 
 describe('PreviewLookupService', () => {
   let service: PreviewLookupService;
@@ -47,11 +61,34 @@ describe('PreviewLookupService', () => {
     service = moduleRef.get(PreviewLookupService);
   });
 
-  it('returns a cached url without calling out', async () => {
-    redis.get.mockResolvedValue(ITUNES_URL);
+  it('returns a cached iTunes url without calling out', async () => {
+    redis.get.mockResolvedValue(`itunes|${ITUNES_URL}`);
 
     await expect(service.getPreviewUrl('t1', QUERY)).resolves.toBe(ITUNES_URL);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('re-mints a cached Deezer ref instead of replaying a signed url', async () => {
+    redis.get.mockResolvedValue(`deezer|${DEEZER_ID}`);
+    fetchMock.mockResolvedValueOnce(deezerMint());
+
+    await expect(service.getPreviewUrl('t1', QUERY)).resolves.toBe(DEEZER_URL);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toContain(`/track/${DEEZER_ID}`);
+    expect(redis.set).not.toHaveBeenCalled();
+  });
+
+  it('caches the Deezer id, never the signed url', async () => {
+    fetchMock
+      .mockResolvedValueOnce(itunesResponse([]))
+      .mockResolvedValueOnce(deezerResponse([deezerHit]))
+      .mockResolvedValueOnce(deezerMint());
+
+    await service.getPreviewUrl('t1', QUERY);
+
+    const [, cached] = redis.set.mock.calls[0] as [string, string, number];
+    expect(cached).toBe(`deezer|${DEEZER_ID}`);
+    expect(cached).not.toContain('http');
   });
 
   it('returns null for a cached miss without retrying', async () => {
@@ -73,7 +110,7 @@ describe('PreviewLookupService', () => {
     expect(scraper.scrape).not.toHaveBeenCalled();
     expect(redis.set).toHaveBeenCalledWith(
       'preview:t1',
-      ITUNES_URL,
+      `itunes|${ITUNES_URL}`,
       PREVIEW_CACHE_TTL_SECONDS,
     );
   });
@@ -89,25 +126,24 @@ describe('PreviewLookupService', () => {
           },
         ]),
       )
-      .mockResolvedValueOnce(
-        deezerResponse([
-          { title: 'Umbrella', artist: { name: 'Rihanna' }, preview: DEEZER_URL },
-        ]),
-      );
+      .mockResolvedValueOnce(deezerResponse([deezerHit]))
+      .mockResolvedValueOnce(deezerMint());
 
     await expect(service.getPreviewUrl('t1', QUERY)).resolves.toBe(DEEZER_URL);
   });
 
   it('uses the ISRC lookup first when one is known', async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      text: async () => JSON.stringify({ preview: DEEZER_URL }),
-    });
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () =>
+          JSON.stringify({ id: DEEZER_ID, preview: DEEZER_URL }),
+      })
+      .mockResolvedValueOnce(deezerMint());
 
     await expect(
       service.getPreviewUrl('t1', { ...QUERY, isrc: 'USUM70706128' }),
     ).resolves.toBe(DEEZER_URL);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0]).toContain('isrc:USUM70706128');
   });
 
@@ -139,16 +175,18 @@ describe('PreviewLookupService', () => {
       'https://p.scdn.co/mp3-preview/abc',
     );
     expect(scraper.scrape).toHaveBeenCalledWith('t1');
+    expect(redis.set).toHaveBeenCalledWith(
+      'preview:t1',
+      'scrape|https://p.scdn.co/mp3-preview/abc',
+      PREVIEW_CACHE_TTL_SECONDS,
+    );
   });
 
   it('survives a source throwing and still tries the next one', async () => {
     fetchMock
       .mockRejectedValueOnce(new Error('itunes down'))
-      .mockResolvedValueOnce(
-        deezerResponse([
-          { title: 'Umbrella', artist: { name: 'Rihanna' }, preview: DEEZER_URL },
-        ]),
-      );
+      .mockResolvedValueOnce(deezerResponse([deezerHit]))
+      .mockResolvedValueOnce(deezerMint());
 
     await expect(service.getPreviewUrl('t1', QUERY)).resolves.toBe(DEEZER_URL);
   });

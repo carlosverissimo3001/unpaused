@@ -15,6 +15,7 @@ Name | Type
 `releaseYear` | number
 `isrc` | string
 `previewUrl` | string
+`previewRef` | string
 `lastScrapedAt` | Date
 `createdAt` | Date
 `updatedAt` | Date
@@ -37,6 +38,7 @@ const example = {
   "releaseYear": null,
   "isrc": null,
   "previewUrl": null,
+  "previewRef": null,
   "lastScrapedAt": null,
   "createdAt": null,
   "updatedAt": null,

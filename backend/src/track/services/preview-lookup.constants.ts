@@ -7,4 +7,5 @@ export const PREVIEW_LOOKUP_TIMEOUT_MS = 5000;
 
 export const ITUNES_SEARCH_URL = 'https://itunes.apple.com/search';
 export const DEEZER_SEARCH_URL = 'https://api.deezer.com/search';
+export const DEEZER_TRACK_URL = 'https://api.deezer.com/track/';
 export const DEEZER_ISRC_URL = 'https://api.deezer.com/track/isrc:';

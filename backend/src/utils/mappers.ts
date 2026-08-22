@@ -112,6 +112,7 @@ export function mapTrack(record: Track): TrackEntity {
     releaseYear: toUndefinedIfNull(record.releaseYear),
     isrc: toUndefinedIfNull(record.isrc),
     previewUrl: toUndefinedIfNull(record.previewUrl),
+    previewRef: toUndefinedIfNull(record.previewRef),
     metadata,
   });
 }
