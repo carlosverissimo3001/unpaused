@@ -152,6 +152,7 @@ export interface AuthControllerCallbackRequest {
     code: string;
     state: string;
     error?: object;
+    ubi?: object;
 }
 
 export interface AuthControllerUpdateMeRequest {
@@ -549,6 +550,10 @@ export class ApiApi extends runtime.BaseAPI {
 
         if (requestParameters['error'] != null) {
             queryParameters['error'] = requestParameters['error'];
+        }
+
+        if (requestParameters['ubi'] != null) {
+            queryParameters['ubi'] = requestParameters['ubi'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

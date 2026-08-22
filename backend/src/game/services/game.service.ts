@@ -168,6 +168,7 @@ export class GameService {
       albumName: selectedTrack.albumName,
       albumUrl: `https://open.spotify.com/album/${selectedTrack.albumId}`,
       releaseYear: selectedTrack.releaseYear,
+      isrc: selectedTrack.isrc,
       previewUrl,
       metadata,
       allArtists: selectedTrack.allArtists,

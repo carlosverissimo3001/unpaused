@@ -461,6 +461,7 @@ export class GauntletService {
             albumName: spotifyTrack.albumName,
             albumUrl: `https://open.spotify.com/album/${spotifyTrack.albumId}`,
             releaseYear: spotifyTrack.releaseYear,
+            isrc: spotifyTrack.isrc,
             previewUrl: withPreview.previewUrl,
             allArtists: spotifyTrack.allArtists,
           });
