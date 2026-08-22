@@ -1690,7 +1690,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Spotify tracks (for game guess options)
+     * Search tracks (for game guess options)
      */
     async searchControllerSearchTracksRaw(requestParameters: SearchControllerSearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TrackOptionDto>>> {
         if (requestParameters['q'] == null) {
@@ -1722,7 +1722,7 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
-     * Search Spotify tracks (for game guess options)
+     * Search tracks (for game guess options)
      */
     async searchControllerSearchTracks(requestParameters: SearchControllerSearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TrackOptionDto>> {
         const response = await this.searchControllerSearchTracksRaw(requestParameters, initOverrides);

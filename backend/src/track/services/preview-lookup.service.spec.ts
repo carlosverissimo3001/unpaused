@@ -7,7 +7,7 @@ import {
   PREVIEW_CACHE_TTL_SECONDS,
   PREVIEW_NOT_FOUND,
   PREVIEW_NOT_FOUND_TTL_SECONDS,
-} from './preview-lookup.constants';
+} from '../consts';
 
 const QUERY = { title: 'Umbrella', artist: 'Rihanna' };
 const ITUNES_URL = 'https://audio.itunes/preview.m4a';

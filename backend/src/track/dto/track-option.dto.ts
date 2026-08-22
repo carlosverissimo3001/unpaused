@@ -17,6 +17,12 @@ export class TrackOptionDto {
   normalizedArtist: string;
 
   @ApiPropertyOptional({
+    description: 'ISRC of the recording, used to judge the guess',
+    type: String,
+  })
+  isrc?: string;
+
+  @ApiPropertyOptional({
     description: 'The album image URL of the track',
     type: String,
   })

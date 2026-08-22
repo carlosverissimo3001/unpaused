@@ -19,6 +19,7 @@ interface SubmitGuessParams {
   trackName?: string;
   artistName?: string;
   albumName?: string;
+  isrc?: string;
 }
 
 /**
@@ -41,6 +42,7 @@ export function useSubmitGuess() {
       trackName,
       artistName,
       albumName,
+      isrc,
     }) => {
       const guessDto: GuessDto = {
         trackId: trackId || undefined,
@@ -48,6 +50,7 @@ export function useSubmitGuess() {
         trackName,
         artistName,
         albumName,
+        isrc,
       };
       return api.gameControllerSubmitGuess({ id: sessionId, guessDto });
     },

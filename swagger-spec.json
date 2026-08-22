@@ -648,7 +648,7 @@
             "cookie": []
           }
         ],
-        "summary": "Search Spotify tracks (for game guess options)",
+        "summary": "Search tracks (for game guess options)",
         "tags": [
           "Api"
         ]
@@ -2131,6 +2131,10 @@
             "type": "string",
             "description": "Normalized artist for search/matching"
           },
+          "isrc": {
+            "type": "string",
+            "description": "ISRC of the recording, used to judge the guess"
+          },
           "albumImageUrl": {
             "type": "string",
             "description": "The album image URL of the track"
@@ -3498,6 +3502,10 @@
           "artistName": {
             "type": "string",
             "description": "Artist name"
+          },
+          "isrc": {
+            "type": "string",
+            "description": "ISRC of the guessed recording, when the catalogue supplies one"
           },
           "albumName": {
             "type": "string",

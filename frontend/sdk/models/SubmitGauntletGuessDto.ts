@@ -50,6 +50,12 @@ export interface SubmitGauntletGuessDto {
      */
     artistName?: string;
     /**
+     * ISRC of the guessed recording, when the catalogue supplies one
+     * @type {string}
+     * @memberof SubmitGauntletGuessDto
+     */
+    isrc?: string;
+    /**
      * Album name
      * @type {string}
      * @memberof SubmitGauntletGuessDto
@@ -80,6 +86,7 @@ export function SubmitGauntletGuessDtoFromJSONTyped(json: any, ignoreDiscriminat
         'skip': json['skip'] == null ? undefined : json['skip'],
         'trackName': json['trackName'] == null ? undefined : json['trackName'],
         'artistName': json['artistName'] == null ? undefined : json['artistName'],
+        'isrc': json['isrc'] == null ? undefined : json['isrc'],
         'albumName': json['albumName'] == null ? undefined : json['albumName'],
     };
 }
@@ -100,6 +107,7 @@ export function SubmitGauntletGuessDtoToJSONTyped(value?: SubmitGauntletGuessDto
         'skip': value['skip'],
         'trackName': value['trackName'],
         'artistName': value['artistName'],
+        'isrc': value['isrc'],
         'albumName': value['albumName'],
     };
 }
