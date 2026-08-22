@@ -82,6 +82,12 @@ export interface TrackEntity {
      */
     previewUrl?: string;
     /**
+     * Where the preview came from, so an expiring URL can be re-minted
+     * @type {string}
+     * @memberof TrackEntity
+     */
+    previewRef?: string;
+    /**
      * Timestamp of when the track was last scraped
      * @type {Date}
      * @memberof TrackEntity
@@ -146,6 +152,7 @@ export function TrackEntityFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'releaseYear': json['releaseYear'] == null ? undefined : json['releaseYear'],
         'isrc': json['isrc'] == null ? undefined : json['isrc'],
         'previewUrl': json['previewUrl'] == null ? undefined : json['previewUrl'],
+        'previewRef': json['previewRef'] == null ? undefined : json['previewRef'],
         'lastScrapedAt': (new Date(json['lastScrapedAt'])),
         'createdAt': (new Date(json['createdAt'])),
         'updatedAt': (new Date(json['updatedAt'])),
@@ -174,6 +181,7 @@ export function TrackEntityToJSONTyped(value?: TrackEntity | null, ignoreDiscrim
         'releaseYear': value['releaseYear'],
         'isrc': value['isrc'],
         'previewUrl': value['previewUrl'],
+        'previewRef': value['previewRef'],
         'lastScrapedAt': value['lastScrapedAt'].toISOString(),
         'createdAt': value['createdAt'].toISOString(),
         'updatedAt': value['updatedAt'].toISOString(),

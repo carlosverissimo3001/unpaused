@@ -27,6 +27,9 @@ export class UpsertTrackDto {
   previewUrl?: string;
 
   @ApiPropertyOptional()
+  previewRef?: string;
+
+  @ApiPropertyOptional()
   metadata?: TrackMetadataVo;
 
   @ApiProperty()

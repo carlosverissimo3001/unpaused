@@ -316,7 +316,8 @@ export class GameService {
     }
 
     // Should not happen since we only start games with valid tracks, but just in case
-    if (!game.track.previewUrl) {
+    const previewUrl = await this.trackService.playableUrl(game.track);
+    if (!previewUrl) {
       throw new NotFoundException('Track not found or no preview URL');
     }
 
@@ -325,7 +326,7 @@ export class GameService {
       game.status === GameStatus.WON,
     );
 
-    return mapToGameStateDto(game, game.track, extras);
+    return mapToGameStateDto(game, { ...game.track, previewUrl }, extras);
   }
 
   @Transactional()

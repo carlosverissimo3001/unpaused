@@ -3752,6 +3752,10 @@
             "type": "string",
             "description": "The URL of the track preview"
           },
+          "previewRef": {
+            "type": "string",
+            "description": "Where the preview came from, so an expiring URL can be re-minted"
+          },
           "lastScrapedAt": {
             "format": "date-time",
             "type": "string",

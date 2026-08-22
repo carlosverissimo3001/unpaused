@@ -53,6 +53,13 @@ export class TrackEntity {
   })
   previewUrl?: string;
 
+  @ApiPropertyOptional({
+    description:
+      'Where the preview came from, so an expiring URL can be re-minted',
+    type: String,
+  })
+  previewRef?: string;
+
   @ApiProperty({
     description: 'Timestamp of when the track was last scraped',
   })

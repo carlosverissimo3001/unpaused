@@ -61,13 +61,16 @@ export class GauntletService {
 
     // Resume existing active run if one exists
     const existing = await this.gauntletRunRepository.findActiveRun(userId);
-    if (existing && existing.currentTrack?.previewUrl) {
+    const existingPreview = existing?.currentTrack
+      ? await this.trackService.playableUrl(existing.currentTrack)
+      : null;
+    if (existing && existingPreview) {
       return {
         runId: existing.id,
         score: existing.score,
         status: existing.status,
         difficulty: existing.difficulty,
-        previewUrl: existing.currentTrack.previewUrl,
+        previewUrl: existingPreview,
         snippetDuration: GAUNTLET_SNIPPET_DURATIONS[existing.difficulty],
       };
     }
@@ -263,7 +266,9 @@ export class GauntletService {
       score: run.score,
       status: run.status,
       difficulty: run.difficulty,
-      previewUrl: run.currentTrack?.previewUrl ?? '',
+      previewUrl: run.currentTrack
+        ? ((await this.trackService.playableUrl(run.currentTrack)) ?? '')
+        : '',
       snippetDuration: GAUNTLET_SNIPPET_DURATIONS[run.difficulty],
     };
   }

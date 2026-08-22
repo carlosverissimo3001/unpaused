@@ -92,6 +92,7 @@ model Track {
   releaseYear   Int?     @map("release_year")
   isrc          String?  @map("isrc")
   previewUrl    String?  @map("preview_url")
+  previewRef    String?  @map("preview_ref")
   allArtists    String[] @default([]) @map("all_artists")
   metadata      Json?    @default("{}") @map("metadata")
 

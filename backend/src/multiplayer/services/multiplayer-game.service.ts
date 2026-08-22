@@ -29,6 +29,7 @@ import {
 import { RoomsGateway } from '../gateways/rooms.gateway';
 import { RoomDto } from '../dto/room.dto';
 import { TrackEntity } from '../../track/entities/track.entity';
+import { TrackService } from '../../track/services/track.service';
 
 @Injectable()
 export class MultiplayerGameService {
@@ -37,6 +38,7 @@ export class MultiplayerGameService {
     private readonly roomRepository: RoomRepository,
     private readonly gameSessionRepository: MultiplayerGameSessionRepository,
     private readonly roomsGateway: RoomsGateway,
+    private readonly trackService: TrackService,
   ) {}
 
   async getRoundState(
@@ -103,7 +105,7 @@ export class MultiplayerGameService {
       maxGuessesPerSong: MAX_ROUNDS,
       status: currentSession.status,
       guesses,
-      previewUrl: track.previewUrl!,
+      previewUrl: (await this.trackService.playableUrl(track)) ?? '',
       answer: isComplete
         ? {
             id: track.id,

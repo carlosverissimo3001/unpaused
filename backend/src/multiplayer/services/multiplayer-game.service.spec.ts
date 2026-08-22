@@ -10,6 +10,7 @@ import { RoomRepository } from '../repositories/room.repository';
 import { MultiplayerGameSessionRepository } from '../repositories/multiplayer-game-session.repository';
 import { AuthService } from '../../auth/services/auth.service';
 import { RoomsGateway } from '../gateways/rooms.gateway';
+import { TrackService } from '../../track/services/track.service';
 
 describe('MultiplayerGameService', () => {
   let service: MultiplayerGameService;
@@ -120,6 +121,16 @@ describe('MultiplayerGameService', () => {
           useValue: mockGameSessionRepository,
         },
         { provide: RoomsGateway, useValue: mockRoomsGateway },
+        {
+          provide: TrackService,
+          useValue: {
+            playableUrl: jest
+              .fn()
+              .mockImplementation((track: { previewUrl?: string | null }) =>
+                Promise.resolve(track?.previewUrl ?? null),
+              ),
+          },
+        },
       ],
     }).compile();
 
