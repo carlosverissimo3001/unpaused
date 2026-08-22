@@ -50,6 +50,13 @@ export class TrackDto {
   })
   readonly releaseYear?: number;
 
+  @ApiPropertyOptional({
+    description: 'International Standard Recording Code',
+    nullable: true,
+    type: String,
+  })
+  readonly isrc?: string;
+
   @ApiProperty({
     description: 'All artist names for the track',
     type: String,

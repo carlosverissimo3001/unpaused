@@ -57,6 +57,7 @@ export class TrackService {
           ? `https://open.spotify.com/album/${trackData.albumId}`
           : undefined,
         releaseYear: trackData.releaseYear ?? undefined,
+        isrc: trackData.isrc ?? undefined,
         metadata: {},
         lastScrapedAt: new Date(),
         createdAt: new Date(),
@@ -88,6 +89,7 @@ export class TrackService {
         ? `https://open.spotify.com/album/${trackData.albumId}`
         : undefined,
       releaseYear: trackData.releaseYear,
+      isrc: trackData.isrc,
       previewUrl: scrapedUrl ?? undefined,
       allArtists: trackData.allArtists,
     });
