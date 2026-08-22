@@ -44,6 +44,12 @@ export interface GuessDto {
      */
     artistName?: string;
     /**
+     * ISRC of the guessed recording, when the catalogue supplies one
+     * @type {string}
+     * @memberof GuessDto
+     */
+    isrc?: string;
+    /**
      * Album name
      * @type {string}
      * @memberof GuessDto
@@ -72,6 +78,7 @@ export function GuessDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'skip': json['skip'] == null ? undefined : json['skip'],
         'trackName': json['trackName'] == null ? undefined : json['trackName'],
         'artistName': json['artistName'] == null ? undefined : json['artistName'],
+        'isrc': json['isrc'] == null ? undefined : json['isrc'],
         'albumName': json['albumName'] == null ? undefined : json['albumName'],
     };
 }
@@ -91,6 +98,7 @@ export function GuessDtoToJSONTyped(value?: GuessDto | null, ignoreDiscriminator
         'skip': value['skip'],
         'trackName': value['trackName'],
         'artistName': value['artistName'],
+        'isrc': value['isrc'],
         'albumName': value['albumName'],
     };
 }
