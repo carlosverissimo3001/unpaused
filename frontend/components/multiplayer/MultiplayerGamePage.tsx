@@ -251,6 +251,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
           trackName: spotifySearch.selectedTrack.name,
           artistName: spotifySearch.selectedTrack.artist,
           albumName: spotifySearch.selectedTrack.albumName,
+          isrc: spotifySearch.selectedTrack.isrc,
           skip: false,
         },
       },

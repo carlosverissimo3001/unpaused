@@ -9,7 +9,6 @@ import {
 } from '@nestjs/swagger';
 import { SearchService } from '../services/search.service';
 import { TrackOptionDto } from '../../track/dto/track-option.dto';
-import { SessionId } from '@utils/decorators/sessionId.decorator';
 import { SessionGuard } from '@utils/guards/session-guard';
 import { SessionThrottlerGuard } from '@throttle/guards/session-throttler.guard';
 import {
@@ -31,17 +30,14 @@ export class SearchController {
   @Throttle({
     [THROTTLE_SEARCH]: { limit: THROTTLE_SEARCH_LIMIT, ttl: THROTTLE_TTL },
   })
-  @ApiOperation({ summary: 'Search Spotify tracks (for game guess options)' })
+  @ApiOperation({ summary: 'Search tracks (for game guess options)' })
   @ApiResponse({
     status: 200,
     description: 'Track options',
     type: [TrackOptionDto],
   })
   @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
-  async searchTracks(
-    @SessionId() sessionId: string,
-    @Query('q') q: string,
-  ): Promise<TrackOptionDto[]> {
-    return this.searchService.searchTracks(sessionId, q ?? '');
+  async searchTracks(@Query('q') q: string): Promise<TrackOptionDto[]> {
+    return this.searchService.searchTracks(q ?? '');
   }
 }

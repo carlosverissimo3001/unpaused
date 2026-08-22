@@ -13,7 +13,7 @@ import {
   PREVIEW_LOOKUP_TIMEOUT_MS,
   PREVIEW_NOT_FOUND,
   PREVIEW_NOT_FOUND_TTL_SECONDS,
-} from './preview-lookup.constants';
+} from '../consts';
 
 export interface PreviewQuery {
   title: string;

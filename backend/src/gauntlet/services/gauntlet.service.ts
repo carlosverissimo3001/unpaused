@@ -131,6 +131,7 @@ export class GauntletService {
         trackName: guess.trackName,
         artistName: guess.artistName,
         albumName: guess.albumName,
+        isrc: guess.isrc,
       },
       run.currentTrack,
     );

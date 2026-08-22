@@ -85,6 +85,7 @@ export function useGauntletRun() {
       trackName?: string;
       artistName?: string;
       albumName?: string;
+      isrc?: string;
     }) => {
       if (!state.runId || !state.playlistId) throw new Error('No active run');
       try {
@@ -97,6 +98,7 @@ export function useGauntletRun() {
             trackName: params.trackName,
             artistName: params.artistName,
             albumName: params.albumName,
+            isrc: params.isrc,
           },
         });
       } catch (e) {
@@ -174,6 +176,7 @@ export function useGauntletRun() {
       trackName?: string;
       artistName?: string;
       albumName?: string;
+      isrc?: string;
     }) => guessMutation.mutate(params),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [guessMutation.mutate],

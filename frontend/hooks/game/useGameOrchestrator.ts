@@ -105,6 +105,7 @@ export function useGameOrchestrator(
         trackName: spotifySearch.selectedTrack.name,
         artistName: spotifySearch.selectedTrack.artist,
         albumName: spotifySearch.selectedTrack.albumName,
+        isrc: spotifySearch.selectedTrack.isrc,
       },
       { onSuccess: () => spotifySearch.handleClearSelection() },
     );

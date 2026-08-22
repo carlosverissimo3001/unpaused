@@ -50,6 +50,12 @@ export interface TrackOptionDto {
      */
     normalizedArtist: string;
     /**
+     * ISRC of the recording, used to judge the guess
+     * @type {string}
+     * @memberof TrackOptionDto
+     */
+    isrc?: string;
+    /**
      * The album image URL of the track
      * @type {string}
      * @memberof TrackOptionDto
@@ -102,6 +108,7 @@ export function TrackOptionDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'normalizedName': json['normalizedName'],
         'artist': json['artist'],
         'normalizedArtist': json['normalizedArtist'],
+        'isrc': json['isrc'] == null ? undefined : json['isrc'],
         'albumImageUrl': json['albumImageUrl'] == null ? undefined : json['albumImageUrl'],
         'albumName': json['albumName'] == null ? undefined : json['albumName'],
         'albumUrl': json['albumUrl'] == null ? undefined : json['albumUrl'],
@@ -125,6 +132,7 @@ export function TrackOptionDtoToJSONTyped(value?: TrackOptionDto | null, ignoreD
         'normalizedName': value['normalizedName'],
         'artist': value['artist'],
         'normalizedArtist': value['normalizedArtist'],
+        'isrc': value['isrc'],
         'albumImageUrl': value['albumImageUrl'],
         'albumName': value['albumName'],
         'albumUrl': value['albumUrl'],

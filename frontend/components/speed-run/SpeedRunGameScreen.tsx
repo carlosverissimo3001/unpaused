@@ -81,6 +81,7 @@ export function SpeedRunGameScreen({
       trackId: search.selectedTrack.id,
       trackName: search.selectedTrack.name,
       artistName: search.selectedTrack.artist,
+      isrc: search.selectedTrack.isrc,
     });
     search.handleClearSelection();
   }, [run, search]);
