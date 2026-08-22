@@ -31,6 +31,15 @@ export class GuessDto {
   @IsString()
   artistName?: string;
 
+  @ApiPropertyOptional({
+    description:
+      'ISRC of the guessed recording, when the catalogue supplies one',
+    type: String,
+  })
+  @IsNotNullableOptional()
+  @IsString()
+  isrc?: string;
+
   @ApiPropertyOptional({ description: 'Album name', type: String })
   @IsNotNullableOptional()
   @IsString()

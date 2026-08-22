@@ -21,6 +21,9 @@ export class UpsertTrackDto {
   releaseYear?: number;
 
   @ApiPropertyOptional()
+  isrc?: string;
+
+  @ApiPropertyOptional()
   previewUrl?: string;
 
   @ApiPropertyOptional()

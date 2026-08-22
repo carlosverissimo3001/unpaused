@@ -1,32 +1,34 @@
 
-# GuessDto
+# DemoGuessResultDto
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`trackId` | string
-`skip` | boolean
-`trackName` | string
-`artistName` | string
-`isrc` | string
-`albumName` | string
+`correct` | boolean
+`status` | string
+`attempt` | number
+`totalAttempts` | number
+`snippetDuration` | number
+`wrongIds` | Array&lt;string&gt;
+`answer` | [DemoAnswerDto](DemoAnswerDto.md)
 
 ## Example
 
 ```typescript
-import type { GuessDto } from ''
+import type { DemoGuessResultDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "trackId": null,
-  "skip": null,
-  "trackName": null,
-  "artistName": null,
-  "isrc": null,
-  "albumName": null,
-} satisfies GuessDto
+  "correct": null,
+  "status": null,
+  "attempt": null,
+  "totalAttempts": null,
+  "snippetDuration": null,
+  "wrongIds": null,
+  "answer": null,
+} satisfies DemoGuessResultDto
 
 console.log(example)
 
@@ -35,7 +37,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as GuessDto
+const exampleParsed = JSON.parse(exampleJSON) as DemoGuessResultDto
 console.log(exampleParsed)
 ```
 

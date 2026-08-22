@@ -57,6 +57,7 @@ export class TrackService {
           ? `https://open.spotify.com/album/${trackData.albumId}`
           : undefined,
         releaseYear: trackData.releaseYear ?? undefined,
+        isrc: trackData.isrc ?? undefined,
         metadata: {},
         lastScrapedAt: new Date(),
         createdAt: new Date(),
@@ -79,6 +80,7 @@ export class TrackService {
     const resolvedUrl = await this.previewLookup.getPreviewUrl(spotifyTrackId, {
       title: trackData.name,
       artist: trackData.primaryArtist,
+      isrc: trackData.isrc,
     });
 
     return await this.trackRepository.upsertTrack(spotifyTrackId, {
@@ -90,6 +92,7 @@ export class TrackService {
         ? `https://open.spotify.com/album/${trackData.albumId}`
         : undefined,
       releaseYear: trackData.releaseYear,
+      isrc: trackData.isrc,
       previewUrl: resolvedUrl ?? undefined,
       allArtists: trackData.allArtists,
     });

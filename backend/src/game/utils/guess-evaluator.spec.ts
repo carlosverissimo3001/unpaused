@@ -4,6 +4,7 @@ import { GuessResult } from '../consts';
 import { GuessDto } from '../dto/guess/guess.dto';
 import {
   evaluateGuess,
+  normalizeIsrc,
   addGuessToHistory,
   calculateNextState,
   getSnippetDuration,
@@ -27,8 +28,81 @@ describe('guess-evaluator', () => {
       ...overrides,
     }) as TrackEntity;
 
+  describe('normalizeIsrc', () => {
+    it('strips separators and upcases', () => {
+      expect(normalizeIsrc('gb-ahs-17-00028')).toBe('GBAHS1700028');
+    });
+
+    it('returns an empty string for nullish input', () => {
+      expect(normalizeIsrc(undefined)).toBe('');
+      expect(normalizeIsrc(null)).toBe('');
+    });
+  });
+
   describe('evaluateGuess', () => {
     const track = makeTrack();
+
+    describe('ISRC matching', () => {
+      const spotifySide = makeTrack({ isrc: 'GBAHS1700028' });
+
+      it('matches a guess from another catalogue whose id differs', () => {
+        const guess = {
+          trackId: 'deezer-142986132',
+          isrc: 'GBAHS1700028',
+        } as GuessDto;
+        expect(evaluateGuess(guess, spotifySide)).toBe(GuessResult.Correct);
+      });
+
+      it('ignores separators and case in the code', () => {
+        const guess = {
+          trackId: 'deezer-142986132',
+          isrc: 'gb-ahs-17-00028',
+        } as GuessDto;
+        expect(evaluateGuess(guess, spotifySide)).toBe(GuessResult.Correct);
+      });
+
+      it('does not match a different recording of the same song', () => {
+        const guess = {
+          trackId: 'deezer-999',
+          isrc: 'GBAHS1700099',
+          trackName: 'Something Else',
+          artistName: 'Someone Else',
+        } as GuessDto;
+        expect(evaluateGuess(guess, spotifySide)).toBe(GuessResult.Wrong);
+      });
+
+      it('falls through to name matching when either side has no ISRC', () => {
+        const guess = {
+          trackId: 'other',
+          isrc: 'GBAHS1700028',
+          trackName: 'Shape of You',
+          artistName: 'Ed Sheeran',
+        } as GuessDto;
+        expect(evaluateGuess(guess, makeTrack({ isrc: undefined }))).toBe(
+          GuessResult.Correct,
+        );
+      });
+
+      it('does not treat two missing ISRCs as a match', () => {
+        const guess = {
+          trackId: 'other',
+          trackName: 'Nothing Alike',
+          artistName: 'Nobody',
+        } as GuessDto;
+        expect(evaluateGuess(guess, makeTrack({ isrc: undefined }))).toBe(
+          GuessResult.Wrong,
+        );
+      });
+    });
+
+    it('matches name and artist regardless of case', () => {
+      const guess = {
+        trackId: 'other',
+        trackName: 'SHAPE OF YOU',
+        artistName: 'ed sheeran',
+      } as GuessDto;
+      expect(evaluateGuess(guess, track)).toBe(GuessResult.Correct);
+    });
 
     it('should return Skip when skip is true', () => {
       expect(evaluateGuess({ skip: true } as GuessDto, track)).toBe(

@@ -1,32 +1,34 @@
 
-# GuessDto
+# DemoRoundDto
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`trackId` | string
-`skip` | boolean
-`trackName` | string
-`artistName` | string
-`isrc` | string
-`albumName` | string
+`roundId` | string
+`previewUrl` | string
+`attempt` | number
+`totalAttempts` | number
+`snippetDuration` | number
+`snippetSteps` | Array&lt;number&gt;
+`options` | [Array&lt;DemoOptionDto&gt;](DemoOptionDto.md)
 
 ## Example
 
 ```typescript
-import type { GuessDto } from ''
+import type { DemoRoundDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "trackId": null,
-  "skip": null,
-  "trackName": null,
-  "artistName": null,
-  "isrc": null,
-  "albumName": null,
-} satisfies GuessDto
+  "roundId": null,
+  "previewUrl": null,
+  "attempt": null,
+  "totalAttempts": null,
+  "snippetDuration": null,
+  "snippetSteps": null,
+  "options": null,
+} satisfies DemoRoundDto
 
 console.log(example)
 
@@ -35,7 +37,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as GuessDto
+const exampleParsed = JSON.parse(exampleJSON) as DemoRoundDto
 console.log(exampleParsed)
 ```
 

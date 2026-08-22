@@ -31,13 +31,6 @@ export class TrackDto {
   @ApiProperty({ description: 'The external URL of the track' })
   readonly externalUrl: string;
 
-  @ApiPropertyOptional({
-    description: 'The preview URL of the track',
-    nullable: true,
-    type: String,
-  })
-  readonly previewUrl?: string;
-
   @ApiProperty()
   readonly isPlayable: boolean;
 
@@ -49,6 +42,13 @@ export class TrackDto {
     nullable: true,
   })
   readonly releaseYear?: number;
+
+  @ApiPropertyOptional({
+    description: 'International Standard Recording Code',
+    nullable: true,
+    type: String,
+  })
+  readonly isrc?: string;
 
   @ApiProperty({
     description: 'All artist names for the track',

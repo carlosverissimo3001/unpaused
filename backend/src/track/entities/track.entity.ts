@@ -42,6 +42,12 @@ export class TrackEntity {
   releaseYear?: number;
 
   @ApiPropertyOptional({
+    description: 'International Standard Recording Code',
+    type: String,
+  })
+  isrc?: string;
+
+  @ApiPropertyOptional({
     description: 'The URL of the track preview',
     type: String,
   })

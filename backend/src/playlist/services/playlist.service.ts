@@ -32,7 +32,7 @@ import {
 
 // Feb 2026: Spotify renamed `track` → `item` in playlist item objects (new /items endpoint)
 const TRACK_FIELDS =
-  'items(item(id,name,artists(name),album(id,name,images,release_date),duration_ms,external_urls,preview_url,is_playable))';
+  'items(item(id,name,artists(name),album(id,name,images,release_date),duration_ms,external_urls,is_playable,external_ids(isrc)))';
 
 @Injectable()
 export class PlaylistService {

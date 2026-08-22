@@ -88,7 +88,7 @@ export function mapSpotifyTrackToTrackEntity(track: SpotifyTrack): TrackDto {
     imageUrl: getFirstImage(track.album.images),
     durationMs: track.duration_ms,
     externalUrl: track.external_urls.spotify,
-    previewUrl: toUndefinedIfNull(track.preview_url),
+    isrc: track.external_ids?.isrc || undefined,
     isPlayable: track.is_playable ?? false,
     releaseYear: getTrackReleaseYear(
       track.album.release_date,
@@ -110,6 +110,7 @@ export function mapTrack(record: Track): TrackEntity {
     albumName: toUndefinedIfNull(record.albumName),
     albumUrl: toUndefinedIfNull(record.albumUrl),
     releaseYear: toUndefinedIfNull(record.releaseYear),
+    isrc: toUndefinedIfNull(record.isrc),
     previewUrl: toUndefinedIfNull(record.previewUrl),
     metadata,
   });

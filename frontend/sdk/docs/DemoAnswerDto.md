@@ -1,5 +1,5 @@
 
-# TrackEntity
+# DemoAnswerDto
 
 
 ## Properties
@@ -10,21 +10,11 @@ Name | Type
 `name` | string
 `artistName` | string
 `albumImageUrl` | string
-`albumName` | string
-`albumUrl` | string
-`releaseYear` | number
-`isrc` | string
-`previewUrl` | string
-`lastScrapedAt` | Date
-`createdAt` | Date
-`updatedAt` | Date
-`metadata` | [TrackMetadataVo](TrackMetadataVo.md)
-`allArtists` | Array&lt;string&gt;
 
 ## Example
 
 ```typescript
-import type { TrackEntity } from ''
+import type { DemoAnswerDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
@@ -32,17 +22,7 @@ const example = {
   "name": null,
   "artistName": null,
   "albumImageUrl": null,
-  "albumName": null,
-  "albumUrl": null,
-  "releaseYear": null,
-  "isrc": null,
-  "previewUrl": null,
-  "lastScrapedAt": null,
-  "createdAt": null,
-  "updatedAt": null,
-  "metadata": null,
-  "allArtists": null,
-} satisfies TrackEntity
+} satisfies DemoAnswerDto
 
 console.log(example)
 
@@ -51,7 +31,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as TrackEntity
+const exampleParsed = JSON.parse(exampleJSON) as DemoAnswerDto
 console.log(exampleParsed)
 ```
 
