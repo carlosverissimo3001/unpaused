@@ -24,11 +24,14 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
   const Icon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
-    <div className="hidden md:grid grid-cols-[28px_minmax(0,1fr)] items-center gap-1.5 w-[130px]">
+    // Collapsed to the icon until you reach for it: volume is a preference,
+    // not part of the round, and a permanently open slider took hero space.
+    // group/focus-within so keyboard users get the same reveal as the mouse.
+    <div className="group hidden md:flex items-center gap-1.5 focus-within:gap-1.5">
       <button
         type="button"
         onClick={toggleMute}
-        className="w-7 flex items-center justify-center rounded-full hover:bg-fg/10 transition-colors py-1"
+        className="w-7 shrink-0 flex items-center justify-center rounded-full hover:bg-fg/10 transition-colors py-1"
         aria-label={volume === 0 ? 'Unmute' : 'Mute'}
       >
         <Icon className="w-4 h-4 text-fg/70" />
@@ -40,7 +43,7 @@ export function VolumeSlider({ volume, onVolumeChange }: VolumeSliderProps) {
         step={0.01}
         value={volume}
         onChange={(e) => onVolumeChange(Number(e.target.value))}
-        className="volume-slider m-0 w-full h-1 appearance-none bg-fg/20 rounded-full outline-none cursor-pointer"
+        className="volume-slider m-0 h-1 w-0 opacity-0 appearance-none bg-fg/20 rounded-full outline-none cursor-pointer transition-[width,opacity] duration-200 group-hover:w-[90px] group-hover:opacity-100 group-focus-within:w-[90px] group-focus-within:opacity-100"
         aria-label="Volume"
         style={{
           background: `linear-gradient(to right, #1DB954 0%, #1DB954 ${volume * 100}%, rgb(var(--fg) / 0.18) ${volume * 100}%, rgb(var(--fg) / 0.18) 100%)`,

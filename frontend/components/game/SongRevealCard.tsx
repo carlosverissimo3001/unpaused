@@ -63,9 +63,17 @@ export function SongRevealCard({
   onVolumeChange,
   rankTitle,
 }: SongRevealCardProps) {
-  const songSpotifyUrl = answer
-    ? `https://open.spotify.com/track/${answer.id}`
-    : undefined;
+  // The backend supplies this. Building it from answer.id assumed every track
+  // was a Spotify one, which silently 404s for guest-pool tracks.
+  const songUrl = answer?.trackUrl;
+  const isSpotifyLink = songUrl?.includes('open.spotify.com') ?? false;
+  const linkBadgeClass = isSpotifyLink
+    ? 'bg-[#1DB954] text-black'
+    : 'bg-[#A238FF] text-white';
+  // "Rick Ross" alone hides that Diced Pineapples is also Wale and Drake.
+  const credited = answer?.allArtists?.length
+    ? answer.allArtists.join(', ')
+    : answer?.artist;
   const isWon = status === GameStateDtoStatusEnum.Won;
   const albumColor = useImageColor(answer?.albumImageUrl ?? null);
   const albumRgb = extractRgb(albumColor);
@@ -171,7 +179,7 @@ export function SongRevealCard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
             >
-              {answer.artist}
+              {credited}
             </motion.p>
           </div>
         )}
@@ -230,9 +238,9 @@ export function SongRevealCard({
             className="mt-6 pt-6 border-t border-fg/10"
           >
             <div className="w-full max-w-md mx-auto rounded-xl border border-fg/10 overflow-hidden divide-y divide-fg/10">
-              {answer && songSpotifyUrl && (
+              {answer && songUrl && (
                 <a
-                  href={songSpotifyUrl}
+                  href={songUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 bg-fg/5 hover:bg-fg/10 text-fg transition-colors group"
@@ -256,11 +264,11 @@ export function SongRevealCard({
                     <p className="font-medium text-sm truncate">
                       {answer.name}
                     </p>
-                    <p className="text-xs text-fg/50 truncate">
-                      {answer.artist}
-                    </p>
+                    <p className="text-xs text-fg/50 truncate">{credited}</p>
                   </div>
-                  <span className="bg-[#1DB954] text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
+                  <span
+                    className={`${linkBadgeClass} text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0`}
+                  >
                     SONG
                   </span>
                   <ExternalLink className="w-4 h-4 text-fg/50 group-hover:text-fg flex-shrink-0" />
@@ -292,9 +300,7 @@ export function SongRevealCard({
                     <p className="font-medium text-sm truncate">
                       {answer.albumName || 'Album'}
                     </p>
-                    <p className="text-xs text-fg/50 truncate">
-                      {answer.artist}
-                    </p>
+                    <p className="text-xs text-fg/50 truncate">{credited}</p>
                   </div>
                   <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
                     ALBUM

@@ -27,7 +27,7 @@ export function PlaySnippetButton({
 
   return (
     <div className="text-center mb-4 sm:mb-6">
-      <div className="inline-flex flex-col items-center">
+      <div className="relative inline-flex items-center justify-center">
         <div className="relative flex items-center justify-center">
           {!isPlaying && (
             <motion.div
@@ -80,7 +80,9 @@ export function PlaySnippetButton({
             )}
           </motion.button>
         </div>
-        <div className="mt-3 w-full flex justify-center">
+        {/* Beside the button, not beneath it: it was the last thing in the
+            column, which read as more important than it is. */}
+        <div className="absolute left-full top-1/2 ml-4 -translate-y-1/2">
           <VolumeSlider volume={volume} onVolumeChange={onVolumeChange} />
         </div>
       </div>
