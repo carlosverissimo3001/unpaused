@@ -1,7 +1,7 @@
 import { TrackMetadataVo } from '../../track/vo/track-metadata.vo';
 import { TrackEntity } from '../../track/entities/track.entity';
 import { getDecade } from 'date-fns';
-import { compareText } from '../../utils/text';
+import { compareText, normalizeTrackNameForMatch } from '../../utils/text';
 import { HintDto } from '../dto/hint/hint.dto';
 import { HintType } from '../types';
 
@@ -54,8 +54,10 @@ const albumHint: HintProducer = (track) => {
   if (!track.albumName) {
     return null;
   }
-  // If the album name and the song name are the same, it's not really a hint is it jaja
-  if (compareText(track.albumName, track.name)) {
+
+  const album = normalizeTrackNameForMatch(track.albumName).toLowerCase();
+  const song = normalizeTrackNameForMatch(track.name).toLowerCase();
+  if (!album || !song || album.includes(song)) {
     return null;
   }
 
