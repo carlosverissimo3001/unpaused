@@ -36,8 +36,7 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
           setIsHovered(false);
           onHover?.(null);
         }}
-        whileHover={{ y: -12 }}
-        className="group relative bg-surface/40 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-fg/5 transition-all duration-500 hover:bg-fg/[0.08] max-w-[400px] mx-auto w-full h-full md:h-auto transform-gpu"
+        className="group relative bg-surface rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-fg/5 hover:bg-fg/[0.08] max-w-[400px] mx-auto w-full h-full md:h-auto transform-gpu"
         style={{
           boxShadow: isHovered
             ? `0 30px 60px -12px rgba(0,0,0,0.6), 0 0 20px ${glowColor}`
@@ -48,12 +47,7 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
         <div className="flex flex-col relative z-10 h-full">
           <div className="relative aspect-square w-full rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-5 shadow-2xl">
             {imageUrl ? (
-              <Image
-                src={imageUrl}
-                alt=""
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
+              <Image src={imageUrl} alt="" fill />
             ) : (
               <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
                 <ListMusic className="text-fg/10 w-12 h-12" />
@@ -75,7 +69,7 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
                 opacity: isHovered ? 1 : 0,
                 scale: isHovered ? 1 : 0.8,
               }}
-              className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]"
+              className="absolute inset-0 flex items-center justify-center"
             >
               <div className="bg-spotify-green p-4 rounded-full shadow-[0_8px_24px_rgba(0,0,0,0.5)] text-black transform group-hover:scale-110 transition-transform">
                 <Play fill="currentColor" className="w-8 h-8 ml-1" />
@@ -110,16 +104,6 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
             </div>
           </div>
         </div>
-
-        <div
-          className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-          style={{
-            background: `linear-gradient(to bottom, ${ambientColor}, transparent 40%)`,
-            maskImage: 'linear-gradient(to bottom, black, transparent)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black, transparent)',
-            opacity: 0.2,
-          }}
-        />
       </motion.div>
     </Link>
   );

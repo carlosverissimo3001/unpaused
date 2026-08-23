@@ -259,18 +259,9 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
             >
               {mode.render()}
 
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.15, 0.25, 0.15],
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
+              <div
                 className={cn(
-                  'absolute -top-12 -right-12 w-48 h-48 blur-[60px] pointer-events-none -z-0',
+                  'absolute -top-12 -right-12 w-48 h-48 blur-[60px] pointer-events-none -z-0 opacity-20',
                   mode.id === 'daily' && 'bg-spotify-green',
                   mode.id === 'speedrun' && 'bg-orange-600',
                   mode.id === 'multiplayer' && 'bg-purple-600',

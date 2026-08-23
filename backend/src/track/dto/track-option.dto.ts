@@ -17,6 +17,19 @@ export class TrackOptionDto {
   normalizedArtist: string;
 
   @ApiPropertyOptional({
+    description: 'Every credited artist, primary first',
+    type: String,
+    isArray: true,
+  })
+  allArtists?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Link to the track in the catalogue it came from',
+    type: String,
+  })
+  trackUrl?: string;
+
+  @ApiPropertyOptional({
     description: 'ISRC of the recording, used to judge the guess',
     type: String,
   })

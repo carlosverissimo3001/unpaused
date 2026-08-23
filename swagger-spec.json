@@ -2131,6 +2131,17 @@
             "type": "string",
             "description": "Normalized artist for search/matching"
           },
+          "allArtists": {
+            "description": "Every credited artist, primary first",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trackUrl": {
+            "type": "string",
+            "description": "Link to the track in the catalogue it came from"
+          },
           "isrc": {
             "type": "string",
             "description": "ISRC of the recording, used to judge the guess"

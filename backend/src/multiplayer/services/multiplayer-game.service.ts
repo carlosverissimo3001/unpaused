@@ -30,6 +30,7 @@ import { RoomsGateway } from '../gateways/rooms.gateway';
 import { RoomDto } from '../dto/room.dto';
 import { TrackEntity } from '../../track/entities/track.entity';
 import { TrackService } from '../../track/services/track.service';
+import { catalogueTrackUrl } from '../../utils/utils';
 import { mapTrack } from '../../utils/mappers';
 
 @Injectable()
@@ -115,6 +116,8 @@ export class MultiplayerGameService {
             normalizedName: normalizeText(track.name),
             artist: track.artistName,
             normalizedArtist: normalizeText(track.artistName),
+            allArtists: track.allArtists,
+            trackUrl: catalogueTrackUrl(track.id),
             albumImageUrl: track.albumImageUrl || undefined,
             albumName: track.albumName || undefined,
             albumUrl: track.albumUrl || undefined,

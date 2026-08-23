@@ -39,17 +39,11 @@ export function RoundProgressBar({
                 isCompleted
                   ? (style?.barClass ?? 'bg-red-500')
                   : isCurrent
-                    ? 'bg-[#1DB954]'
+                    ? 'bg-[#1DB954] shadow-[0_0_8px_rgba(29,185,84,0.5)]'
                     : 'bg-fg/20'
               }`}
               {...(isCurrent && {
-                animate: {
-                  boxShadow: [
-                    '0 0 8px rgba(29, 185, 84, 0.4)',
-                    '0 0 16px rgba(29, 185, 84, 0.6)',
-                    '0 0 8px rgba(29, 185, 84, 0.4)',
-                  ],
-                },
+                animate: { opacity: [0.7, 1, 0.7] },
                 transition: {
                   duration: 1.5,
                   repeat: Infinity,
