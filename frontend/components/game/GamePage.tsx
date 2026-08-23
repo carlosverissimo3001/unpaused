@@ -183,7 +183,9 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               currentRound={gameState.currentRound}
               guesses={gameState.guesses}
               totalRounds={gameState.maxRounds}
+              snippetSteps={gameState.snippetSteps}
               progress={snippetProgress}
+              isPlaying={isPlaying}
             />
           )}
 

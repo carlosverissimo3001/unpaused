@@ -423,6 +423,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
               guesses={roundState.guesses}
               totalRounds={roundState.maxGuessesPerSong}
               progress={snippetProgress}
+              isPlaying={isPlaying}
             />
           )}
 

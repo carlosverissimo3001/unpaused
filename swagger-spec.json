@@ -2314,6 +2314,13 @@
             "type": "number",
             "description": "The maximum number of rounds in the game"
           },
+          "snippetSteps": {
+            "description": "Snippet length for every round, so the client can show what each miss unlocks",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
           "status": {
             "type": "string",
             "description": "The status of the game",
@@ -2368,6 +2375,7 @@
           "currentRound",
           "snippetDuration",
           "maxRounds",
+          "snippetSteps",
           "status",
           "guesses",
           "previewUrl"
