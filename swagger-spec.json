@@ -609,51 +609,6 @@
         ]
       }
     },
-    "/search/tracks": {
-      "get": {
-        "operationId": "SearchController_searchTracks",
-        "parameters": [
-          {
-            "name": "q",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Track options",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TrackOptionDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Not authenticated"
-          },
-          "429": {
-            "description": "Rate limit exceeded"
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "summary": "Search tracks (for game guess options)",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
     "/user-preferences": {
       "get": {
         "operationId": "UserPreferencesController_get",
@@ -829,6 +784,142 @@
           }
         ],
         "summary": "Submit a quiz answer to earn a streak freeze",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/search/tracks": {
+      "get": {
+        "operationId": "SearchController_searchTracks",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Track options",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackOptionDto"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Search tracks (for game guess options)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/guest/games": {
+      "post": {
+        "operationId": "GuestGameController_startGame",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Start a guest game from the curated pool",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/guest/games/{id}": {
+      "get": {
+        "operationId": "GuestGameController_getGameState",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The guest round id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStateDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get current guest game state",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/guest/games/{id}/guess": {
+      "post": {
+        "operationId": "GuestGameController_submitGuess",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The guest round id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuessResultDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "summary": "Submit a guess for a guest round",
         "tags": [
           "Api"
         ]

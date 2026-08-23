@@ -1,16 +1,8 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiCookieAuth,
-  ApiUnauthorizedResponse,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SearchService } from '../services/search.service';
 import { TrackOptionDto } from '../../track/dto/track-option.dto';
-import { SessionGuard } from '@utils/guards/session-guard';
-import { SessionThrottlerGuard } from '@throttle/guards/session-throttler.guard';
 import {
   THROTTLE_SEARCH,
   THROTTLE_SEARCH_LIMIT,
@@ -18,15 +10,14 @@ import {
 } from '@throttle/throttle.constants';
 
 @ApiTags('Api')
+// Public: results are the same for everyone now that search is Deezer-backed,
+// so guests and signed-in players share one endpoint. Throttled per IP.
 @Controller('search')
-@UseGuards(SessionGuard)
-@ApiCookieAuth()
-@ApiUnauthorizedResponse({ description: 'Not authenticated' })
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get('tracks')
-  @UseGuards(SessionThrottlerGuard)
+  @UseGuards(ThrottlerGuard)
   @Throttle({
     [THROTTLE_SEARCH]: { limit: THROTTLE_SEARCH_LIMIT, ttl: THROTTLE_TTL },
   })

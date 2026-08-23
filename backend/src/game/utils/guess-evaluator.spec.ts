@@ -95,6 +95,22 @@ describe('guess-evaluator', () => {
       });
     });
 
+    it('ignores trailing punctuation left behind by stripping a suffix', () => {
+      // Taylor titled it with the full stop. Removing "(Taylor's Version)"
+      // leaves the guess without one, so the two differed by a single char.
+      const guess = {
+        trackId: 'other',
+        trackName: "I Knew You Were Trouble (Taylor's Version)",
+        artistName: 'Taylor Swift',
+      } as GuessDto;
+      const actual = makeTrack({
+        name: 'I Knew You Were Trouble.',
+        artistName: 'Taylor Swift',
+      });
+
+      expect(evaluateGuess(guess, actual)).toBe(GuessResult.Correct);
+    });
+
     it('matches name and artist regardless of case', () => {
       const guess = {
         trackId: 'other',
