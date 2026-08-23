@@ -46,10 +46,7 @@ import {
 } from '../utils/guess-evaluator';
 import { buildHintsForRound } from '../utils/hint-builder';
 import { buildShareText, guessToEmoji } from '../utils/share.utils';
-import {
-  gameNumberFromDate,
-  shuffleInPlace,
-} from '../utils/utils';
+import { gameNumberFromDate, shuffleInPlace } from '../utils/utils';
 import { GameStatsService } from './game-stats.service';
 
 @Injectable()

@@ -2171,18 +2171,6 @@
           "normalizedArtist"
         ]
       },
-      "MetaGameExtrasVo": {
-        "type": "object",
-        "properties": {
-          "winEmoji": {
-            "type": "string",
-            "description": "Show this emoji on the win screen"
-          }
-        },
-        "required": [
-          "winEmoji"
-        ]
-      },
       "HintDto": {
         "type": "object",
         "properties": {
@@ -2275,14 +2263,6 @@
           "specialNote": {
             "type": "string",
             "description": "Optional personalized note (easter egg for special users)"
-          },
-          "meta": {
-            "description": "Optional win easter eggs",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MetaGameExtrasVo"
-              }
-            ]
           },
           "hints": {
             "description": "Progressive song metadata hints for the current round",
@@ -2664,10 +2644,6 @@
           "specialNote": {
             "type": "string",
             "description": "Optional personalized note (easter egg)"
-          },
-          "meta": {
-            "type": "object",
-            "description": "Optional win easter eggs"
           },
           "hints": {
             "description": "Progressive song metadata hints for the next round",
