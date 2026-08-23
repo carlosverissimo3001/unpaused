@@ -35,3 +35,14 @@ export function computeScore(
   }
   return undefined;
 }
+
+/**
+ * Track ids are namespaced by catalogue: bare ids come from Spotify, `dz:`
+ * ones from the guest pool. Callers must not build these URLs themselves —
+ * the reveal card used to concatenate the id into a Spotify URL, which turns a
+ * pool track into a link that renders fine and 404s on click.
+ */
+export const catalogueTrackUrl = (id: string): string =>
+  id.startsWith('dz:')
+    ? `https://www.deezer.com/track/${id.slice(3)}`
+    : `https://open.spotify.com/track/${id}`;

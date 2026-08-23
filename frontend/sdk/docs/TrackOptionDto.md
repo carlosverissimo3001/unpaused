@@ -11,6 +11,8 @@ Name | Type
 `normalizedName` | string
 `artist` | string
 `normalizedArtist` | string
+`allArtists` | Array&lt;string&gt;
+`trackUrl` | string
 `isrc` | string
 `albumImageUrl` | string
 `albumName` | string
@@ -29,6 +31,8 @@ const example = {
   "normalizedName": null,
   "artist": null,
   "normalizedArtist": null,
+  "allArtists": null,
+  "trackUrl": null,
   "isrc": null,
   "albumImageUrl": null,
   "albumName": null,

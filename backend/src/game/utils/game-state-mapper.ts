@@ -7,6 +7,7 @@ import { GuessHistoryDto } from '../dto/guess/guess-history.dto';
 import { GameExtrasVo } from '../vos/game-extras.vo';
 import { buildHintsForRound } from './hint-builder';
 import { TrackEntity } from '../../track/entities/track.entity';
+import { catalogueTrackUrl } from '../../utils/utils';
 
 export function mapToGameStateDto(
   game: GameSessionEntity,
@@ -34,6 +35,8 @@ export function mapToGameStateDto(
             normalizedName: normalizeText(track.name),
             artist: track.artistName,
             normalizedArtist: normalizeText(track.artistName),
+            allArtists: track.allArtists,
+            trackUrl: catalogueTrackUrl(track.id),
             albumImageUrl: track.albumImageUrl || undefined,
             albumName: track.albumName || undefined,
             albumUrl: track.albumUrl || undefined,
