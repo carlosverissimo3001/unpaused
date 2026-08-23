@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Play, Pause } from 'lucide-react';
-import { VolumeSlider } from './VolumeSlider';
 
 const SPRING = { type: 'spring' as const, stiffness: 100, damping: 15 };
 
@@ -11,8 +10,6 @@ interface PlaySnippetButtonProps {
   isPlaying: boolean;
   onPlay: () => void;
   onPause: () => void;
-  volume: number;
-  onVolumeChange: (v: number) => void;
 }
 
 export function PlaySnippetButton({
@@ -20,14 +17,12 @@ export function PlaySnippetButton({
   isPlaying,
   onPlay,
   onPause,
-  volume,
-  onVolumeChange,
 }: PlaySnippetButtonProps) {
   const duration = snippetDuration;
 
   return (
     <div className="text-center mb-4 sm:mb-6">
-      <div className="relative inline-flex items-center justify-center">
+      <div className="inline-flex items-center justify-center">
         <div className="relative flex items-center justify-center">
           {!isPlaying && (
             <motion.div
@@ -79,11 +74,6 @@ export function PlaySnippetButton({
               </motion.span>
             )}
           </motion.button>
-        </div>
-        {/* Beside the button, not beneath it: it was the last thing in the
-            column, which read as more important than it is. */}
-        <div className="absolute left-full top-1/2 ml-4 -translate-y-1/2">
-          <VolumeSlider volume={volume} onVolumeChange={onVolumeChange} />
         </div>
       </div>
     </div>

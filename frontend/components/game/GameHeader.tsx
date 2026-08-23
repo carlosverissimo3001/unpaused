@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { VolumeSlider } from './VolumeSlider';
 import { ArrowLeft, Play, BarChart3, History } from 'lucide-react';
 import { StreakBadge } from '@/components/daily/StreakBadge';
 import type { PlaylistDto, GameStatsDto } from '@/sdk';
@@ -11,9 +12,17 @@ interface GameHeaderProps {
   mode: GameMode;
   playlist?: PlaylistDto | null;
   stats?: GameStatsDto | null;
+  volume: number;
+  onVolumeChange: (v: number) => void;
 }
 
-export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
+export function GameHeader({
+  mode,
+  playlist,
+  stats,
+  volume,
+  onVolumeChange,
+}: GameHeaderProps) {
   const isPlaylist = mode === GameMode.All;
   const isDaily = mode === GameMode.Daily;
 
@@ -48,6 +57,11 @@ export function GameHeader({ mode, playlist, stats }: GameHeaderProps) {
           </span>
         </div>
       )}
+      {/* Chrome, not part of the round: pinned to the right with the other
+          controls rather than sitting under the play button. */}
+      <div className="ml-auto flex items-center gap-4">
+        <VolumeSlider volume={volume} onVolumeChange={onVolumeChange} />
+      </div>
       {isDaily && (
         <div className="flex items-center gap-4">
           {stats && (

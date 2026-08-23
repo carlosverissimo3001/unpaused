@@ -154,6 +154,8 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             mode={mode}
             playlist={playlist ?? null}
             stats={stats ?? null}
+            volume={volume}
+            onVolumeChange={setVolume}
           />
 
           {!isGameOver && (
@@ -205,8 +207,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               isPlaying={isPlaying}
               onPlay={playSnippet}
               onPause={pauseSnippet}
-              volume={volume}
-              onVolumeChange={setVolume}
             />
           )}
 

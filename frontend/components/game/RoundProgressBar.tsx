@@ -95,15 +95,33 @@ export function RoundProgressBar({
 
   const longest = steps[steps.length - 1] || 1;
   const round = Math.min(currentRound, totalRounds - 1);
-  const ceiling = (steps[round] ?? longest) / longest;
   const hasWaveform = peaks.length > 0;
+
+  /**
+   * A square-root scale, because the steps span two orders of magnitude.
+   * Placed proportionally, 0.1s through 2s share the left sixth of the bar
+   * while the last round owns the right half — five guesses of crawling
+   * followed by one leap, with the early labels colliding. A log scale
+   * over-corrects: the 0.1s to 1s jump is tenfold where the rest are roughly
+   * double, so round one would take half the bar.
+   *
+   * Square root lands the marks at 9 / 29 / 41 / 58 / 76 / 100%, so every
+   * round is a step of similar size while round one stays visibly a sliver.
+   * The fill is no longer literally seconds of audio, which nobody was
+   * measuring off a progress bar anyway.
+   */
+  const position = (seconds: number) => Math.sqrt(seconds / longest);
+
+  const ceiling = position(steps[round] ?? longest);
 
   /** "0.1s" rather than "0.1000000000001s". */
   const label = (seconds: number) =>
     `${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)}s`;
 
   return (
-    <div className="mb-4 sm:mb-6 md:mb-8">
+    // Same column as everything below: at full width the bar reached past
+    // the search card and read as a separate element.
+    <div className="mx-auto w-full max-w-xl mb-4 sm:mb-6 md:mb-8">
       {/* What each round buys you, sat above the mark it unlocks. Hidden on
           small screens: at these positions the first two are about 25px apart
           on a phone, so they would collide rather than inform. */}
@@ -130,7 +148,7 @@ export function RoundProgressBar({
                     ? 'text-fg/40'
                     : 'text-fg/25'
               }`}
-              style={{ left: `${(step / longest) * 100}%` }}
+              style={{ left: `${position(step) * 100}%` }}
             >
               {label(step)}
             </span>
@@ -189,7 +207,7 @@ export function RoundProgressBar({
               className={`absolute -inset-y-1 w-0.5 rounded-full ${
                 style?.barClass ?? 'bg-fg/40'
               }`}
-              style={{ left: `${(step / longest) * 100}%` }}
+              style={{ left: `${position(step) * 100}%` }}
             />
           );
         })}
