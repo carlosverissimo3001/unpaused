@@ -1,6 +1,6 @@
 import { GameStatus } from '@prisma/client';
 import { TrackEntity } from '../../track/entities/track.entity';
-import { GuessResult } from '../consts';
+import { GuessResult, ROUND_DURATIONS } from '../consts';
 import { GuessDto } from '../dto/guess/guess.dto';
 import {
   evaluateGuess,
@@ -329,11 +329,13 @@ describe('guess-evaluator', () => {
 
   describe('getSnippetDuration', () => {
     it('should return first duration for round 0', () => {
-      expect(getSnippetDuration(0)).toBe(0.5);
+      expect(getSnippetDuration(0)).toBe(ROUND_DURATIONS[0]);
     });
 
     it('should return last duration for round >= MAX_ROUNDS', () => {
-      expect(getSnippetDuration(10)).toBe(10);
+      expect(getSnippetDuration(10)).toBe(
+        ROUND_DURATIONS[ROUND_DURATIONS.length - 1],
+      );
     });
   });
 });

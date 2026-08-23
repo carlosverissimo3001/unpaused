@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useMediaSession } from '../useMediaSession';
+import { useSnippetAudio } from './useSnippetAudio';
 
 interface UseGameAudioOptions {
   previewUrl: string | null | undefined;
@@ -22,6 +23,13 @@ export function useGameAudio({
   const [isFullSongPlaying, setIsFullSongPlaying] = useState(false);
 
   const requestRef = useRef<number | null>(null);
+
+  const handleSnippetEnded = useCallback(() => setIsPlaying(false), []);
+  const snippet = useSnippetAudio({
+    previewUrl,
+    volume,
+    onEnded: handleSnippetEnded,
+  });
 
   // True once the iOS audio hardware session has been initialized.
   // Reset on each new track and whenever the audio session may have been
@@ -141,6 +149,13 @@ export function useGameAudio({
     }
   }, [previewUrl]);
 
+  // Held in a ref so stopAudioInternal keeps a stable identity — it is a
+  // dependency of half the callbacks in here.
+  const snippetStopRef = useRef(snippet.stop);
+  useEffect(() => {
+    snippetStopRef.current = snippet.stop;
+  }, [snippet.stop]);
+
   const stopAudioInternal = useCallback(() => {
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
@@ -157,6 +172,7 @@ export function useGameAudio({
     }
     // Bump the request ID so any in-flight startPlayback() call becomes stale.
     ++playRequestIdRef.current;
+    snippetStopRef.current();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -166,9 +182,23 @@ export function useGameAudio({
 
   const playSnippet = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio || !previewUrl) return;
+    if (!previewUrl) return;
 
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
+
+    // Preferred path: decoded audio, so this starts on the next audio callback
+    // rather than after the element spins up, and lasts exactly as long as
+    // asked. Everything below only runs when decoding was unavailable.
+    if (snippet.isReady) {
+      void snippet.play(snippetDuration).then((started) => {
+        if (started) {
+          setIsPlaying(true);
+        }
+      });
+      return;
+    }
+
+    if (!audio) return;
 
     const isMobile = navigator.maxTouchPoints > 0;
     const durationMs = snippetDuration * 1000 + 100;
@@ -241,7 +271,7 @@ export function useGameAudio({
     } else {
       startPlayback();
     }
-  }, [snippetDuration, previewUrl, stopAudioInternal]);
+  }, [snippetDuration, previewUrl, stopAudioInternal, snippet]);
 
   const pauseSnippet = useCallback(() => {
     stopAudioInternal();
