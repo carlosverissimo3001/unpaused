@@ -30,8 +30,8 @@ import { RoomsGateway } from '../gateways/rooms.gateway';
 import { RoomDto } from '../dto/room.dto';
 import { TrackEntity } from '../../track/entities/track.entity';
 import { TrackService } from '../../track/services/track.service';
-import { mapTrack } from '../../utils/mappers';
 import { catalogueTrackUrl } from '../../utils/utils';
+import { mapTrack } from '../../utils/mappers';
 
 @Injectable()
 export class MultiplayerGameService {
