@@ -26,3 +26,11 @@ export const THROTTLE_DEMO_LIMIT = 60;
  * This ensures non-decorated routes are effectively unthrottled.
  */
 export const THROTTLE_DEFAULT_LIMIT = 500;
+
+/** Named throttler for the public guest game endpoints */
+export const THROTTLE_GUEST = 'guest';
+/**
+ * Per IP, same reasoning as the demo endpoints: guests have no session to key
+ * on. The pool read is cheap, but a round still resolves preview audio.
+ */
+export const THROTTLE_GUEST_LIMIT = 40;

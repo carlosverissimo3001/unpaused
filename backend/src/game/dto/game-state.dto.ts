@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GameStatus } from '@prisma/client';
 import { TrackOptionDto } from '@/track/dto/track-option.dto';
 import { GuessHistoryDto } from './guess/guess-history.dto';
+import { MetaGameExtrasVo } from '../vos/game-extras.vo';
 import { HintDto } from './hint/hint.dto';
 
 export class GameStateDto {
@@ -51,6 +52,13 @@ export class GameStateDto {
     description: 'Optional personalized note (easter egg for special users)',
   })
   specialNote?: string;
+
+  @ApiPropertyOptional({
+    description: 'Optional win easter eggs',
+    required: false,
+    type: MetaGameExtrasVo,
+  })
+  meta?: MetaGameExtrasVo;
 
   @ApiPropertyOptional({
     description: 'Progressive song metadata hints for the current round',

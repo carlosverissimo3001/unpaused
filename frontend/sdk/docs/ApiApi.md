@@ -29,6 +29,9 @@ All URIs are relative to *http://localhost*
 | [**gauntletControllerGetRunState**](ApiApi.md#gauntletcontrollergetrunstate) | **GET** /gauntlet/{id} | Get current gauntlet run state |
 | [**gauntletControllerStartRun**](ApiApi.md#gauntletcontrollerstartrun) | **POST** /gauntlet/start | Start a new gauntlet run |
 | [**gauntletControllerSubmitGuess**](ApiApi.md#gauntletcontrollersubmitguess) | **POST** /gauntlet/{id}/guess | Submit a guess for the current gauntlet track |
+| [**guestGameControllerGetGameState**](ApiApi.md#guestgamecontrollergetgamestate) | **GET** /guest/games/{id} | Get current guest game state |
+| [**guestGameControllerStartGame**](ApiApi.md#guestgamecontrollerstartgame) | **POST** /guest/games | Start a guest game from the curated pool |
+| [**guestGameControllerSubmitGuess**](ApiApi.md#guestgamecontrollersubmitguess) | **POST** /guest/games/{id}/guess | Submit a guess for a guest round |
 | [**multiplayerControllerCreateRoom**](ApiApi.md#multiplayercontrollercreateroom) | **POST** /multiplayer/rooms | Create a new multiplayer room |
 | [**multiplayerControllerGetRoomState**](ApiApi.md#multiplayercontrollergetroomstate) | **GET** /multiplayer/rooms/{id} | Get room state with players |
 | [**multiplayerControllerGetRoundState**](ApiApi.md#multiplayercontrollergetroundstate) | **GET** /multiplayer/rooms/{id}/round | Get current round state for the player |
@@ -1762,6 +1765,197 @@ example().catch(console.error);
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## guestGameControllerGetGameState
+
+> GameStateDto guestGameControllerGetGameState(id)
+
+Get current guest game state
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GuestGameControllerGetGameStateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // string | The guest round id
+    id: id_example,
+  } satisfies GuestGameControllerGetGameStateRequest;
+
+  try {
+    const data = await api.guestGameControllerGetGameState(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | The guest round id | [Defaults to `undefined`] |
+
+### Return type
+
+[**GameStateDto**](GameStateDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## guestGameControllerStartGame
+
+> GameStateDto guestGameControllerStartGame()
+
+Start a guest game from the curated pool
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GuestGameControllerStartGameRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  try {
+    const data = await api.guestGameControllerStartGame();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**GameStateDto**](GameStateDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## guestGameControllerSubmitGuess
+
+> GuessResultDto guestGameControllerSubmitGuess(id, guessDto)
+
+Submit a guess for a guest round
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { GuestGameControllerSubmitGuessRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // string | The guest round id
+    id: id_example,
+    // GuessDto
+    guessDto: ...,
+  } satisfies GuestGameControllerSubmitGuessRequest;
+
+  try {
+    const data = await api.guestGameControllerSubmitGuess(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | The guest round id | [Defaults to `undefined`] |
+| **guessDto** | [GuessDto](GuessDto.md) |  | |
+
+### Return type
+
+[**GuessResultDto**](GuessResultDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+| **429** | Rate limit exceeded |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## multiplayerControllerCreateRoom
 
 > RoomDto multiplayerControllerCreateRoom(createRoomDto)
@@ -2557,11 +2751,7 @@ import type { SearchControllerSearchTracksRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
-    // To configure API key authorization: cookie
-    apiKey: "YOUR API KEY",
-  });
-  const api = new ApiApi(config);
+  const api = new ApiApi();
 
   const body = {
     // string
@@ -2593,7 +2783,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[cookie](../README.md#cookie)
+No authorization required
 
 ### HTTP request headers
 
@@ -2605,7 +2795,6 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Track options |  -  |
-| **401** | Not authenticated |  -  |
 | **429** | Rate limit exceeded |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

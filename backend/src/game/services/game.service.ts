@@ -46,7 +46,11 @@ import {
 } from '../utils/guess-evaluator';
 import { buildHintsForRound } from '../utils/hint-builder';
 import { buildShareText, guessToEmoji } from '../utils/share.utils';
-import { gameNumberFromDate, shuffleInPlace } from '../utils/utils';
+import {
+  gameNumberFromDate,
+  getUserExtras,
+  shuffleInPlace,
+} from '../utils/utils';
 import { GameStatsService } from './game-stats.service';
 
 @Injectable()
@@ -317,7 +321,12 @@ export class GameService {
       throw new NotFoundException('Track not found or no preview URL');
     }
 
-    return mapToGameStateDto(game, { ...game.track, previewUrl });
+    const extras = getUserExtras(
+      user.isTrusted,
+      game.status === GameStatus.WON,
+    );
+
+    return mapToGameStateDto(game, { ...game.track, previewUrl }, extras);
   }
 
   @Transactional()

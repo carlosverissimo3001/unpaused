@@ -20,6 +20,13 @@ import {
     HintDtoToJSON,
     HintDtoToJSONTyped,
 } from './HintDto';
+import type { MetaGameExtrasVo } from './MetaGameExtrasVo';
+import {
+    MetaGameExtrasVoFromJSON,
+    MetaGameExtrasVoFromJSONTyped,
+    MetaGameExtrasVoToJSON,
+    MetaGameExtrasVoToJSONTyped,
+} from './MetaGameExtrasVo';
 import type { GuessHistoryDto } from './GuessHistoryDto';
 import {
     GuessHistoryDtoFromJSON,
@@ -108,6 +115,12 @@ export interface GameStateDto {
      */
     specialNote?: string;
     /**
+     * Optional win easter eggs
+     * @type {MetaGameExtrasVo}
+     * @memberof GameStateDto
+     */
+    meta?: MetaGameExtrasVo;
+    /**
      * Progressive song metadata hints for the current round
      * @type {Array<HintDto>}
      * @memberof GameStateDto
@@ -163,6 +176,7 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'albumImageUrl': json['albumImageUrl'] == null ? undefined : json['albumImageUrl'],
         'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
         'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
+        'meta': json['meta'] == null ? undefined : MetaGameExtrasVoFromJSON(json['meta']),
         'hints': json['hints'] == null ? undefined : ((json['hints'] as Array<any>).map(HintDtoFromJSON)),
     };
 }
@@ -189,6 +203,7 @@ export function GameStateDtoToJSONTyped(value?: GameStateDto | null, ignoreDiscr
         'albumImageUrl': value['albumImageUrl'],
         'rankTitle': value['rankTitle'],
         'specialNote': value['specialNote'],
+        'meta': MetaGameExtrasVoToJSON(value['meta']),
         'hints': value['hints'] == null ? undefined : ((value['hints'] as Array<any>).map(HintDtoToJSON)),
     };
 }
