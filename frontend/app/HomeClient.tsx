@@ -20,10 +20,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
 
 export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
-  const [ambientColor, setAmbientColor] = useState<string>(
-    'rgba(30, 215, 96, 0.1)',
-  );
-
   const playlistFilters = usePlaylistFilters();
   const { error } = useAuthError();
 
@@ -92,7 +88,8 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
         <div
           className="absolute inset-0 opacity-40"
           style={{
-            background: 'radial-gradient(circle 80% 50% at 50% 0%, rgba(30,215,96,0.1), transparent 70%)',
+            background:
+              'radial-gradient(circle 80% 50% at 50% 0%, rgba(30,215,96,0.1), transparent 70%)',
             filter: 'blur(60px)',
           }}
         />
@@ -146,7 +143,6 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
               <PlaylistGrid
                 playlists={playlists}
                 isLoading={isLoadingPlaylists}
-                onPlaylistHover={setAmbientColor}
                 onClearFilters={playlistFilters.clearFilters}
               />
             </motion.div>

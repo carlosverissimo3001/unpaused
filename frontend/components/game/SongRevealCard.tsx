@@ -291,9 +291,7 @@ export function SongRevealCard({
                     <p className="font-medium text-sm truncate">
                       {answer.name}
                     </p>
-                    <p className="text-xs text-fg/50 truncate">
-                      {credited}
-                    </p>
+                    <p className="text-xs text-fg/50 truncate">{credited}</p>
                   </div>
                   <span
                     className={`${linkBadgeClass} text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0`}
@@ -329,9 +327,7 @@ export function SongRevealCard({
                     <p className="font-medium text-sm truncate">
                       {answer.albumName || 'Album'}
                     </p>
-                    <p className="text-xs text-fg/50 truncate">
-                      {credited}
-                    </p>
+                    <p className="text-xs text-fg/50 truncate">{credited}</p>
                   </div>
                   <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
                     ALBUM

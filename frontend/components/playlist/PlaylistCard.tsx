@@ -104,8 +104,6 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
             </div>
           </div>
         </div>
-
-
       </motion.div>
     </Link>
   );
