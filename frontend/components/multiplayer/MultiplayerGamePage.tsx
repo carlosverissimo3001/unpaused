@@ -230,8 +230,14 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     volume,
   });
 
-  const { audioRef, fullAudioRef, isPlaying, playSnippet, pauseSnippet } =
-    gameAudio;
+  const {
+    audioRef,
+    fullAudioRef,
+    isPlaying,
+    playSnippet,
+    pauseSnippet,
+    snippetProgress,
+  } = gameAudio;
 
   const albumArtColor = useImageColor(
     isRoundComplete && roundState?.answer?.albumImageUrl
@@ -416,6 +422,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
               currentRound={roundState.currentGuess}
               guesses={roundState.guesses}
               totalRounds={roundState.maxGuessesPerSong}
+              progress={snippetProgress}
             />
           )}
 

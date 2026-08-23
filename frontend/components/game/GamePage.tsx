@@ -60,8 +60,14 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
   } = useGameOrchestrator(mode, playlistId, { volume });
 
   // Destructure gameAudio to avoid ref access warnings
-  const { audioRef, fullAudioRef, isPlaying, playSnippet, pauseSnippet } =
-    gameAudio;
+  const {
+    audioRef,
+    fullAudioRef,
+    isPlaying,
+    playSnippet,
+    pauseSnippet,
+    snippetProgress,
+  } = gameAudio;
 
   useWarnOnLeave(!!gameState && !isGameOver);
 
@@ -177,6 +183,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               currentRound={gameState.currentRound}
               guesses={gameState.guesses}
               totalRounds={gameState.maxRounds}
+              progress={snippetProgress}
             />
           )}
 

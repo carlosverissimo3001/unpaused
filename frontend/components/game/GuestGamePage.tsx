@@ -51,8 +51,14 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
     handlePlayAgain,
   } = useGuestGameOrchestrator({ volume });
 
-  const { audioRef, fullAudioRef, isPlaying, playSnippet, pauseSnippet } =
-    gameAudio;
+  const {
+    audioRef,
+    fullAudioRef,
+    isPlaying,
+    playSnippet,
+    pauseSnippet,
+    snippetProgress,
+  } = gameAudio;
 
   useWarnOnLeave(!!gameState && !isGameOver);
 
@@ -201,6 +207,7 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
               currentRound={gameState.currentRound}
               guesses={gameState.guesses}
               totalRounds={gameState.maxRounds}
+              progress={snippetProgress}
             />
           )}
 

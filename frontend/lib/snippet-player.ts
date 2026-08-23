@@ -37,6 +37,9 @@ export class SnippetPlayer {
   private volume = 1;
   /** Guards against a slow decode landing after the track has moved on. */
   private generation = 0;
+  /** Context clock reading when the current snippet started, for the playhead. */
+  private startedAt = 0;
+  private playingFor = 0;
 
   onEnded: (() => void) | null = null;
 
@@ -46,6 +49,25 @@ export class SnippetPlayer {
 
   get isReady(): boolean {
     return this.buffer !== null;
+  }
+
+  /**
+   * How far through the current snippet, 0–1, or 0 when nothing is playing.
+   *
+   * Read from the context clock rather than counted in JavaScript: it is the
+   * same clock the playback is scheduled against, so the bar cannot drift away
+   * from what is audible.
+   */
+  progress(): number {
+    if (!this.source || this.playingFor <= 0) {
+      return 0;
+    }
+    const context = this.audio.get();
+    if (!context) {
+      return 0;
+    }
+    const elapsed = context.currentTime - this.startedAt;
+    return Math.min(Math.max(elapsed / this.playingFor, 0), 1);
   }
 
   setVolume(volume: number): void {
@@ -123,11 +145,14 @@ export class SnippetPlayer {
       }
     };
 
+    const seconds = Math.min(durationSeconds, buffer.duration);
     this.source = source;
     this.gain = gain;
+    this.startedAt = context.currentTime;
+    this.playingFor = seconds;
     // The third argument is what makes the length exact — the audio hardware
     // enforces it rather than a timer racing the main thread.
-    source.start(0, 0, Math.min(durationSeconds, buffer.duration));
+    source.start(0, 0, seconds);
     return true;
   }
 
@@ -137,6 +162,7 @@ export class SnippetPlayer {
       return;
     }
     this.source = null;
+    this.playingFor = 0;
     // Detached first: onended fires on an explicit stop too, and the caller
     // already knows about this one.
     source.onended = null;

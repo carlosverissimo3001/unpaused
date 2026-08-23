@@ -353,6 +353,8 @@ export function useGameAudio({
   return {
     audioRef,
     fullAudioRef,
+    /** 0–1 through the current snippet, for the progress bar. */
+    snippetProgress: snippet.progress,
     isPlaying,
     isFullSongPlaying,
     playSnippet,

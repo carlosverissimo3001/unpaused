@@ -14,6 +14,7 @@ function fakeContext() {
 
   const context = {
     state: 'suspended' as AudioContextState,
+    currentTime: 0,
     destination: {},
     resume: jest.fn(function (this: { state: AudioContextState }) {
       context.state = 'running';
@@ -185,6 +186,51 @@ describe('SnippetPlayer', () => {
     // The newer track's audio survives; the late one is thrown away.
     await p.play(60);
     expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 12);
+  });
+
+  describe('progress', () => {
+    it('is zero before anything plays', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.progress()).toBe(0);
+    });
+
+    it('follows the context clock rather than a counter of its own', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+      harness.context.currentTime = 10;
+
+      await p.play(4);
+      expect(p.progress()).toBe(0);
+
+      harness.context.currentTime = 11;
+      expect(p.progress()).toBeCloseTo(0.25);
+
+      harness.context.currentTime = 13;
+      expect(p.progress()).toBeCloseTo(0.75);
+    });
+
+    it('never exceeds one, even if the clock runs past the snippet', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+      await p.play(1);
+
+      harness.context.currentTime = 99;
+
+      expect(p.progress()).toBe(1);
+    });
+
+    it('returns to zero once stopped', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+      await p.play(4);
+      harness.context.currentTime = 2;
+
+      p.stop();
+
+      expect(p.progress()).toBe(0);
+    });
   });
 
   it('forgets its audio when unloaded', async () => {
