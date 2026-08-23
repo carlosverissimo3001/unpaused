@@ -89,15 +89,11 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
       {/* Background Ambient Glow */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 dark:bg-gradient-to-br dark:from-spotify-black dark:via-[#0d1117] dark:to-[#161b22]" />
-        <motion.div
-          className="absolute inset-0"
-          animate={{
-            background: `radial-gradient(circle 80% 50% at 50% 0%, ${ambientColor}, transparent 70%)`,
-          }}
-          transition={{ duration: 0.8, ease: 'easeInOut' }}
+        <div
+          className="absolute inset-0 opacity-40"
           style={{
+            background: 'radial-gradient(circle 80% 50% at 50% 0%, rgba(30,215,96,0.1), transparent 70%)',
             filter: 'blur(60px)',
-            opacity: 0.4,
           }}
         />
       </div>
@@ -144,10 +140,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
                   />
                 </div>
 
-                <motion.div
-                  animate={{ borderColor: ambientColor }}
-                  className="w-full h-px border-b border-fg/5 mt-4 opacity-30"
-                />
+                <div className="mt-4" />
               </div>
 
               <PlaylistGrid

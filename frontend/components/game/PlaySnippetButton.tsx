@@ -31,13 +31,10 @@ export function PlaySnippetButton({
         <div className="relative flex items-center justify-center">
           {!isPlaying && (
             <motion.div
-              className="absolute inset-0 rounded-full z-0"
+              className="absolute inset-0 rounded-full z-0 bg-[#1DB954] blur-md"
               animate={{
-                boxShadow: [
-                  '0 0 20px 4px rgba(30,215,96,0.15)',
-                  '0 0 40px 8px rgba(30,215,96,0.3)',
-                  '0 0 20px 4px rgba(30,215,96,0.15)',
-                ],
+                scale: [1, 1.35, 1],
+                opacity: [0.15, 0.3, 0.15],
               }}
               transition={{
                 duration: 2.5,
