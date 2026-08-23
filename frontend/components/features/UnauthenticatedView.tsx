@@ -2,6 +2,7 @@
 
 import { memo, useState, FormEvent } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,10 @@ function InviteForm() {
       onSubmit={handleSubmit}
       className="flex w-full max-w-sm flex-col gap-3"
     >
+      <p className="text-xs text-fg/40 leading-relaxed">
+        Spotify caps development apps at 5 users, so playing with your own
+        library is invite only for now.
+      </p>
       <div className="flex w-full min-w-0 gap-2">
         <input
           type="password"
@@ -53,7 +58,42 @@ function InviteForm() {
   );
 }
 
+/**
+ * Kept as a real button, not a quiet link: the handful of whitelisted users
+ * come here specifically to play their own library, and should not have to
+ * hunt for it — or worse, land in guest mode by mistake.
+ */
+function SpotifyButton({ canSignIn }: { canSignIn: boolean }) {
+  const inner = (
+    <Button
+      variant="outline"
+      disabled={!canSignIn}
+      className="!h-12 sm:!h-14 !rounded-full text-base font-semibold w-full"
+    >
+      <Image
+        src="/spotify-icon.svg"
+        alt=""
+        width={18}
+        height={18}
+        // The icon ships dark, which disappears against the page.
+        className="mr-2.5 shrink-0 brightness-0 invert"
+      />
+      Sign in with Spotify
+    </Button>
+  );
+
+  return canSignIn ? (
+    <a href="/api/auth/login" className="w-full">
+      {inner}
+    </a>
+  ) : (
+    <div className="w-full">{inner}</div>
+  );
+}
+
 function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
+  const [showInvite, setShowInvite] = useState(false);
+
   return (
     <div className="relative flex-1 flex flex-col items-center justify-center min-h-[80vh] overflow-visible">
       <motion.div
@@ -71,59 +111,47 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
             </span>
           </h1>
           <p className="text-sm sm:text-base md:text-lg text-fg/50 max-w-[280px] sm:max-w-md mx-auto leading-relaxed font-medium">
-            Test your musical ear. Connect your Spotify account and start the
-            challenge.
+            Hear a snippet. Name the song. Six tries.
           </p>
         </div>
 
-        <div className="flex flex-col items-center gap-4 sm:gap-6">
-          {canSignIn ? (
-            <a href="/api/auth/login" className="relative group">
-              <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
-              <Button
-                variant="spotify"
-                className="relative !h-12 sm:!h-16 px-8 sm:px-10 !rounded-full text-sm sm:text-base font-bold transition-all duration-500 w-fit min-w-[240px] shadow-xl"
-              >
-                <Image
-                  src="/spotify-icon.svg"
-                  alt="Spotify"
-                  width={24}
-                  height={24}
-                  className="mr-3 shrink-0"
-                />
-                Continue with Spotify
-              </Button>
-            </a>
-          ) : (
-            <>
-              <Button
-                variant="spotify"
-                disabled
-                aria-describedby="invite-note"
-                className="!h-12 sm:!h-16 px-8 sm:px-10 !rounded-full text-sm sm:text-base font-bold w-fit min-w-[240px] shadow-xl"
-              >
-                <Image
-                  src="/spotify-icon.svg"
-                  alt="Spotify"
-                  width={24}
-                  height={24}
-                  className="mr-3 shrink-0"
-                />
-                Continue with Spotify
-              </Button>
+        <div className="flex flex-col items-center gap-6">
+          {/* Equal columns, each caption owned by its own button, so the two
+              paths read as a deliberate choice rather than a primary and a
+              stray. The caption is what stops a whitelisted user landing in
+              guest mode by mistake. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-md">
+            <div className="flex flex-col items-center gap-2">
+              <Link href="/game/guest" className="relative group w-full">
+                <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
+                <Button
+                  variant="spotify"
+                  className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold transition-all duration-500 shadow-xl"
+                >
+                  Play now
+                </Button>
+              </Link>
+              <span className="text-xs text-fg/45">No sign-in needed</span>
+            </div>
 
-              <p
-                id="invite-note"
-                className="max-w-md text-sm text-fg/50 leading-relaxed"
-              >
-                Spotify caps apps in development mode at 5 users, so signing in
-                is invite only for now. If I gave you a secret word, drop it in
-                below.
-              </p>
+            <div className="flex flex-col items-center gap-2">
+              <SpotifyButton canSignIn={canSignIn} />
+              <span className="text-xs text-fg/45">Play your own library</span>
+            </div>
+          </div>
 
+          {!canSignIn &&
+            (showInvite ? (
               <InviteForm />
-            </>
-          )}
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowInvite(true)}
+                className="text-xs text-fg/40 underline underline-offset-4 hover:text-fg/60 transition-colors"
+              >
+                Have a secret word?
+              </button>
+            ))}
         </div>
       </motion.div>
     </div>
