@@ -1,0 +1,199 @@
+import { SnippetPlayer } from './snippet-player';
+
+interface FakeSource {
+  buffer: unknown;
+  onended: (() => void) | null;
+  connect: jest.Mock;
+  start: jest.Mock;
+  stop: jest.Mock;
+}
+
+function fakeContext() {
+  const sources: FakeSource[] = [];
+  const gain = { gain: { value: 0 }, connect: jest.fn() };
+
+  const context = {
+    state: 'suspended' as AudioContextState,
+    destination: {},
+    resume: jest.fn(function (this: { state: AudioContextState }) {
+      context.state = 'running';
+      return Promise.resolve();
+    }),
+    decodeAudioData: jest.fn().mockResolvedValue({ duration: 30 }),
+    createGain: jest.fn(() => gain),
+    createBufferSource: jest.fn(() => {
+      const source: FakeSource = {
+        buffer: null,
+        onended: null,
+        connect: jest.fn(),
+        start: jest.fn(),
+        stop: jest.fn(),
+      };
+      sources.push(source);
+      return source;
+    }),
+  };
+
+  return { context, sources, gain };
+}
+
+describe('SnippetPlayer', () => {
+  let harness: ReturnType<typeof fakeContext>;
+
+  const player = () =>
+    new SnippetPlayer({
+      get: () => harness.context as unknown as AudioContext,
+      resume: async () => {
+        await harness.context.resume();
+        return harness.context as unknown as AudioContext;
+      },
+    });
+
+  beforeEach(() => {
+    harness = fakeContext();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+    }) as unknown as typeof fetch;
+  });
+
+  it('is not ready before anything is loaded', () => {
+    expect(player().isReady).toBe(false);
+  });
+
+  it('decodes the preview up front', async () => {
+    const p = player();
+
+    await expect(p.load('https://cdn/preview.mp3')).resolves.toBe(true);
+
+    expect(p.isReady).toBe(true);
+    expect(harness.context.decodeAudioData).toHaveBeenCalled();
+  });
+
+  it('reports failure rather than throwing when the audio cannot be decoded', async () => {
+    harness.context.decodeAudioData.mockRejectedValue(new Error('bad codec'));
+    const p = player();
+
+    await expect(p.load('https://cdn/preview.mp3')).resolves.toBe(false);
+    expect(p.isReady).toBe(false);
+  });
+
+  it('reports failure when the preview cannot be fetched', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue({ ok: false, status: 403 }) as unknown as typeof fetch;
+
+    await expect(player().load('https://cdn/gone.mp3')).resolves.toBe(false);
+  });
+
+  it('will not play before anything is loaded', async () => {
+    await expect(player().play(0.1)).resolves.toBe(false);
+  });
+
+  it('schedules exactly the requested duration', async () => {
+    const p = player();
+    await p.load('https://cdn/preview.mp3');
+
+    await expect(p.play(0.1)).resolves.toBe(true);
+
+    // start(when, offset, duration) — the third argument is what the audio
+    // hardware enforces, and is the whole reason 0.1s is achievable.
+    expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 0.1);
+  });
+
+  it('never asks for more audio than the buffer holds', async () => {
+    const p = player();
+    await p.load('https://cdn/preview.mp3');
+
+    await p.play(60);
+
+    expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 30);
+  });
+
+  it('resumes the context, which autoplay policy leaves suspended', async () => {
+    const p = player();
+    await p.load('https://cdn/preview.mp3');
+    expect(harness.context.state).toBe('suspended');
+
+    await p.play(0.5);
+
+    expect(harness.context.resume).toHaveBeenCalled();
+  });
+
+  it('stops the previous snippet when a new one starts', async () => {
+    const p = player();
+    await p.load('https://cdn/preview.mp3');
+
+    await p.play(0.5);
+    await p.play(0.5);
+
+    expect(harness.sources[0].stop).toHaveBeenCalled();
+    expect(harness.sources).toHaveLength(2);
+  });
+
+  it('applies volume through the gain node', async () => {
+    const p = player();
+    p.setVolume(0.3);
+    await p.load('https://cdn/preview.mp3');
+
+    await p.play(0.5);
+
+    expect(harness.gain.gain.value).toBe(0.3);
+  });
+
+  it('reports the snippet ending on its own', async () => {
+    const p = player();
+    const onEnded = jest.fn();
+    p.onEnded = onEnded;
+    await p.load('https://cdn/preview.mp3');
+    await p.play(0.5);
+
+    harness.sources[0].onended?.();
+
+    expect(onEnded).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not report an ending the caller asked for', async () => {
+    const p = player();
+    const onEnded = jest.fn();
+    p.onEnded = onEnded;
+    await p.load('https://cdn/preview.mp3');
+    await p.play(0.5);
+
+    p.stop();
+
+    expect(onEnded).not.toHaveBeenCalled();
+  });
+
+  it('discards a decode that finished after the track moved on', async () => {
+    const p = player();
+    let releaseFirst: (value: AudioBuffer) => void = () => {};
+    harness.context.decodeAudioData
+      .mockImplementationOnce(
+        () =>
+          new Promise<AudioBuffer>((resolve) => {
+            releaseFirst = resolve;
+          }),
+      )
+      .mockResolvedValueOnce({ duration: 12 } as AudioBuffer);
+
+    const stale = p.load('https://cdn/old.mp3');
+    await p.load('https://cdn/new.mp3');
+    releaseFirst({ duration: 30 } as AudioBuffer);
+
+    await expect(stale).resolves.toBe(false);
+    // The newer track's audio survives; the late one is thrown away.
+    await p.play(60);
+    expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 12);
+  });
+
+  it('forgets its audio when unloaded', async () => {
+    const p = player();
+    await p.load('https://cdn/preview.mp3');
+
+    p.unload();
+
+    expect(p.isReady).toBe(false);
+    await expect(p.play(0.5)).resolves.toBe(false);
+  });
+});
