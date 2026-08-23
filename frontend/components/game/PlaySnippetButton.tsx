@@ -24,31 +24,10 @@ export function PlaySnippetButton({
     <div className="text-center mb-4 sm:mb-6">
       <div className="inline-flex items-center justify-center">
         <div className="relative flex items-center justify-center">
-          {!isPlaying && (
-            <motion.div
-              className="absolute inset-0 rounded-full z-0 bg-[#1DB954] blur-md"
-              animate={{
-                scale: [1, 1.35, 1],
-                opacity: [0.15, 0.3, 0.15],
-              }}
-              transition={{
-                duration: 2.5,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          )}
-
           <motion.button
             type="button"
             whileHover={{ scale: 1.05, transition: SPRING }}
             whileTap={{ scale: 0.95, transition: SPRING }}
-            animate={isPlaying ? { scale: [1, 1.02, 1] } : { scale: 1 }}
-            transition={
-              isPlaying
-                ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }
-                : { type: 'spring', stiffness: 100, damping: 15 }
-            }
             aria-label={
               isPlaying ? `Pause snippet` : `Play ${duration} second snippet`
             }

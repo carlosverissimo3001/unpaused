@@ -16,7 +16,7 @@ interface RoundProgressBarProps {
   snippetSteps?: number[];
   /** 0–1 through the snippet now playing. */
   progress?: MotionValue<number>;
-  /** Peak amplitudes of the track, 0–1. Falls back to a plain bar if empty. */
+  /** Peak amplitudes of the track, 0–1. Flat bars are drawn until they arrive. */
   peaks?: number[];
   isPlaying?: boolean;
 }
@@ -54,7 +54,7 @@ function Bars({ peaks, lit }: { peaks: number[]; lit: boolean }) {
       {peaks.map((peak, index) => (
         <span
           key={index}
-          className={`flex-1 rounded-full ${
+          className={`flex-1 rounded-full transition-[height] duration-500 ease-out ${
             lit
               ? 'bg-[#1DB954] shadow-[0_0_6px_rgba(29,185,84,0.45)]'
               : 'bg-fg/20'
@@ -66,6 +66,15 @@ function Bars({ peaks, lit }: { peaks: number[]; lit: boolean }) {
     </div>
   );
 }
+
+/**
+ * Flat bars at the resting height, shown while the audio is still decoding.
+ *
+ * The real peaks replace these in place, and the height transition carries
+ * them up — so the waveform grows out of the placeholder rather than a flat
+ * line being swapped for a jagged one.
+ */
+const PLACEHOLDER_PEAKS: number[] = Array.from({ length: 96 }, () => 0);
 
 /**
  * The track's own waveform, doubling as the progress bar.
@@ -95,7 +104,7 @@ export function RoundProgressBar({
 
   const longest = steps[steps.length - 1] || 1;
   const round = Math.min(currentRound, totalRounds - 1);
-  const hasWaveform = peaks.length > 0;
+  const drawn = peaks.length > 0 ? peaks : PLACEHOLDER_PEAKS;
 
   /**
    * A square-root scale, because the steps span two orders of magnitude.
@@ -159,35 +168,17 @@ export function RoundProgressBar({
           a moment after the round loads, and letting the container grow when
           they land shifts everything below it down the page. */}
       <div className="relative h-7 sm:h-9">
-        {hasWaveform ? (
-          <>
-            <Bars peaks={peaks} lit={false} />
-            {isPlaying && progress ? (
-              <Playhead progress={progress} ceiling={ceiling}>
-                <Bars peaks={peaks} lit />
-              </Playhead>
-            ) : (
-              <div
-                className="absolute inset-0 transition-[clip-path] duration-300"
-                style={{ clipPath: `inset(0 ${100 - ceiling * 100}% 0 0)` }}
-              >
-                <Bars peaks={peaks} lit />
-              </div>
-            )}
-          </>
+        <Bars peaks={drawn} lit={false} />
+        {isPlaying && progress ? (
+          <Playhead progress={progress} ceiling={ceiling}>
+            <Bars peaks={drawn} lit />
+          </Playhead>
         ) : (
-          // Same footprint, so swapping to the waveform moves nothing.
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 sm:h-2 rounded-full bg-fg/15 overflow-hidden">
-            {isPlaying && progress ? (
-              <Playhead progress={progress} ceiling={ceiling}>
-                <div className="h-full w-full bg-[#1DB954] shadow-[0_0_8px_rgba(29,185,84,0.5)]" />
-              </Playhead>
-            ) : (
-              <div
-                className="absolute inset-y-0 left-0 bg-[#1DB954] shadow-[0_0_8px_rgba(29,185,84,0.5)] transition-[width] duration-300"
-                style={{ width: `${ceiling * 100}%` }}
-              />
-            )}
+          <div
+            className="absolute inset-0 transition-[clip-path] duration-300"
+            style={{ clipPath: `inset(0 ${100 - ceiling * 100}% 0 0)` }}
+          >
+            <Bars peaks={drawn} lit />
           </div>
         )}
 
