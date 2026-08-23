@@ -10,7 +10,6 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -19,19 +18,19 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["src/*"],
-      "@auth/*": ["src/auth/*"],
-      "@redis/*": ["src/redis/*"],
-      "@prisma/*": ["src/prisma/*"],
-      "@transaction/*": ["src/transaction/*"],
-      "@playlists/*": ["src/playlist/*"],
-      "@game/*": ["src/game/*"],
-      "@spotify/*": ["src/spotify/*"],
-      "@tracks/*": ["src/track/*"],
-      "@utils/*": ["src/utils/*"],
-      "@throttle/*": ["src/throttle/*"]
+      "@/*": ["./src/*"],
+      "@auth/*": ["./src/auth/*"],
+      "@redis/*": ["./src/redis/*"],
+      "@prisma/*": ["./src/prisma/*"],
+      "@transaction/*": ["./src/transaction/*"],
+      "@playlists/*": ["./src/playlist/*"],
+      "@game/*": ["./src/game/*"],
+      "@spotify/*": ["./src/spotify/*"],
+      "@tracks/*": ["./src/track/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@throttle/*": ["./src/throttle/*"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["./src/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules"]
 }

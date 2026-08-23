@@ -5,7 +5,6 @@ import { GameMode, Stats } from '@prisma/client';
 
 describe('GameStatsRepository', () => {
   let repository: GameStatsRepository;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     stats: {
@@ -27,7 +26,6 @@ describe('GameStatsRepository', () => {
     }).compile();
 
     repository = module.get<GameStatsRepository>(GameStatsRepository);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {

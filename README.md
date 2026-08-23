@@ -65,21 +65,25 @@ It started as a random idea me and a friend had while playing Songless and Bandl
 ## Game modes
 
 ### 🎵 Playlist mode
+
 Pick any playlist from your Spotify library (or your Liked Songs). The game picks a random track and plays progressively longer snippets across 6 rounds.
 
-| Round | 1 | 2 | 3 | 4 | 5 | 6 |
-|-------|---|---|---|---|---|---|
-| Duration | 0.1s | 0.5s | 1s | 2s | 4s | 8s |
+| Round    | 1    | 2    | 3   | 4   | 5   | 6   |
+| -------- | ---- | ---- | --- | --- | --- | --- |
+| Duration | 0.1s | 0.5s | 1s  | 2s  | 4s  | 8s  |
 
 Wrong guesses are evaluated for **partial matches** - if you guessed the right artist, the right album, or both, the game tells you so. Round durations are driven by the backend so the client can't cheat.
 
 ### ☀️ The Daily Mystery
+
 One song per day, pulled from a set of playlists you configure (defaults to your Liked Songs). Win to extend your streak. Miss a day, streak resets - **unless you have a streak freeze**, earned by answering music-trivia quizzes. Streak math runs in **the user's own IANA timezone**, not the server's, so midnight actually means midnight where you are.
 
 ### 🔥 The Speed Run (Gauntlet mode)
+
 Endless, one-snippet-per-track. Pick a difficulty (**5s Easy → 1s Expert**), then see how long you can survive. One wrong guess or skip ends the run. Personal-best and global leaderboard included.
 
 ### 🟣 With Friends (real-time multiplayer)
+
 Create a room, share the invite code, and race your friends live. The host picks the round count and playlist; a shared track pool is built once and streamed to all clients. Every player's per-round status updates for everyone else in real time, and the final leaderboard lands the instant the last player finishes.
 
 ---
@@ -87,39 +91,42 @@ Create a room, share the invite code, and race your friends live. The host picks
 ## Tech stack
 
 ### Frontend
-| Area | Choice | Why |
-|------|--------|-----|
-| Framework | **Next.js 16** (App Router) + **React 19** | Server components + RSC streaming, file-based routing, first-class TypeScript |
-| Language | **TypeScript 5** | Shared types end-to-end via generated SDK |
-| Server state | **TanStack Query 5** | Caching, optimistic updates, centralized query-key factory |
-| Real-time | **Socket.io client 4** | Room-based events, automatic reconnection, cookie-authed handshake |
-| Styling | **Tailwind CSS 3** + **shadcn/ui** + **Radix UI** | Design tokens via CSS vars, accessible primitives |
-| Animations | **Framer Motion 12** | Spring physics, `AnimatePresence`, user-preference-aware reduced motion |
-| Audio | **Web Audio API** + `<audio>` | AnalyserNode-driven amplitude visualization, iOS warmup, lock-screen MediaSession controls |
-| Forms/search | **CMDK** command palette, debounced track search | Forgiving fuzzy search against Spotify's catalog |
-| Color theming | **fast-average-color** | Dominant-color extraction from album art for ambient UI glows |
-| Observability | **Vercel Analytics** | Core Web Vitals & traffic |
-| Testing | **Jest 29** + ts-jest | Unit tests for hooks and utilities |
+
+| Area          | Choice                                            | Why                                                                                        |
+| ------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Framework     | **Next.js 16** (App Router) + **React 19**        | Server components + RSC streaming, file-based routing, first-class TypeScript              |
+| Language      | **TypeScript 5**                                  | Shared types end-to-end via generated SDK                                                  |
+| Server state  | **TanStack Query 5**                              | Caching, optimistic updates, centralized query-key factory                                 |
+| Real-time     | **Socket.io client 4**                            | Room-based events, automatic reconnection, cookie-authed handshake                         |
+| Styling       | **Tailwind CSS 3** + **shadcn/ui** + **Radix UI** | Design tokens via CSS vars, accessible primitives                                          |
+| Animations    | **Framer Motion 12**                              | Spring physics, `AnimatePresence`, user-preference-aware reduced motion                    |
+| Audio         | **Web Audio API** + `<audio>`                     | AnalyserNode-driven amplitude visualization, iOS warmup, lock-screen MediaSession controls |
+| Forms/search  | **CMDK** command palette, debounced track search  | Forgiving fuzzy search against Spotify's catalog                                           |
+| Color theming | **fast-average-color**                            | Dominant-color extraction from album art for ambient UI glows                              |
+| Observability | **Vercel Analytics**                              | Core Web Vitals & traffic                                                                  |
+| Testing       | **Jest 29** + ts-jest                             | Unit tests for hooks and utilities                                                         |
 
 ### Backend
-| Area | Choice | Why |
-|------|--------|-----|
-| Framework | **NestJS 10** on Express | Module system, DI, decorators, Swagger integration |
-| Language | **TypeScript 5** with strict mode | |
-| ORM | **Prisma 7** | Type-safe queries, migrations, studio for local inspection |
-| Database | **PostgreSQL 16** | Relational model for users, games, rooms, stats |
-| Cache / session store | **Redis 7** (ioredis) | Sessions, PKCE state, rate-limit buckets, access-token cache |
-| Queues | **BullMQ 5** | Delayed & cron jobs (abandoned-game sweeper) |
-| Real-time | **`@nestjs/websockets` + Socket.io 4** | Gateway pattern, room broadcasts, session-validated handshake |
-| Validation | **class-validator** + **class-transformer** | DTO validation via pipes |
-| Rate limiting | **`@nestjs/throttler`** + Redis storage | Session-scoped, not just IP-based |
-| API docs | **`@nestjs/swagger` + OpenAPI Generator** | Single source of truth for frontend SDK |
-| Media | **Cloudinary** | Avatar uploads |
-| Auth | **Spotify OAuth (PKCE)** | No client secret, refresh token encrypted at rest |
-| Testing | **Jest 29** + `@nestjs/testing` | Service & controller unit tests |
-| Logging | Custom `AppLoggerService` | Child loggers, contextual tagging |
+
+| Area                  | Choice                                      | Why                                                           |
+| --------------------- | ------------------------------------------- | ------------------------------------------------------------- |
+| Framework             | **NestJS 10** on Express                    | Module system, DI, decorators, Swagger integration            |
+| Language              | **TypeScript 5** with strict mode           |                                                               |
+| ORM                   | **Prisma 7**                                | Type-safe queries, migrations, studio for local inspection    |
+| Database              | **PostgreSQL 16**                           | Relational model for users, games, rooms, stats               |
+| Cache / session store | **Redis 7** (ioredis)                       | Sessions, PKCE state, rate-limit buckets, access-token cache  |
+| Queues                | **BullMQ 5**                                | Delayed & cron jobs (abandoned-game sweeper)                  |
+| Real-time             | **`@nestjs/websockets` + Socket.io 4**      | Gateway pattern, room broadcasts, session-validated handshake |
+| Validation            | **class-validator** + **class-transformer** | DTO validation via pipes                                      |
+| Rate limiting         | **`@nestjs/throttler`** + Redis storage     | Session-scoped, not just IP-based                             |
+| API docs              | **`@nestjs/swagger` + OpenAPI Generator**   | Single source of truth for frontend SDK                       |
+| Media                 | **Cloudinary**                              | Avatar uploads                                                |
+| Auth                  | **Spotify OAuth (PKCE)**                    | No client secret, refresh token encrypted at rest             |
+| Testing               | **Jest 29** + `@nestjs/testing`             | Service & controller unit tests                               |
+| Logging               | Custom `AppLoggerService`                   | Child loggers, contextual tagging                             |
 
 ### Infra & tooling
+
 - **Docker Compose** for local Postgres + Redis
 - **pnpm workspaces** (monorepo)
 - **GitHub Actions** - lint, typecheck, test, prettier, Prisma generate on every PR
@@ -268,6 +275,7 @@ cp backend/env.template backend/.env
 ```
 
 **`backend/.env`**
+
 ```env
 DATABASE_URL="postgresql://unpaused:unpaused_dev@localhost:5432/unpaused?schema=public"
 REDIS_URL="redis://localhost:6379"
@@ -284,6 +292,7 @@ CLOUDINARY_URL="cloudinary://..."
 ```
 
 **`frontend/.env.local`**
+
 ```env
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 NEXT_PUBLIC_API_URL="http://localhost:3001"
@@ -373,17 +382,17 @@ unpaused/
 
 ## Development workflow
 
-| Command | What it does |
-|---------|--------------|
-| `pnpm dev` | Runs frontend + backend concurrently |
-| `pnpm dev:frontend` / `pnpm dev:backend` | Run just one side |
-| `pnpm build` | Production build of both workspaces |
-| `pnpm build:sdk` | Regenerate `swagger-spec.json` + frontend SDK |
-| `pnpm db:generate` | Regenerate Prisma client after schema changes |
-| `pnpm db:migrate` | Apply / create migrations |
-| `pnpm db:studio` | Open Prisma Studio against local Postgres |
-| `pnpm test` | Run all Jest tests (both workspaces) |
-| `pnpm test:backend` / `pnpm test:frontend` | Run one side |
+| Command                                    | What it does                                  |
+| ------------------------------------------ | --------------------------------------------- |
+| `pnpm dev`                                 | Runs frontend + backend concurrently          |
+| `pnpm dev:frontend` / `pnpm dev:backend`   | Run just one side                             |
+| `pnpm build`                               | Production build of both workspaces           |
+| `pnpm build:sdk`                           | Regenerate `swagger-spec.json` + frontend SDK |
+| `pnpm db:generate`                         | Regenerate Prisma client after schema changes |
+| `pnpm db:migrate`                          | Apply / create migrations                     |
+| `pnpm db:studio`                           | Open Prisma Studio against local Postgres     |
+| `pnpm test`                                | Run all Jest tests (both workspaces)          |
+| `pnpm test:backend` / `pnpm test:frontend` | Run one side                                  |
 
 **Anytime you touch a backend DTO or controller signature, run `pnpm build:sdk`.** CI runs the same step on PRs, so drift is caught automatically.
 
