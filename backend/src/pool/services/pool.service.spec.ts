@@ -5,7 +5,11 @@ import { PoolTrackRepository } from '../repositories/pool-track.repository';
 import { PoolService } from './pool.service';
 import { POOL_CANDIDATE_CACHE_MS } from '../../consts';
 
-const candidate = (id: string, fame: number) => ({ id, fame });
+const candidate = (id: string, fame: number, year = 2005) => ({
+  id,
+  fame,
+  year,
+});
 
 describe('PoolService', () => {
   let service: PoolService;

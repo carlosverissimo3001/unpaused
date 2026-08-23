@@ -29,6 +29,44 @@ export class TrackService {
   }
 
   /**
+   * Resolves audio for a track we already hold a row for — a pool track, which
+   * is seeded without one because Deezer's preview links expire in minutes.
+   *
+   * The ref is persisted on first use, so later rounds only re-mint rather than
+   * running the whole cascade again.
+   */
+  async resolvePreview(track: TrackEntity): Promise<string | null> {
+    const existing = await this.playableUrl(track);
+    if (existing) {
+      return existing;
+    }
+
+    const ref = await this.previewLookup.getPreviewRef(track.id, {
+      title: track.name,
+      artist: track.artistName,
+      isrc: track.isrc,
+    });
+    if (!ref) {
+      return null;
+    }
+
+    const url = await this.previewLookup.mint(ref);
+    await this.trackRepository.upsertTrack(track.id, {
+      name: track.name,
+      artistName: track.artistName,
+      albumImageUrl: track.albumImageUrl,
+      albumName: track.albumName,
+      albumUrl: track.albumUrl,
+      releaseYear: track.releaseYear,
+      isrc: track.isrc,
+      previewUrl: url ?? undefined,
+      previewRef: serializeRef(ref),
+      allArtists: track.allArtists,
+    });
+    return url;
+  }
+
+  /**
    * Get a track with its preview URL
    * @param spotifyTrackId - The Spotify track ID
    * @param trackData - The track data

@@ -1,8 +1,21 @@
 import { PoolCandidate } from '../repositories/pool-track.repository';
+import { RECENCY_PER_DECADE, RECENCY_PIVOT_YEAR } from '../../consts';
 
 /**
- * Picks proportionally to `fame`, so better-known songs come up more often
- * without the long tail becoming unreachable.
+ * Deezer's year lists are evenly sized, so by count the pool is 58% pre-2005 —
+ * which is not the mix people expect to be quizzed on. This tilts selection
+ * toward recent music without removing anything: a 1975 track is still
+ * reachable, just less often than a 2020 one.
+ */
+export function weightFor(candidate: PoolCandidate): number {
+  const decades = (candidate.year - RECENCY_PIVOT_YEAR) / 10;
+  return Math.max(candidate.fame, 1) * Math.pow(RECENCY_PER_DECADE, decades);
+}
+
+/**
+ * Picks proportionally to weight — fame tilted toward recent releases — so
+ * better-known and more recent songs come up more often without the long tail
+ * becoming unreachable.
  *
  * Walking the cumulative weight is exact and O(n). The tempting
  * `sort((a, b) => b.fame * Math.random() - ...)` shortcut is *not*
@@ -26,12 +39,12 @@ export function weightedPick(
 
   let total = 0;
   for (const c of eligible) {
-    total += Math.max(c.fame, 1);
+    total += weightFor(c);
   }
 
   let target = Math.random() * total;
   for (const c of eligible) {
-    target -= Math.max(c.fame, 1);
+    target -= weightFor(c);
     if (target <= 0) {
       return c.id;
     }

@@ -4,6 +4,7 @@ import { PrismaService } from '@prisma/prisma.service';
 export interface PoolCandidate {
   id: string;
   fame: number;
+  year: number;
 }
 
 @Injectable()
@@ -11,14 +12,14 @@ export class PoolTrackRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Every track that may be picked, with the weight used to choose between
-   * them. Only two columns of a few thousand rows, so this is cheap enough to
+   * Every track that may be picked, with what the weighting needs. Three
+   * columns of a few thousand rows, so this is cheap enough to
    * read per round and lets the weighting live in code rather than in SQL.
    */
   async findCandidates(excludeIds: string[] = []): Promise<PoolCandidate[]> {
     return this.prisma.poolTrack.findMany({
       where: excludeIds.length > 0 ? { id: { notIn: excludeIds } } : undefined,
-      select: { id: true, fame: true },
+      select: { id: true, fame: true, year: true },
     });
   }
 

@@ -11,6 +11,8 @@
  *
  * Safe to re-run: both writes are upserts.
  */
+// Standalone script: no Nest ConfigModule to read .env for us.
+import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Pool } from 'pg';
@@ -38,7 +40,24 @@ async function main() {
     fs.readFileSync(POOL_FILE, 'utf8'),
   ) as { generatedAt: string; tracks: PoolTrack[] };
 
-  console.log(`${tracks.length} tracks, generated ${generatedAt}`);
+  // Defensive: a song can reach the file twice if two uploads of it resolved to
+  // the same recording. Years are ascending, so the first seen is the earliest.
+  const seen = new Set<string>();
+  const unique = tracks.filter((t) => {
+    const key = t.isrc || t.id;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+
+  console.log(
+    `${unique.length} tracks, generated ${generatedAt}` +
+      (unique.length === tracks.length
+        ? ''
+        : ` (${tracks.length - unique.length} duplicates dropped)`),
+  );
 
   // DATABASE_PUBLIC_URL is what Railway injects for the Postgres service; the
   // internal host it puts in DATABASE_URL only resolves inside their network.
@@ -58,8 +77,8 @@ async function main() {
   try {
     await client.query('BEGIN');
 
-    for (let i = 0; i < tracks.length; i += BATCH) {
-      const slice = tracks.slice(i, i + BATCH);
+    for (let i = 0; i < unique.length; i += BATCH) {
+      const slice = unique.slice(i, i + BATCH);
 
       await client.query(
         `INSERT INTO tracks (id, name, artist_name, album_name, album_url,

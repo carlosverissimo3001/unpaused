@@ -13,6 +13,10 @@ export function normalizeTrackNameForMatch(value: string): string {
   s = s.replace(/\s+-\s+.*$/, '').trim();
   // One more pass for "Title (Year Remaster) - Live"
   s = s.replace(/\s*\([^)]*\)\s*$/i, '').trim();
+  // Trailing punctuation, which stripping a suffix can leave on one side only:
+  // "I Knew You Were Trouble." against "I Knew You Were Trouble (Taylor's
+  // Version)" differs by a single full stop once the parenthetical is gone.
+  s = s.replace(/[.,!?;:]+$/, '').trim();
   return normalizeText(s);
 }
 

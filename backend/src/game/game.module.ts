@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GameController } from './controllers/game.controller';
-import { SearchController } from './controllers/search.controller';
 import { GameService } from './services/game.service';
-import { SearchService } from './services/search.service';
 import { GameStatsService } from './services/game-stats.service';
 import { GameSessionRepository } from './repositories/game-session.repository';
 import { AuthModule } from '../auth/auth.module';
@@ -29,10 +27,9 @@ import { GameConsumer } from './consumers/game.consumer';
       defaultJobOptions: JOB_OPTIONS_WITH_BACKOFF,
     }),
   ],
-  controllers: [GameController, SearchController],
+  controllers: [GameController],
   providers: [
     GameService,
-    SearchService,
     GameStatsService,
     GameSessionRepository,
     GameStatsRepository,

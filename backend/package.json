@@ -20,6 +20,7 @@
     "format:check": "oxfmt --check .",
     "swagger": "pnpm exec ts-node -r tsconfig-paths/register scripts/generate-openapi.ts",
     "pool": "pnpm exec ts-node -r tsconfig-paths/register scripts/build-guest-pool.ts",
+    "pool:seed": "pnpm exec ts-node -r tsconfig-paths/register scripts/seed-pool.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

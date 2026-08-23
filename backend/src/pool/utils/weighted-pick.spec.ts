@@ -1,6 +1,10 @@
 import { weightedPick } from './weighted-pick';
 
-const candidate = (id: string, fame: number) => ({ id, fame });
+const candidate = (id: string, fame: number, year = 2005) => ({
+  id,
+  fame,
+  year,
+});
 
 describe('weightedPick', () => {
   const seeded = (values: number[]) => {

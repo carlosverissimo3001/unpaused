@@ -6,6 +6,8 @@ import { TransactionModule } from './transaction/transaction.module';
 import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { PlaylistModule } from './playlist/playlist.module';
+import { SearchModule } from './search/search.module';
+import { GuestModule } from './guest/guest.module';
 import { GameModule } from './game/game.module';
 import { SpotifyModule } from './spotify/spotify.module';
 import { AdminModule } from './admin/admin.module';
@@ -32,6 +34,8 @@ import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
     AuthModule,
     PlaylistModule,
     GameModule,
+    SearchModule,
+    GuestModule,
     SpotifyModule,
     AdminModule,
     StreakModule,

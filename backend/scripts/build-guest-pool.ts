@@ -271,7 +271,15 @@ async function main() {
         continue;
       }
 
-      pool.set(key, {
+      // Re-key on the resolved recording. Two uploads of one song can carry
+      // different ISRCs in consecutive years' lists and still canonicalize to
+      // the same track, which the original key cannot see.
+      const resolvedKey = normIsrc(best.isrc) || key;
+      if (pool.has(resolvedKey)) {
+        continue;
+      }
+
+      pool.set(resolvedKey, {
         id: `dz:${best.id}`,
         isrc: normIsrc(best.isrc) || normIsrc(track.isrc),
         name: best.title,
