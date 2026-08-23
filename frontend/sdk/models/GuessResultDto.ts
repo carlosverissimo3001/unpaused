@@ -76,12 +76,6 @@ export interface GuessResultDto {
      */
     specialNote?: string;
     /**
-     * Optional win easter eggs
-     * @type {object}
-     * @memberof GuessResultDto
-     */
-    meta?: object;
-    /**
      * Progressive song metadata hints for the next round
      * @type {Array<HintDto>}
      * @memberof GuessResultDto
@@ -146,7 +140,6 @@ export function GuessResultDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
         'maxRounds': json['maxRounds'],
         'rankTitle': json['rankTitle'] == null ? undefined : json['rankTitle'],
         'specialNote': json['specialNote'] == null ? undefined : json['specialNote'],
-        'meta': json['meta'] == null ? undefined : json['meta'],
         'hints': json['hints'] == null ? undefined : ((json['hints'] as Array<any>).map(HintDtoFromJSON)),
     };
 }
@@ -170,7 +163,6 @@ export function GuessResultDtoToJSONTyped(value?: GuessResultDto | null, ignoreD
         'maxRounds': value['maxRounds'],
         'rankTitle': value['rankTitle'],
         'specialNote': value['specialNote'],
-        'meta': value['meta'],
         'hints': value['hints'] == null ? undefined : ((value['hints'] as Array<any>).map(HintDtoToJSON)),
     };
 }

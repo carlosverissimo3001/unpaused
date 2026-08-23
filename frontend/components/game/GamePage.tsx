@@ -238,8 +238,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                   volume={volume}
                   onVolumeChange={setVolume}
                   rankTitle={gameState.rankTitle ?? null}
-                  specialNote={gameState.specialNote ?? null}
-                  meta={gameState.meta ?? null}
                 />
               </motion.div>
             ) : (
