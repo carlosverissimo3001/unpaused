@@ -47,7 +47,9 @@ describe('SearchService', () => {
 
   it('maps a hit to an option carrying the ISRC', async () => {
     fetchMock.mockResolvedValue(
-      searchResponse([track(1, 'Blinding Lights', 'The Weeknd', 'USUG11904206')]),
+      searchResponse([
+        track(1, 'Blinding Lights', 'The Weeknd', 'USUG11904206'),
+      ]),
     );
 
     const [option] = await service.searchTracks('blinding lights');
@@ -90,7 +92,9 @@ describe('SearchService', () => {
   it("treats Deezer's 200-with-error-body as no results", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
-      json: async () => ({ error: { code: 4, message: 'Quota limit exceeded' } }),
+      json: async () => ({
+        error: { code: 4, message: 'Quota limit exceeded' },
+      }),
     });
 
     await expect(service.searchTracks('umbrella')).resolves.toEqual([]);

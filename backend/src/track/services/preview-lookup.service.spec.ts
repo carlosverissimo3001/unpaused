@@ -101,7 +101,11 @@ describe('PreviewLookupService', () => {
   it('prefers iTunes and never reaches Deezer or the scraper', async () => {
     fetchMock.mockResolvedValueOnce(
       itunesResponse([
-        { trackName: 'Umbrella', artistName: 'Rihanna', previewUrl: ITUNES_URL },
+        {
+          trackName: 'Umbrella',
+          artistName: 'Rihanna',
+          previewUrl: ITUNES_URL,
+        },
       ]),
     );
 
@@ -156,7 +160,11 @@ describe('PreviewLookupService', () => {
       })
       .mockResolvedValueOnce(
         itunesResponse([
-          { trackName: 'Umbrella', artistName: 'Rihanna', previewUrl: ITUNES_URL },
+          {
+            trackName: 'Umbrella',
+            artistName: 'Rihanna',
+            previewUrl: ITUNES_URL,
+          },
         ]),
       );
 

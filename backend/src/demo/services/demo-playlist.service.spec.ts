@@ -205,6 +205,8 @@ describe('DemoPlaylistService', () => {
   it('propagates a network failure so the caller keeps the previous set', async () => {
     mockedAxios.get.mockRejectedValue(new Error('ETIMEDOUT'));
 
-    await expect(service.fetchPlaylist(PLAYLIST_ID)).rejects.toThrow('ETIMEDOUT');
+    await expect(service.fetchPlaylist(PLAYLIST_ID)).rejects.toThrow(
+      'ETIMEDOUT',
+    );
   });
 });

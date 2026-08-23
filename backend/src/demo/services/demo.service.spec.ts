@@ -73,9 +73,15 @@ describe('DemoService', () => {
         },
         {
           provide: DemoPlaylistRepository,
-          useValue: { findAll: jest.fn().mockResolvedValue([]), upsert: jest.fn() },
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([]),
+            upsert: jest.fn(),
+          },
         },
-        { provide: DemoPlaylistService, useValue: { fetchPlaylist: jest.fn() } },
+        {
+          provide: DemoPlaylistService,
+          useValue: { fetchPlaylist: jest.fn() },
+        },
         { provide: AppLoggerService, useValue: logger },
       ],
     }).compile();
@@ -89,14 +95,19 @@ describe('DemoService', () => {
   describe('getPlaylists', () => {
     it('returns them in the configured order, not the database order', async () => {
       playlistRepo.findAll.mockResolvedValue(
-        [...DEMO_PLAYLISTS]
-          .reverse()
-          .map(({ slug, name }) => ({ slug, name, imageUrl: '', description: null })),
+        [...DEMO_PLAYLISTS].reverse().map(({ slug, name }) => ({
+          slug,
+          name,
+          imageUrl: '',
+          description: null,
+        })),
       );
 
       const result = await service.getPlaylists();
 
-      expect(result.map((p) => p.slug)).toEqual(DEMO_PLAYLISTS.map((p) => p.slug));
+      expect(result.map((p) => p.slug)).toEqual(
+        DEMO_PLAYLISTS.map((p) => p.slug),
+      );
       expect(result[0].slug).toBe('pt');
     });
   });

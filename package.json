@@ -24,9 +24,16 @@
     "db:studio": "pnpm --filter backend prisma:studio",
     "gen:json": "pnpm --filter backend run swagger",
     "gen:sdk": "pnpm exec openapi-generator-cli generate -i ./swagger-spec.json -g typescript-fetch -o ./frontend/sdk --additional-properties=typescriptThreePlus=true",
-    "build:sdk": "pnpm run gen:json && pnpm run gen:sdk"
+    "build:sdk": "pnpm run gen:json && pnpm run gen:sdk",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check ."
   },
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "^2.30.2"
+    "@openapitools/openapi-generator-cli": "^2.30.2",
+    "oxfmt": "^0.64.0",
+    "oxlint": "^1.79.0",
+    "oxlint-tsgolint": "^7.0.2001"
   }
 }

@@ -16,7 +16,6 @@ describe('MultiplayerGameService', () => {
   let service: MultiplayerGameService;
 
   const HOST_SESSION = 'session-host';
-  const PLAYER_SESSION = 'session-player';
   const HOST_USER_ID = 'user-host';
   const PLAYER_USER_ID = 'user-player';
   const ROOM_ID = 'room-123';

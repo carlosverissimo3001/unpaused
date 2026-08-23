@@ -69,8 +69,10 @@ describe('TrackPoolService', () => {
     const trackA = makeTrack('track-A');
     const trackB = makeTrack('track-B');
 
-    prisma.user.findMany
-      .mockResolvedValueOnce([{ id: 'user-1', spotifyUserId: 'sp-1' }, { id: 'user-2', spotifyUserId: 'sp-2' }])
+    prisma.user.findMany.mockResolvedValueOnce([
+      { id: 'user-1', spotifyUserId: 'sp-1' },
+      { id: 'user-2', spotifyUserId: 'sp-2' },
+    ]);
 
     sessionService.getSessionIdBySpotifyUserId
       .mockResolvedValueOnce('sess-1')
@@ -90,25 +92,23 @@ describe('TrackPoolService', () => {
       .mockResolvedValueOnce([trackA]);
 
     trackService.getTrackWithPreview.mockImplementation(
-      async (id: string) => ({
-        id,
-        previewUrl: `https://preview/${id}.mp3`,
-        name: `Track ${id}`,
-        artistName: 'Artist',
-        albumImageUrl: undefined,
-        albumName: undefined,
-        albumUrl: undefined,
-        releaseYear: undefined,
-        metadata: {},
-        lastScrapedAt: new Date(),
-        createdAt: new Date(),
-      }) as any,
+      async (id: string) =>
+        ({
+          id,
+          previewUrl: `https://preview/${id}.mp3`,
+          name: `Track ${id}`,
+          artistName: 'Artist',
+          albumImageUrl: undefined,
+          albumName: undefined,
+          albumUrl: undefined,
+          releaseYear: undefined,
+          metadata: {},
+          lastScrapedAt: new Date(),
+          createdAt: new Date(),
+        }) as any,
     );
 
-    const result = await service.selectTracksForRoom(
-      ['user-1', 'user-2'],
-      2,
-    );
+    const result = await service.selectTracksForRoom(['user-1', 'user-2'], 2);
 
     expect(result).toHaveLength(2);
     expect(result).toContain('track-A');
@@ -118,8 +118,10 @@ describe('TrackPoolService', () => {
   it('should skip players without active sessions', async () => {
     const track = makeTrack('track-1');
 
-    prisma.user.findMany
-      .mockResolvedValueOnce([{ id: 'user-1', spotifyUserId: 'sp-1' }, { id: 'user-2', spotifyUserId: 'sp-2' }]);
+    prisma.user.findMany.mockResolvedValueOnce([
+      { id: 'user-1', spotifyUserId: 'sp-1' },
+      { id: 'user-2', spotifyUserId: 'sp-2' },
+    ]);
 
     sessionService.getSessionIdBySpotifyUserId
       .mockResolvedValueOnce('sess-1')
@@ -145,10 +147,7 @@ describe('TrackPoolService', () => {
       createdAt: new Date(),
     } as any);
 
-    const result = await service.selectTracksForRoom(
-      ['user-1', 'user-2'],
-      1,
-    );
+    const result = await service.selectTracksForRoom(['user-1', 'user-2'], 1);
 
     expect(result).toHaveLength(1);
     // Only player 1's session was used
@@ -156,16 +155,20 @@ describe('TrackPoolService', () => {
   });
 
   it('should throw when no active sessions exist', async () => {
-    prisma.user.findMany.mockResolvedValue([{ id: 'user-1', spotifyUserId: 'sp-1' }]);
+    prisma.user.findMany.mockResolvedValue([
+      { id: 'user-1', spotifyUserId: 'sp-1' },
+    ]);
     sessionService.getSessionIdBySpotifyUserId.mockResolvedValue(null);
 
-    await expect(
-      service.selectTracksForRoom(['user-1'], 3),
-    ).rejects.toThrow('No active sessions found');
+    await expect(service.selectTracksForRoom(['user-1'], 3)).rejects.toThrow(
+      'No active sessions found',
+    );
   });
 
   it('should throw when no tracks have valid previews', async () => {
-    prisma.user.findMany.mockResolvedValue([{ id: 'user-1', spotifyUserId: 'sp-1' }]);
+    prisma.user.findMany.mockResolvedValue([
+      { id: 'user-1', spotifyUserId: 'sp-1' },
+    ]);
     sessionService.getSessionIdBySpotifyUserId.mockResolvedValue('sess-1');
     playlistService.getLikedSongsMetadata.mockResolvedValue({
       totalTracks: 10,
@@ -189,9 +192,9 @@ describe('TrackPoolService', () => {
       createdAt: new Date(),
     } as any);
 
-    await expect(
-      service.selectTracksForRoom(['user-1'], 3),
-    ).rejects.toThrow('Could not find any tracks with valid preview URLs');
+    await expect(service.selectTracksForRoom(['user-1'], 3)).rejects.toThrow(
+      'Could not find any tracks with valid preview URLs',
+    );
   });
 
   it('should handle player with empty liked songs gracefully', async () => {
@@ -227,10 +230,7 @@ describe('TrackPoolService', () => {
       createdAt: new Date(),
     } as any);
 
-    const result = await service.selectTracksForRoom(
-      ['user-1', 'user-2'],
-      1,
-    );
+    const result = await service.selectTracksForRoom(['user-1', 'user-2'], 1);
 
     expect(result).toHaveLength(1);
   });
@@ -238,7 +238,9 @@ describe('TrackPoolService', () => {
   it('should return fewer tracks when pool is too small', async () => {
     const track = makeTrack('only-track');
 
-    prisma.user.findMany.mockResolvedValue([{ id: 'user-1', spotifyUserId: 'sp-1' }]);
+    prisma.user.findMany.mockResolvedValue([
+      { id: 'user-1', spotifyUserId: 'sp-1' },
+    ]);
     sessionService.getSessionIdBySpotifyUserId.mockResolvedValue('sess-1');
     playlistService.getLikedSongsMetadata.mockResolvedValue({
       totalTracks: 1,

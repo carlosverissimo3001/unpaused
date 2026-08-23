@@ -7,7 +7,7 @@ import { AuthService } from '@auth/services/auth.service';
 import { GameStatsRepository } from '../../game/repositories/game-stats.repository';
 import { GameStatsEntity } from '../../game/entities/game-stats.entity';
 import { UserPreferencesService } from '../../user-preferences/services/user-preferences.service';
-import { subDays, addDays, startOfDay } from 'date-fns';
+import { subDays, startOfDay } from 'date-fns';
 
 // ── Constants ────────────────────────────────────────────────────────
 
@@ -206,16 +206,16 @@ describe('StreakService', () => {
 
       await service.getFreezeUsagesInRange(USER_ID, '2026-03-01', '2026-03-15');
 
-      expect(
-        mockPrismaService.streakFreezeUsage.findMany,
-      ).toHaveBeenCalledWith({
-        where: {
-          userId: USER_ID,
-          coveredFrom: { gte: new Date('2026-03-01T00:00:00.000Z') },
-          coveredTo: { lt: new Date('2026-03-16T00:00:00.000Z') },
+      expect(mockPrismaService.streakFreezeUsage.findMany).toHaveBeenCalledWith(
+        {
+          where: {
+            userId: USER_ID,
+            coveredFrom: { gte: new Date('2026-03-01T00:00:00.000Z') },
+            coveredTo: { lt: new Date('2026-03-16T00:00:00.000Z') },
+          },
+          orderBy: { createdAt: 'desc' },
         },
-        orderBy: { createdAt: 'desc' },
-      });
+      );
     });
   });
 
@@ -437,9 +437,7 @@ describe('StreakService', () => {
         .mockResolvedValueOnce(
           makeDailyStats({ lastWinDate: lastWin, currentStreak: 5 }),
         )
-        .mockResolvedValueOnce(
-          makeDailyStats({ currentStreak: 7 }),
-        );
+        .mockResolvedValueOnce(makeDailyStats({ currentStreak: 7 }));
 
       await service.useFreeze(SESSION_ID);
 
