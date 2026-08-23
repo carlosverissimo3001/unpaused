@@ -98,11 +98,49 @@ export function RoundProgressBar({
   const ceiling = (steps[round] ?? longest) / longest;
   const hasWaveform = peaks.length > 0;
 
+  /** "0.1s" rather than "0.1000000000001s". */
+  const label = (seconds: number) =>
+    `${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)}s`;
+
   return (
     <div className="mb-4 sm:mb-6 md:mb-8">
-      <div
-        className={`relative ${hasWaveform ? 'h-7 sm:h-9' : 'h-1.5 sm:h-2 rounded-full bg-fg/15 overflow-hidden'}`}
-      >
+      {/* What each round buys you, sat above the mark it unlocks. Hidden on
+          small screens: at these positions the first two are about 25px apart
+          on a phone, so they would collide rather than inform. */}
+      <div className="relative mb-1 hidden h-3 sm:block">
+        {steps.map((step, index) => {
+          const spent = index < currentRound;
+          const isCurrent = index === round;
+          // The end labels are pinned rather than centred: at 0.8% and 100%
+          // of the width, centring hangs them off the edges of the bar.
+          const align =
+            index === 0
+              ? 'translate-x-0'
+              : index === steps.length - 1
+                ? '-translate-x-full'
+                : '-translate-x-1/2';
+
+          return (
+            <span
+              key={step}
+              className={`absolute ${align} text-[10px] leading-none tabular-nums transition-colors ${
+                isCurrent
+                  ? 'font-semibold text-[#1DB954]'
+                  : spent
+                    ? 'text-fg/40'
+                    : 'text-fg/25'
+              }`}
+              style={{ left: `${(step / longest) * 100}%` }}
+            >
+              {label(step)}
+            </span>
+          );
+        })}
+      </div>
+      {/* Height is fixed whether or not the peaks have arrived: it is decoded
+          a moment after the round loads, and letting the container grow when
+          they land shifts everything below it down the page. */}
+      <div className="relative h-7 sm:h-9">
         {hasWaveform ? (
           <>
             <Bars peaks={peaks} lit={false} />
@@ -119,15 +157,20 @@ export function RoundProgressBar({
               </div>
             )}
           </>
-        ) : isPlaying && progress ? (
-          <Playhead progress={progress} ceiling={ceiling}>
-            <div className="h-full w-full bg-[#1DB954] shadow-[0_0_8px_rgba(29,185,84,0.5)]" />
-          </Playhead>
         ) : (
-          <div
-            className="absolute inset-y-0 left-0 bg-[#1DB954] shadow-[0_0_8px_rgba(29,185,84,0.5)] transition-[width] duration-300"
-            style={{ width: `${ceiling * 100}%` }}
-          />
+          // Same footprint, so swapping to the waveform moves nothing.
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 sm:h-2 rounded-full bg-fg/15 overflow-hidden">
+            {isPlaying && progress ? (
+              <Playhead progress={progress} ceiling={ceiling}>
+                <div className="h-full w-full bg-[#1DB954] shadow-[0_0_8px_rgba(29,185,84,0.5)]" />
+              </Playhead>
+            ) : (
+              <div
+                className="absolute inset-y-0 left-0 bg-[#1DB954] shadow-[0_0_8px_rgba(29,185,84,0.5)] transition-[width] duration-300"
+                style={{ width: `${ceiling * 100}%` }}
+              />
+            )}
+          </div>
         )}
 
         {/* What the next miss unlocks, coloured once spent by how close the
@@ -140,7 +183,12 @@ export function RoundProgressBar({
             <span
               key={step}
               aria-hidden
-              className={`absolute inset-y-0 w-px ${style?.barClass ?? 'bg-fg/25'}`}
+              // Sits proud of the waveform so it reads as a marker rather than
+              // a gap in the bars, and carries the colour of the guess that
+              // spent it once that round is behind you.
+              className={`absolute -inset-y-1 w-0.5 rounded-full ${
+                style?.barClass ?? 'bg-fg/40'
+              }`}
               style={{ left: `${(step / longest) * 100}%` }}
             />
           );
