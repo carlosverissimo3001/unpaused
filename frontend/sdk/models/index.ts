@@ -29,7 +29,6 @@ export * from './GuessHistoryDto';
 export * from './GuessResultDto';
 export * from './HintDto';
 export * from './LastfmDataVo';
-export * from './MetaGameExtrasVo';
 export * from './MultiplayerRoundStateDto';
 export * from './PaginationMetaDto';
 export * from './PatchUserDto';

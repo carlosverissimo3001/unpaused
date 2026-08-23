@@ -14,7 +14,6 @@ Name | Type
 `maxRounds` | number
 `rankTitle` | string
 `specialNote` | string
-`meta` | object
 `hints` | [Array&lt;HintDto&gt;](HintDto.md)
 
 ## Example
@@ -32,7 +31,6 @@ const example = {
   "maxRounds": null,
   "rankTitle": null,
   "specialNote": null,
-  "meta": null,
   "hints": null,
 } satisfies GuessResultDto
 

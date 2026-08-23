@@ -48,7 +48,6 @@ import { buildHintsForRound } from '../utils/hint-builder';
 import { buildShareText, guessToEmoji } from '../utils/share.utils';
 import {
   gameNumberFromDate,
-  getUserExtras,
   shuffleInPlace,
 } from '../utils/utils';
 import { GameStatsService } from './game-stats.service';
@@ -321,12 +320,7 @@ export class GameService {
       throw new NotFoundException('Track not found or no preview URL');
     }
 
-    const extras = getUserExtras(
-      user.isTrusted,
-      game.status === GameStatus.WON,
-    );
-
-    return mapToGameStateDto(game, { ...game.track, previewUrl }, extras);
+    return mapToGameStateDto(game, { ...game.track, previewUrl });
   }
 
   @Transactional()

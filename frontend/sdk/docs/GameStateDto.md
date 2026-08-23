@@ -17,7 +17,6 @@ Name | Type
 `albumImageUrl` | string
 `rankTitle` | string
 `specialNote` | string
-`meta` | [MetaGameExtrasVo](MetaGameExtrasVo.md)
 `hints` | [Array&lt;HintDto&gt;](HintDto.md)
 
 ## Example
@@ -38,7 +37,6 @@ const example = {
   "albumImageUrl": null,
   "rankTitle": null,
   "specialNote": null,
-  "meta": null,
   "hints": null,
 } satisfies GameStateDto
 
