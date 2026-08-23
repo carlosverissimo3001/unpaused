@@ -16,7 +16,6 @@ import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
 import type { TrackOptionDto } from '@/sdk';
 import { ShareButton } from '@/components/daily/ShareButton';
 import { useImageColor } from '@/hooks/misc/useImageColor';
-import { VolumeSlider } from './VolumeSlider';
 import { GLASS_STYLE } from '@/lib/styles';
 
 interface SongRevealCardProps {
@@ -33,8 +32,6 @@ interface SongRevealCardProps {
   playlistImageUrl?: string | null;
   isFullSongPlaying: boolean;
   onToggleFullSong: () => void;
-  volume: number;
-  onVolumeChange: (v: number) => void;
   /** Easter egg: personalized rank for special users */
   rankTitle?: string | null;
 }
@@ -59,8 +56,6 @@ export function SongRevealCard({
   playlistImageUrl,
   isFullSongPlaying,
   onToggleFullSong,
-  volume,
-  onVolumeChange,
   rankTitle,
 }: SongRevealCardProps) {
   // The backend supplies this. Building it from answer.id assumed every track
@@ -200,7 +195,6 @@ export function SongRevealCard({
                   <Play className="w-5 h-5 text-fg" />
                 )}
               </motion.button>
-              <VolumeSlider volume={volume} onVolumeChange={onVolumeChange} />
             </>
           )}
           {shareGameId && (

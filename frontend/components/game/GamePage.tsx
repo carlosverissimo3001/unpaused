@@ -246,8 +246,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                   }
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   onToggleFullSong={gameAudio.toggleFullSong}
-                  volume={volume}
-                  onVolumeChange={setVolume}
                   rankTitle={gameState.rankTitle ?? null}
                 />
               </motion.div>

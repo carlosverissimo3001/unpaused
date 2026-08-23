@@ -260,8 +260,6 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
                   onPlayAgain={handlePlayAgain}
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   onToggleFullSong={gameAudio.toggleFullSong}
-                  volume={volume}
-                  onVolumeChange={setVolume}
                 />
               </motion.div>
             ) : (

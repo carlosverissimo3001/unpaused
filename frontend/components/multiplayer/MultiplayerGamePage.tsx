@@ -463,8 +463,6 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
                   showPlayAgain={false}
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   onToggleFullSong={gameAudio.toggleFullSong}
-                  volume={volume}
-                  onVolumeChange={setVolume}
                 />
 
                 {/* Player's own score for this round */}
