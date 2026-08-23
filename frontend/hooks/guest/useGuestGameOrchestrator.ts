@@ -10,7 +10,6 @@ import { useGuestGameState } from './useGuestGameState';
 import { useSubmitGuestGuess } from './useSubmitGuestGuess';
 import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
 import { useGameAudio } from '@/hooks/game/useGameAudio';
-import { triggerConfetti } from '@/components/game/confetti';
 
 const ShouldShakeResult: GuessResult[] = [
   GuessResult.Wrong,
@@ -75,7 +74,6 @@ export function useGuestGameOrchestrator({
     const last = gameState.guesses[gameState.guesses.length - 1];
     if (last.result !== lastGuessResult) {
       setLastGuessResult(last.result);
-      if (last.result === GuessResult.Correct) triggerConfetti();
     }
   }, [gameState?.guesses, lastGuessResult]);
 

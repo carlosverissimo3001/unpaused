@@ -20,7 +20,10 @@ function fakeContext() {
       context.state = 'running';
       return Promise.resolve();
     }),
-    decodeAudioData: jest.fn().mockResolvedValue({ duration: 30 }),
+    decodeAudioData: jest.fn().mockResolvedValue({
+      duration: 30,
+      getChannelData: () => new Float32Array([0, 0.5, -1, 0.25, 0, -0.5, 1, 0]),
+    }),
     createGain: jest.fn(() => gain),
     createBufferSource: jest.fn(() => {
       const source: FakeSource = {
@@ -186,6 +189,57 @@ describe('SnippetPlayer', () => {
     // The newer track's audio survives; the late one is thrown away.
     await p.play(60);
     expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 12);
+  });
+
+  describe('peaks', () => {
+    it('is empty before anything is loaded', () => {
+      expect(player().peaks(8)).toEqual([]);
+    });
+
+    it('is empty when asked for nothing', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.peaks(0)).toEqual([]);
+    });
+
+    it('returns one value per slice requested', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.peaks(4)).toHaveLength(4);
+    });
+
+    it('takes the loudest sample in each slice, ignoring sign', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      // Two samples per slice of [0, .5, -1, .25, 0, -.5, 1, 0]
+      expect(p.peaks(4)).toEqual([0.5, 1, 0.5, 1]);
+    });
+
+    it('normalises against the loudest slice', async () => {
+      harness.context.decodeAudioData.mockResolvedValue({
+        duration: 30,
+        // A quietly mastered track should still fill the bar.
+        getChannelData: () => new Float32Array([0.1, 0.2]),
+      });
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.peaks(2)).toEqual([0.5, 1]);
+    });
+
+    it('does not divide by zero on silence', async () => {
+      harness.context.decodeAudioData.mockResolvedValue({
+        duration: 30,
+        getChannelData: () => new Float32Array([0, 0, 0, 0]),
+      });
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.peaks(2)).toEqual([0, 0]);
+    });
   });
 
   describe('progress', () => {

@@ -52,6 +52,52 @@ export class SnippetPlayer {
   }
 
   /**
+   * Peak amplitude across `count` equal slices of the track, each 0–1.
+   *
+   * Drawn from the buffer already decoded for playback, so a waveform of the
+   * real song costs no network and no second decode. Returns an empty array
+   * before anything is loaded.
+   */
+  peaks(count: number): number[] {
+    const buffer = this.buffer;
+    if (!buffer || count <= 0) {
+      return [];
+    }
+
+    // One channel is enough: the two are near-identical at this resolution,
+    // and averaging them would cost a second pass over ~1.3M samples.
+    const samples = buffer.getChannelData(0);
+    const per = Math.floor(samples.length / count) || 1;
+    const out: number[] = new Array<number>(count);
+
+    let ceiling = 0;
+    for (let slice = 0; slice < count; slice++) {
+      const start = slice * per;
+      const end = Math.min(start + per, samples.length);
+      let peak = 0;
+      for (let i = start; i < end; i++) {
+        const value = samples[i] < 0 ? -samples[i] : samples[i];
+        if (value > peak) {
+          peak = value;
+        }
+      }
+      out[slice] = peak;
+      if (peak > ceiling) {
+        ceiling = peak;
+      }
+    }
+
+    // Normalised against the loudest slice, so a quietly mastered track still
+    // fills the bar rather than drawing as a flat line.
+    if (ceiling > 0) {
+      for (let i = 0; i < count; i++) {
+        out[i] /= ceiling;
+      }
+    }
+    return out;
+  }
+
+  /**
    * How far through the current snippet, 0–1, or 0 when nothing is playing.
    *
    * Read from the context clock rather than counted in JavaScript: it is the

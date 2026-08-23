@@ -237,6 +237,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     playSnippet,
     pauseSnippet,
     snippetProgress,
+    snippetPeaks,
   } = gameAudio;
 
   const albumArtColor = useImageColor(
@@ -423,6 +424,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
               guesses={roundState.guesses}
               totalRounds={roundState.maxGuessesPerSong}
               progress={snippetProgress}
+              peaks={snippetPeaks}
               isPlaying={isPlaying}
             />
           )}

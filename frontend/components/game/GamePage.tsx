@@ -67,6 +67,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     playSnippet,
     pauseSnippet,
     snippetProgress,
+    snippetPeaks,
   } = gameAudio;
 
   useWarnOnLeave(!!gameState && !isGameOver);
@@ -185,6 +186,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               totalRounds={gameState.maxRounds}
               snippetSteps={gameState.snippetSteps}
               progress={snippetProgress}
+              peaks={snippetPeaks}
               isPlaying={isPlaying}
             />
           )}

@@ -58,6 +58,7 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
     playSnippet,
     pauseSnippet,
     snippetProgress,
+    snippetPeaks,
   } = gameAudio;
 
   useWarnOnLeave(!!gameState && !isGameOver);
@@ -209,6 +210,7 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
               totalRounds={gameState.maxRounds}
               snippetSteps={gameState.snippetSteps}
               progress={snippetProgress}
+              peaks={snippetPeaks}
               isPlaying={isPlaying}
             />
           )}

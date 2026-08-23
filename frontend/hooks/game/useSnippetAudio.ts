@@ -4,6 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMotionValue } from 'framer-motion';
 import { SnippetPlayer } from '@/lib/snippet-player';
 
+/**
+ * Enough bars to read as a waveform at the widths we render, few enough that
+ * the DOM stays cheap.
+ */
+const WAVEFORM_SLICES = 96;
+
 interface UseSnippetAudioOptions {
   previewUrl: string | null | undefined;
   volume: number;
@@ -26,6 +32,8 @@ export function useSnippetAudio({
   const player = playerRef.current;
 
   const [isReady, setIsReady] = useState(false);
+  /** Peaks of the decoded track, for drawing the waveform. */
+  const [peaks, setPeaks] = useState<number[]>([]);
   /**
    * A MotionValue rather than state: the playhead updates every frame, and
    * re-rendering the game sixty times a second to move a bar is not worth it.
@@ -52,6 +60,7 @@ export function useSnippetAudio({
   // Decoded during round load, so the first press has nothing to wait for.
   useEffect(() => {
     setIsReady(false);
+    setPeaks([]);
     if (!previewUrl) {
       player.unload();
       return;
@@ -61,6 +70,7 @@ export function useSnippetAudio({
     void player.load(previewUrl).then((loaded) => {
       if (!cancelled) {
         setIsReady(loaded);
+        setPeaks(loaded ? player.peaks(WAVEFORM_SLICES) : []);
       }
     });
 
@@ -111,5 +121,5 @@ export function useSnippetAudio({
 
   useEffect(() => stopTracking, [stopTracking]);
 
-  return { play, stop, isReady, progress };
+  return { play, stop, isReady, progress, peaks };
 }

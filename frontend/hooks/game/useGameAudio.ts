@@ -355,6 +355,8 @@ export function useGameAudio({
     fullAudioRef,
     /** 0–1 through the current snippet, for the progress bar. */
     snippetProgress: snippet.progress,
+    /** Peaks of the decoded track, for the waveform. */
+    snippetPeaks: snippet.peaks,
     isPlaying,
     isFullSongPlaying,
     playSnippet,

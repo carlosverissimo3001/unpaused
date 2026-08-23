@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -15,7 +15,6 @@ import {
 import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
 import type { TrackOptionDto } from '@/sdk';
 import { ShareButton } from '@/components/daily/ShareButton';
-import { triggerRevealConfetti } from './confetti';
 import { useImageColor } from '@/hooks/misc/useImageColor';
 import { VolumeSlider } from './VolumeSlider';
 import { GLASS_STYLE } from '@/lib/styles';
@@ -76,15 +75,7 @@ export function SongRevealCard({
   const ambientGradient = albumRgb
     ? `radial-gradient(ellipse 80% 50% at 50% 0%, rgba(${albumRgb.r}, ${albumRgb.g}, ${albumRgb.b}, 0.12) 0%, transparent 70%)`
     : 'none';
-  const confettiFiredRef = useRef(false);
   const [albumLoaded, setAlbumLoaded] = useState(false);
-
-  useEffect(() => {
-    if (isWon && !confettiFiredRef.current) {
-      confettiFiredRef.current = true;
-      triggerRevealConfetti();
-    }
-  }, [isWon]);
 
   return (
     <motion.div
