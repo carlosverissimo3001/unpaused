@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Flame, Trophy, RotateCcw, Home } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { GuessInput } from '@/components/game/GuessInput';
 import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
 import { useGauntletAudio } from '@/hooks/speed-run/useSpeedRunAudio';
@@ -23,18 +22,6 @@ function getFireEmojis(score: number): string {
   if (score >= 10) return '🔥🔥';
   if (score >= 5) return '🔥';
   return '';
-}
-
-function fireConfetti(score: number) {
-  const isHuge = score >= 20;
-  void confetti({
-    particleCount: isHuge ? 200 : 80,
-    spread: isHuge ? 120 : 70,
-    origin: { y: 0.4 },
-    colors: ['#f97316', '#ef4444', '#fbbf24', '#fb923c'],
-    gravity: 0.8,
-    scalar: isHuge ? 1.2 : 0.9,
-  });
 }
 
 interface SpeedRunGameScreenProps {
@@ -70,7 +57,6 @@ export function SpeedRunGameScreen({
         !hasShownMilestoneRef.current.has(run.score)
       ) {
         hasShownMilestoneRef.current.add(run.score);
-        fireConfetti(run.score);
       }
     }
   }, [run.score]);
@@ -277,7 +263,6 @@ function GameOverPanel({
 
   useEffect(() => {
     if (isNewBest && score > 0) {
-      setTimeout(() => fireConfetti(score), 200);
     }
   }, [isNewBest, score]);
 

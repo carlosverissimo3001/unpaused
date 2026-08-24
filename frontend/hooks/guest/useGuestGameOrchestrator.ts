@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
 import { GuessHistoryDtoResultEnum as GuessResult } from '@/sdk/models/GuessHistoryDto';
@@ -10,7 +10,6 @@ import { useGuestGameState } from './useGuestGameState';
 import { useSubmitGuestGuess } from './useSubmitGuestGuess';
 import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
 import { useGameAudio } from '@/hooks/game/useGameAudio';
-import { triggerConfetti } from '@/components/game/confetti';
 
 const ShouldShakeResult: GuessResult[] = [
   GuessResult.Wrong,
@@ -29,6 +28,10 @@ export function useGuestGameOrchestrator({
   volume = 0.8,
 }: { volume?: number } = {}) {
   const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
+  /** True between asking for a new round and getting one, so the finished one
+      cannot briefly reappear while the swap happens. */
+  const [isResetting, setIsResetting] = useState(false);
+  const queryClient = useQueryClient();
   const hasStarted = useRef(false);
 
   const startGameMutation = useStartGuestGame();
@@ -58,11 +61,13 @@ export function useGuestGameOrchestrator({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const isGameOver = gameState?.status !== GameStateDtoStatusEnum.Playing;
+  const isGameOver =
+    !isResetting && gameState?.status !== GameStateDtoStatusEnum.Playing;
   const gameAudio = useGameAudio({
     previewUrl: gameState?.previewUrl,
     isGameOver: !!isGameOver,
     snippetDuration: gameState?.snippetDuration ?? 0.5,
+    maxSnippetDuration: gameState?.snippetSteps?.at(-1),
     volume,
   });
 
@@ -75,7 +80,6 @@ export function useGuestGameOrchestrator({
     const last = gameState.guesses[gameState.guesses.length - 1];
     if (last.result !== lastGuessResult) {
       setLastGuessResult(last.result);
-      if (last.result === GuessResult.Correct) triggerConfetti();
     }
   }, [gameState?.guesses, lastGuessResult]);
 
@@ -102,12 +106,29 @@ export function useGuestGameOrchestrator({
 
   const handlePlayAgain = useCallback(() => {
     gameAudio.stopFullSong();
-    hasStarted.current = false;
-    startGameMutation.reset();
+    setIsResetting(true);
     setLastGuessResult(null);
+
+    // The round id also lives under a predictable key so a Strict Mode
+    // orphaned observer cannot strand it. That key has to be cleared too:
+    // reset() only empties the mutation, so without this the finished round
+    // is still what roundId resolves to, and the old song plays again for a
+    // moment before the new one arrives.
+    if (gameState?.sessionId) {
+      queryClient.removeQueries({
+        queryKey: queryKeys.guest.state(gameState.sessionId),
+      });
+    }
+    // setQueryData rather than removeQueries: the orchestrator subscribes to
+    // this key, and removing it would drop that subscription.
+    queryClient.setQueryData(queryKeys.guest.startedRound, null);
+
+    startGameMutation.reset();
     hasStarted.current = true;
-    startGameMutation.mutate();
-  }, [gameAudio, startGameMutation]);
+    startGameMutation.mutate(undefined, {
+      onSettled: () => setIsResetting(false),
+    });
+  }, [gameAudio, gameState, queryClient, startGameMutation]);
 
   const lastGuess = gameState?.guesses?.[gameState.guesses.length - 1];
   const shouldShake = lastGuess

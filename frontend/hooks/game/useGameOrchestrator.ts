@@ -12,7 +12,6 @@ import { useGameAudio } from './useGameAudio';
 import { useGameStats } from './useGameStats';
 import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
 import { usePlaylistById } from '@/hooks/playlists/usePlaylistById';
-import { triggerConfetti } from '@/components/game/confetti';
 import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 
 const ShouldShakeResult: GuessResult[] = [
@@ -56,6 +55,7 @@ export function useGameOrchestrator(
     previewUrl: gameState?.previewUrl,
     isGameOver: !!isGameOver,
     snippetDuration: gameState?.snippetDuration ?? 0.5,
+    maxSnippetDuration: gameState?.snippetSteps?.at(-1),
     volume,
   });
 
@@ -70,9 +70,8 @@ export function useGameOrchestrator(
     }
     const last = gameState.guesses[gameState.guesses.length - 1];
     if (last.result !== lastGuessResult) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Tracking last guess result to trigger confetti once
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Tracking the last guess result for the shake animation
       setLastGuessResult(last.result);
-      if (last.result === GuessResult.Correct) triggerConfetti();
     }
   }, [gameState?.guesses, lastGuessResult]);
 

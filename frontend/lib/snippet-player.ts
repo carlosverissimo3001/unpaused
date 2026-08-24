@@ -1,23 +1,68 @@
 import { getAudioContext, resumeAudioContext } from './audio-context';
 
 /**
- * Plays short snippets through Web Audio rather than an <audio> element.
- *
- * An element cannot do this. `play()` has to seek, decode and spin up the OS
- * audio session first — 100–300ms, and worse on a cold first play — so a 0.1s
- * snippet is over before any sound arrives. Stopping it needs a JS timer, which
- * drifts, so the same round comes out a different length each time.
- *
- * Decoding up front moves that cost to round load, where nobody notices it, and
- * `start(when, offset, duration)` is scheduled on the audio clock, so playback
- * begins immediately and lasts exactly as long as asked.
- *
- * It also sidesteps preview URLs expiring: Deezer signs them with a ~15 minute
- * window, but once decoded the audio is a buffer in memory and the URL is no
- * longer needed.
- *
- * Kept free of React so it can be tested without a DOM.
+ * Snippets through Web Audio, not an <audio> element: play() costs 100–300ms
+ * to start, which is longer than the first round. Free of React so it can be
+ * tested without a DOM.
  */
+/** Loudness has to hold for this long to count as the song starting. */
+const ONSET_HOLD_SECONDS = 0.15;
+/** Measured over windows this size, so a single click cannot trigger it. */
+const ONSET_FRAME_SECONDS = 0.02;
+/** Share of the track's own loud level that counts as sound. */
+const ONSET_RATIO = 0.2;
+
+/**
+ * Where the round should start, so a near-silent opening doesn't spend the
+ * 0.1s round on nothing. Threshold is relative to the track's own loudness —
+ * mastering varies far too much for an absolute one.
+ */
+export function findOnset(buffer: AudioBuffer, window: number): number {
+  const rate = buffer.sampleRate;
+  const channel = buffer.getChannelData(0);
+  const frame = Math.max(Math.floor(ONSET_FRAME_SECONDS * rate), 1);
+  const frames = Math.floor(channel.length / frame);
+  if (frames === 0) {
+    return 0;
+  }
+
+  const levels = new Float32Array(frames);
+  let loudest = 0;
+  for (let i = 0; i < frames; i++) {
+    const start = i * frame;
+    let sum = 0;
+    for (let j = start; j < start + frame; j++) {
+      sum += channel[j] * channel[j];
+    }
+    const rms = Math.sqrt(sum / frame);
+    levels[i] = rms;
+    if (rms > loudest) {
+      loudest = rms;
+    }
+  }
+  if (loudest === 0) {
+    return 0;
+  }
+
+  const threshold = loudest * ONSET_RATIO;
+  const hold = Math.max(Math.ceil(ONSET_HOLD_SECONDS / ONSET_FRAME_SECONDS), 1);
+  // Never skip so far that a full-length round runs off the end.
+  const latest = Math.max(
+    Math.floor(((buffer.duration - window) * rate) / frame),
+    0,
+  );
+
+  let run = 0;
+  for (let i = 0; i < frames; i++) {
+    run = levels[i] >= threshold ? run + 1 : 0;
+    if (run >= hold) {
+      const startFrame = i - hold + 1;
+      return startFrame > latest ? 0 : (startFrame * frame) / rate;
+    }
+  }
+  return 0;
+}
+
 interface AudioAccess {
   /** For decoding, which needs no user gesture. */
   get(): AudioContext | null;
@@ -37,15 +82,84 @@ export class SnippetPlayer {
   private volume = 1;
   /** Guards against a slow decode landing after the track has moved on. */
   private generation = 0;
+  /** Context clock reading when the current snippet started, for the playhead. */
+  private startedAt = 0;
+  private playingFor = 0;
+  /** Seconds into the preview where the round starts. */
+  private offset = 0;
 
   onEnded: (() => void) | null = null;
 
-  // Injected so tests can drive it without a DOM, and so the shared context is
-  // an argument rather than a hidden import.
-  constructor(private readonly audio: AudioAccess = sharedAudio) {}
+  /** @param window Seconds a round can reach; past it is neither drawn nor searched. */
+  constructor(
+    private readonly audio: AudioAccess = sharedAudio,
+    private readonly window = 12,
+  ) {}
 
   get isReady(): boolean {
     return this.buffer !== null;
+  }
+
+  /** Peak amplitude across `count` slices of the playable window, each 0–1. */
+  peaks(count: number): number[] {
+    const buffer = this.buffer;
+    if (!buffer || count <= 0) {
+      return [];
+    }
+
+    // One channel: the two are near-identical at this resolution.
+    const channel = buffer.getChannelData(0);
+    // Only what a round can reach — the rest of the preview is never audible.
+    const samples = channel.subarray(
+      Math.floor(this.offset * buffer.sampleRate),
+      Math.min(
+        Math.floor((this.offset + this.window) * buffer.sampleRate),
+        channel.length,
+      ),
+    );
+    const per = Math.floor(samples.length / count) || 1;
+    const out: number[] = new Array<number>(count);
+
+    let ceiling = 0;
+    for (let slice = 0; slice < count; slice++) {
+      const start = slice * per;
+      const end = Math.min(start + per, samples.length);
+      let peak = 0;
+      for (let i = start; i < end; i++) {
+        const value = samples[i] < 0 ? -samples[i] : samples[i];
+        if (value > peak) {
+          peak = value;
+        }
+      }
+      out[slice] = peak;
+      if (peak > ceiling) {
+        ceiling = peak;
+      }
+    }
+
+    // Against the loudest slice, so a quiet master still fills the bar.
+    if (ceiling > 0) {
+      for (let i = 0; i < count; i++) {
+        out[i] /= ceiling;
+      }
+    }
+    return out;
+  }
+
+  /**
+   * How far through the snippet, 0–1. Read from the context clock, the same
+   * one playback is scheduled against, so the bar cannot drift from the audio.
+   */
+  progress(): number {
+    if (!this.source || this.playingFor <= 0) {
+      return 0;
+    }
+    const context = this.audio.get();
+    if (!context) {
+      return 0;
+    }
+    const elapsed = context.currentTime - this.startedAt;
+    return Math.min(Math.max(elapsed / this.playingFor, 0), 1);
   }
 
   setVolume(volume: number): void {
@@ -55,10 +169,7 @@ export class SnippetPlayer {
     }
   }
 
-  /**
-   * Resolves false when the audio could not be decoded, so the caller can fall
-   * back to an element rather than losing the round to an unusual codec.
-   */
+  /** False when it could not be decoded, so the caller can fall back. */
   async load(url: string): Promise<boolean> {
     const generation = ++this.generation;
     this.buffer = null;
@@ -81,6 +192,7 @@ export class SnippetPlayer {
         return false;
       }
       this.buffer = decoded;
+      this.offset = findOnset(decoded, this.window);
       return true;
     } catch {
       return false;
@@ -100,8 +212,7 @@ export class SnippetPlayer {
     if (!buffer) {
       return false;
     }
-    // Has to happen inside the gesture that triggered playback, or autoplay
-    // policy leaves the context suspended and nothing is audible.
+    // Must run inside the gesture, or autoplay policy leaves it suspended.
     const context = await this.audio.resume();
     if (!context) {
       return false;
@@ -123,11 +234,13 @@ export class SnippetPlayer {
       }
     };
 
+    const seconds = Math.min(durationSeconds, buffer.duration - this.offset);
     this.source = source;
     this.gain = gain;
-    // The third argument is what makes the length exact — the audio hardware
-    // enforces it rather than a timer racing the main thread.
-    source.start(0, 0, Math.min(durationSeconds, buffer.duration));
+    this.startedAt = context.currentTime;
+    this.playingFor = seconds;
+    // The third argument is enforced by the hardware, so the length is exact.
+    source.start(0, this.offset, seconds);
     return true;
   }
 
@@ -137,8 +250,8 @@ export class SnippetPlayer {
       return;
     }
     this.source = null;
-    // Detached first: onended fires on an explicit stop too, and the caller
-    // already knows about this one.
+    this.playingFor = 0;
+    // Detached first: onended fires on an explicit stop too.
     source.onended = null;
     try {
       source.stop();

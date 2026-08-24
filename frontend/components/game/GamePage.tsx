@@ -60,8 +60,15 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
   } = useGameOrchestrator(mode, playlistId, { volume });
 
   // Destructure gameAudio to avoid ref access warnings
-  const { audioRef, fullAudioRef, isPlaying, playSnippet, pauseSnippet } =
-    gameAudio;
+  const {
+    audioRef,
+    fullAudioRef,
+    isPlaying,
+    playSnippet,
+    pauseSnippet,
+    snippetProgress,
+    snippetPeaks,
+  } = gameAudio;
 
   useWarnOnLeave(!!gameState && !isGameOver);
 
@@ -147,6 +154,8 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             mode={mode}
             playlist={playlist ?? null}
             stats={stats ?? null}
+            volume={volume}
+            onVolumeChange={setVolume}
           />
 
           {!isGameOver && (
@@ -177,10 +186,14 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               currentRound={gameState.currentRound}
               guesses={gameState.guesses}
               totalRounds={gameState.maxRounds}
+              snippetSteps={gameState.snippetSteps}
+              progress={snippetProgress}
+              peaks={snippetPeaks}
+              isPlaying={isPlaying}
             />
           )}
 
-          {!isGameOver && showAlbumHint && gameState.albumImageUrl && (
+          {!isGameOver && showAlbumHint && (
             <AlbumArtReveal
               albumImageUrl={gameState.albumImageUrl}
               currentRound={gameState.currentRound}
@@ -194,8 +207,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
               isPlaying={isPlaying}
               onPlay={playSnippet}
               onPause={pauseSnippet}
-              volume={volume}
-              onVolumeChange={setVolume}
             />
           )}
 
@@ -235,8 +246,6 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
                   }
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   onToggleFullSong={gameAudio.toggleFullSong}
-                  volume={volume}
-                  onVolumeChange={setVolume}
                   rankTitle={gameState.rankTitle ?? null}
                 />
               </motion.div>

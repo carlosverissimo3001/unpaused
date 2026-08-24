@@ -17,6 +17,14 @@ export class GameStateDto {
   @ApiProperty({ description: 'The maximum number of rounds in the game' })
   maxRounds: number;
 
+  @ApiProperty({
+    description:
+      'Snippet length for every round, so the client can show what each miss unlocks',
+    type: Number,
+    isArray: true,
+  })
+  snippetSteps: number[];
+
   @ApiProperty({ description: 'The status of the game', enum: GameStatus })
   status: GameStatus;
 

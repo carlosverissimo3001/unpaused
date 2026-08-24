@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Home } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { triggerConfetti } from '@/components/game/confetti';
 import { useMe } from '@/hooks/auth/useMe';
 import { useMultiplayerScoreboard } from '@/hooks/multiplayer/useMultiplayerScoreboard';
 import { useMultiplayerSocket } from '@/hooks/multiplayer/useMultiplayerSocket';
@@ -116,17 +115,6 @@ export function ResultsContainer({ roomId }: ResultsContainerProps) {
         ?.totalScore,
     [sortedStandings, currentUserId],
   );
-
-  const shouldConfetti = outcome === 'won' || outcome === 'tied';
-  const confettiFired = useRef(false);
-
-  useEffect(() => {
-    if (isComplete && shouldConfetti && !confettiFired.current) {
-      confettiFired.current = true;
-      const timer = setTimeout(() => triggerConfetti(), 400);
-      return () => clearTimeout(timer);
-    }
-  }, [isComplete, shouldConfetti]);
 
   if (isLoading) {
     return (

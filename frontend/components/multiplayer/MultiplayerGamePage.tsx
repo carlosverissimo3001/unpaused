@@ -5,6 +5,7 @@ import { useImageColor } from '@/hooks/misc/useImageColor';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { RoundProgressBar } from '@/components/game/RoundProgressBar';
 import { PlaySnippetButton } from '@/components/game/PlaySnippetButton';
+import { VolumeSlider } from '@/components/game/VolumeSlider';
 import { SongRevealCard } from '@/components/game/SongRevealCard';
 import { GuessHistoryList } from '@/components/game/GuessHistoryList';
 import { GuessInput } from '@/components/game/GuessInput';
@@ -230,8 +231,15 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
     volume,
   });
 
-  const { audioRef, fullAudioRef, isPlaying, playSnippet, pauseSnippet } =
-    gameAudio;
+  const {
+    audioRef,
+    fullAudioRef,
+    isPlaying,
+    playSnippet,
+    pauseSnippet,
+    snippetProgress,
+    snippetPeaks,
+  } = gameAudio;
 
   const albumArtColor = useImageColor(
     isRoundComplete && roundState?.answer?.albumImageUrl
@@ -345,6 +353,11 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
             )}
           </AnimatePresence>
 
+          {/* Chrome, not part of the round: kept out of the play area. */}
+          <div className="mb-2 flex justify-end">
+            <VolumeSlider volume={volume} onVolumeChange={setVolume} />
+          </div>
+
           {/* Round dots */}
           <RoundDots roundState={roundState} pastResults={pastResults} />
 
@@ -416,6 +429,9 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
               currentRound={roundState.currentGuess}
               guesses={roundState.guesses}
               totalRounds={roundState.maxGuessesPerSong}
+              progress={snippetProgress}
+              peaks={snippetPeaks}
+              isPlaying={isPlaying}
             />
           )}
 
@@ -425,8 +441,6 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
               isPlaying={isPlaying}
               onPlay={playSnippet}
               onPause={pauseSnippet}
-              volume={volume}
-              onVolumeChange={setVolume}
             />
           )}
 
@@ -449,8 +463,6 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
                   showPlayAgain={false}
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   onToggleFullSong={gameAudio.toggleFullSong}
-                  volume={volume}
-                  onVolumeChange={setVolume}
                 />
 
                 {/* Player's own score for this round */}

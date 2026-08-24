@@ -18,7 +18,8 @@ function blurForRound(currentRound: number, maxRounds: number): number {
 }
 
 interface AlbumArtRevealProps {
-  albumImageUrl: string;
+  /** Absent until the round's track is known; the box is held either way. */
+  albumImageUrl?: string | null;
   currentRound: number;
   maxRounds: number;
 }
@@ -39,25 +40,27 @@ export function AlbumArtReveal({
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden ring-1 ring-fg/10 shadow-xl bg-fg/10">
-          {!imageLoaded && (
+        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-fg/10">
+          {(!albumImageUrl || !imageLoaded) && (
             <div className="absolute inset-0 animate-pulse bg-fg/10" />
           )}
-          <motion.div
-            className="absolute inset-0"
-            animate={{ filter: `blur(${blur}px)` }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-          >
-            <Image
-              src={albumImageUrl}
-              alt="Album art"
-              fill
-              className={`object-cover scale-110 transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-              sizes="112px"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageLoaded(true)}
-            />
-          </motion.div>
+          {albumImageUrl && (
+            <motion.div
+              className="absolute inset-0"
+              animate={{ filter: `blur(${blur}px)` }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+              <Image
+                src={albumImageUrl}
+                alt="Album art"
+                fill
+                className={`object-cover scale-110 transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                sizes="112px"
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageLoaded(true)}
+              />
+            </motion.div>
+          )}
         </div>
       </motion.div>
     </AnimatePresence>

@@ -11,6 +11,7 @@ import { useImageColor } from '@/hooks/misc/useImageColor';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { RoundProgressBar } from './RoundProgressBar';
+import { VolumeSlider } from './VolumeSlider';
 import { PlaySnippetButton } from './PlaySnippetButton';
 import { SongRevealCard } from './SongRevealCard';
 import { GuessHistoryList } from './GuessHistoryList';
@@ -51,8 +52,15 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
     handlePlayAgain,
   } = useGuestGameOrchestrator({ volume });
 
-  const { audioRef, fullAudioRef, isPlaying, playSnippet, pauseSnippet } =
-    gameAudio;
+  const {
+    audioRef,
+    fullAudioRef,
+    isPlaying,
+    playSnippet,
+    pauseSnippet,
+    snippetProgress,
+    snippetPeaks,
+  } = gameAudio;
 
   useWarnOnLeave(!!gameState && !isGameOver);
 
@@ -151,6 +159,9 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
               <ArrowLeft className="w-4 h-4" />
               Back
             </Link>
+            <div className="ml-auto flex items-center gap-4">
+              <VolumeSlider volume={volume} onVolumeChange={setVolume} />
+            </div>
             {/* Nothing at all while the site is gated: /api/auth/login is
                 blocked without the access cookie, so offering it is a dead end. */}
             {canSignIn && (
@@ -201,10 +212,14 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
               currentRound={gameState.currentRound}
               guesses={gameState.guesses}
               totalRounds={gameState.maxRounds}
+              snippetSteps={gameState.snippetSteps}
+              progress={snippetProgress}
+              peaks={snippetPeaks}
+              isPlaying={isPlaying}
             />
           )}
 
-          {!isGameOver && gameState.albumImageUrl && (
+          {!isGameOver && (
             <AlbumArtReveal
               albumImageUrl={gameState.albumImageUrl}
               currentRound={gameState.currentRound}
@@ -218,8 +233,6 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
               isPlaying={isPlaying}
               onPlay={playSnippet}
               onPause={pauseSnippet}
-              volume={volume}
-              onVolumeChange={setVolume}
             />
           )}
 
@@ -247,8 +260,6 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
                   onPlayAgain={handlePlayAgain}
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   onToggleFullSong={gameAudio.toggleFullSong}
-                  volume={volume}
-                  onVolumeChange={setVolume}
                 />
               </motion.div>
             ) : (

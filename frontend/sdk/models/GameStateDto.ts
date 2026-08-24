@@ -66,6 +66,12 @@ export interface GameStateDto {
      */
     maxRounds: number;
     /**
+     * Snippet length for every round, so the client can show what each miss unlocks
+     * @type {Array<number>}
+     * @memberof GameStateDto
+     */
+    snippetSteps: Array<number>;
+    /**
      * The status of the game
      * @type {string}
      * @memberof GameStateDto
@@ -136,6 +142,7 @@ export function instanceOfGameStateDto(value: object): value is GameStateDto {
     if (!('currentRound' in value) || value['currentRound'] === undefined) return false;
     if (!('snippetDuration' in value) || value['snippetDuration'] === undefined) return false;
     if (!('maxRounds' in value) || value['maxRounds'] === undefined) return false;
+    if (!('snippetSteps' in value) || value['snippetSteps'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('guesses' in value) || value['guesses'] === undefined) return false;
     if (!('previewUrl' in value) || value['previewUrl'] === undefined) return false;
@@ -156,6 +163,7 @@ export function GameStateDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'currentRound': json['currentRound'],
         'snippetDuration': json['snippetDuration'],
         'maxRounds': json['maxRounds'],
+        'snippetSteps': json['snippetSteps'],
         'status': json['status'],
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
         'previewUrl': json['previewUrl'],
@@ -182,6 +190,7 @@ export function GameStateDtoToJSONTyped(value?: GameStateDto | null, ignoreDiscr
         'currentRound': value['currentRound'],
         'snippetDuration': value['snippetDuration'],
         'maxRounds': value['maxRounds'],
+        'snippetSteps': value['snippetSteps'],
         'status': value['status'],
         'guesses': ((value['guesses'] as Array<any>).map(GuessHistoryDtoToJSON)),
         'previewUrl': value['previewUrl'],

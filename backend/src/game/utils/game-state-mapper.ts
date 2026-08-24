@@ -20,6 +20,7 @@ export function mapToGameStateDto(
     snippetDuration:
       ROUND_DURATIONS[Math.min(game.currentRound, MAX_ROUNDS - 1)],
     maxRounds: MAX_ROUNDS,
+    snippetSteps: [...ROUND_DURATIONS],
     status: game.status,
     guesses,
     // Safe to do, we throw on the caller if the track is not found or has no preview URL
@@ -57,6 +58,7 @@ export function mapInitialGameState(
     currentRound: 0,
     snippetDuration: ROUND_DURATIONS[0],
     maxRounds: MAX_ROUNDS,
+    snippetSteps: [...ROUND_DURATIONS],
     status: GameStatus.PLAYING,
     guesses: [],
     previewUrl,

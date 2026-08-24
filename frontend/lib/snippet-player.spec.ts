@@ -1,4 +1,20 @@
-import { SnippetPlayer } from './snippet-player';
+import { SnippetPlayer, findOnset } from './snippet-player';
+
+/** A buffer whose loudness follows `level(second)`, at 100 samples a second. */
+function buffer(seconds: number, level: (t: number) => number): AudioBuffer {
+  const rate = 100;
+  const data = new Float32Array(seconds * rate);
+  for (let i = 0; i < data.length; i++) {
+    // Alternating sign so RMS reflects the level rather than a DC offset.
+    data[i] = level(i / rate) * (i % 2 === 0 ? 1 : -1);
+  }
+  return {
+    duration: seconds,
+    sampleRate: rate,
+    length: data.length,
+    getChannelData: () => data,
+  } as unknown as AudioBuffer;
+}
 
 interface FakeSource {
   buffer: unknown;
@@ -14,12 +30,18 @@ function fakeContext() {
 
   const context = {
     state: 'suspended' as AudioContextState,
+    currentTime: 0,
     destination: {},
     resume: jest.fn(function (this: { state: AudioContextState }) {
       context.state = 'running';
       return Promise.resolve();
     }),
-    decodeAudioData: jest.fn().mockResolvedValue({ duration: 30 }),
+    decodeAudioData: jest.fn().mockResolvedValue({
+      duration: 30,
+      // One sample a second, so the playable window covers the whole array.
+      sampleRate: 1,
+      getChannelData: () => new Float32Array([0, 0.5, -1, 0.25, 0, -0.5, 1, 0]),
+    }),
     createGain: jest.fn(() => gain),
     createBufferSource: jest.fn(() => {
       const source: FakeSource = {
@@ -187,6 +209,104 @@ describe('SnippetPlayer', () => {
     expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 12);
   });
 
+  describe('peaks', () => {
+    it('is empty before anything is loaded', () => {
+      expect(player().peaks(8)).toEqual([]);
+    });
+
+    it('is empty when asked for nothing', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.peaks(0)).toEqual([]);
+    });
+
+    it('returns one value per slice requested', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.peaks(4)).toHaveLength(4);
+    });
+
+    it('takes the loudest sample in each slice, ignoring sign', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      // Two samples per slice of [0, .5, -1, .25, 0, -.5, 1, 0]
+      expect(p.peaks(4)).toEqual([0.5, 1, 0.5, 1]);
+    });
+
+    it('normalises against the loudest slice', async () => {
+      harness.context.decodeAudioData.mockResolvedValue({
+        duration: 30,
+        sampleRate: 1,
+        // A quietly mastered track should still fill the bar.
+        getChannelData: () => new Float32Array([0.1, 0.2]),
+      });
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.peaks(2)).toEqual([0.5, 1]);
+    });
+
+    it('does not divide by zero on silence', async () => {
+      harness.context.decodeAudioData.mockResolvedValue({
+        duration: 30,
+        sampleRate: 1,
+        getChannelData: () => new Float32Array([0, 0, 0, 0]),
+      });
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.peaks(2)).toEqual([0, 0]);
+    });
+  });
+
+  describe('progress', () => {
+    it('is zero before anything plays', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+
+      expect(p.progress()).toBe(0);
+    });
+
+    it('follows the context clock rather than a counter of its own', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+      harness.context.currentTime = 10;
+
+      await p.play(4);
+      expect(p.progress()).toBe(0);
+
+      harness.context.currentTime = 11;
+      expect(p.progress()).toBeCloseTo(0.25);
+
+      harness.context.currentTime = 13;
+      expect(p.progress()).toBeCloseTo(0.75);
+    });
+
+    it('never exceeds one, even if the clock runs past the snippet', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+      await p.play(1);
+
+      harness.context.currentTime = 99;
+
+      expect(p.progress()).toBe(1);
+    });
+
+    it('returns to zero once stopped', async () => {
+      const p = player();
+      await p.load('https://cdn/preview.mp3');
+      await p.play(4);
+      harness.context.currentTime = 2;
+
+      p.stop();
+
+      expect(p.progress()).toBe(0);
+    });
+  });
+
   it('forgets its audio when unloaded', async () => {
     const p = player();
     await p.load('https://cdn/preview.mp3');
@@ -195,5 +315,75 @@ describe('SnippetPlayer', () => {
 
     expect(p.isReady).toBe(false);
     await expect(p.play(0.5)).resolves.toBe(false);
+  });
+});
+
+describe('findOnset', () => {
+  it('starts at the beginning when the track opens loud', () => {
+    expect(
+      findOnset(
+        buffer(30, () => 0.8),
+        12,
+      ),
+    ).toBe(0);
+  });
+
+  it('skips a silent opening', () => {
+    // Silent for two seconds, then the song.
+    const onset = findOnset(
+      buffer(30, (t) => (t < 2 ? 0 : 0.8)),
+      12,
+    );
+
+    expect(onset).toBeGreaterThanOrEqual(1.9);
+    expect(onset).toBeLessThanOrEqual(2.1);
+  });
+
+  it('ignores a click in the silence', () => {
+    // A single loud frame at 1s is not the song starting.
+    const onset = findOnset(
+      buffer(30, (t) => (t >= 1 && t < 1.02 ? 0.9 : t < 5 ? 0 : 0.8)),
+      12,
+    );
+
+    expect(onset).toBeGreaterThanOrEqual(4.9);
+  });
+
+  it('stays at the beginning for a quiet but not silent opening', () => {
+    // A fade-in still counts once it passes a fifth of the track's level.
+    expect(
+      findOnset(
+        buffer(30, () => 0.3),
+        12,
+      ),
+    ).toBe(0);
+  });
+
+  it('gives up rather than skipping past what a round can reach', () => {
+    // Nothing until 25s: skipping there would leave under 12s of audio.
+    expect(
+      findOnset(
+        buffer(30, (t) => (t < 25 ? 0 : 0.8)),
+        12,
+      ),
+    ).toBe(0);
+  });
+
+  it('returns zero for silence throughout', () => {
+    expect(
+      findOnset(
+        buffer(30, () => 0),
+        12,
+      ),
+    ).toBe(0);
+  });
+
+  it('handles a buffer shorter than a single frame', () => {
+    expect(
+      findOnset(
+        buffer(0, () => 0),
+        12,
+      ),
+    ).toBe(0);
   });
 });

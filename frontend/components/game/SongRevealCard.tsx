@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -15,9 +15,7 @@ import {
 import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
 import type { TrackOptionDto } from '@/sdk';
 import { ShareButton } from '@/components/daily/ShareButton';
-import { triggerRevealConfetti } from './confetti';
-import { useImageColor } from '@/hooks/misc/useImageColor';
-import { VolumeSlider } from './VolumeSlider';
+
 import { GLASS_STYLE } from '@/lib/styles';
 
 interface SongRevealCardProps {
@@ -34,16 +32,8 @@ interface SongRevealCardProps {
   playlistImageUrl?: string | null;
   isFullSongPlaying: boolean;
   onToggleFullSong: () => void;
-  volume: number;
-  onVolumeChange: (v: number) => void;
   /** Easter egg: personalized rank for special users */
   rankTitle?: string | null;
-}
-
-function extractRgb(rgba: string): { r: number; g: number; b: number } | null {
-  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-  if (!match) return null;
-  return { r: +match[1], g: +match[2], b: +match[3] };
 }
 
 export function SongRevealCard({
@@ -60,31 +50,22 @@ export function SongRevealCard({
   playlistImageUrl,
   isFullSongPlaying,
   onToggleFullSong,
-  volume,
-  onVolumeChange,
   rankTitle,
 }: SongRevealCardProps) {
-  const songSpotifyUrl = answer
-    ? `https://open.spotify.com/track/${answer.id}`
-    : undefined;
+  // The backend supplies this. Building it from answer.id assumed every track
+  // was a Spotify one, which silently 404s for guest-pool tracks.
+  const songUrl = answer?.trackUrl;
+  const isSpotifyLink = songUrl?.includes('open.spotify.com') ?? false;
+  const linkBadgeClass = isSpotifyLink
+    ? 'bg-[#1DB954] text-black'
+    : 'bg-[#A238FF] text-white';
+  // "Rick Ross" alone hides that Diced Pineapples is also Wale and Drake.
+  const credited = answer?.allArtists?.length
+    ? answer.allArtists.join(', ')
+    : answer?.artist;
   const isWon = status === GameStateDtoStatusEnum.Won;
-  const albumColor = useImageColor(answer?.albumImageUrl ?? null);
-  const albumRgb = extractRgb(albumColor);
-  const albumGlowColor = albumRgb
-    ? `rgba(${albumRgb.r}, ${albumRgb.g}, ${albumRgb.b}, 0.5)`
-    : 'rgba(29, 185, 84, 0.3)';
-  const ambientGradient = albumRgb
-    ? `radial-gradient(ellipse 80% 50% at 50% 0%, rgba(${albumRgb.r}, ${albumRgb.g}, ${albumRgb.b}, 0.12) 0%, transparent 70%)`
-    : 'none';
-  const confettiFiredRef = useRef(false);
-  const [albumLoaded, setAlbumLoaded] = useState(false);
 
-  useEffect(() => {
-    if (isWon && !confettiFiredRef.current) {
-      confettiFiredRef.current = true;
-      triggerRevealConfetti();
-    }
-  }, [isWon]);
+  const [albumLoaded, setAlbumLoaded] = useState(false);
 
   return (
     <motion.div
@@ -94,15 +75,6 @@ export function SongRevealCard({
       className="mb-3 md:mb-4 p-6 md:p-8 rounded-2xl text-center relative overflow-hidden"
       style={GLASS_STYLE}
     >
-      {/* Ambient color wash from album art */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, delay: 0.3 }}
-        style={{ background: ambientGradient }}
-      />
-
       <div className="relative z-10">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 tracking-tight flex items-center justify-center gap-1 flex-wrap">
           <span
@@ -142,14 +114,7 @@ export function SongRevealCard({
                 }}
                 className="relative w-36 h-36 md:w-44 md:h-44 mx-auto mb-4 md:mb-5"
               >
-                {/* Colored glow behind album art */}
-                <div
-                  className="absolute -inset-4 rounded-3xl blur-2xl opacity-60 transition-colors duration-700"
-                  style={{
-                    background: `radial-gradient(circle, ${albumGlowColor} 0%, transparent 70%)`,
-                  }}
-                />
-                <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+                <div className="relative w-full h-full rounded-xl overflow-hidden">
                   {!albumLoaded && (
                     <div className="absolute inset-0 animate-pulse bg-fg/10" />
                   )}
@@ -180,7 +145,7 @@ export function SongRevealCard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
             >
-              {answer.artist}
+              {credited}
             </motion.p>
           </div>
         )}
@@ -201,7 +166,6 @@ export function SongRevealCard({
                   <Play className="w-5 h-5 text-fg" />
                 )}
               </motion.button>
-              <VolumeSlider volume={volume} onVolumeChange={onVolumeChange} />
             </>
           )}
           {shareGameId && (
@@ -239,9 +203,9 @@ export function SongRevealCard({
             className="mt-6 pt-6 border-t border-fg/10"
           >
             <div className="w-full max-w-md mx-auto rounded-xl border border-fg/10 overflow-hidden divide-y divide-fg/10">
-              {answer && songSpotifyUrl && (
+              {answer && songUrl && (
                 <a
-                  href={songSpotifyUrl}
+                  href={songUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 bg-fg/5 hover:bg-fg/10 text-fg transition-colors group"
@@ -265,11 +229,11 @@ export function SongRevealCard({
                     <p className="font-medium text-sm truncate">
                       {answer.name}
                     </p>
-                    <p className="text-xs text-fg/50 truncate">
-                      {answer.artist}
-                    </p>
+                    <p className="text-xs text-fg/50 truncate">{credited}</p>
                   </div>
-                  <span className="bg-[#1DB954] text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
+                  <span
+                    className={`${linkBadgeClass} text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0`}
+                  >
                     SONG
                   </span>
                   <ExternalLink className="w-4 h-4 text-fg/50 group-hover:text-fg flex-shrink-0" />
@@ -301,9 +265,7 @@ export function SongRevealCard({
                     <p className="font-medium text-sm truncate">
                       {answer.albumName || 'Album'}
                     </p>
-                    <p className="text-xs text-fg/50 truncate">
-                      {answer.artist}
-                    </p>
+                    <p className="text-xs text-fg/50 truncate">{credited}</p>
                   </div>
                   <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">
                     ALBUM
