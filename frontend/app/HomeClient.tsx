@@ -100,7 +100,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
       </div>
 
       <AppHeader
-        user={hasAccount ? user : undefined}
+        user={user}
         onLogout={handleLogout}
         isLoggingOut={logoutMutation.isPending}
       />

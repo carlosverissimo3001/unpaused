@@ -34,7 +34,7 @@ export default function JoinManualPage() {
   // Auth gate
   useEffect(() => {
     if (isLoadingUser) return;
-    if (!user) {
+    if (!user?.hasLinkedAccount) {
       setAuthReturnUrl('/multiplayer/join');
       window.location.href = '/api/auth/login';
     }

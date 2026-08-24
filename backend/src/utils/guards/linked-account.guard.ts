@@ -13,9 +13,12 @@ import { SESSION_COOKIE_NAME } from '../../consts';
  * Any credential will do, unlike SpotifyLinkedGuard: this asks whether the
  * player has an account at all, so CAR-188's email logins pass it too.
  *
- * Multiplayer and the speed-run sit behind it until CAR-190 moves room state
- * out of the gateway process — an anonymous player now holds a real session
- * and could otherwise fill rooms a single backend instance cannot scale past.
+ * Multiplayer sits behind it until CAR-190 moves room state out of the gateway
+ * process: an anonymous player now holds a real session and could otherwise
+ * fill rooms a single backend instance cannot scale past. The speed-run sits
+ * behind it because a run is built on a Spotify playlist, so there is nothing
+ * for a player without a library to run against — drop it there once the pool
+ * can feed a run.
  */
 @Injectable()
 export class LinkedAccountGuard implements CanActivate {
