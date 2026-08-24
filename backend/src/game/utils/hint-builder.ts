@@ -1,7 +1,7 @@
 import { TrackMetadataVo } from '../../track/vo/track-metadata.vo';
 import { TrackEntity } from '../../track/entities/track.entity';
 import { getDecade } from 'date-fns';
-import { compareText, normalizeTrackNameForMatch } from '../../utils/text';
+import { normalizeTrackNameForMatch } from '../../utils/text';
 import { HintDto } from '../dto/hint/hint.dto';
 import { HintType } from '../types';
 
@@ -16,10 +16,22 @@ const genreHint: HintProducer = (track, metadata) => {
     return null;
   }
 
-  const tags = rawTags.filter((t) => {
-    // Filter out tags that are too similar to any artist name, as they are not really hints
-    return !track.allArtists.some((artist) => compareText(t, artist));
-  });
+  // Last.fm tags are free text, so plenty of them are the artist or the song
+  // rather than a genre. Normalized, since "Rihanna" and "rihanna!" are the
+  // same giveaway.
+  const forbidden = new Set(
+    [track.name, ...track.allArtists].map((v) =>
+      normalizeTrackNameForMatch(v).toLowerCase(),
+    ),
+  );
+  const tags = rawTags.filter(
+    (t) => !forbidden.has(normalizeTrackNameForMatch(t).toLowerCase()),
+  );
+
+  // Every tag was a giveaway, so there is no hint to give.
+  if (tags.length === 0) {
+    return null;
+  }
 
   return { type: HintType.GENRE, label: 'Genre', value: tags.join(', ') };
 };
