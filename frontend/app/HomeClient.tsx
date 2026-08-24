@@ -25,7 +25,11 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
 
   const { data: user, isLoading: isLoadingUser } = useMe();
 
-  useTimezoneSync({ enabled: !!user });
+  // Every visitor who starts a round has a session, so a session no longer
+  // means signed in. Only a linked credential does.
+  const hasAccount = !!user?.hasLinkedAccount;
+
+  useTimezoneSync({ enabled: hasAccount });
 
   // Detect post-OAuth pending redirect synchronously on mount so we can
   // render a blank overlay instead of a flash of the homepage while
@@ -43,19 +47,19 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   // Hard navigation: a return url can point at a rewrite the client router
   // cannot resolve locally.
   useEffect(() => {
-    if (user) {
+    if (hasAccount) {
       const returnUrl = consumeAuthReturnUrl();
       if (returnUrl) {
         window.location.replace(returnUrl);
       }
     }
-  }, [user]);
+  }, [hasAccount]);
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } =
     useMyPlaylists({
       onlyPublic: playlistFilters.visibility === 'public',
       onlyPrivate: playlistFilters.visibility === 'private',
       sortBy: playlistFilters.sortBy,
-      enabled: !!user,
+      enabled: hasAccount,
     });
   const logoutMutation = useLogout();
   const [streakDismissed, setStreakDismissed] = useState(false);
@@ -96,7 +100,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
       </div>
 
       <AppHeader
-        user={user}
+        user={hasAccount ? user : undefined}
         onLogout={handleLogout}
         isLoggingOut={logoutMutation.isPending}
       />
@@ -105,7 +109,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
         <div className="max-w-5xl mx-auto flex flex-col gap-3 sm:gap-6">
           <ErrorBanner error={error} />
 
-          {user ? (
+          {hasAccount ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}

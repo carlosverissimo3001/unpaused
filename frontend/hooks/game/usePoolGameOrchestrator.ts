@@ -33,13 +33,15 @@ export function usePoolGameOrchestrator({
   /** True between asking for a new round and getting one, so the finished one
       cannot briefly reappear while the swap happens. */
   const [isResetting, setIsResetting] = useState(false);
+  /** No round, and so no user row, until the visitor asks for one. */
+  const [hasBegun, setHasBegun] = useState(false);
 
   const {
     sessionId,
     isLoading: sessionLoading,
     error: sessionError,
     startGameMutation,
-  } = useGameSession(GameMode.All, POOL_PLAYLIST_ID);
+  } = useGameSession(GameMode.All, POOL_PLAYLIST_ID, { enabled: hasBegun });
   const {
     data: gameState,
     isLoading: loadingState,
@@ -117,12 +119,16 @@ export function usePoolGameOrchestrator({
     );
   }, [gameAudio, gameState, queryClient, startGameMutation]);
 
+  const begin = useCallback(() => setHasBegun(true), []);
+
   const lastGuess = gameState?.guesses?.[gameState.guesses.length - 1];
   const shouldShake = lastGuess
     ? ShouldShakeResult.includes(lastGuess.result)
     : false;
 
   return {
+    hasBegun,
+    begin,
     gameState,
     isLoading,
     error,

@@ -15,13 +15,17 @@ import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
  *     in useStartGame writes here, and the subscription triggers a re-render even if
  *     the mutation observer is orphaned by Strict Mode.
  */
-export function useGameSession(mode: GameMode, playlistId?: string) {
+export function useGameSession(
+  mode: GameMode,
+  playlistId?: string,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
   const startGameMutation = useStartGame();
   const hasStarted = useRef(false);
 
   const isPlaylist = mode === GameMode.All;
   const isDaily = mode === GameMode.Daily;
-  const shouldStart = (isPlaylist && !!playlistId) || isDaily;
+  const shouldStart = enabled && ((isPlaylist && !!playlistId) || isDaily);
 
   // Predictable cache key — known before the mutation completes
   const sessionCacheKey =

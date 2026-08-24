@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { SessionId } from '@utils/decorators/sessionId.decorator';
 import { SessionGuard } from '@utils/guards/session-guard';
+import { LinkedAccountGuard } from '@utils/guards/linked-account.guard';
 import { SessionThrottlerGuard } from '@throttle/guards/session-throttler.guard';
 import {
   THROTTLE_GUESS,
@@ -35,7 +36,7 @@ import { ScoreboardDto } from '../dto/scoreboard.dto';
 
 @ApiTags('Api')
 @Controller('multiplayer')
-@UseGuards(SessionGuard)
+@UseGuards(SessionGuard, LinkedAccountGuard)
 export class MultiplayerController {
   constructor(
     private readonly roomService: RoomService,

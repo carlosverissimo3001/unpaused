@@ -17,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { SessionId } from '@utils/decorators/sessionId.decorator';
 import { SessionGuard } from '@utils/guards/session-guard';
+import { LinkedAccountGuard } from '@utils/guards/linked-account.guard';
 import { SessionThrottlerGuard } from '@throttle/guards/session-throttler.guard';
 import {
   THROTTLE_GUESS,
@@ -41,6 +42,7 @@ export class GauntletController {
   constructor(private readonly gauntletService: GauntletService) {}
 
   @Post('start')
+  @UseGuards(LinkedAccountGuard)
   @ApiOperation({ summary: 'Start a new gauntlet run' })
   @ApiCookieAuth()
   @ApiResponse({ status: 201, type: GauntletRunStateDto })
@@ -56,6 +58,7 @@ export class GauntletController {
   }
 
   @Post(':id/guess')
+  @UseGuards(LinkedAccountGuard)
   @UseGuards(SessionThrottlerGuard)
   @Throttle({
     [THROTTLE_GUESS]: { limit: THROTTLE_GUESS_LIMIT, ttl: THROTTLE_TTL },
@@ -74,6 +77,7 @@ export class GauntletController {
   }
 
   @Post(':id/end')
+  @UseGuards(LinkedAccountGuard)
   @ApiOperation({ summary: 'Voluntarily end a gauntlet run (quit)' })
   @ApiParam({ name: 'id', description: 'The gauntlet run ID' })
   @ApiCookieAuth()
@@ -86,6 +90,7 @@ export class GauntletController {
   }
 
   @Get('personal-best')
+  @UseGuards(LinkedAccountGuard)
   @ApiOperation({ summary: "Get user's gauntlet personal best" })
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: PersonalBestDto })
@@ -112,6 +117,7 @@ export class GauntletController {
   }
 
   @Get('history')
+  @UseGuards(LinkedAccountGuard)
   @ApiOperation({ summary: "Get user's gauntlet run history (paginated)" })
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: GauntletHistoryDto })
@@ -123,6 +129,7 @@ export class GauntletController {
   }
 
   @Get(':id')
+  @UseGuards(LinkedAccountGuard)
   @ApiOperation({ summary: 'Get current gauntlet run state' })
   @ApiParam({ name: 'id', description: 'The gauntlet run ID' })
   @ApiCookieAuth()

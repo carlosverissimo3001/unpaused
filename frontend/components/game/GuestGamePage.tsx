@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Play } from 'lucide-react';
 import { usePoolGameOrchestrator } from '@/hooks/game/usePoolGameOrchestrator';
 import { useVolume } from '@/hooks/game/useVolume';
 import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
@@ -38,6 +38,8 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
   const { volume, setVolume } = useVolume();
 
   const {
+    hasBegun,
+    begin,
     gameState,
     isLoading,
     error,
@@ -68,6 +70,42 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
       ? gameState.answer.albumImageUrl
       : null,
   );
+
+  // The round is what mints the account, so it waits for a deliberate tap
+  // rather than firing on page load.
+  if (!hasBegun) {
+    return (
+      <div
+        className="h-screen h-[100dvh] flex flex-col items-center justify-center gap-8 p-6 text-center"
+        style={{ background: 'rgb(var(--bg))' }}
+      >
+        <div className="space-y-2">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-fg">
+            Name the <span className="text-spotify-green">song</span>
+          </h1>
+          <p className="text-fg/50 text-sm sm:text-base tracking-tight">
+            Six chances. It starts with one second.
+          </p>
+        </div>
+
+        <Button
+          onClick={begin}
+          className="h-12 px-8 rounded-2xl bg-spotify-green text-black text-sm font-black hover:brightness-110 active:scale-95 shadow-[0_8px_20px_rgba(30,215,96,0.3)]"
+        >
+          <Play fill="currentColor" className="w-4 h-4" />
+          Play
+        </Button>
+
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-bold text-fg/40 hover:text-fg/70 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back
+        </Link>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

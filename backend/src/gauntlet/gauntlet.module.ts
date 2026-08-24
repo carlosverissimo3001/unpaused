@@ -5,10 +5,11 @@ import { GauntletRunRepository } from './repositories/gauntlet-run.repository';
 import { AuthModule } from '../auth/auth.module';
 import { PlaylistModule } from '../playlist/playlist.module';
 import { TrackModule } from '../track/track.module';
+import { LinkedAccountGuard } from '@utils/guards/linked-account.guard';
 
 @Module({
   imports: [AuthModule, PlaylistModule, TrackModule],
   controllers: [GauntletController],
-  providers: [GauntletService, GauntletRunRepository],
+  providers: [GauntletService, GauntletRunRepository, LinkedAccountGuard],
 })
 export class GauntletModule {}

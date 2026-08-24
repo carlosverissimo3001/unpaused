@@ -59,8 +59,10 @@ export function applyFilters(
     */
     const hasImage = playlist.images?.some((img) => !!img.url);
     const hasTracks = (playlist.items?.total ?? 0) > 0;
-    // Spotify only allows playing user-owned playlists
-    const isOwnedByUser = playlist.owner?.id === session.spotifyUserId;
+    // Spotify only allows playing user-owned playlists. The presence check is
+    // load-bearing: without it an unlinked session matches every playlist.
+    const isOwnedByUser =
+      !!session.spotifyUserId && playlist.owner?.id === session.spotifyUserId;
     const matchesPublicFilter = !filters.onlyPublic || playlist.public === true;
     const matchesPrivateFilter =
       !filters.onlyPrivate || playlist.public === false;
