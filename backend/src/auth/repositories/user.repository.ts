@@ -3,6 +3,7 @@ import { User as PrismaUser } from '@prisma/client';
 import { UserEntity } from '../entities/user.entity';
 import { PrismaService } from '@prisma/prisma.service';
 import { UpsertUserDto } from '../dto/upsert-user.dto';
+import { AttachSpotifyDto } from '../dto/attach-spotify.dto';
 
 @Injectable()
 export class UserRepository {
@@ -66,6 +67,29 @@ export class UserRepository {
       where: { id: userId },
       data: { displayName },
     });
+  }
+
+  /** No credentials yet: what makes this row a guest is the absence of them. */
+  async createAnonymous(displayName: string): Promise<UserEntity> {
+    const user = await this.prismaService.user.create({
+      data: { displayName },
+    });
+    return this.fromPrisma(user);
+  }
+
+  async attachSpotify(
+    userId: string,
+    data: AttachSpotifyDto,
+  ): Promise<UserEntity> {
+    const user = await this.prismaService.user.update({
+      where: { id: userId },
+      data: {
+        spotifyUserId: data.spotifyUserId,
+        avatarUrl: data.avatarUrl,
+        country: data.country,
+      },
+    });
+    return this.fromPrisma(user);
   }
 
   /**
