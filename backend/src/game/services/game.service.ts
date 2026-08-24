@@ -111,7 +111,7 @@ export class GameService {
       return this.getGameState(sessionId, existing.id);
     }
 
-    if (playlistId === POOL_PLAYLIST_ID) {
+    if (mode !== GameMode.DAILY && playlistId === POOL_PLAYLIST_ID) {
       return this.startPoolGame(userId, mode);
     }
 
