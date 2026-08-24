@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SpotifyService } from './spotify.service';
 import { SpotifyAuthService } from './spotify-auth.service';
@@ -66,17 +70,18 @@ export class AuthService {
 
     // Store tokens via SpotifyAuthService (Redis cache + encrypted DB)
     await this.spotifyAuthService.storeTokens(
-      user.spotifyUserId,
+      profile.id,
       tokens.accessToken,
       tokens.refreshToken,
       tokens.expiresIn,
     );
 
-    const sessionId = await this.sessionService.createSession(
-      user.spotifyUserId,
-      user.displayName,
-      user.isTrusted,
-    );
+    const sessionId = await this.sessionService.createSession({
+      userId: user.id,
+      displayName: user.displayName,
+      isTrusted: user.isTrusted,
+      spotifyUserId: profile.id,
+    });
 
     return sessionId;
   }
@@ -92,9 +97,7 @@ export class AuthService {
       throw new UnauthorizedException('Session expired');
     }
 
-    const user = await this.userRepository.findBySpotifyUserId(
-      session.spotifyUserId,
-    );
+    const user = await this.userRepository.findById(session.userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -118,7 +121,7 @@ export class AuthService {
   }
 
   /**
-   * Resolves session to get spotifyUserId, then returns a valid access token.
+   * Resolves the session, then returns a valid Spotify access token.
    * @param sessionId - The session ID
    * @returns The session and a valid access token
    */
@@ -128,6 +131,12 @@ export class AuthService {
     const session = await this.sessionService.getSession(sessionId);
     if (!session) {
       throw new UnauthorizedException('Session not found');
+    }
+
+    if (!session.spotifyUserId) {
+      throw new ForbiddenException(
+        'This action requires a linked Spotify account',
+      );
     }
 
     const accessToken = await this.spotifyAuthService.getValidAccessToken(
@@ -144,13 +153,7 @@ export class AuthService {
    */
   async getUserBySessionId(sessionId: string): Promise<User> {
     const session = await this.sessionService.getSession(sessionId);
-    const user = await this.prismaService.user.findUnique({
-      where: { spotifyUserId: session.spotifyUserId },
-    });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return user;
+    return this.getUserById(session.userId);
   }
 
   /**
@@ -176,10 +179,7 @@ export class AuthService {
     const session = await this.sessionService.getSession(sessionId);
     const displayName = dto.displayName.trim();
 
-    await this.userRepository.updateDisplayName(
-      session.spotifyUserId,
-      displayName,
-    );
+    await this.userRepository.updateDisplayName(session.userId, displayName);
     await this.sessionService.updateSessionDisplayName(sessionId, displayName);
 
     return this.getCurrentUser(sessionId);
@@ -192,10 +192,8 @@ export class AuthService {
   async logout(sessionId: string): Promise<void> {
     const session = await this.sessionService.getSession(sessionId);
 
-    if (session) {
+    if (session?.spotifyUserId) {
       await this.spotifyAuthService.revokeTokens(session.spotifyUserId);
-    } else {
-      // Session already expired — nothing to revoke
     }
     await this.sessionService.deleteSession(sessionId);
   }

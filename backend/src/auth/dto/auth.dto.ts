@@ -2,8 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AvatarSource } from '@prisma/client';
 
 export class AuthMeResponseDto {
-  @ApiProperty({ description: 'Unique identifier for the user' })
-  spotifyUserId: string;
+  @ApiPropertyOptional({
+    description: 'Spotify user ID, present only when the account is linked',
+  })
+  spotifyUserId?: string;
 
   @ApiProperty({ description: 'John Doe' })
   displayName: string;

@@ -61,12 +61,9 @@ export class UserRepository {
   /**
    * Updates the display name for a user.
    */
-  async updateDisplayName(
-    spotifyUserId: string,
-    displayName: string,
-  ): Promise<void> {
+  async updateDisplayName(userId: string, displayName: string): Promise<void> {
     await this.prismaService.user.update({
-      where: { spotifyUserId },
+      where: { id: userId },
       data: { displayName },
     });
   }

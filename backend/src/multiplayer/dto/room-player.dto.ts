@@ -8,8 +8,8 @@ export class RoomPlayerDto {
   @ApiProperty()
   userId: string;
 
-  @ApiProperty()
-  spotifyUserId: string;
+  @ApiPropertyOptional({ type: String })
+  spotifyUserId?: string;
 
   @ApiProperty()
   displayName: string;
@@ -34,7 +34,7 @@ export class RoomPlayerDto {
     return {
       id: player.id,
       userId: player.userId,
-      spotifyUserId: player.user.spotifyUserId,
+      spotifyUserId: player.user.spotifyUserId ?? undefined,
       displayName: player.user.displayName,
       avatarUrl: player.user.avatarUrl ?? undefined,
       isReady: player.isReady,

@@ -6,7 +6,9 @@ export class UserSessionDto {
   @IsString()
   sessionId: string;
 
-  @ApiProperty({ description: 'Identifier of the user this session belongs to' })
+  @ApiProperty({
+    description: 'Identifier of the user this session belongs to',
+  })
   @IsString()
   userId: string;
 

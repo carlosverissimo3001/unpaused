@@ -34,7 +34,7 @@ export class TrackPoolService {
   /**
    * Select tracks for a multiplayer room using weighted liked-song pooling.
    *
-   * 1. Resolve each player's userId → sessionId via reverse Redis lookup
+   * 1. Resolve each player's userId -> sessionId via reverse Redis lookup
    * 2. Fetch liked-song batches for each player
    * 3. Build weighted frequency map (tracks liked by more players → higher weight)
    * 4. Weighted random selection of `roundCount` unique tracks with valid previews
@@ -48,7 +48,7 @@ export class TrackPoolService {
     playerUserIds: string[],
     roundCount: number,
   ): Promise<string[]> {
-    // 1. Resolve userIds → spotifyUserIds → sessionIds
+    // 1. Resolve userIds -> sessionIds
     const sessionIds = await this.resolvePlayerSessions(playerUserIds);
 
     if (sessionIds.length === 0) {
@@ -76,7 +76,7 @@ export class TrackPoolService {
     // Fetch all users in a single query to avoid N+1 DB calls
     const users = await this.prisma.user.findMany({
       where: { id: { in: userIds } },
-      select: { id: true, spotifyUserId: true },
+      select: { id: true },
     });
 
     const foundUserIds = new Set(users.map((u) => u.id));
@@ -91,8 +91,8 @@ export class TrackPoolService {
     // Resolve sessions in parallel for found users
     const sessionIdsWithNulls = await Promise.all(
       users.map(async (user) => {
-        const sessionId = await this.sessionService.getSessionIdBySpotifyUserId(
-          user.spotifyUserId,
+        const sessionId = await this.sessionService.getSessionIdByUserId(
+          user.id,
         );
 
         if (!sessionId) {
