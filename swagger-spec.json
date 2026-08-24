@@ -2691,6 +2691,10 @@
             "type": "boolean",
             "description": "Show guess history during gameplay"
           },
+          "showStatsToOthers": {
+            "type": "boolean",
+            "description": "Show this player by name on public leaderboards. Off by default: a player ranks anonymously until they choose to be named."
+          },
           "dailyChallengePlaylists": {
             "description": "Playlist IDs to source daily challenge songs from. Empty means Liked Songs.",
             "type": "array",
@@ -2709,6 +2713,7 @@
           "showTextHints",
           "reducedMotion",
           "showGuessHistory",
+          "showStatsToOthers",
           "dailyChallengePlaylists",
           "timezone"
         ]
@@ -2731,6 +2736,10 @@
           "showGuessHistory": {
             "type": "boolean",
             "description": "Show guess history during gameplay"
+          },
+          "showStatsToOthers": {
+            "type": "boolean",
+            "description": "Show this player by name on public leaderboards"
           },
           "dailyChallengePlaylists": {
             "description": "Playlist IDs to source daily challenge songs from. Must have at least one entry when provided.",
@@ -3605,11 +3614,15 @@
           },
           "userId": {
             "type": "string",
-            "description": "User ID"
+            "description": "User ID. Opaque placeholder for a hidden entry, so the row cannot be traced back to a player."
           },
           "displayName": {
             "type": "string",
             "description": "User display name"
+          },
+          "isHidden": {
+            "type": "boolean",
+            "description": "This player chose not to be named on the leaderboard"
           },
           "avatarUrl": {
             "type": "string",
@@ -3624,6 +3637,7 @@
           "rank",
           "userId",
           "displayName",
+          "isHidden",
           "score"
         ]
       },

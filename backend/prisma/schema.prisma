@@ -306,6 +306,7 @@ model UserPreference {
   showTextHints           Boolean  @default(true) @map("show_text_hints")
   reducedMotion           Boolean  @default(false) @map("reduced_motion")
   showGuessHistory        Boolean  @default(true) @map("show_guess_history")
+  showStatsToOthers       Boolean  @default(false) @map("show_stats_to_others")
   dailyChallengePlaylists String[] @default([]) @map("daily_challenge_playlists")
   timezone                String   @default("UTC") @map("timezone")
   user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
