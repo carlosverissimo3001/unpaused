@@ -23,6 +23,7 @@ export class RoomPlayerDto {
   @ApiProperty()
   joinedAt: Date;
 
+  // Note(Charly): Ideally, the dto should not contain any logic
   static fromEntity(
     player: RoomPlayer & {
       user: Pick<User, 'displayName' | 'avatarUrl'>;
