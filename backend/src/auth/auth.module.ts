@@ -15,6 +15,6 @@ import { UserRepository } from './repositories/user.repository';
     SessionService,
     UserRepository,
   ],
-  exports: [AuthService, SessionService, SpotifyAuthService],
+  exports: [AuthService, SessionService, SpotifyAuthService, UserRepository],
 })
 export class AuthModule {}
