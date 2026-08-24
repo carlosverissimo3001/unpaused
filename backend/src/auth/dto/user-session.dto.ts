@@ -1,14 +1,21 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UserSessionDto {
   @ApiProperty({ description: 'Unique identifier for the user session' })
   @IsString()
   sessionId: string;
 
-  @ApiProperty({ description: 'Spotify user ID associated with the session' })
+  @ApiProperty({ description: 'Identifier of the user this session belongs to' })
   @IsString()
-  spotifyUserId: string;
+  userId: string;
+
+  @ApiPropertyOptional({
+    description: 'Spotify user ID, present only when the account is linked',
+  })
+  @IsOptional()
+  @IsString()
+  spotifyUserId?: string;
 
   @ApiProperty({ description: 'Display name of the Spotify user' })
   @IsString()

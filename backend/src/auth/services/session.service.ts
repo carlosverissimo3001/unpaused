@@ -5,6 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { PkceStateDto } from '../dto/pcke-state.dto';
 import { UserSessionDto } from '../dto/user-session.dto';
 
+export interface CreateSessionParams {
+  userId: string;
+  displayName: string;
+  isTrusted: boolean;
+  spotifyUserId?: string;
+}
+
 @Injectable()
 export class SessionService {
   private readonly sessionMaxAge: number;
@@ -56,24 +63,19 @@ export class SessionService {
   }
 
   /**
-   * Create a new user session after successful OAuth
-   * @param spotifyUserId - The Spotify user ID
-   * @param displayName - The display name
-   * @param isTrusted - Whether the user is trusted
+   * Create a new user session
+   * @param params - The session parameters
    * @returns The session ID
    */
-  async createSession(
-    spotifyUserId: string,
-    displayName: string,
-    isTrusted: boolean,
-  ): Promise<string> {
+  async createSession(params: CreateSessionParams): Promise<string> {
     const sessionId = uuidv4();
 
     const session: UserSessionDto = {
       sessionId,
-      spotifyUserId,
-      displayName,
-      isTrusted,
+      userId: params.userId,
+      spotifyUserId: params.spotifyUserId,
+      displayName: params.displayName,
+      isTrusted: params.isTrusted,
       createdAt: Date.now(),
     };
 
@@ -83,9 +85,9 @@ export class SessionService {
       this.sessionMaxAge,
     );
 
-    // Reverse mapping: spotifyUserId → sessionId (for multiplayer track pooling)
+    // Reverse mapping: userId -> sessionId (for multiplayer track pooling)
     await this.redisService.set(
-      `user-session:${spotifyUserId}`,
+      `user-session:${params.userId}`,
       sessionId,
       this.sessionMaxAge,
     );
@@ -111,30 +113,26 @@ export class SessionService {
   }
 
   /**
-   * Refresh the reverse mapping (spotifyUserId → sessionId) so it stays
+   * Refresh the reverse mapping (userId -> sessionId) so it stays
    * alive as long as the user is actively making requests.
    */
   async refreshUserSessionMapping(
-    spotifyUserId: string,
+    userId: string,
     sessionId: string,
   ): Promise<void> {
     await this.redisService.set(
-      `user-session:${spotifyUserId}`,
+      `user-session:${userId}`,
       sessionId,
       this.sessionMaxAge,
     );
   }
 
   /**
-   * Get a session ID by Spotify user ID (reverse lookup).
+   * Get a session ID by user ID (reverse lookup).
    * Returns null if no active session exists for the user.
    */
-  async getSessionIdBySpotifyUserId(
-    spotifyUserId: string,
-  ): Promise<string | null> {
-    const sessionId = await this.redisService.get(
-      `user-session:${spotifyUserId}`,
-    );
+  async getSessionIdByUserId(userId: string): Promise<string | null> {
+    const sessionId = await this.redisService.get(`user-session:${userId}`);
     if (!sessionId) {
       return null;
     }
@@ -142,7 +140,7 @@ export class SessionService {
     // Verify the session still exists (it may have expired)
     const exists = await this.redisService.exists(`session:${sessionId}`);
     if (!exists) {
-      await this.redisService.del(`user-session:${spotifyUserId}`);
+      await this.redisService.del(`user-session:${userId}`);
       return null;
     }
 
@@ -179,7 +177,7 @@ export class SessionService {
       if (data) {
         try {
           const session = JSON.parse(data) as UserSessionDto;
-          const userSessionKey = `user-session:${session.spotifyUserId}`;
+          const userSessionKey = `user-session:${session.userId}`;
           const currentSessionId = await this.redisService.get(userSessionKey);
 
           // Only delete the reverse mapping if it still points to this session
