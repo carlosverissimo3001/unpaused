@@ -79,6 +79,7 @@ export class UserRepository {
   private fromPrisma(user: PrismaUser): UserEntity {
     return {
       ...user,
+      spotifyUserId: user.spotifyUserId ?? undefined,
       avatarUrl: user.avatarUrl ?? undefined,
       customAvatarUrl: user.customAvatarUrl ?? undefined,
       country: user.country ?? undefined,

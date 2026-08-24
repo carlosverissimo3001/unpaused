@@ -5,8 +5,10 @@ export class UserEntity {
   @ApiProperty({ description: 'Unique identifier for the user' })
   id: string;
 
-  @ApiProperty({ description: 'Unique identifier for the user on Spotify' })
-  spotifyUserId: string;
+  @ApiPropertyOptional({
+    description: 'Unique identifier for the user on Spotify, when linked',
+  })
+  spotifyUserId?: string;
 
   @ApiProperty({ description: 'John Doe' })
   displayName: string;
