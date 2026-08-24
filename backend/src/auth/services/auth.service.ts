@@ -190,7 +190,13 @@ export class AuthService {
    * @param sessionId - The session ID
    */
   async logout(sessionId: string): Promise<void> {
-    const session = await this.sessionService.getSession(sessionId);
+    // A session we cannot read still has a cookie to clear, so never fail here.
+    let session: UserSessionDto | null = null;
+    try {
+      session = await this.sessionService.getSession(sessionId);
+    } catch {
+      session = null;
+    }
 
     if (session?.spotifyUserId) {
       await this.spotifyAuthService.revokeTokens(session.spotifyUserId);
