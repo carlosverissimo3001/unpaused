@@ -7,6 +7,7 @@ import { SpotifyService } from './spotify.service';
 import { SpotifyAuthService } from './spotify-auth.service';
 import { SessionService } from './session.service';
 import { UserRepository } from '../repositories/user.repository';
+import { AccountMergeService } from './account-merge.service';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { UserEntity } from '../entities/user.entity';
 
@@ -53,7 +54,12 @@ const mockPrismaService = {
   user: { findUnique: jest.fn() },
 };
 
-const mockSpotifyService = {};
+const mockSpotifyService = {
+  exchangeCodeForTokens: jest.fn(),
+  getUserProfile: jest.fn(),
+};
+
+const mockAccountMergeService = { merge: jest.fn() };
 
 const mockSpotifyAuthService = {
   getValidAccessToken: jest.fn(),
@@ -62,6 +68,7 @@ const mockSpotifyAuthService = {
 };
 
 const mockSessionService = {
+  consumePkceState: jest.fn(),
   getSession: jest.fn(),
   deleteSession: jest.fn(),
   createSession: jest.fn(),
@@ -70,6 +77,8 @@ const mockSessionService = {
 
 const mockUserRepository = {
   findById: jest.fn(),
+  findBySpotifyUserId: jest.fn(),
+  attachSpotify: jest.fn(),
   upsert: jest.fn(),
   updateDisplayName: jest.fn(),
 };
@@ -89,10 +98,141 @@ describe('AuthService', () => {
         { provide: SpotifyAuthService, useValue: mockSpotifyAuthService },
         { provide: SessionService, useValue: mockSessionService },
         { provide: UserRepository, useValue: mockUserRepository },
+        { provide: AccountMergeService, useValue: mockAccountMergeService },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
+  });
+
+  // ── handleCallback ───────────────────────────────────────────────
+
+  describe('handleCallback', () => {
+    const GUEST_ID = 'guest-user';
+    const EXISTING_ID = 'existing-user';
+
+    beforeEach(() => {
+      mockSessionService.consumePkceState.mockResolvedValue({
+        codeVerifier: 'v',
+      });
+      mockSpotifyService.exchangeCodeForTokens.mockResolvedValue({
+        accessToken: 'at',
+        refreshToken: 'rt',
+        expiresIn: 3600,
+      });
+      mockSpotifyService.getUserProfile.mockResolvedValue({
+        id: SPOTIFY_USER_ID,
+        displayName: 'Carlos',
+        avatarUrl: 'https://spotify.test/a.jpg',
+        country: 'PT',
+      });
+      mockSessionService.createSession.mockResolvedValue('session-new');
+      mockUserRepository.upsert.mockResolvedValue(makeUser());
+      mockUserRepository.attachSpotify.mockResolvedValue(
+        makeUser({ id: GUEST_ID }),
+      );
+    });
+
+    it('attaches Spotify to the guest row when the account is new', async () => {
+      mockSessionService.getSession.mockResolvedValue(
+        makeSession({ userId: GUEST_ID, spotifyUserId: undefined }),
+      );
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(null);
+
+      await service.handleCallback('code', 'state', 'session-guest');
+
+      expect(mockUserRepository.attachSpotify).toHaveBeenCalledWith(
+        GUEST_ID,
+        expect.objectContaining({ spotifyUserId: SPOTIFY_USER_ID }),
+      );
+      expect(mockAccountMergeService.merge).not.toHaveBeenCalled();
+    });
+
+    it('merges the guest into the existing account on collision', async () => {
+      mockSessionService.getSession.mockResolvedValue(
+        makeSession({ userId: GUEST_ID, spotifyUserId: undefined }),
+      );
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
+
+      await service.handleCallback('code', 'state', 'session-guest');
+
+      expect(mockAccountMergeService.merge).toHaveBeenCalledWith(
+        GUEST_ID,
+        EXISTING_ID,
+      );
+      expect(mockUserRepository.attachSpotify).not.toHaveBeenCalled();
+    });
+
+    it('does not merge a row into itself on an ordinary re-login', async () => {
+      mockSessionService.getSession.mockResolvedValue(
+        makeSession({ userId: EXISTING_ID }),
+      );
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
+
+      await service.handleCallback('code', 'state', 'session-existing');
+
+      expect(mockAccountMergeService.merge).not.toHaveBeenCalled();
+    });
+
+    it('signs in normally when there is no current session', async () => {
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
+
+      await service.handleCallback('code', 'state', undefined);
+
+      expect(mockAccountMergeService.merge).not.toHaveBeenCalled();
+      expect(mockSessionService.getSession).not.toHaveBeenCalled();
+      expect(mockSessionService.createSession).toHaveBeenCalled();
+    });
+
+    it('treats a stale cookie as nothing to merge', async () => {
+      mockSessionService.getSession.mockRejectedValue(new Error('expired'));
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
+
+      await service.handleCallback('code', 'state', 'session-gone');
+
+      expect(mockAccountMergeService.merge).not.toHaveBeenCalled();
+      expect(mockUserRepository.upsert).toHaveBeenCalled();
+    });
+
+    it('creates a fresh row when there is neither a session nor an account', async () => {
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(null);
+
+      await service.handleCallback('code', 'state', undefined);
+
+      expect(mockUserRepository.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          spotifyUserId: SPOTIFY_USER_ID,
+          displayName: 'Carlos',
+        }),
+      );
+    });
+
+    it('keys the new session on the surviving row', async () => {
+      mockSessionService.getSession.mockResolvedValue(
+        makeSession({ userId: GUEST_ID, spotifyUserId: undefined }),
+      );
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
+      mockUserRepository.upsert.mockResolvedValue(makeUser({ id: EXISTING_ID }));
+
+      await service.handleCallback('code', 'state', 'session-guest');
+
+      expect(mockSessionService.createSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: EXISTING_ID,
+          spotifyUserId: SPOTIFY_USER_ID,
+        }),
+      );
+    });
   });
 
   // ── getUserBySessionId ───────────────────────────────────────────

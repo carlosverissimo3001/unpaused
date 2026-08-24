@@ -67,6 +67,7 @@ export class AuthController {
   @ApiResponse({ status: 302, description: 'Redirects to frontend after auth' })
   async callback(
     @Query() params: SpotifyOAuthCallbackDto,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     const { code, state, error } = params;
@@ -76,7 +77,14 @@ export class AuthController {
     }
 
     try {
-      const sessionId = await this.authService.handleCallback(code, state);
+      const currentSessionId = req.cookies?.[SESSION_COOKIE_NAME] as
+        | string
+        | undefined;
+      const sessionId = await this.authService.handleCallback(
+        code,
+        state,
+        currentSessionId,
+      );
       res.cookie(
         SESSION_COOKIE_NAME,
         sessionId,

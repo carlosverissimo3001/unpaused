@@ -7,9 +7,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SpotifyService } from './spotify.service';
 import { SpotifyAuthService } from './spotify-auth.service';
 import { SessionService } from './session.service';
+import { AccountMergeService } from './account-merge.service';
 import { v4 as uuidv4 } from 'uuid';
 import { LoginStartResult } from '../types';
 import { UserRepository } from '../repositories/user.repository';
+import { UserEntity } from '../entities/user.entity';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
@@ -23,6 +25,7 @@ export class AuthService {
     private spotifyAuthService: SpotifyAuthService,
     private sessionService: SessionService,
     private userRepository: UserRepository,
+    private accountMergeService: AccountMergeService,
   ) {}
 
   /**
@@ -42,9 +45,15 @@ export class AuthService {
   }
 
   /**
-   * Handle OAuth callback: exchange code, fetch profile, create session
+   * Handle OAuth callback: exchange code, fetch profile, create session.
+   * The current session, if any, is the player signing in — their row is
+   * either the one Spotify attaches to, or the one merged into it.
    */
-  async handleCallback(code: string, state: string): Promise<string> {
+  async handleCallback(
+    code: string,
+    state: string,
+    currentSessionId?: string,
+  ): Promise<string> {
     // Retrieve and validate PKCE state
     const pkceState = await this.sessionService.consumePkceState(state);
     if (!pkceState) {
@@ -61,12 +70,29 @@ export class AuthService {
     );
     const displayName = profile.displayName || profile.id;
 
-    const user = await this.userRepository.upsert({
-      spotifyUserId: profile.id,
-      displayName,
-      avatarUrl: profile.avatarUrl,
-      country: profile.country,
-    });
+    const currentUserId = await this.resolveCurrentUserId(currentSessionId);
+    const existing = await this.userRepository.findBySpotifyUserId(profile.id);
+
+    // A player signed in as someone who already has a row: fold what they did
+    // as a guest into it before Spotify takes the row over.
+    if (existing && currentUserId && currentUserId !== existing.id) {
+      await this.accountMergeService.merge(currentUserId, existing.id);
+    }
+
+    // The common path: an existing guest claims a Spotify id nobody holds.
+    const user: UserEntity =
+      !existing && currentUserId
+        ? await this.userRepository.attachSpotify(currentUserId, {
+            spotifyUserId: profile.id,
+            avatarUrl: profile.avatarUrl,
+            country: profile.country,
+          })
+        : await this.userRepository.upsert({
+            spotifyUserId: profile.id,
+            displayName,
+            avatarUrl: profile.avatarUrl,
+            country: profile.country,
+          });
 
     // Store tokens via SpotifyAuthService (Redis cache + encrypted DB)
     await this.spotifyAuthService.storeTokens(
@@ -84,6 +110,21 @@ export class AuthService {
     });
 
     return sessionId;
+  }
+
+  /** A stale cookie is not an error here: it just means there is nothing to merge. */
+  private async resolveCurrentUserId(
+    sessionId?: string,
+  ): Promise<string | undefined> {
+    if (!sessionId) {
+      return undefined;
+    }
+    try {
+      const session = await this.sessionService.getSession(sessionId);
+      return session.userId;
+    } catch {
+      return undefined;
+    }
   }
 
   /**
