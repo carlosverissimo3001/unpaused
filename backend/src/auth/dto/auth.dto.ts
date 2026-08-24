@@ -12,6 +12,13 @@ export class AuthMeResponseDto {
   })
   spotifyUserId?: string;
 
+  @ApiProperty({
+    example: false,
+    description:
+      'Whether any credential is attached. False means an anonymous player, who has nothing to log out of.',
+  })
+  hasLinkedAccount: boolean;
+
   @ApiProperty({ description: 'John Doe' })
   displayName: string;
 

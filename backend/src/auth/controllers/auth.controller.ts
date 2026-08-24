@@ -18,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { SESSION_COOKIE_NAME } from '../../consts';
+import { DEVICE_COOKIE_NAME, SESSION_COOKIE_NAME } from '../../consts';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
 import { AuthService } from '../services/auth.service';
@@ -125,7 +125,14 @@ export class AuthController {
       await this.authService.logout(sessionId);
     }
 
+    // Logging out means forgetting this browser, device token included.
+    const deviceToken = req.cookies?.[DEVICE_COOKIE_NAME] as string | undefined;
+    if (deviceToken) {
+      await this.authService.forgetDevice(deviceToken);
+    }
+
     res.clearCookie(SESSION_COOKIE_NAME, getClearCookieOptions());
+    res.clearCookie(DEVICE_COOKIE_NAME, getClearCookieOptions());
 
     res.json({ success: true });
   }

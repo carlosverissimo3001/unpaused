@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `userId` | string
 `spotifyUserId` | string
+`hasLinkedAccount` | boolean
 `displayName` | string
 `avatarUrl` | string
 `customAvatarUrl` | string
@@ -26,6 +27,7 @@ import type { AuthMeResponseDto } from ''
 const example = {
   "userId": null,
   "spotifyUserId": null,
+  "hasLinkedAccount": false,
   "displayName": null,
   "avatarUrl": null,
   "customAvatarUrl": null,

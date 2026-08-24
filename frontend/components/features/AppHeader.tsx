@@ -103,17 +103,21 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
                 )}
               </motion.button>
 
-              <motion.div whileTap={{ scale: 0.9 }}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onLogout}
-                  disabled={isLoggingOut}
-                  className="text-fg/30 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </motion.div>
+              {/* An anonymous player has nothing to log out of, and logging
+                  out would silently discard their progress. */}
+              {user.hasLinkedAccount && (
+                <motion.div whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onLogout}
+                    disabled={isLoggingOut}
+                    className="text-fg/30 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </div>
         )}

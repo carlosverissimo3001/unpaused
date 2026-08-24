@@ -1,6 +1,11 @@
 import { JobsOptions } from 'bullmq';
 
 export const SESSION_COOKIE_NAME = 'unpaused_session';
+
+/** Outlives the session so an anonymous player keeps their row and streak. */
+export const DEVICE_COOKIE_NAME = 'unpaused_device';
+export const DEVICE_TOKEN_TTL = 365 * 24 * 60 * 60; // 1 year in seconds
+export const DEVICE_TOKEN_PREFIX = 'device:';
 export const TRACK_PREVIEW_CACHE_TTL = 86400; // 24 hours in seconds
 export const TRACK_PREVIEW_CACHE_PREFIX = 'track_preview:';
 export const LIKED_SONGS_ID_SUFFIX = '-liked-songs';

@@ -4,6 +4,7 @@ import { RedisService } from '../../redis/redis.service';
 import { v4 as uuidv4 } from 'uuid';
 import { PkceStateDto } from '../dto/pcke-state.dto';
 import { UserSessionDto } from '../dto/user-session.dto';
+import { DEVICE_TOKEN_PREFIX, DEVICE_TOKEN_TTL } from '../../consts';
 
 export interface CreateSessionParams {
   userId: string;
@@ -118,6 +119,38 @@ export class SessionService {
     }
 
     return session;
+  }
+
+  /**
+   * Mint a device token pointing at a user. Lives far longer than a session,
+   * so an anonymous player keeps their row across logout and session expiry.
+   */
+  async createDeviceToken(userId: string): Promise<string> {
+    const token = uuidv4();
+    await this.redisService.set(
+      `${DEVICE_TOKEN_PREFIX}${token}`,
+      userId,
+      DEVICE_TOKEN_TTL,
+    );
+    return token;
+  }
+
+  /**
+   * Resolve a device token to a user id, extending its life on use.
+   */
+  async resolveDeviceToken(token: string): Promise<string | null> {
+    const key = `${DEVICE_TOKEN_PREFIX}${token}`;
+    const userId = await this.redisService.get(key);
+    if (!userId) {
+      return null;
+    }
+
+    await this.redisService.set(key, userId, DEVICE_TOKEN_TTL);
+    return userId;
+  }
+
+  async deleteDeviceToken(token: string): Promise<void> {
+    await this.redisService.del(`${DEVICE_TOKEN_PREFIX}${token}`);
   }
 
   /**

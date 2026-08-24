@@ -1915,6 +1915,11 @@
             "type": "string",
             "description": "Spotify user ID, present only when the account is linked"
           },
+          "hasLinkedAccount": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether any credential is attached. False means an anonymous player, who has nothing to log out of."
+          },
           "displayName": {
             "type": "string",
             "description": "John Doe"
@@ -1954,6 +1959,7 @@
         },
         "required": [
           "userId",
+          "hasLinkedAccount",
           "displayName",
           "avatarSource",
           "isTrusted",

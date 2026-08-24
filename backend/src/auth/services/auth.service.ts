@@ -110,6 +110,7 @@ export class AuthService {
     return {
       userId: user.id,
       spotifyUserId: session.spotifyUserId,
+      hasLinkedAccount: !!user.spotifyUserId,
       displayName: session.displayName,
       isTrusted: user.isTrusted,
       isAdmin: user.isAdmin,
@@ -203,5 +204,12 @@ export class AuthService {
       await this.spotifyAuthService.revokeTokens(session.spotifyUserId);
     }
     await this.sessionService.deleteSession(sessionId);
+  }
+
+  /**
+   * Drop the device token so the browser is not re-attached to its old row.
+   */
+  async forgetDevice(deviceToken: string): Promise<void> {
+    await this.sessionService.deleteDeviceToken(deviceToken);
   }
 }

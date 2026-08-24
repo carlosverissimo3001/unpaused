@@ -5,7 +5,11 @@ import { SessionService } from '@auth/services/session.service';
 import { UserRepository } from '@auth/repositories/user.repository';
 import { generateHandle } from '@auth/utils/handle-generator';
 import { getCookieOptions } from '@auth/utils/http-helpers';
-import { SESSION_COOKIE_NAME } from '../../consts';
+import {
+  DEVICE_COOKIE_NAME,
+  DEVICE_TOKEN_TTL,
+  SESSION_COOKIE_NAME,
+} from '../../consts';
 
 /**
  * Self-provisioning, unlike SessionGuard: a missing or stale cookie mints a
@@ -32,6 +36,9 @@ export class ProvisioningSessionGuard implements CanActivate {
     const existing = request.cookies?.[SESSION_COOKIE_NAME] as
       | string
       | undefined;
+    const deviceToken = request.cookies?.[DEVICE_COOKIE_NAME] as
+      | string
+      | undefined;
 
     if (existing) {
       try {
@@ -40,10 +47,34 @@ export class ProvisioningSessionGuard implements CanActivate {
           session.userId,
           existing,
         );
+
+        // Sessions predating the device cookie still deserve one.
+        if (!deviceToken && !session.spotifyUserId) {
+          await this.issueDeviceToken(request, response, session.userId);
+        }
         return true;
       } catch {
-        // Stale cookie: fall through and provision a fresh identity.
+        // Stale cookie: fall through and recover or provision an identity.
       }
+    }
+
+    if (deviceToken) {
+      const userId = await this.sessionService.resolveDeviceToken(deviceToken);
+      const user = userId ? await this.userRepository.findById(userId) : null;
+
+      // A device token re-attaches an anonymous row and nothing else: honouring
+      // it for a credentialed account would make a cookie a login.
+      if (user && !user.spotifyUserId) {
+        const sessionId = await this.sessionService.createSession({
+          userId: user.id,
+          displayName: user.displayName,
+          isTrusted: user.isTrusted,
+        });
+        this.setSessionCookie(request, response, sessionId);
+        return true;
+      }
+
+      await this.sessionService.deleteDeviceToken(deviceToken);
     }
 
     const user = await this.userRepository.createAnonymous(generateHandle());
@@ -53,6 +84,17 @@ export class ProvisioningSessionGuard implements CanActivate {
       isTrusted: user.isTrusted,
     });
 
+    this.setSessionCookie(request, response, sessionId);
+    await this.issueDeviceToken(request, response, user.id);
+
+    return true;
+  }
+
+  private setSessionCookie(
+    request: Request,
+    response: Response,
+    sessionId: string,
+  ): void {
     // @SessionId reads request.cookies, which the response cookie never reaches.
     request.cookies = { ...request.cookies, [SESSION_COOKIE_NAME]: sessionId };
 
@@ -61,7 +103,20 @@ export class ProvisioningSessionGuard implements CanActivate {
       sessionId,
       getCookieOptions({ sessionMaxAge: this.sessionMaxAge }),
     );
+  }
 
-    return true;
+  private async issueDeviceToken(
+    request: Request,
+    response: Response,
+    userId: string,
+  ): Promise<void> {
+    const token = await this.sessionService.createDeviceToken(userId);
+
+    request.cookies = { ...request.cookies, [DEVICE_COOKIE_NAME]: token };
+    response.cookie(
+      DEVICE_COOKIE_NAME,
+      token,
+      getCookieOptions({ sessionMaxAge: DEVICE_TOKEN_TTL }),
+    );
   }
 }
