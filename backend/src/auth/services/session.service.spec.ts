@@ -73,6 +73,22 @@ describe('SessionService', () => {
     );
   });
 
+  it('rejects a session stored before the re-key', async () => {
+    mockRedisService.get.mockResolvedValue(
+      JSON.stringify({
+        sessionId: 'session-1',
+        spotifyUserId: 'spotify-1',
+        displayName: 'Vinyl Chorus',
+        isTrusted: false,
+        createdAt: Date.now(),
+      }),
+    );
+
+    await expect(service.getSession('session-1')).rejects.toThrow(
+      'Session not found',
+    );
+  });
+
   it('looks a session up by user id', async () => {
     mockRedisService.get.mockResolvedValue('session-1');
     mockRedisService.exists.mockResolvedValue(true);

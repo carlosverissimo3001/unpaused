@@ -105,11 +105,19 @@ export class SessionService {
     if (!data) {
       throw new UnauthorizedException('Session not found');
     }
+    let session: UserSessionDto;
     try {
-      return JSON.parse(data) as UserSessionDto;
+      session = JSON.parse(data) as UserSessionDto;
     } catch {
       throw new UnauthorizedException('Corrupted session data');
     }
+
+    // A session stored before the re-key has no user to resolve against.
+    if (!session.userId) {
+      throw new UnauthorizedException('Session not found');
+    }
+
+    return session;
   }
 
   /**
