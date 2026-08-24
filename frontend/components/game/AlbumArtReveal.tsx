@@ -39,7 +39,7 @@ export function AlbumArtReveal({
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden ring-1 ring-fg/10 shadow-xl bg-fg/10">
+        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-fg/10">
           {!imageLoaded && (
             <div className="absolute inset-0 animate-pulse bg-fg/10" />
           )}

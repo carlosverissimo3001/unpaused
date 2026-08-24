@@ -34,11 +34,7 @@ export function PlaySnippetButton({
             onClick={isPlaying ? onPause : onPlay}
             // Icon only: the bar above carries the duration now, and the
             // label changing width between states made the row jump.
-            className="relative z-10 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full border border-fg/10 bg-[#1DB954] text-black hover:bg-[#1ed760] touch-manipulation"
-            style={{
-              boxShadow:
-                '0 0 30px -5px rgba(30,215,96,0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
-            }}
+            className="relative z-10 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-[#1DB954] text-black hover:bg-[#1ed760] touch-manipulation"
           >
             {isPlaying ? (
               <Pause className="h-6 w-6 sm:h-7 sm:w-7" fill="currentColor" />
