@@ -8,7 +8,6 @@ Name | Type
 ------------ | -------------
 `id` | string
 `userId` | string
-`spotifyUserId` | string
 `displayName` | string
 `avatarUrl` | string
 `isReady` | boolean
@@ -24,7 +23,6 @@ import type { RoomPlayerDto } from ''
 const example = {
   "id": null,
   "userId": null,
-  "spotifyUserId": null,
   "displayName": null,
   "avatarUrl": null,
   "isReady": null,

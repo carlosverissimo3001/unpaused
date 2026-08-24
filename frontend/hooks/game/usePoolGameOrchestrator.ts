@@ -1,0 +1,138 @@
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
+import { GuessHistoryDtoResultEnum as GuessResult } from '@/sdk/models/GuessHistoryDto';
+import { queryKeys } from '@/lib/queryKeys';
+import { POOL_PLAYLIST_ID } from '@/lib/consts';
+import { useGameSession } from './useGameSession';
+import { useGameState } from './useGameState';
+import { useSubmitGuess } from './useSubmitGuess';
+import { useGameAudio } from './useGameAudio';
+import { useSpotifyTrackSearch } from '@/hooks/spotify/useSpotifyTrackSearch';
+import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
+
+const ShouldShakeResult: GuessResult[] = [
+  GuessResult.Wrong,
+  GuessResult.Artist,
+  GuessResult.Album,
+  GuessResult.ArtistAndAlbum,
+];
+
+/**
+ * Rounds drawn from the curated pool, for a player with no Spotify library to
+ * play from. Same endpoints and same sub-systems as useGameOrchestrator; it
+ * only leaves out what a pool round has no playlist or history to show.
+ */
+export function usePoolGameOrchestrator({
+  volume = 0.8,
+}: { volume?: number } = {}) {
+  const queryClient = useQueryClient();
+  const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
+  /** True between asking for a new round and getting one, so the finished one
+      cannot briefly reappear while the swap happens. */
+  const [isResetting, setIsResetting] = useState(false);
+
+  const {
+    sessionId,
+    isLoading: sessionLoading,
+    error: sessionError,
+    startGameMutation,
+  } = useGameSession(GameMode.All, POOL_PLAYLIST_ID);
+  const {
+    data: gameState,
+    isLoading: loadingState,
+    error: errorState,
+  } = useGameState(sessionId);
+  const submitGuessMutation = useSubmitGuess();
+  const spotifySearch = useSpotifyTrackSearch();
+
+  const isGameOver =
+    !isResetting && gameState?.status !== GameStateDtoStatusEnum.Playing;
+  const gameAudio = useGameAudio({
+    previewUrl: gameState?.previewUrl,
+    isGameOver: !!isGameOver,
+    snippetDuration: gameState?.snippetDuration ?? 0.5,
+    maxSnippetDuration: gameState?.snippetSteps?.at(-1),
+    volume,
+  });
+
+  const isLoading = sessionLoading || loadingState;
+  const error = sessionError ?? errorState;
+  const submitPending = submitGuessMutation.isPending;
+
+  useEffect(() => {
+    if (!gameState?.guesses?.length) return;
+    const last = gameState.guesses[gameState.guesses.length - 1];
+    if (last.result !== lastGuessResult) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Tracking the last guess result for the shake animation
+      setLastGuessResult(last.result);
+    }
+  }, [gameState?.guesses, lastGuessResult]);
+
+  const handleSubmit = useCallback(() => {
+    if (!gameState || submitPending) return;
+    if (!spotifySearch.selectedTrack) return;
+    submitGuessMutation.mutate(
+      {
+        sessionId: gameState.sessionId,
+        trackId: spotifySearch.selectedTrack.id,
+        skip: false,
+        trackName: spotifySearch.selectedTrack.name,
+        artistName: spotifySearch.selectedTrack.artist,
+        albumName: spotifySearch.selectedTrack.albumName,
+        isrc: spotifySearch.selectedTrack.isrc,
+      },
+      { onSuccess: () => spotifySearch.handleClearSelection() },
+    );
+  }, [gameState, submitPending, spotifySearch, submitGuessMutation]);
+
+  const handleSkip = useCallback(() => {
+    if (!gameState || submitPending) return;
+    submitGuessMutation.mutate({ sessionId: gameState.sessionId, skip: true });
+  }, [gameState, submitPending, submitGuessMutation]);
+
+  const handlePlayAgain = useCallback(() => {
+    gameAudio.stopFullSong();
+    setIsResetting(true);
+    setLastGuessResult(null);
+
+    if (gameState?.sessionId) {
+      queryClient.removeQueries({
+        queryKey: queryKeys.game.state(gameState.sessionId),
+      });
+    }
+    // setQueryData rather than removeQueries: useGameSession subscribes to this
+    // key, and removing it would drop that subscription.
+    queryClient.setQueryData(
+      queryKeys.game.startedSessionForPlaylist(POOL_PLAYLIST_ID),
+      null,
+    );
+
+    startGameMutation.reset();
+    startGameMutation.mutate(
+      { playlistId: POOL_PLAYLIST_ID, mode: GameMode.All },
+      { onSettled: () => setIsResetting(false) },
+    );
+  }, [gameAudio, gameState, queryClient, startGameMutation]);
+
+  const lastGuess = gameState?.guesses?.[gameState.guesses.length - 1];
+  const shouldShake = lastGuess
+    ? ShouldShakeResult.includes(lastGuess.result)
+    : false;
+
+  return {
+    gameState,
+    isLoading,
+    error,
+    isGameOver,
+    submitPending,
+    shouldShake,
+    gameAudio,
+    spotifySearch,
+    handleSubmit,
+    handleSkip,
+    handlePlayAgain,
+  };
+}

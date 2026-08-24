@@ -219,15 +219,6 @@ export interface GauntletControllerSubmitGuessRequest {
     submitGauntletGuessDto: SubmitGauntletGuessDto;
 }
 
-export interface GuestGameControllerGetGameStateRequest {
-    id: string;
-}
-
-export interface GuestGameControllerSubmitGuessRequest {
-    id: string;
-    guessDto: GuessDto;
-}
-
 export interface MultiplayerControllerCreateRoomRequest {
     createRoomDto: CreateRoomDto;
 }
@@ -1265,119 +1256,6 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async gauntletControllerSubmitGuess(requestParameters: GauntletControllerSubmitGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GauntletGuessResultDto> {
         const response = await this.gauntletControllerSubmitGuessRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Get current guest game state
-     */
-    async guestGameControllerGetGameStateRaw(requestParameters: GuestGameControllerGetGameStateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GameStateDto>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling guestGameControllerGetGameState().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/guest/games/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => GameStateDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * Get current guest game state
-     */
-    async guestGameControllerGetGameState(requestParameters: GuestGameControllerGetGameStateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GameStateDto> {
-        const response = await this.guestGameControllerGetGameStateRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Start a guest game from the curated pool
-     */
-    async guestGameControllerStartGameRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GameStateDto>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/guest/games`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => GameStateDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * Start a guest game from the curated pool
-     */
-    async guestGameControllerStartGame(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GameStateDto> {
-        const response = await this.guestGameControllerStartGameRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Submit a guess for a guest round
-     */
-    async guestGameControllerSubmitGuessRaw(requestParameters: GuestGameControllerSubmitGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GuessResultDto>> {
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling guestGameControllerSubmitGuess().'
-            );
-        }
-
-        if (requestParameters['guessDto'] == null) {
-            throw new runtime.RequiredError(
-                'guessDto',
-                'Required parameter "guessDto" was null or undefined when calling guestGameControllerSubmitGuess().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/guest/games/{id}/guess`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: GuessDtoToJSON(requestParameters['guessDto']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => GuessResultDtoFromJSON(jsonValue));
-    }
-
-    /**
-     * Submit a guess for a guest round
-     */
-    async guestGameControllerSubmitGuess(requestParameters: GuestGameControllerSubmitGuessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GuessResultDto> {
-        const response = await this.guestGameControllerSubmitGuessRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

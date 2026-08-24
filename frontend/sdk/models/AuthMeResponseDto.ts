@@ -20,11 +20,17 @@ import { mapValues } from '../runtime';
  */
 export interface AuthMeResponseDto {
     /**
-     * Unique identifier for the user
+     * Stable user id, the only safe way to identify this player
      * @type {string}
      * @memberof AuthMeResponseDto
      */
-    spotifyUserId: string;
+    userId: string;
+    /**
+     * Spotify user ID, present only when the account is linked
+     * @type {string}
+     * @memberof AuthMeResponseDto
+     */
+    spotifyUserId?: string;
     /**
      * John Doe
      * @type {string}
@@ -90,7 +96,7 @@ export type AuthMeResponseDtoAvatarSourceEnum = typeof AuthMeResponseDtoAvatarSo
  * Check if a given object implements the AuthMeResponseDto interface.
  */
 export function instanceOfAuthMeResponseDto(value: object): value is AuthMeResponseDto {
-    if (!('spotifyUserId' in value) || value['spotifyUserId'] === undefined) return false;
+    if (!('userId' in value) || value['userId'] === undefined) return false;
     if (!('displayName' in value) || value['displayName'] === undefined) return false;
     if (!('avatarSource' in value) || value['avatarSource'] === undefined) return false;
     if (!('isTrusted' in value) || value['isTrusted'] === undefined) return false;
@@ -108,7 +114,8 @@ export function AuthMeResponseDtoFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'spotifyUserId': json['spotifyUserId'],
+        'userId': json['userId'],
+        'spotifyUserId': json['spotifyUserId'] == null ? undefined : json['spotifyUserId'],
         'displayName': json['displayName'],
         'avatarUrl': json['avatarUrl'] == null ? undefined : json['avatarUrl'],
         'customAvatarUrl': json['customAvatarUrl'] == null ? undefined : json['customAvatarUrl'],
@@ -131,6 +138,7 @@ export function AuthMeResponseDtoToJSONTyped(value?: AuthMeResponseDto | null, i
 
     return {
         
+        'userId': value['userId'],
         'spotifyUserId': value['spotifyUserId'],
         'displayName': value['displayName'],
         'avatarUrl': value['avatarUrl'],

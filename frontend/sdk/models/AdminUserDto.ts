@@ -30,7 +30,7 @@ export interface AdminUserDto {
      * @type {string}
      * @memberof AdminUserDto
      */
-    spotifyUserId: string;
+    spotifyUserId?: string;
     /**
      * 
      * @type {string}
@@ -74,7 +74,6 @@ export interface AdminUserDto {
  */
 export function instanceOfAdminUserDto(value: object): value is AdminUserDto {
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('spotifyUserId' in value) || value['spotifyUserId'] === undefined) return false;
     if (!('displayName' in value) || value['displayName'] === undefined) return false;
     if (!('isTrusted' in value) || value['isTrusted'] === undefined) return false;
     if (!('isAdmin' in value) || value['isAdmin'] === undefined) return false;
@@ -94,7 +93,7 @@ export function AdminUserDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'id': json['id'],
-        'spotifyUserId': json['spotifyUserId'],
+        'spotifyUserId': json['spotifyUserId'] == null ? undefined : json['spotifyUserId'],
         'displayName': json['displayName'],
         'avatarUrl': json['avatarUrl'] == null ? undefined : json['avatarUrl'],
         'isTrusted': json['isTrusted'],

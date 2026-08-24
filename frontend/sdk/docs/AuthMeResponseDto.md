@@ -6,6 +6,7 @@
 
 Name | Type
 ------------ | -------------
+`userId` | string
 `spotifyUserId` | string
 `displayName` | string
 `avatarUrl` | string
@@ -23,6 +24,7 @@ import type { AuthMeResponseDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
+  "userId": null,
   "spotifyUserId": null,
   "displayName": null,
   "avatarUrl": null,

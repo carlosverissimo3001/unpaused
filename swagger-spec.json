@@ -826,105 +826,6 @@
         ]
       }
     },
-    "/guest/games": {
-      "post": {
-        "operationId": "GuestGameController_startGame",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GameStateDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Start a guest game from the curated pool",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
-    "/guest/games/{id}": {
-      "get": {
-        "operationId": "GuestGameController_getGameState",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "The guest round id",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GameStateDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get current guest game state",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
-    "/guest/games/{id}/guess": {
-      "post": {
-        "operationId": "GuestGameController_submitGuess",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "The guest round id",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GuessDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuessResultDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Rate limit exceeded"
-          }
-        },
-        "summary": "Submit a guess for a guest round",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
     "/admin/streak-questions": {
       "get": {
         "operationId": "AdminController_listStreakQuestions",
@@ -2006,9 +1907,13 @@
       "AuthMeResponseDto": {
         "type": "object",
         "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Stable user id, the only safe way to identify this player"
+          },
           "spotifyUserId": {
             "type": "string",
-            "description": "Unique identifier for the user"
+            "description": "Spotify user ID, present only when the account is linked"
           },
           "displayName": {
             "type": "string",
@@ -2048,7 +1953,7 @@
           }
         },
         "required": [
-          "spotifyUserId",
+          "userId",
           "displayName",
           "avatarSource",
           "isTrusted",
@@ -3137,7 +3042,6 @@
         },
         "required": [
           "id",
-          "spotifyUserId",
           "displayName",
           "isTrusted",
           "isAdmin",
@@ -3182,9 +3086,6 @@
           "userId": {
             "type": "string"
           },
-          "spotifyUserId": {
-            "type": "string"
-          },
           "displayName": {
             "type": "string"
           },
@@ -3205,7 +3106,6 @@
         "required": [
           "id",
           "userId",
-          "spotifyUserId",
           "displayName",
           "isReady",
           "totalScore",

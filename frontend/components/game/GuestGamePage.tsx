@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import { useGuestGameOrchestrator } from '@/hooks/guest/useGuestGameOrchestrator';
+import { usePoolGameOrchestrator } from '@/hooks/game/usePoolGameOrchestrator';
 import { useVolume } from '@/hooks/game/useVolume';
 import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
 import { useImageColor } from '@/hooks/misc/useImageColor';
@@ -29,11 +29,10 @@ const SHAKE_VARIANTS: Variants = {
 };
 
 /**
- * Guest equivalent of GamePage: same presentational components and the same
- * GameStateDto/GuessResultDto shapes, driven by useGuestGameOrchestrator
- * instead of useGameOrchestrator. No playlist picker, no stats/streak, no
- * persisted history - the curated pool plus an ambient guest identity is all
- * that's behind it.
+ * GamePage for a visitor who has not signed in: the same presentational
+ * components and the same endpoints, against a round drawn from the curated
+ * pool. No playlist picker and no stats panel, though the round itself is
+ * recorded like any other - starting one is what mints the account.
  */
 export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
   const { volume, setVolume } = useVolume();
@@ -50,7 +49,7 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
     handleSubmit,
     handleSkip,
     handlePlayAgain,
-  } = useGuestGameOrchestrator({ volume });
+  } = usePoolGameOrchestrator({ volume });
 
   const {
     audioRef,
