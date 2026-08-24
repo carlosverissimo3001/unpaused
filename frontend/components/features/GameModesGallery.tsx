@@ -22,6 +22,13 @@ import { cn } from '@/lib/utils';
 
 const cardPadding = 'p-4 sm:p-6';
 
+/** Corner glow per mode. A gradient, not a blur filter: iOS WebKit won't clip a filtered layer to the card's radius. */
+const modeGlow: Record<string, string> = {
+  daily: '#1DB954',
+  speedrun: '#ea580c',
+  multiplayer: '#9333ea',
+};
+
 // Animation variants for the stagger effect
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -260,12 +267,10 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
               {mode.render()}
 
               <div
-                className={cn(
-                  'absolute -top-12 -right-12 w-48 h-48 blur-[60px] pointer-events-none -z-0 opacity-20',
-                  mode.id === 'daily' && 'bg-spotify-green',
-                  mode.id === 'speedrun' && 'bg-orange-600',
-                  mode.id === 'multiplayer' && 'bg-purple-600',
-                )}
+                className="absolute inset-0 pointer-events-none -z-0"
+                style={{
+                  background: `radial-gradient(340px circle at calc(100% + 2rem) -2rem, ${modeGlow[mode.id]}5C, ${modeGlow[mode.id]}1F 55%, transparent 80%)`,
+                }}
               />
 
               <div className="absolute inset-0 bg-gradient-to-br from-fg/[0.03] to-transparent pointer-events-none" />
