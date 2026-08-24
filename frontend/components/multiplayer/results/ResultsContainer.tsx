@@ -89,7 +89,7 @@ export function ResultsContainer({ roomId }: ResultsContainerProps) {
     }
 
     return room.players.find(
-      (player) => player.spotifyUserId === me.spotifyUserId,
+      (player) => player.userId === me.userId,
     )?.userId;
   }, [me, room]);
 

@@ -153,7 +153,7 @@ export function SpeedRunLeaderboard() {
 
   const entries = data?.entries ?? [];
   const userEntry = data?.userEntry;
-  const userInList = entries.some((e) => e.userId === user?.spotifyUserId);
+  const userInList = entries.some((e) => e.userId === user?.userId);
 
   return (
     <div className="flex flex-col gap-5">
@@ -247,7 +247,7 @@ export function SpeedRunLeaderboard() {
             <LeaderboardRow
               key={`${entry.userId}-${entry.rank}`}
               entry={entry}
-              isCurrentUser={entry.userId === user?.spotifyUserId}
+              isCurrentUser={entry.userId === user?.userId}
               staggerIndex={i}
             />
           ))}

@@ -54,7 +54,7 @@ export default function RoomLobbyPage() {
     for (const player of room.players) {
       if (!knownPlayerIdsRef.current.has(player.id)) {
         // Skip toasting ourselves
-        if (player.spotifyUserId !== user.spotifyUserId) {
+        if (player.userId !== user.userId) {
           toast(`${player.displayName} joined!`, {
             icon: '👋',
             duration: 3000,
@@ -70,7 +70,7 @@ export default function RoomLobbyPage() {
   const currentPlayer = useMemo(() => {
     if (!room || !user) return null;
     return (
-      room.players.find((p) => p.spotifyUserId === user.spotifyUserId) ?? null
+      room.players.find((p) => p.userId === user.userId) ?? null
     );
   }, [room, user]);
 
@@ -305,7 +305,7 @@ export default function RoomLobbyPage() {
                     key={player.id}
                     player={player}
                     isHost={player.userId === room.hostId}
-                    isCurrentUser={player.spotifyUserId === user?.spotifyUserId}
+                    isCurrentUser={player.userId === user?.userId}
                     index={index}
                     isReady={player.isReady}
                     isOnline={onlineUserIds.includes(player.userId)}

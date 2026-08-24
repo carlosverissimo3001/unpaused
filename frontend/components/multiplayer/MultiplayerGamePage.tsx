@@ -166,7 +166,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
   // Resolve current user's internal userId from the room player list
   const currentUserId = useMemo(() => {
     if (!me || !room) return undefined;
-    return room.players.find((p) => p.spotifyUserId === me.spotifyUserId)
+    return room.players.find((p) => p.userId === me.userId)
       ?.userId;
   }, [me, room]);
 
