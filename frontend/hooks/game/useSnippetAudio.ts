@@ -13,6 +13,8 @@ const WAVEFORM_SLICES = 96;
 interface UseSnippetAudioOptions {
   previewUrl: string | null | undefined;
   volume: number;
+  /** The longest snippet a round can reach. Audio past it is never heard. */
+  window: number;
   onEnded: () => void;
 }
 
@@ -23,11 +25,12 @@ interface UseSnippetAudioOptions {
 export function useSnippetAudio({
   previewUrl,
   volume,
+  window,
   onEnded,
 }: UseSnippetAudioOptions) {
   const playerRef = useRef<SnippetPlayer | null>(null);
   if (playerRef.current === null) {
-    playerRef.current = new SnippetPlayer();
+    playerRef.current = new SnippetPlayer(undefined, window);
   }
   const player = playerRef.current;
 

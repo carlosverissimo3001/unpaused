@@ -8,6 +8,8 @@ interface UseGameAudioOptions {
   previewUrl: string | null | undefined;
   isGameOver: boolean;
   snippetDuration: number;
+  /** The longest snippet any round reaches, so the player knows what is used. */
+  maxSnippetDuration?: number;
   volume: number;
 }
 
@@ -15,6 +17,7 @@ export function useGameAudio({
   previewUrl,
   isGameOver,
   snippetDuration,
+  maxSnippetDuration = 12,
   volume,
 }: UseGameAudioOptions) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -28,6 +31,7 @@ export function useGameAudio({
   const snippet = useSnippetAudio({
     previewUrl,
     volume,
+    window: maxSnippetDuration,
     onEnded: handleSnippetEnded,
   });
 

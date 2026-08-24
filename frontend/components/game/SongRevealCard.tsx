@@ -15,7 +15,7 @@ import {
 import { GameStateDtoStatusEnum } from '@/sdk/models/GameStateDto';
 import type { TrackOptionDto } from '@/sdk';
 import { ShareButton } from '@/components/daily/ShareButton';
-import { useImageColor } from '@/hooks/misc/useImageColor';
+
 import { GLASS_STYLE } from '@/lib/styles';
 
 interface SongRevealCardProps {
@@ -34,12 +34,6 @@ interface SongRevealCardProps {
   onToggleFullSong: () => void;
   /** Easter egg: personalized rank for special users */
   rankTitle?: string | null;
-}
-
-function extractRgb(rgba: string): { r: number; g: number; b: number } | null {
-  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-  if (!match) return null;
-  return { r: +match[1], g: +match[2], b: +match[3] };
 }
 
 export function SongRevealCard({
@@ -70,14 +64,7 @@ export function SongRevealCard({
     ? answer.allArtists.join(', ')
     : answer?.artist;
   const isWon = status === GameStateDtoStatusEnum.Won;
-  const albumColor = useImageColor(answer?.albumImageUrl ?? null);
-  const albumRgb = extractRgb(albumColor);
-  const albumGlowColor = albumRgb
-    ? `rgba(${albumRgb.r}, ${albumRgb.g}, ${albumRgb.b}, 0.5)`
-    : 'rgba(29, 185, 84, 0.3)';
-  const ambientGradient = albumRgb
-    ? `radial-gradient(ellipse 80% 50% at 50% 0%, rgba(${albumRgb.r}, ${albumRgb.g}, ${albumRgb.b}, 0.12) 0%, transparent 70%)`
-    : 'none';
+
   const [albumLoaded, setAlbumLoaded] = useState(false);
 
   return (
@@ -88,15 +75,6 @@ export function SongRevealCard({
       className="mb-3 md:mb-4 p-6 md:p-8 rounded-2xl text-center relative overflow-hidden"
       style={GLASS_STYLE}
     >
-      {/* Ambient color wash from album art */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, delay: 0.3 }}
-        style={{ background: ambientGradient }}
-      />
-
       <div className="relative z-10">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 tracking-tight flex items-center justify-center gap-1 flex-wrap">
           <span
@@ -136,14 +114,7 @@ export function SongRevealCard({
                 }}
                 className="relative w-36 h-36 md:w-44 md:h-44 mx-auto mb-4 md:mb-5"
               >
-                {/* Colored glow behind album art */}
-                <div
-                  className="absolute -inset-4 rounded-3xl blur-2xl opacity-60 transition-colors duration-700"
-                  style={{
-                    background: `radial-gradient(circle, ${albumGlowColor} 0%, transparent 70%)`,
-                  }}
-                />
-                <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+                <div className="relative w-full h-full rounded-xl overflow-hidden">
                   {!albumLoaded && (
                     <div className="absolute inset-0 animate-pulse bg-fg/10" />
                   )}

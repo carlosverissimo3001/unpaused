@@ -67,26 +67,13 @@ function Bars({ peaks, lit }: { peaks: number[]; lit: boolean }) {
   );
 }
 
-/**
- * Flat bars at the resting height, shown while the audio is still decoding.
- *
- * The real peaks replace these in place, and the height transition carries
- * them up — so the waveform grows out of the placeholder rather than a flat
- * line being swapped for a jagged one.
- */
+/** Drawn until decoding finishes; real peaks then grow out of these. */
 const PLACEHOLDER_PEAKS: number[] = Array.from({ length: 96 }, () => 0);
 
 /**
- * The track's own waveform, doubling as the progress bar.
- *
- * Full width is the longest snippet, so the bar is the audio budget: the lit
- * portion is how much of the song you have earned, and each tick is what the
- * next miss unlocks. Peaks come from the buffer already decoded for playback,
- * so drawing the real song costs nothing extra.
- *
- * At rest it stays at the current ceiling rather than emptying, which is what
- * makes the 0.1s round legible — the fill crosses a sliver of the bar in a
- * tenth of a second, but it stays where it landed instead of blinking out.
+ * The track's waveform doubling as the progress bar: lit is what you have
+ * earned, ticks are what the next miss unlocks. Rests at the ceiling rather
+ * than emptying, which is what makes the 0.1s round legible.
  */
 export function RoundProgressBar({
   currentRound,
@@ -107,17 +94,9 @@ export function RoundProgressBar({
   const drawn = peaks.length > 0 ? peaks : PLACEHOLDER_PEAKS;
 
   /**
-   * A square-root scale, because the steps span two orders of magnitude.
-   * Placed proportionally, 0.1s through 2s share the left sixth of the bar
-   * while the last round owns the right half — five guesses of crawling
-   * followed by one leap, with the early labels colliding. A log scale
-   * over-corrects: the 0.1s to 1s jump is tenfold where the rest are roughly
-   * double, so round one would take half the bar.
-   *
-   * Square root lands the marks at 9 / 29 / 41 / 58 / 76 / 100%, so every
-   * round is a step of similar size while round one stays visibly a sliver.
-   * The fill is no longer literally seconds of audio, which nobody was
-   * measuring off a progress bar anyway.
+   * Square root, not linear: the steps span two orders of magnitude, so
+   * proportional puts five rounds in the left third. Log over-corrects and
+   * gives round one half the bar.
    */
   const position = (seconds: number) => Math.sqrt(seconds / longest);
 
@@ -128,18 +107,14 @@ export function RoundProgressBar({
     `${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)}s`;
 
   return (
-    // Same column as everything below: at full width the bar reached past
-    // the search card and read as a separate element.
+    // Same column as the content below, or it reads as a separate element.
     <div className="mx-auto w-full max-w-xl mb-4 sm:mb-6 md:mb-8">
-      {/* What each round buys you, sat above the mark it unlocks. Hidden on
-          small screens: at these positions the first two are about 25px apart
-          on a phone, so they would collide rather than inform. */}
+      {/* Hidden on phones, where the first two marks are ~25px apart. */}
       <div className="relative mb-1 hidden h-3 sm:block">
         {steps.map((step, index) => {
           const spent = index < currentRound;
           const isCurrent = index === round;
-          // The end labels are pinned rather than centred: at 0.8% and 100%
-          // of the width, centring hangs them off the edges of the bar.
+          // Ends are pinned; centring would hang them off the bar.
           const align =
             index === 0
               ? 'translate-x-0'
@@ -164,9 +139,7 @@ export function RoundProgressBar({
           );
         })}
       </div>
-      {/* Height is fixed whether or not the peaks have arrived: it is decoded
-          a moment after the round loads, and letting the container grow when
-          they land shifts everything below it down the page. */}
+      {/* Fixed height: peaks land after the round loads and must not shift it. */}
       <div className="relative h-7 sm:h-9">
         <Bars peaks={drawn} lit={false} />
         {isPlaying && progress ? (
@@ -182,8 +155,7 @@ export function RoundProgressBar({
           </div>
         )}
 
-        {/* What the next miss unlocks, coloured once spent by how close the
-            guess was. The last step is the end of the bar. */}
+        {/* What the next miss unlocks, coloured once spent. */}
         {steps.slice(0, -1).map((step, index) => {
           const result = guesses[index]?.result;
           const style = result != null ? getGuessResultStyle(result) : null;
@@ -192,9 +164,7 @@ export function RoundProgressBar({
             <span
               key={step}
               aria-hidden
-              // Sits proud of the waveform so it reads as a marker rather than
-              // a gap in the bars, and carries the colour of the guess that
-              // spent it once that round is behind you.
+              // Proud of the waveform so it reads as a marker, not a gap.
               className={`absolute -inset-y-1 w-0.5 rounded-full ${
                 style?.barClass ?? 'bg-fg/40'
               }`}

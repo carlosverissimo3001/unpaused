@@ -55,6 +55,7 @@ export function useGameOrchestrator(
     previewUrl: gameState?.previewUrl,
     isGameOver: !!isGameOver,
     snippetDuration: gameState?.snippetDuration ?? 0.5,
+    maxSnippetDuration: gameState?.snippetSteps?.at(-1),
     volume,
   });
 
