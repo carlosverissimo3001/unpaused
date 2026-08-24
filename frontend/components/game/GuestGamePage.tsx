@@ -14,6 +14,7 @@ import { RoundProgressBar } from './RoundProgressBar';
 import { VolumeSlider } from './VolumeSlider';
 import { PlaySnippetButton } from './PlaySnippetButton';
 import { SongRevealCard } from './SongRevealCard';
+import { ClaimNamePrompt } from './ClaimNamePrompt';
 import { GuessHistoryList } from './GuessHistoryList';
 import { GameTitle } from './GameTitle';
 import { GuessInput } from './GuessInput';
@@ -298,6 +299,9 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
                   isFullSongPlaying={gameAudio.isFullSongPlaying}
                   onToggleFullSong={gameAudio.toggleFullSong}
                 />
+                <div className="mt-4 flex flex-col">
+                  <ClaimNamePrompt />
+                </div>
               </motion.div>
             ) : (
               <div className="relative z-20">
