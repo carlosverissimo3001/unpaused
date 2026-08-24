@@ -122,7 +122,7 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
               guest mode by mistake. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-md">
             <div className="flex flex-col items-center gap-2">
-              <Link href="/game/guest" className="relative group w-full">
+              <Link href="/game/guest?start=1" className="relative group w-full">
                 <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
                 <Button
                   variant="spotify"

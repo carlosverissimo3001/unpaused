@@ -27,14 +27,16 @@ const ShouldShakeResult: GuessResult[] = [
  */
 export function usePoolGameOrchestrator({
   volume = 0.8,
-}: { volume?: number } = {}) {
+  autoStart = false,
+}: { volume?: number; autoStart?: boolean } = {}) {
   const queryClient = useQueryClient();
   const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
   /** True between asking for a new round and getting one, so the finished one
       cannot briefly reappear while the swap happens. */
   const [isResetting, setIsResetting] = useState(false);
-  /** No round, and so no user row, until the visitor asks for one. */
-  const [hasBegun, setHasBegun] = useState(false);
+  /** No round, and so no user row, until the visitor asks for one — which
+      clicking through from the landing page already counts as. */
+  const [hasBegun, setHasBegun] = useState(autoStart);
 
   const {
     sessionId,

@@ -35,7 +35,13 @@ const SHAKE_VARIANTS: Variants = {
  * pool. No playlist picker and no stats panel, though the round itself is
  * recorded like any other - starting one is what mints the account.
  */
-export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
+export function GuestGamePage({
+  canSignIn,
+  autoStart = false,
+}: {
+  canSignIn: boolean;
+  autoStart?: boolean;
+}) {
   const { volume, setVolume } = useVolume();
 
   const {
@@ -52,7 +58,7 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
     handleSubmit,
     handleSkip,
     handlePlayAgain,
-  } = usePoolGameOrchestrator({ volume });
+  } = usePoolGameOrchestrator({ volume, autoStart });
 
   const {
     audioRef,
@@ -77,33 +83,53 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
   if (!hasBegun) {
     return (
       <div
-        className="h-screen h-[100dvh] flex flex-col items-center justify-center gap-8 p-6 text-center"
+        className="h-screen h-[100dvh] flex items-center justify-center overflow-visible"
         style={{ background: 'rgb(var(--bg))' }}
       >
-        <div className="space-y-2">
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-fg">
-            Name the <span className="text-spotify-green">song</span>
-          </h1>
-          <p className="text-fg/50 text-sm sm:text-base tracking-tight">
-            Six chances. It starts with one second.
-          </p>
-        </div>
-
-        <Button
-          onClick={begin}
-          className="h-12 px-8 rounded-2xl bg-spotify-green text-black text-sm font-black hover:brightness-110 active:scale-95 shadow-[0_8px_20px_rgba(30,215,96,0.3)]"
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="relative z-10 text-center flex flex-col gap-8 sm:gap-12 max-w-2xl px-6"
         >
-          <Play fill="currentColor" className="w-4 h-4" />
-          Play
-        </Button>
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-fg leading-[0.9]">
+              Name the
+              <br />
+              <span className="text-spotify-green drop-shadow-[0_0_40px_rgba(30,215,96,0.35)]">
+                song.
+              </span>
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg text-fg/50 max-w-[280px] sm:max-w-md mx-auto leading-relaxed font-medium">
+              Six chances. It starts with one second.
+            </p>
+          </div>
 
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-fg/40 hover:text-fg/70 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back
-        </Link>
+          <div className="flex flex-col items-center gap-6">
+            <div className="flex flex-col items-center gap-2 w-full max-w-[240px]">
+              <div className="relative group w-full">
+                <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
+                <Button
+                  variant="spotify"
+                  onClick={begin}
+                  className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold gap-2 transition-all duration-500 shadow-xl"
+                >
+                  <Play fill="currentColor" className="w-4 h-4" />
+                  Play
+                </Button>
+              </div>
+              <span className="text-xs text-fg/45">No sign-in needed</span>
+            </div>
+
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-xs font-bold text-fg/40 hover:text-fg/70 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back
+            </Link>
+          </div>
+        </motion.div>
       </div>
     );
   }
