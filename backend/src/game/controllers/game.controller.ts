@@ -7,7 +7,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   ApiCookieAuth,
   ApiOperation,
@@ -22,6 +22,8 @@ import { SessionThrottlerGuard } from '@throttle/guards/session-throttler.guard'
 import {
   THROTTLE_GUESS,
   THROTTLE_GUESS_LIMIT,
+  THROTTLE_START,
+  THROTTLE_START_LIMIT,
   THROTTLE_TTL,
 } from '@throttle/throttle.constants';
 import { PlayedTodayDto } from '../dto/daily/played-today.dto';
@@ -42,7 +44,10 @@ export class GameController {
   constructor(private readonly gameService: GameService) {}
 
   @Post('start')
-  @UseGuards(ProvisioningSessionGuard)
+  @UseGuards(ThrottlerGuard, ProvisioningSessionGuard)
+  @Throttle({
+    [THROTTLE_START]: { limit: THROTTLE_START_LIMIT, ttl: THROTTLE_TTL },
+  })
   @ApiOperation({ summary: 'Start a new game from a playlist or daily' })
   @ApiCookieAuth()
   @ApiResponse({ status: 201, type: GameStateDto })

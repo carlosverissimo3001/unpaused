@@ -8,7 +8,7 @@ import {
   THROTTLE_GUESS,
   THROTTLE_SEARCH,
   THROTTLE_TTL,
-  THROTTLE_GUEST,
+  THROTTLE_START,
   THROTTLE_DEFAULT_LIMIT,
 } from './throttle.constants';
 
@@ -35,7 +35,7 @@ import {
             limit: THROTTLE_DEFAULT_LIMIT,
           },
           {
-            name: THROTTLE_GUEST,
+            name: THROTTLE_START,
             ttl: THROTTLE_TTL,
             limit: THROTTLE_DEFAULT_LIMIT,
           },

@@ -53,6 +53,9 @@ export class ProvisioningSessionGuard implements CanActivate {
       isTrusted: user.isTrusted,
     });
 
+    // @SessionId reads request.cookies, which the response cookie never reaches.
+    request.cookies = { ...request.cookies, [SESSION_COOKIE_NAME]: sessionId };
+
     response.cookie(
       SESSION_COOKIE_NAME,
       sessionId,

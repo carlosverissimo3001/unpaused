@@ -27,10 +27,10 @@ export const THROTTLE_DEMO_LIMIT = 60;
  */
 export const THROTTLE_DEFAULT_LIMIT = 500;
 
-/** Named throttler for the public guest game endpoints */
-export const THROTTLE_GUEST = 'guest';
+/** Named throttler for round start */
+export const THROTTLE_START = 'start';
 /**
- * Per IP, same reasoning as the demo endpoints: guests have no session to key
- * on. The pool read is cheap, but a round still resolves preview audio.
+ * Per IP, not per session: a caller without one has a user minted for them, so
+ * this is what keeps a crawler from filling the table.
  */
-export const THROTTLE_GUEST_LIMIT = 40;
+export const THROTTLE_START_LIMIT = 40;

@@ -70,6 +70,20 @@ describe('ProvisioningSessionGuard', () => {
     );
   });
 
+  it('exposes the minted session to the handler on the same request', async () => {
+    mockUserRepository.createAnonymous.mockResolvedValue({
+      id: 'user-1',
+      displayName: 'Vinyl Chorus',
+      isTrusted: false,
+    });
+    mockSessionService.createSession.mockResolvedValue('session-1');
+    const { context, request } = makeContext({});
+
+    await guard.canActivate(context);
+
+    expect(request.cookies[SESSION_COOKIE_NAME]).toBe('session-1');
+  });
+
   it('creates no user when the cookie resolves to a live session', async () => {
     mockSessionService.getSession.mockResolvedValue({
       sessionId: 'session-1',
