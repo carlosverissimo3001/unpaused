@@ -219,7 +219,7 @@ export function GuestGamePage({ canSignIn }: { canSignIn: boolean }) {
             />
           )}
 
-          {!isGameOver && gameState.albumImageUrl && (
+          {!isGameOver && (
             <AlbumArtReveal
               albumImageUrl={gameState.albumImageUrl}
               currentRound={gameState.currentRound}

@@ -193,7 +193,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
             />
           )}
 
-          {!isGameOver && showAlbumHint && gameState.albumImageUrl && (
+          {!isGameOver && showAlbumHint && (
             <AlbumArtReveal
               albumImageUrl={gameState.albumImageUrl}
               currentRound={gameState.currentRound}
