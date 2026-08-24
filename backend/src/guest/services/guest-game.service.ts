@@ -26,10 +26,10 @@ import {
 import { PoolService } from '../../pool/services/pool.service';
 import { TrackEntity } from '../../track/entities/track.entity';
 import {
-  GUEST_MAX_PREVIEW_ATTEMPTS,
   GUEST_ROUND_KEY_PREFIX,
   GUEST_ROUND_TTL_SECONDS,
 } from '../guest.constants';
+import { POOL_MAX_PREVIEW_ATTEMPTS } from '../../consts';
 
 const GUEST_PLAYLIST_ID = 'guest-pool';
 
@@ -152,7 +152,7 @@ export class GuestGameService {
   }> {
     const tried: string[] = [];
 
-    for (let i = 0; i < GUEST_MAX_PREVIEW_ATTEMPTS; i++) {
+    for (let i = 0; i < POOL_MAX_PREVIEW_ATTEMPTS; i++) {
       const track = await this.poolService.pickTrack(tried);
       try {
         const previewUrl = await this.trackService.resolvePreview(track);

@@ -47,9 +47,26 @@ export type JobNames = keyof JobDataMap;
 
 export const GAME_MAX_ROUNDS = 6;
 
-/** The guest pool only changes when it is reseeded, so this can be long. */
+/** The track pool only changes when it is reseeded, so this can be long. */
 export const POOL_CANDIDATE_CACHE_MS = 10 * 60 * 1000;
 
 /** Selection weight multiplies by this for every decade after the pivot. */
 export const RECENCY_PER_DECADE = 1.8;
 export const RECENCY_PIVOT_YEAR = 2005;
+
+// Track pool — what a player without a Spotify library plays from.
+export const POOL_PLAYLIST_ID = 'pool';
+
+/** Unreachable with an app token: every playlist 401s. Replaced in CAR-177. */
+export const POOL_PLAYLIST_IDS: string[] = [
+  '37i9dQZEVXbKyJS56d1pgi',
+  '37i9dQZEVXbNFJfN1Vw8d9',
+  '37i9dQZEVXbLnolsZ8PSNw',
+  '37i9dQZEVXbLRQDuF5jeBp',
+  '37i9dQZEVXbMDoHDwVN2tF',
+];
+
+export const POOL_PLAYLIST_TRACKS_CACHE_PREFIX = 'pool:playlist_tracks:';
+export const POOL_PLAYLIST_TRACKS_CACHE_TTL = 6 * 60 * 60;
+
+export const POOL_MAX_PREVIEW_ATTEMPTS = 10;
