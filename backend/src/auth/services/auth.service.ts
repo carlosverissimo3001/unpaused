@@ -108,6 +108,7 @@ export class AuthService {
         : user.avatarUrl;
 
     return {
+      userId: user.id,
       spotifyUserId: session.spotifyUserId,
       displayName: session.displayName,
       isTrusted: user.isTrusted,

@@ -4,7 +4,7 @@ import { RoomPlayerDto } from './room-player.dto';
 
 type RoomWithPlayers = MultiplayerRoom & {
   players: (RoomPlayer & {
-    user: Pick<User, 'spotifyUserId' | 'displayName' | 'avatarUrl'>;
+    user: Pick<User, 'displayName' | 'avatarUrl'>;
   })[];
 };
 
