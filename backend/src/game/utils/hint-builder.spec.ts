@@ -74,15 +74,35 @@ describe('buildHintsForRound', () => {
     expect(albumValue(track({ albumName: undefined }))).toBeUndefined();
   });
 
-  it('drops genre tags that just name the artist', () => {
-    const entity = track({
-      albumName: 'Talk That Talk',
-      metadata: { lastfm: { tags: ['Rihanna'] } },
-    } as Partial<TrackEntity>);
+  describe('the genre hint never names the answer', () => {
+    const genreValue = (tags: string[]) =>
+      buildHintsForRound(
+        track({
+          albumName: 'Talk That Talk',
+          metadata: { lastfm: { tags } },
+        } as Partial<TrackEntity>),
+        5,
+      ).find((h) => h.type === HintType.GENRE)?.value;
 
-    const genre = buildHintsForRound(entity, 5).find(
-      (h) => h.type === HintType.GENRE,
-    );
-    expect(genre?.value).toBe('');
+    it('keeps real genres', () => {
+      expect(genreValue(['pop', 'dance'])).toBe('pop, dance');
+    });
+
+    it('drops a tag that is the artist', () => {
+      expect(genreValue(['pop', 'Rihanna'])).toBe('pop');
+    });
+
+    it('drops a tag that is the song', () => {
+      expect(genreValue(['pop', 'Where Have You Been'])).toBe('pop');
+    });
+
+    it('ignores case and punctuation', () => {
+      expect(genreValue(['pop', 'rihanna!'])).toBe('pop');
+    });
+
+    it('offers nothing rather than an empty hint', () => {
+      // Every tag was a giveaway, so the pill would have rendered blank.
+      expect(genreValue(['Rihanna'])).toBeUndefined();
+    });
   });
 });
