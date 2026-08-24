@@ -159,7 +159,10 @@ export function GuessInput({
                   }}
                   onFocus={() => setShowDropdown(true)}
                   placeholder="Search for a song..."
-                  className="w-full pl-12 pr-4 py-3.5 sm:py-4 rounded-xl text-base text-fg placeholder-[#535353] focus:outline-none focus:ring-2 focus:ring-[#1DB954]/50 focus:border-[#1DB954]/50 transition-all min-h-[48px] touch-manipulation"
+                  // Ring colour is set unconditionally and only the width
+                  // changes on focus: transitioning the colour too animates it
+                  // up from Tailwind's default, which flashes pale blue first.
+                  className="w-full pl-12 pr-4 py-3.5 sm:py-4 rounded-xl text-base text-fg placeholder-[#535353] outline-none ring-0 ring-[#1DB954]/50 focus:ring-2 transition-[box-shadow,border-color] duration-200 min-h-[48px] touch-manipulation"
                   style={{
                     background: 'rgb(var(--fg) / 0.06)',
                     border: '1px solid rgb(var(--fg) / 0.08)',
@@ -216,7 +219,9 @@ export function GuessInput({
         </PopoverContent>
       </Popover>
 
-      <div className="flex flex-col gap-2">
+      {/* Side by side, but not the same weight: submitting is the move,
+          skipping is the way out. */}
+      <div className="flex items-stretch gap-2">
         <motion.button
           type="button"
           onClick={onSubmit}
@@ -224,7 +229,7 @@ export function GuessInput({
           disabled={!selectedTrack || submitPending}
           whileHover={selectedTrack && !submitPending ? { scale: 1.02 } : {}}
           whileTap={selectedTrack && !submitPending ? { scale: 0.98 } : {}}
-          className={`w-full py-2.5 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base transition-all min-h-[40px] sm:min-h-[48px] touch-manipulation ${
+          className={`flex-1 py-2.5 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base transition-all min-h-[44px] sm:min-h-[48px] touch-manipulation ${
             selectedTrack && !submitPending
               ? 'bg-[#1DB954] hover:bg-[#1ed760] text-black shadow-lg shadow-[#1DB954]/20 active:scale-95'
               : 'bg-fg/10 text-fg/30 border border-fg/[0.12] cursor-not-allowed'
@@ -239,9 +244,9 @@ export function GuessInput({
           aria-label={
             gameMode === GameMode.Gauntlet ? 'Give up' : 'Skip this round'
           }
-          className="text-fg/40 hover:text-fg/70 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors touch-manipulation"
+          className="shrink-0 px-5 sm:px-6 rounded-xl border border-fg/15 text-fg/50 hover:text-fg/80 hover:border-fg/25 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors touch-manipulation"
         >
-          {gameMode === GameMode.Gauntlet ? 'Give up' : 'Skip this round'}
+          {gameMode === GameMode.Gauntlet ? 'Give up' : 'Skip'}
         </button>
       </div>
     </div>
