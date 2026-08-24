@@ -8,17 +8,19 @@ import { useUpdateProfile } from '@/hooks/auth/useUpdateProfile';
 
 const ASKED_KEY = 'unpaused:name-prompt-asked';
 
-function readAsked(): boolean {
+/** Which user we last asked. Per-user, not per-browser: clearing cookies gives
+    the same browser a new identity, and a new identity has not been asked. */
+function readAskedUserId(): string | null {
   try {
-    return localStorage.getItem(ASKED_KEY) === '1';
+    return localStorage.getItem(ASKED_KEY);
   } catch {
-    return false;
+    return null;
   }
 }
 
-function writeAsked() {
+function writeAskedUserId(userId: string) {
   try {
-    localStorage.setItem(ASKED_KEY, '1');
+    localStorage.setItem(ASKED_KEY, userId);
   } catch {
     // A blocked store only costs us the prompt opening again.
   }
@@ -34,7 +36,8 @@ export function ClaimNamePrompt() {
   const { data: user } = useMe();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
 
-  const [expanded, setExpanded] = useState(() => !readAsked());
+  // Derived, not initial state: `user` arrives a render later than this mounts.
+  const [override, setOverride] = useState<'open' | 'closed' | null>(null);
   const [name, setName] = useState('');
 
   // Someone with an account already has a name they chose.
@@ -42,16 +45,19 @@ export function ClaimNamePrompt() {
     return null;
   }
 
+  const asked = readAskedUserId() === user.userId;
+  const expanded = override ? override === 'open' : !asked;
+
   function close() {
-    writeAsked();
-    setExpanded(false);
+    if (user) writeAskedUserId(user.userId);
+    setOverride('closed');
   }
 
   if (!expanded) {
     return (
       <button
         type="button"
-        onClick={() => setExpanded(true)}
+        onClick={() => setOverride('open')}
         className="mx-auto flex items-center gap-1.5 text-[11px] font-bold text-fg/35 hover:text-fg/70 transition-colors"
       >
         Playing as {user.displayName}
