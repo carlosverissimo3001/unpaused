@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SITE_ACCESS_COOKIE, isAccessTokenValid } from '@/lib/site-access';
 
 const SESSION_COOKIE = 'unpaused_session';
-const SHUFFLE_ROUTE = '/play/shuffle';
+const SHUFFLE_ROUTE = '/shuffle';
 
 // Presence only; the backend validates. Multiplayer join is absent on purpose:
 // it routes signed out visitors through login itself.
 const NEEDS_SESSION = [
   '/daily',
-  '/game',
+  '/playlist',
   '/speed-run',
   '/history',
   '/preferences',
@@ -17,7 +17,7 @@ const NEEDS_SESSION = [
 
 function needsSession(pathname: string): boolean {
   if (pathname.startsWith('/multiplayer/join')) return false;
-  // Guest play is the whole point of being signed out.
+  // Playing without an account is the whole point of the shuffle.
   if (pathname === SHUFFLE_ROUTE) return false;
   if (pathname.startsWith('/multiplayer')) return true;
   return NEEDS_SESSION.some(
