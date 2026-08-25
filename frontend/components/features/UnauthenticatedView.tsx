@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState, FormEvent } from 'react';
+import { FormEvent, memo, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useSiteUnlock } from '@/hooks/auth/useSiteUnlock';
 import { useEnsureSession } from '@/hooks/auth/useEnsureSession';
 import { CredentialsForm } from '@/components/auth/CredentialsForm';
+import { forgetSignedIn, readSignedInAs } from '@/lib/returning-player';
 
 function InviteForm() {
   const [secret, setSecret] = useState('');
@@ -95,6 +96,16 @@ function SpotifyButton({ canSignIn }: { canSignIn: boolean }) {
 function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
   const [showInvite, setShowInvite] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
+
+  /**
+   * Read after mount, never during render: the server has no localStorage and
+   * a mismatch here would flash the wrong door.
+   */
+  const [returningAs, setReturningAs] = useState<string | null>(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
+    setReturningAs(readSignedInAs());
+  }, []);
   // useMe's cache is updated by the mutation, so the home page re-renders
   // into the signed-in shell without a navigation.
   const ensureSession = useEnsureSession();
@@ -121,6 +132,28 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
         </div>
 
         <div className="flex flex-col items-center gap-6">
+          {/* Signing back in is the whole point of the visit for someone who
+              has an account, and both buttons below make a new person. */}
+          {returningAs && (
+            <div className="w-full max-w-xs flex flex-col gap-3">
+              <p className="text-sm text-fg/60">
+                Welcome back,{' '}
+                <span className="font-semibold text-fg/80">{returningAs}</span>
+              </p>
+              <CredentialsForm initialMode="login" initialEmail={returningAs} />
+              <button
+                type="button"
+                onClick={() => {
+                  forgetSignedIn();
+                  setReturningAs(null);
+                }}
+                className="cursor-pointer text-[11px] text-fg/35 underline underline-offset-4 hover:text-fg/60"
+              >
+                Not you?
+              </button>
+            </div>
+          )}
+
           {/* Equal columns, each caption owned by its own button, so the two
               paths read as a deliberate choice rather than a primary and a
               stray. The caption is what stops a whitelisted user landing in
@@ -135,10 +168,16 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
                   disabled={ensureSession.isPending}
                   className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold transition-all duration-500 shadow-xl"
                 >
-                  {ensureSession.isPending ? 'Starting…' : 'Play now'}
+                  {ensureSession.isPending
+                    ? 'Starting…'
+                    : returningAs
+                      ? 'Play as guest'
+                      : 'Play now'}
                 </Button>
               </div>
-              <span className="text-xs text-fg/45">No sign-in needed</span>
+              <span className="text-xs text-fg/45">
+                {returningAs ? 'Save your progress later' : 'No sign-in needed'}
+              </span>
             </div>
 
             <div className="flex flex-col items-center gap-2">
@@ -149,7 +188,7 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
 
           {/* Without this an account made on another device has no way back in
               from here: both buttons above start something new. */}
-          {showSignIn ? (
+          {returningAs ? null : showSignIn ? (
             <div className="w-full max-w-xs">
               <CredentialsForm initialMode="login" />
             </div>

@@ -11,15 +11,17 @@ type Mode = 'signup' | 'login';
 
 interface CredentialsFormProps {
   initialMode?: Mode;
+  initialEmail?: string;
   onDone?: () => void;
 }
 
 export function CredentialsForm({
   initialMode = 'signup',
+  initialEmail = '',
   onDone,
 }: CredentialsFormProps) {
   const [mode, setMode] = useState<Mode>(initialMode);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
 
   const signup = useSignup();
@@ -53,6 +55,9 @@ export function CredentialsForm({
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
         autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+        // A returning player has their email already; the password is all
+        // that is left to supply.
+        autoFocus={!!initialEmail}
         required
         className="w-full rounded-full border border-fg/10 bg-fg/5 px-4 py-2.5 text-sm text-fg placeholder:text-fg/30 focus:border-spotify-green/50 focus:outline-none transition-colors"
       />
