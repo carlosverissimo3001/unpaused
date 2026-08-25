@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { parse as parseCookie } from 'cookie';
 import { AuthService } from '../../auth/services/auth.service';
 import { SessionService } from '../../auth/services/session.service';
+import { hasCredential } from '../../auth/utils/credentials';
 import { RoomRepository } from '../repositories/room.repository';
 import { RoomDto } from '../dto/room.dto';
 
@@ -61,7 +62,14 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       // Validate session exists
-      await this.sessionService.getSession(sessionId);
+      const session = await this.sessionService.getSession(sessionId);
+
+      // The HTTP routes are closed to anonymous players, so the socket is too:
+      // otherwise they could still hold one open on a single-instance gateway.
+      if (!hasCredential(session)) {
+        client.disconnect();
+        return;
+      }
 
       // Resolve user
       const user = await this.authService.getUserBySessionId(sessionId);

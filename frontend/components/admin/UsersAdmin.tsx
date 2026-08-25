@@ -31,8 +31,7 @@ export function UsersAdmin() {
     }
   };
 
-  const isSelf = (user: AdminUserDto) =>
-    me?.spotifyUserId === user.spotifyUserId;
+  const isSelf = (user: AdminUserDto) => me?.userId === user.id;
 
   return (
     <div>
@@ -88,7 +87,7 @@ export function UsersAdmin() {
                     )}
                   </p>
                   <p className="text-xs text-fg/40 truncate">
-                    {user.spotifyUserId}
+                    {user.spotifyUserId ?? 'No Spotify account linked'}
                   </p>
                 </div>
 

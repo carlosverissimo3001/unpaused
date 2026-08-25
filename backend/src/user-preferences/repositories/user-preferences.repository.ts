@@ -23,6 +23,7 @@ export class UserPreferencesRepository {
         | 'showTextHints'
         | 'reducedMotion'
         | 'showGuessHistory'
+        | 'showStatsToOthers'
         | 'dailyChallengePlaylists'
         | 'timezone'
       >
@@ -48,6 +49,7 @@ export class UserPreferencesRepository {
       showTextHints: true,
       reducedMotion: false,
       showGuessHistory: true,
+      showStatsToOthers: false,
       dailyChallengePlaylists: [],
       timezone: 'UTC',
     };

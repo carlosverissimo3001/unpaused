@@ -9,6 +9,7 @@ import { TrackPoolService } from './services/track-pool.service';
 import { RoomRepository } from './repositories/room.repository';
 import { MultiplayerGameSessionRepository } from './repositories/multiplayer-game-session.repository';
 import { RoomsGateway } from './gateways/rooms.gateway';
+import { LinkedAccountGuard } from '@utils/guards/linked-account.guard';
 
 @Module({
   imports: [AuthModule, PlaylistModule, TrackModule],
@@ -20,6 +21,7 @@ import { RoomsGateway } from './gateways/rooms.gateway';
     RoomRepository,
     MultiplayerGameSessionRepository,
     RoomsGateway,
+    LinkedAccountGuard,
   ],
   exports: [RoomService, MultiplayerGameService, RoomRepository],
 })

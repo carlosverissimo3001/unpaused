@@ -25,7 +25,11 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
 
   const { data: user, isLoading: isLoadingUser } = useMe();
 
-  useTimezoneSync({ enabled: !!user });
+  // Every visitor who starts a round has a session, so a session no longer
+  // means signed in. Only a linked credential does.
+  const hasAccount = !!user?.hasLinkedAccount;
+
+  useTimezoneSync({ enabled: hasAccount });
 
   // Detect post-OAuth pending redirect synchronously on mount so we can
   // render a blank overlay instead of a flash of the homepage while
@@ -43,19 +47,19 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   // Hard navigation: a return url can point at a rewrite the client router
   // cannot resolve locally.
   useEffect(() => {
-    if (user) {
+    if (hasAccount) {
       const returnUrl = consumeAuthReturnUrl();
       if (returnUrl) {
         window.location.replace(returnUrl);
       }
     }
-  }, [user]);
+  }, [hasAccount]);
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } =
     useMyPlaylists({
       onlyPublic: playlistFilters.visibility === 'public',
       onlyPrivate: playlistFilters.visibility === 'private',
       sortBy: playlistFilters.sortBy,
-      enabled: !!user,
+      enabled: hasAccount,
     });
   const logoutMutation = useLogout();
   const [streakDismissed, setStreakDismissed] = useState(false);
@@ -112,39 +116,48 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
               transition={{ duration: 0.4 }}
               className="space-y-4 sm:space-y-6"
             >
-              <GameModesGallery isTrusted={user.isTrusted} />
+              <GameModesGallery
+                isTrusted={user.isTrusted}
+                hasAccount={hasAccount}
+              />
 
-              {/* Main Content Header */}
-              <div className="mt-1 sm:mt-2">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 relative z-10">
-                  <div className="flex items-baseline gap-2 sm:gap-3">
-                    <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-fg whitespace-nowrap">
-                      Your Playlists
-                    </h1>
+              {/* The playlist grid is the one thing a Spotify credential
+                  buys, so it is the one thing a guest's home leaves out. */}
+              {hasAccount && (
+                <>
+                  {/* Main Content Header */}
+                  <div className="mt-1 sm:mt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 relative z-10">
+                      <div className="flex items-baseline gap-2 sm:gap-3">
+                        <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-fg whitespace-nowrap">
+                          Your Playlists
+                        </h1>
 
-                    {!isLoadingPlaylists && (
-                      <span className="text-sm sm:text-lg font-mono text-spotify-green/70 font-light tracking-tighter shrink-0">
-                        /{playlists.length.toString().padStart(2, '0')}
-                      </span>
-                    )}
+                        {!isLoadingPlaylists && (
+                          <span className="text-sm sm:text-lg font-mono text-spotify-green/70 font-light tracking-tighter shrink-0">
+                            /{playlists.length.toString().padStart(2, '0')}
+                          </span>
+                        )}
+                      </div>
+
+                      <PlaylistFilters
+                        visibility={playlistFilters.visibility}
+                        onVisibilityChange={playlistFilters.setVisibility}
+                        sortBy={playlistFilters.sortBy}
+                        onSortByChange={playlistFilters.setSortBy}
+                      />
+                    </div>
+
+                    <div className="mt-4" />
                   </div>
 
-                  <PlaylistFilters
-                    visibility={playlistFilters.visibility}
-                    onVisibilityChange={playlistFilters.setVisibility}
-                    sortBy={playlistFilters.sortBy}
-                    onSortByChange={playlistFilters.setSortBy}
+                  <PlaylistGrid
+                    playlists={playlists}
+                    isLoading={isLoadingPlaylists}
+                    onClearFilters={playlistFilters.clearFilters}
                   />
-                </div>
-
-                <div className="mt-4" />
-              </div>
-
-              <PlaylistGrid
-                playlists={playlists}
-                isLoading={isLoadingPlaylists}
-                onClearFilters={playlistFilters.clearFilters}
-              />
+                </>
+              )}
             </motion.div>
           ) : (
             <UnauthenticatedView canSignIn={canSignIn} />

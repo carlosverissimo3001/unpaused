@@ -2,8 +2,22 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AvatarSource } from '@prisma/client';
 
 export class AuthMeResponseDto {
-  @ApiProperty({ description: 'Unique identifier for the user' })
-  spotifyUserId: string;
+  @ApiProperty({
+    description: 'Stable user id, the only safe way to identify this player',
+  })
+  userId: string;
+
+  @ApiPropertyOptional({
+    description: 'Spotify user ID, present only when the account is linked',
+  })
+  spotifyUserId?: string;
+
+  @ApiProperty({
+    example: false,
+    description:
+      'Whether any credential is attached. False means an anonymous player, who has nothing to log out of.',
+  })
+  hasLinkedAccount: boolean;
 
   @ApiProperty({ description: 'John Doe' })
   displayName: string;

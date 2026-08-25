@@ -36,12 +36,6 @@ export interface RoomPlayerDto {
      * @type {string}
      * @memberof RoomPlayerDto
      */
-    spotifyUserId: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RoomPlayerDto
-     */
     displayName: string;
     /**
      * 
@@ -75,7 +69,6 @@ export interface RoomPlayerDto {
 export function instanceOfRoomPlayerDto(value: object): value is RoomPlayerDto {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('userId' in value) || value['userId'] === undefined) return false;
-    if (!('spotifyUserId' in value) || value['spotifyUserId'] === undefined) return false;
     if (!('displayName' in value) || value['displayName'] === undefined) return false;
     if (!('isReady' in value) || value['isReady'] === undefined) return false;
     if (!('totalScore' in value) || value['totalScore'] === undefined) return false;
@@ -95,7 +88,6 @@ export function RoomPlayerDtoFromJSONTyped(json: any, ignoreDiscriminator: boole
         
         'id': json['id'],
         'userId': json['userId'],
-        'spotifyUserId': json['spotifyUserId'],
         'displayName': json['displayName'],
         'avatarUrl': json['avatarUrl'] == null ? undefined : json['avatarUrl'],
         'isReady': json['isReady'],
@@ -117,7 +109,6 @@ export function RoomPlayerDtoToJSONTyped(value?: RoomPlayerDto | null, ignoreDis
         
         'id': value['id'],
         'userId': value['userId'],
-        'spotifyUserId': value['spotifyUserId'],
         'displayName': value['displayName'],
         'avatarUrl': value['avatarUrl'],
         'isReady': value['isReady'],

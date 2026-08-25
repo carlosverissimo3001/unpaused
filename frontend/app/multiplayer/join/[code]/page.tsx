@@ -25,7 +25,7 @@ export default function JoinByCodePage() {
   // Auth gate: redirect to login if not authenticated
   useEffect(() => {
     if (isLoadingUser || !isValidCode) return;
-    if (!user) {
+    if (!user?.hasLinkedAccount) {
       setAuthReturnUrl(`/multiplayer/join/${rawCode}`);
       window.location.href = '/api/auth/login';
     }

@@ -1,11 +1,18 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SpotifyService } from './spotify.service';
 import { SpotifyAuthService } from './spotify-auth.service';
 import { SessionService } from './session.service';
+import { AccountMergeService } from './account-merge.service';
 import { v4 as uuidv4 } from 'uuid';
 import { LoginStartResult } from '../types';
 import { UserRepository } from '../repositories/user.repository';
+import { UserEntity } from '../entities/user.entity';
+import { hasCredential } from '../utils/credentials';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
@@ -19,6 +26,7 @@ export class AuthService {
     private spotifyAuthService: SpotifyAuthService,
     private sessionService: SessionService,
     private userRepository: UserRepository,
+    private accountMergeService: AccountMergeService,
   ) {}
 
   /**
@@ -38,9 +46,15 @@ export class AuthService {
   }
 
   /**
-   * Handle OAuth callback: exchange code, fetch profile, create session
+   * Handle OAuth callback: exchange code, fetch profile, create session.
+   * The current session, if any, is the player signing in — their row is
+   * either the one Spotify attaches to, or the one merged into it.
    */
-  async handleCallback(code: string, state: string): Promise<string> {
+  async handleCallback(
+    code: string,
+    state: string,
+    currentSessionId?: string,
+  ): Promise<string> {
     // Retrieve and validate PKCE state
     const pkceState = await this.sessionService.consumePkceState(state);
     if (!pkceState) {
@@ -57,28 +71,75 @@ export class AuthService {
     );
     const displayName = profile.displayName || profile.id;
 
-    const user = await this.userRepository.upsert({
-      spotifyUserId: profile.id,
-      displayName,
-      avatarUrl: profile.avatarUrl,
-      country: profile.country,
-    });
+    const currentUserId = await this.resolveCurrentUserId(currentSessionId);
+    const existing = await this.userRepository.findBySpotifyUserId(profile.id);
+
+    // Only a row with no credentials may be claimed by this sign-in. A session
+    // that already belongs to someone is a person switching accounts — on a
+    // shared browser, treating it as a guest would delete the account they
+    // walked away from.
+    const current = currentUserId
+      ? await this.userRepository.findById(currentUserId)
+      : null;
+    const claimable = current && !hasCredential(current) ? current : null;
+
+    if (existing && claimable && claimable.id !== existing.id) {
+      await this.accountMergeService.merge(claimable.id, existing.id);
+
+      // The merged-away row is gone; a session still pointing at it would
+      // fail every request and wedge this callback on any other device.
+      if (currentSessionId) {
+        await this.sessionService.deleteSession(currentSessionId);
+      }
+    }
+
+    // The common path: an existing guest claims a Spotify id nobody holds.
+    const user: UserEntity =
+      !existing && claimable
+        ? await this.userRepository.attachSpotify(claimable.id, {
+            spotifyUserId: profile.id,
+            avatarUrl: profile.avatarUrl,
+            country: profile.country,
+            displayName,
+          })
+        : await this.userRepository.upsert({
+            spotifyUserId: profile.id,
+            displayName,
+            avatarUrl: profile.avatarUrl,
+            country: profile.country,
+          });
 
     // Store tokens via SpotifyAuthService (Redis cache + encrypted DB)
     await this.spotifyAuthService.storeTokens(
-      user.spotifyUserId,
+      profile.id,
       tokens.accessToken,
       tokens.refreshToken,
       tokens.expiresIn,
     );
 
-    const sessionId = await this.sessionService.createSession(
-      user.spotifyUserId,
-      user.displayName,
-      user.isTrusted,
-    );
+    const sessionId = await this.sessionService.createSession({
+      userId: user.id,
+      displayName: user.displayName,
+      isTrusted: user.isTrusted,
+      spotifyUserId: profile.id,
+    });
 
     return sessionId;
+  }
+
+  /** A stale cookie is not an error here: it just means there is nothing to merge. */
+  private async resolveCurrentUserId(
+    sessionId?: string,
+  ): Promise<string | undefined> {
+    if (!sessionId) {
+      return undefined;
+    }
+    try {
+      const session = await this.sessionService.getSession(sessionId);
+      return session.userId;
+    } catch {
+      return undefined;
+    }
   }
 
   /**
@@ -92,9 +153,7 @@ export class AuthService {
       throw new UnauthorizedException('Session expired');
     }
 
-    const user = await this.userRepository.findBySpotifyUserId(
-      session.spotifyUserId,
-    );
+    const user = await this.userRepository.findById(session.userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -105,7 +164,9 @@ export class AuthService {
         : user.avatarUrl;
 
     return {
+      userId: user.id,
       spotifyUserId: session.spotifyUserId,
+      hasLinkedAccount: !!user.spotifyUserId,
       displayName: session.displayName,
       isTrusted: user.isTrusted,
       isAdmin: user.isAdmin,
@@ -118,7 +179,7 @@ export class AuthService {
   }
 
   /**
-   * Resolves session to get spotifyUserId, then returns a valid access token.
+   * Resolves the session, then returns a valid Spotify access token.
    * @param sessionId - The session ID
    * @returns The session and a valid access token
    */
@@ -128,6 +189,12 @@ export class AuthService {
     const session = await this.sessionService.getSession(sessionId);
     if (!session) {
       throw new UnauthorizedException('Session not found');
+    }
+
+    if (!session.spotifyUserId) {
+      throw new ForbiddenException(
+        'This action requires a linked Spotify account',
+      );
     }
 
     const accessToken = await this.spotifyAuthService.getValidAccessToken(
@@ -144,13 +211,7 @@ export class AuthService {
    */
   async getUserBySessionId(sessionId: string): Promise<User> {
     const session = await this.sessionService.getSession(sessionId);
-    const user = await this.prismaService.user.findUnique({
-      where: { spotifyUserId: session.spotifyUserId },
-    });
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return user;
+    return this.getUserById(session.userId);
   }
 
   /**
@@ -176,10 +237,7 @@ export class AuthService {
     const session = await this.sessionService.getSession(sessionId);
     const displayName = dto.displayName.trim();
 
-    await this.userRepository.updateDisplayName(
-      session.spotifyUserId,
-      displayName,
-    );
+    await this.userRepository.updateDisplayName(session.userId, displayName);
     await this.sessionService.updateSessionDisplayName(sessionId, displayName);
 
     return this.getCurrentUser(sessionId);
@@ -190,13 +248,24 @@ export class AuthService {
    * @param sessionId - The session ID
    */
   async logout(sessionId: string): Promise<void> {
-    const session = await this.sessionService.getSession(sessionId);
+    // A session we cannot read still has a cookie to clear, so never fail here.
+    let session: UserSessionDto | null = null;
+    try {
+      session = await this.sessionService.getSession(sessionId);
+    } catch {
+      session = null;
+    }
 
-    if (session) {
+    if (session?.spotifyUserId) {
       await this.spotifyAuthService.revokeTokens(session.spotifyUserId);
-    } else {
-      // Session already expired — nothing to revoke
     }
     await this.sessionService.deleteSession(sessionId);
+  }
+
+  /**
+   * Drop the device token so the browser is not re-attached to its old row.
+   */
+  async forgetDevice(deviceToken: string): Promise<void> {
+    await this.sessionService.deleteDeviceToken(deviceToken);
   }
 }

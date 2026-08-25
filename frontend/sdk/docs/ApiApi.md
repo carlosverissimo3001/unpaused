@@ -11,6 +11,7 @@ All URIs are relative to *http://localhost*
 | [**adminControllerUpdateStreakQuestion**](ApiApi.md#admincontrollerupdatestreakquestion) | **PATCH** /admin/streak-questions/{id} | Update a streak quiz question |
 | [**adminControllerUpdateUserRole**](ApiApi.md#admincontrollerupdateuserrole) | **PATCH** /admin/users/{id} | Update user role flags |
 | [**authControllerCallback**](ApiApi.md#authcontrollercallback) | **GET** /auth/callback | Handle Spotify OAuth callback |
+| [**authControllerEnsureSession**](ApiApi.md#authcontrollerensuresession) | **POST** /auth/session | Ensure the caller has an identity, minting one if they have none |
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
 | [**authControllerLogout**](ApiApi.md#authcontrollerlogout) | **POST** /auth/logout | Logout and clear session |
 | [**authControllerMe**](ApiApi.md#authcontrollerme) | **GET** /auth/me | Get current authenticated user |
@@ -29,9 +30,6 @@ All URIs are relative to *http://localhost*
 | [**gauntletControllerGetRunState**](ApiApi.md#gauntletcontrollergetrunstate) | **GET** /gauntlet/{id} | Get current gauntlet run state |
 | [**gauntletControllerStartRun**](ApiApi.md#gauntletcontrollerstartrun) | **POST** /gauntlet/start | Start a new gauntlet run |
 | [**gauntletControllerSubmitGuess**](ApiApi.md#gauntletcontrollersubmitguess) | **POST** /gauntlet/{id}/guess | Submit a guess for the current gauntlet track |
-| [**guestGameControllerGetGameState**](ApiApi.md#guestgamecontrollergetgamestate) | **GET** /guest/games/{id} | Get current guest game state |
-| [**guestGameControllerStartGame**](ApiApi.md#guestgamecontrollerstartgame) | **POST** /guest/games | Start a guest game from the curated pool |
-| [**guestGameControllerSubmitGuess**](ApiApi.md#guestgamecontrollersubmitguess) | **POST** /guest/games/{id}/guess | Submit a guess for a guest round |
 | [**multiplayerControllerCreateRoom**](ApiApi.md#multiplayercontrollercreateroom) | **POST** /multiplayer/rooms | Create a new multiplayer room |
 | [**multiplayerControllerGetRoomState**](ApiApi.md#multiplayercontrollergetroomstate) | **GET** /multiplayer/rooms/{id} | Get room state with players |
 | [**multiplayerControllerGetRoundState**](ApiApi.md#multiplayercontrollergetroundstate) | **GET** /multiplayer/rooms/{id}/round | Get current round state for the player |
@@ -529,6 +527,63 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **302** | Redirects to frontend after auth |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## authControllerEnsureSession
+
+> AuthMeResponseDto authControllerEnsureSession()
+
+Ensure the caller has an identity, minting one if they have none
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AuthControllerEnsureSessionRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  try {
+    const data = await api.authControllerEnsureSession();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**AuthMeResponseDto**](AuthMeResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -1749,197 +1804,6 @@ example().catch(console.error);
 ### Authorization
 
 [cookie](../README.md#cookie)
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-| **429** | Rate limit exceeded |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## guestGameControllerGetGameState
-
-> GameStateDto guestGameControllerGetGameState(id)
-
-Get current guest game state
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { GuestGameControllerGetGameStateRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new ApiApi();
-
-  const body = {
-    // string | The guest round id
-    id: id_example,
-  } satisfies GuestGameControllerGetGameStateRequest;
-
-  try {
-    const data = await api.guestGameControllerGetGameState(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `string` | The guest round id | [Defaults to `undefined`] |
-
-### Return type
-
-[**GameStateDto**](GameStateDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## guestGameControllerStartGame
-
-> GameStateDto guestGameControllerStartGame()
-
-Start a guest game from the curated pool
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { GuestGameControllerStartGameRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new ApiApi();
-
-  try {
-    const data = await api.guestGameControllerStartGame();
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-This endpoint does not need any parameter.
-
-### Return type
-
-[**GameStateDto**](GameStateDto.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** |  |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## guestGameControllerSubmitGuess
-
-> GuessResultDto guestGameControllerSubmitGuess(id, guessDto)
-
-Submit a guess for a guest round
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ApiApi,
-} from '';
-import type { GuestGameControllerSubmitGuessRequest } from '';
-
-async function example() {
-  console.log("🚀 Testing  SDK...");
-  const api = new ApiApi();
-
-  const body = {
-    // string | The guest round id
-    id: id_example,
-    // GuessDto
-    guessDto: ...,
-  } satisfies GuestGameControllerSubmitGuessRequest;
-
-  try {
-    const data = await api.guestGameControllerSubmitGuess(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `string` | The guest round id | [Defaults to `undefined`] |
-| **guessDto** | [GuessDto](GuessDto.md) |  | |
-
-### Return type
-
-[**GuessResultDto**](GuessResultDto.md)
-
-### Authorization
-
-No authorization required
 
 ### HTTP request headers
 

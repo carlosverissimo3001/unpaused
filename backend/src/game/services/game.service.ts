@@ -13,7 +13,13 @@ import {
 import { GameMode, GameStatus } from '@prisma/client';
 import { Transactional } from '@transaction/transactional.decorator';
 import { formatDate, isAfter, subDays, subHours } from 'date-fns';
-import { LIKED_SONGS_ID_SUFFIX } from '../../consts';
+import {
+  LIKED_SONGS_ID_SUFFIX,
+  POOL_MAX_PREVIEW_ATTEMPTS,
+  POOL_PLAYLIST_ID,
+} from '../../consts';
+import { PoolService } from '../../pool/services/pool.service';
+import { TrackEntity } from '../../track/entities/track.entity';
 import { AppLoggerService } from '../../logger/logger.service';
 import { StreakService } from '../../streak/services/streak.service';
 import { TrackMetadataVo } from '../../track/vo/track-metadata.vo';
@@ -63,6 +69,7 @@ export class GameService {
     private readonly gameStatsService: GameStatsService,
     private readonly streakService: StreakService,
     private readonly lastfmService: LastfmService,
+    private readonly poolService: PoolService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
@@ -102,6 +109,10 @@ export class GameService {
     // return it instead of starting a new one
     if (existing) {
       return this.getGameState(sessionId, existing.id);
+    }
+
+    if (mode !== GameMode.DAILY && playlistId === POOL_PLAYLIST_ID) {
+      return this.startPoolGame(userId, mode);
     }
 
     let targetPlaylistId: string | undefined;
@@ -181,6 +192,57 @@ export class GameService {
     });
 
     return mapInitialGameState(game.id, previewUrl);
+  }
+
+  /** No Spotify library to draw from, so the round comes out of the pool. */
+  private async startPoolGame(
+    userId: string,
+    mode: GameMode,
+  ): Promise<GameStateDto> {
+    const { track, previewUrl } = await this.pickPoolTrackWithPreview();
+
+    const game = await this.gameSessionRepository.createSession({
+      user: { connect: { id: userId } },
+      playlistId: POOL_PLAYLIST_ID,
+      mode,
+      track: { connect: { id: track.id } },
+      currentRound: 0,
+      guesses: [],
+      status: GameStatus.PLAYING,
+    });
+
+    return mapInitialGameState(game.id, previewUrl);
+  }
+
+  /**
+   * Pool rows carry no preview: Deezer's links expire within minutes, so audio
+   * is resolved per round. A track that resolves to nothing is set aside and
+   * another drawn, rather than failing the round.
+   */
+  private async pickPoolTrackWithPreview(): Promise<{
+    track: TrackEntity;
+    previewUrl: string;
+  }> {
+    const tried: string[] = [];
+
+    for (let i = 0; i < POOL_MAX_PREVIEW_ATTEMPTS; i++) {
+      const track = await this.poolService.pickTrack(tried);
+      try {
+        const previewUrl = await this.trackService.resolvePreview(track);
+        if (previewUrl) {
+          return { track, previewUrl };
+        }
+      } catch (err) {
+        this.logger.warn(
+          `Preview failed for ${track.id}: ${(err as Error).message}`,
+        );
+      }
+      tried.push(track.id);
+    }
+
+    throw new BadRequestException(
+      'No tracks with preview audio in the pool right now.',
+    );
   }
 
   private async resolveTrackWithPreview(sessionId: string, playlistId: string) {

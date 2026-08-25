@@ -15,6 +15,12 @@ export class UserPreferenceDto {
 
   @ApiProperty({
     description:
+      'Show this player by name on public leaderboards. Off by default: a player ranks anonymously until they choose to be named.',
+  })
+  showStatsToOthers: boolean;
+
+  @ApiProperty({
+    description:
       'Playlist IDs to source daily challenge songs from. Empty means Liked Songs.',
     type: String,
     isArray: true,

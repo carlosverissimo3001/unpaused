@@ -4,11 +4,19 @@ export class GauntletLeaderboardEntryDto {
   @ApiProperty({ description: 'Rank position (1-based)' })
   rank: number;
 
-  @ApiProperty({ description: 'User ID' })
+  @ApiProperty({
+    description:
+      'User ID. Opaque placeholder for a hidden entry, so the row cannot be traced back to a player.',
+  })
   userId: string;
 
   @ApiProperty({ description: 'User display name' })
   displayName: string;
+
+  @ApiProperty({
+    description: 'This player chose not to be named on the leaderboard',
+  })
+  isHidden: boolean;
 
   @ApiPropertyOptional({ description: 'User avatar URL', type: String })
   avatarUrl?: string;

@@ -7,7 +7,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   ApiCookieAuth,
   ApiOperation,
@@ -17,10 +17,13 @@ import {
 } from '@nestjs/swagger';
 import { SessionId } from '@utils/decorators/sessionId.decorator';
 import { SessionGuard } from '@utils/guards/session-guard';
+import { ProvisioningSessionGuard } from '@utils/guards/provisioning-session.guard';
 import { SessionThrottlerGuard } from '@throttle/guards/session-throttler.guard';
 import {
   THROTTLE_GUESS,
   THROTTLE_GUESS_LIMIT,
+  THROTTLE_START,
+  THROTTLE_START_LIMIT,
   THROTTLE_TTL,
 } from '@throttle/throttle.constants';
 import { PlayedTodayDto } from '../dto/daily/played-today.dto';
@@ -37,11 +40,14 @@ import { GameService } from '../services/game.service';
 
 @ApiTags('Api')
 @Controller('game')
-@UseGuards(SessionGuard)
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
   @Post('start')
+  @UseGuards(ThrottlerGuard, ProvisioningSessionGuard)
+  @Throttle({
+    [THROTTLE_START]: { limit: THROTTLE_START_LIMIT, ttl: THROTTLE_TTL },
+  })
   @ApiOperation({ summary: 'Start a new game from a playlist or daily' })
   @ApiCookieAuth()
   @ApiResponse({ status: 201, type: GameStateDto })
@@ -53,6 +59,7 @@ export class GameController {
   }
 
   @Get('history')
+  @UseGuards(SessionGuard)
   @ApiOperation({ summary: "Get user's game session history (paginated)" })
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: GameHistoryDto })
@@ -64,6 +71,7 @@ export class GameController {
   }
 
   @Get('stats')
+  @UseGuards(SessionGuard)
   @ApiOperation({ summary: "Get user's daily stats" })
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: GameStatsDto })
@@ -75,6 +83,7 @@ export class GameController {
   }
 
   @Get('daily/played-today')
+  @UseGuards(SessionGuard)
   @ApiOperation({ summary: "Whether the user has played today's daily" })
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: PlayedTodayDto })
@@ -85,6 +94,7 @@ export class GameController {
   }
 
   @Get('share/:id')
+  @UseGuards(SessionGuard)
   @ApiOperation({ summary: 'Get shareable result for a game session' })
   @ApiParam({ name: 'id', description: 'Game session ID' })
   @ApiCookieAuth()
@@ -97,6 +107,7 @@ export class GameController {
   }
 
   @Get(':id')
+  @UseGuards(SessionGuard)
   @ApiOperation({ summary: 'Get current game state' })
   @ApiCookieAuth()
   @ApiParam({ name: 'id', description: 'The internal Game Session UUID' })
@@ -109,7 +120,7 @@ export class GameController {
   }
 
   @Post(':id/guess')
-  @UseGuards(SessionThrottlerGuard)
+  @UseGuards(SessionGuard, SessionThrottlerGuard)
   @Throttle({
     [THROTTLE_GUESS]: { limit: THROTTLE_GUESS_LIMIT, ttl: THROTTLE_TTL },
   })

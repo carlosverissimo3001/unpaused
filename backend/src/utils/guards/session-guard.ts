@@ -18,7 +18,7 @@ export class SessionGuard implements CanActivate {
 
     const session = await this.sessionService.getSession(sessionId);
     await this.sessionService.refreshUserSessionMapping(
-      session.spotifyUserId,
+      session.userId,
       sessionId,
     );
 

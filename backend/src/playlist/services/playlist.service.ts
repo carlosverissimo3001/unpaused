@@ -60,7 +60,7 @@ export class PlaylistService {
     }
 
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
-    const cacheKey = `${PLAYLIST_META_CACHE_PREFIX}${session.spotifyUserId}:${playlistId}`;
+    const cacheKey = `${PLAYLIST_META_CACHE_PREFIX}${session.userId}:${playlistId}`;
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
@@ -98,7 +98,7 @@ export class PlaylistService {
 
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
 
-    const cacheKey = `${PLAYLIST_CACHE_PREFIX}${session.spotifyUserId}:${limit}:${offset}:${onlyPublic}:${onlyPrivate}:${sortBy}`;
+    const cacheKey = `${PLAYLIST_CACHE_PREFIX}${session.userId}:${limit}:${offset}:${onlyPublic}:${onlyPrivate}:${sortBy}`;
     const cached = await this.redis.get(cacheKey);
 
     let savedMapped: PlaylistDto[];
@@ -142,7 +142,7 @@ export class PlaylistService {
       await Promise.all(
         savedMapped.map((p) =>
           this.redis.set(
-            `${PLAYLIST_TOTAL_TRACKS_PREFIX}${session.spotifyUserId}:${p.id}`,
+            `${PLAYLIST_TOTAL_TRACKS_PREFIX}${session.userId}:${p.id}`,
             String(p.totalTracks),
             PLAYLIST_CACHE_TTL,
           ),
@@ -173,7 +173,7 @@ export class PlaylistService {
    */
   async getLikedSongsMetadata(sessionId: string): Promise<PlaylistDto> {
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
-    const cacheKey = `${LIKED_META_CACHE_PREFIX}${session.spotifyUserId}`;
+    const cacheKey = `${LIKED_META_CACHE_PREFIX}${session.userId}`;
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
@@ -185,7 +185,7 @@ export class PlaylistService {
     );
 
     const dto: PlaylistDto = {
-      id: `${session.spotifyUserId}${LIKED_SONGS_ID_SUFFIX}`,
+      id: `${session.userId}${LIKED_SONGS_ID_SUFFIX}`,
       name: 'Liked Songs',
       description: 'Your Saved Songs',
       imageUrl: LIKED_SONGS_COVER,
@@ -208,7 +208,7 @@ export class PlaylistService {
     offset: number,
   ): Promise<TrackDto[]> {
     const { sdk, session } = await this.spotifyService.getClient(sessionId);
-    const cacheKey = `${LIKED_TRACKS_CACHE_PREFIX}${session.spotifyUserId}:${offset}`;
+    const cacheKey = `${LIKED_TRACKS_CACHE_PREFIX}${session.userId}:${offset}`;
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);
@@ -241,7 +241,7 @@ export class PlaylistService {
     const { session, accessToken } =
       await this.spotifyService.getClient(sessionId);
 
-    const totalKey = `${PLAYLIST_TOTAL_TRACKS_PREFIX}${session.spotifyUserId}:${playlistId}`;
+    const totalKey = `${PLAYLIST_TOTAL_TRACKS_PREFIX}${session.userId}:${playlistId}`;
     const totalRaw = await this.redis.get(totalKey);
     let total = totalRaw ? parseInt(totalRaw, 10) : 0;
 
@@ -257,7 +257,7 @@ export class PlaylistService {
     const offset =
       total > 0 ? Math.floor(Math.random() * Math.max(1, total - 49)) : 0;
 
-    const cacheKey = `${PLAYLIST_TRACKS_CACHE_PREFIX}${session.spotifyUserId}:${playlistId}:${offset}`;
+    const cacheKey = `${PLAYLIST_TRACKS_CACHE_PREFIX}${session.userId}:${playlistId}:${offset}`;
     const cached = await this.redis.get(cacheKey);
     if (cached) {
       return JSON.parse(cached);

@@ -80,17 +80,6 @@ export const queryKeys = {
     all: ['search'] as const,
     tracks: (query: string) => ['search', 'tracks', query] as const,
   },
-  // Guest (unauthenticated) play queries
-  guest: {
-    all: ['guest'] as const,
-    state: (roundId: string) => ['guest', 'game', roundId, 'state'] as const,
-    /**
-     * Predictable, unlike state(roundId) which needs the response first. The
-     * orchestrator subscribes to this before starting, so a mutation observer
-     * orphaned by Strict Mode cannot strand the round id.
-     */
-    startedRound: ['guest', 'game', 'started'] as const,
-  },
   // Gauntlet queries
   gauntlet: {
     all: ['gauntlet'] as const,

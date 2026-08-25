@@ -5,11 +5,12 @@ import { queryKeys } from '@/lib/queryKeys';
 import { api } from '@/sdk/client';
 import type { UserPreferenceDto } from '@/sdk';
 
-const DEFAULT_PREFERENCES: UserPreferenceDto = {
+export const DEFAULT_PREFERENCES: UserPreferenceDto = {
   showAlbumHint: true,
   showTextHints: true,
   reducedMotion: false,
   showGuessHistory: true,
+  showStatsToOthers: false,
   dailyChallengePlaylists: [],
   timezone: 'UTC',
 };

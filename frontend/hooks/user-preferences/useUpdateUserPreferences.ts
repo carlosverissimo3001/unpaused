@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { api } from '@/sdk/client';
 import type { UserPreferenceDto, UpdateUserPreferenceDto } from '@/sdk';
+import { DEFAULT_PREFERENCES } from './useUserPreferences';
 
 export function useUpdateUserPreferences() {
   const queryClient = useQueryClient();
@@ -16,12 +17,8 @@ export function useUpdateUserPreferences() {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<UserPreferenceDto>(queryKey);
       queryClient.setQueryData<UserPreferenceDto>(queryKey, (old) => ({
-        showAlbumHint: old?.showAlbumHint ?? true,
-        showTextHints: old?.showTextHints ?? true,
-        reducedMotion: old?.reducedMotion ?? false,
-        showGuessHistory: old?.showGuessHistory ?? true,
-        dailyChallengePlaylists: old?.dailyChallengePlaylists ?? [],
-        timezone: old?.timezone ?? 'UTC',
+        ...DEFAULT_PREFERENCES,
+        ...old,
         ...variables,
       }));
       return { previous };

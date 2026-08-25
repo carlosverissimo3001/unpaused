@@ -26,7 +26,7 @@ export interface GauntletLeaderboardEntryDto {
      */
     rank: number;
     /**
-     * User ID
+     * User ID. Opaque placeholder for a hidden entry, so the row cannot be traced back to a player.
      * @type {string}
      * @memberof GauntletLeaderboardEntryDto
      */
@@ -37,6 +37,12 @@ export interface GauntletLeaderboardEntryDto {
      * @memberof GauntletLeaderboardEntryDto
      */
     displayName: string;
+    /**
+     * This player chose not to be named on the leaderboard
+     * @type {boolean}
+     * @memberof GauntletLeaderboardEntryDto
+     */
+    isHidden: boolean;
     /**
      * User avatar URL
      * @type {string}
@@ -58,6 +64,7 @@ export function instanceOfGauntletLeaderboardEntryDto(value: object): value is G
     if (!('rank' in value) || value['rank'] === undefined) return false;
     if (!('userId' in value) || value['userId'] === undefined) return false;
     if (!('displayName' in value) || value['displayName'] === undefined) return false;
+    if (!('isHidden' in value) || value['isHidden'] === undefined) return false;
     if (!('score' in value) || value['score'] === undefined) return false;
     return true;
 }
@@ -75,6 +82,7 @@ export function GauntletLeaderboardEntryDtoFromJSONTyped(json: any, ignoreDiscri
         'rank': json['rank'],
         'userId': json['userId'],
         'displayName': json['displayName'],
+        'isHidden': json['isHidden'],
         'avatarUrl': json['avatarUrl'] == null ? undefined : json['avatarUrl'],
         'score': json['score'],
     };
@@ -94,6 +102,7 @@ export function GauntletLeaderboardEntryDtoToJSONTyped(value?: GauntletLeaderboa
         'rank': value['rank'],
         'userId': value['userId'],
         'displayName': value['displayName'],
+        'isHidden': value['isHidden'],
         'avatarUrl': value['avatarUrl'],
         'score': value['score'],
     };

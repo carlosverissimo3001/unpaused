@@ -5,8 +5,8 @@ export class AdminUserDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty()
-  spotifyUserId: string;
+  @ApiPropertyOptional()
+  spotifyUserId?: string;
 
   @ApiProperty()
   displayName: string;
@@ -34,7 +34,7 @@ export class AdminUserDto {
 
     return {
       id: entity.id,
-      spotifyUserId: entity.spotifyUserId,
+      spotifyUserId: entity.spotifyUserId ?? undefined,
       displayName: entity.displayName,
       avatarUrl: effectiveAvatarUrl ?? undefined,
       isTrusted: entity.isTrusted,

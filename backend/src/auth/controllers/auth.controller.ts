@@ -9,6 +9,7 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -18,12 +19,24 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { SESSION_COOKIE_NAME } from '../../consts';
+import {
+  DEVICE_COOKIE_NAME,
+  OAUTH_STATE_COOKIE_NAME,
+  OAUTH_STATE_TTL,
+  SESSION_COOKIE_NAME,
+} from '../../consts';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
 import { AuthService } from '../services/auth.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { SessionId } from '../../utils/decorators/sessionId.decorator';
+import { ProvisioningSessionGuard } from '../../utils/guards/provisioning-session.guard';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
+import {
+  THROTTLE_START,
+  THROTTLE_START_LIMIT,
+  THROTTLE_TTL,
+} from '@throttle/throttle.constants';
 import { SpotifyOAuthCallbackDto } from '../dto/spotify/spotify-oauth-callback.dto';
 import {
   buildErrorRedirect,
@@ -58,7 +71,16 @@ export class AuthController {
     description: 'Redirects to Spotify authorization',
   })
   async login(@Res() res: Response) {
-    const { authUrl } = await this.authService.startLogin();
+    const { authUrl, state } = await this.authService.startLogin();
+
+    // The callback is a bare GET with a lax cookie, so without this a link
+    // could complete someone else's sign-in in the victim's browser.
+    res.cookie(
+      OAUTH_STATE_COOKIE_NAME,
+      state,
+      getCookieOptions({ sessionMaxAge: OAUTH_STATE_TTL }),
+    );
+
     res.redirect(authUrl);
   }
 
@@ -67,16 +89,35 @@ export class AuthController {
   @ApiResponse({ status: 302, description: 'Redirects to frontend after auth' })
   async callback(
     @Query() params: SpotifyOAuthCallbackDto,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     const { code, state, error } = params;
 
     if (error) {
+      res.clearCookie(OAUTH_STATE_COOKIE_NAME, getClearCookieOptions());
       return res.redirect(buildErrorRedirect(this.frontendUrl, error));
     }
 
+    const expectedState = req.cookies?.[OAUTH_STATE_COOKIE_NAME] as
+      | string
+      | undefined;
+    res.clearCookie(OAUTH_STATE_COOKIE_NAME, getClearCookieOptions());
+
+    if (!expectedState || expectedState !== state) {
+      this.logger.warn('OAuth callback state did not match this browser');
+      return res.redirect(buildErrorRedirect(this.frontendUrl, 'auth_failed'));
+    }
+
     try {
-      const sessionId = await this.authService.handleCallback(code, state);
+      const currentSessionId = req.cookies?.[SESSION_COOKIE_NAME] as
+        | string
+        | undefined;
+      const sessionId = await this.authService.handleCallback(
+        code,
+        state,
+        currentSessionId,
+      );
       res.cookie(
         SESSION_COOKIE_NAME,
         sessionId,
@@ -87,6 +128,22 @@ export class AuthController {
       this.logger.error('OAuth callback error:', err);
       res.redirect(buildErrorRedirect(this.frontendUrl, 'auth_failed'));
     }
+  }
+
+  @Post('session')
+  @HttpCode(200)
+  @UseGuards(ThrottlerGuard, ProvisioningSessionGuard)
+  @Throttle({
+    [THROTTLE_START]: { limit: THROTTLE_START_LIMIT, ttl: THROTTLE_TTL },
+  })
+  @ApiOperation({
+    summary: 'Ensure the caller has an identity, minting one if they have none',
+  })
+  @ApiResponse({ status: 200, type: AuthMeResponseDto })
+  async ensureSession(
+    @SessionId() sessionId: string,
+  ): Promise<AuthMeResponseDto> {
+    return this.authService.getCurrentUser(sessionId);
   }
 
   @Get('me')
@@ -125,7 +182,14 @@ export class AuthController {
       await this.authService.logout(sessionId);
     }
 
+    // Logging out means forgetting this browser, device token included.
+    const deviceToken = req.cookies?.[DEVICE_COOKIE_NAME] as string | undefined;
+    if (deviceToken) {
+      await this.authService.forgetDevice(deviceToken);
+    }
+
     res.clearCookie(SESSION_COOKIE_NAME, getClearCookieOptions());
+    res.clearCookie(DEVICE_COOKIE_NAME, getClearCookieOptions());
 
     res.json({ success: true });
   }

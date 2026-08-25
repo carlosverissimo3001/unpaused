@@ -15,6 +15,8 @@ import { UserPreferencesRepository } from '../../user-preferences/repositories/u
 import { UserPreferencesService } from '../../user-preferences/services/user-preferences.service';
 import { StreakService } from '../../streak/services/streak.service';
 import { LastfmService } from '@/track/services/lastfm.service';
+import { PoolService } from '../../pool/services/pool.service';
+import { TrackEntity } from '../../track/entities/track.entity';
 
 jest.mock('@/playlist/services/playlist.service');
 jest.mock('@/track/services/track.service');
@@ -82,6 +84,7 @@ describe('GameService', () => {
 
   const mockPlaylistService = {};
   const mockTrackService = {
+    resolvePreview: jest.fn(),
     playableUrl: jest
       .fn()
       .mockImplementation((track: { previewUrl?: string | null }) =>
@@ -89,6 +92,7 @@ describe('GameService', () => {
       ),
   };
   const mockPrismaService = {};
+  const mockPoolService = { pickTrack: jest.fn() };
   const mockUserPreferencesRepository = {
     findByUserId: jest.fn().mockResolvedValue({ timezone: 'UTC' }),
   };
@@ -106,6 +110,7 @@ describe('GameService', () => {
         { provide: GameStatsService, useValue: mockGameStatsService },
         { provide: PlaylistService, useValue: mockPlaylistService },
         { provide: TrackService, useValue: mockTrackService },
+        { provide: PoolService, useValue: mockPoolService },
         { provide: PrismaService, useValue: mockPrismaService },
         {
           provide: UserPreferencesRepository,
@@ -478,6 +483,54 @@ describe('GameService', () => {
       await expect(
         service.submitGuess(OTHER_SESSION_ID, GAME_ID, guessDto),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('pool rounds', () => {
+    const poolTrack = (n: number): TrackEntity =>
+      new TrackEntity({
+        id: `pool-${n}`,
+        name: `Track ${n}`,
+        artistName: `Artist ${n}`,
+        allArtists: [`Artist ${n}`],
+        lastScrapedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+    it('plays the first drawn track that has resolvable audio', async () => {
+      mockPoolService.pickTrack.mockResolvedValue(poolTrack(1));
+      mockTrackService.resolvePreview.mockResolvedValue(
+        'https://preview/pool-1.mp3',
+      );
+
+      const picked = await service['pickPoolTrackWithPreview']();
+
+      expect(picked.track.id).toBe('pool-1');
+      expect(picked.previewUrl).toBe('https://preview/pool-1.mp3');
+    });
+
+    it('draws again when a track resolves to no audio', async () => {
+      mockPoolService.pickTrack
+        .mockResolvedValueOnce(poolTrack(1))
+        .mockResolvedValueOnce(poolTrack(2));
+      mockTrackService.resolvePreview
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce('https://preview/pool-2.mp3');
+
+      const picked = await service['pickPoolTrackWithPreview']();
+
+      expect(picked.track.id).toBe('pool-2');
+      expect(mockPoolService.pickTrack).toHaveBeenLastCalledWith(['pool-1']);
+    });
+
+    it('gives up once every draw fails to resolve audio', async () => {
+      mockPoolService.pickTrack.mockResolvedValue(poolTrack(1));
+      mockTrackService.resolvePreview.mockResolvedValue(null);
+
+      await expect(service['pickPoolTrackWithPreview']()).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

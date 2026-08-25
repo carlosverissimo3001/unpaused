@@ -9,6 +9,7 @@ Name | Type
 `rank` | number
 `userId` | string
 `displayName` | string
+`isHidden` | boolean
 `avatarUrl` | string
 `score` | number
 
@@ -22,6 +23,7 @@ const example = {
   "rank": null,
   "userId": null,
   "displayName": null,
+  "isHidden": null,
   "avatarUrl": null,
   "score": null,
 } satisfies GauntletLeaderboardEntryDto

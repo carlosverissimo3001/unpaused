@@ -13,11 +13,12 @@ import { PlaylistDto } from '../dto/playlist.dto';
 import { GetPlaylistsDto } from '../dto/get-playlists-dto';
 import { SessionId } from '../../utils/decorators/sessionId.decorator';
 import { SessionGuard } from '../../utils/guards/session-guard';
+import { SpotifyLinkedGuard } from '../../utils/guards/spotify-linked.guard';
 
 @ApiTags('Api')
 @ApiCookieAuth()
 @ApiUnauthorizedResponse({ description: 'Not authenticated' })
-@UseGuards(SessionGuard)
+@UseGuards(SessionGuard, SpotifyLinkedGuard)
 @Controller('playlists')
 export class PlaylistController {
   constructor(private readonly playlistsService: PlaylistService) {}

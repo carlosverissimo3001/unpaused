@@ -15,6 +15,7 @@ export interface LeaderboardEntryRaw {
   displayName: string;
   avatarUrl: string | null;
   score: number;
+  showStatsToOthers: boolean;
 }
 
 export interface GauntletHistorySummaryRaw {
@@ -196,6 +197,7 @@ export class GauntletRunRepository {
         avatarUrl: true,
         customAvatarUrl: true,
         avatarSource: true,
+        preferences: { select: { showStatsToOthers: true } },
       },
     });
     const userMap = new Map(users.map((u) => [u.id, u]));
@@ -211,6 +213,7 @@ export class GauntletRunRepository {
         displayName: user?.displayName ?? 'Unknown',
         avatarUrl: effectiveAvatar ?? null,
         score: row._max.score ?? 0,
+        showStatsToOthers: user?.preferences?.showStatsToOthers ?? false,
       };
     });
   }

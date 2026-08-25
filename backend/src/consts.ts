@@ -1,6 +1,15 @@
 import { JobsOptions } from 'bullmq';
 
 export const SESSION_COOKIE_NAME = 'unpaused_session';
+
+/** Outlives the session so an anonymous player keeps their row and streak. */
+export const DEVICE_COOKIE_NAME = 'unpaused_device';
+export const DEVICE_TOKEN_TTL = 365 * 24 * 60 * 60; // 1 year in seconds
+export const DEVICE_TOKEN_PREFIX = 'device:';
+
+/** Ties an OAuth callback to the browser that started the flow. */
+export const OAUTH_STATE_COOKIE_NAME = 'unpaused_oauth_state';
+export const OAUTH_STATE_TTL = 600; // 10 minutes, matching the PKCE state
 export const TRACK_PREVIEW_CACHE_TTL = 86400; // 24 hours in seconds
 export const TRACK_PREVIEW_CACHE_PREFIX = 'track_preview:';
 export const LIKED_SONGS_ID_SUFFIX = '-liked-songs';
@@ -47,9 +56,26 @@ export type JobNames = keyof JobDataMap;
 
 export const GAME_MAX_ROUNDS = 6;
 
-/** The guest pool only changes when it is reseeded, so this can be long. */
+/** The track pool only changes when it is reseeded, so this can be long. */
 export const POOL_CANDIDATE_CACHE_MS = 10 * 60 * 1000;
 
 /** Selection weight multiplies by this for every decade after the pivot. */
 export const RECENCY_PER_DECADE = 1.8;
 export const RECENCY_PIVOT_YEAR = 2005;
+
+// Track pool — what a player without a Spotify library plays from.
+export const POOL_PLAYLIST_ID = 'pool';
+
+/** Unreachable with an app token: every playlist 401s. Replaced in CAR-177. */
+export const POOL_PLAYLIST_IDS: string[] = [
+  '37i9dQZEVXbKyJS56d1pgi',
+  '37i9dQZEVXbNFJfN1Vw8d9',
+  '37i9dQZEVXbLnolsZ8PSNw',
+  '37i9dQZEVXbLRQDuF5jeBp',
+  '37i9dQZEVXbMDoHDwVN2tF',
+];
+
+export const POOL_PLAYLIST_TRACKS_CACHE_PREFIX = 'pool:playlist_tracks:';
+export const POOL_PLAYLIST_TRACKS_CACHE_TTL = 6 * 60 * 60;
+
+export const POOL_MAX_PREVIEW_ATTEMPTS = 10;

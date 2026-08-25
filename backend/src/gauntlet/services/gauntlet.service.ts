@@ -366,13 +366,30 @@ export class GauntletService {
       offset,
     );
 
-    const entries = rawEntries.map((entry, index) => ({
-      rank: offset + index + 1,
-      userId: entry.userId,
-      displayName: entry.displayName,
-      avatarUrl: entry.avatarUrl ?? undefined,
-      score: entry.score,
-    }));
+    const entries = rawEntries.map((entry, index) => {
+      const rank = offset + index + 1;
+
+      // A hidden player keeps their rank but loses every handle on their
+      // identity — the id included, or a room roster would unmask them.
+      if (!entry.showStatsToOthers && entry.userId !== userId) {
+        return {
+          rank,
+          userId: `hidden:${rank}`,
+          displayName: 'Anonymous',
+          isHidden: true,
+          score: entry.score,
+        };
+      }
+
+      return {
+        rank,
+        userId: entry.userId,
+        displayName: entry.displayName,
+        isHidden: false,
+        avatarUrl: entry.avatarUrl ?? undefined,
+        score: entry.score,
+      };
+    });
 
     const userBest = await this.gauntletRunRepository.findUserBestInPeriod(
       userId,

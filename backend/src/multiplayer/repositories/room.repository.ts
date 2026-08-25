@@ -6,7 +6,7 @@ const PLAYERS_INCLUDE = {
   players: {
     include: {
       user: {
-        select: { spotifyUserId: true, displayName: true, avatarUrl: true },
+        select: { displayName: true, avatarUrl: true },
       },
     },
     orderBy: { joinedAt: 'asc' as const },
@@ -15,7 +15,7 @@ const PLAYERS_INCLUDE = {
 
 export type RoomWithPlayers = MultiplayerRoom & {
   players: (RoomPlayer & {
-    user: Pick<User, 'spotifyUserId' | 'displayName' | 'avatarUrl'>;
+    user: Pick<User, 'displayName' | 'avatarUrl'>;
   })[];
 };
 

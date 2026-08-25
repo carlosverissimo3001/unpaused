@@ -43,7 +43,7 @@ describe('TrackPoolService', () => {
     } as any;
 
     sessionService = {
-      getSessionIdBySpotifyUserId: jest.fn(),
+      getSessionIdByUserId: jest.fn(),
     } as any;
 
     prisma = {
@@ -74,7 +74,7 @@ describe('TrackPoolService', () => {
       { id: 'user-2', spotifyUserId: 'sp-2' },
     ]);
 
-    sessionService.getSessionIdBySpotifyUserId
+    sessionService.getSessionIdByUserId
       .mockResolvedValueOnce('sess-1')
       .mockResolvedValueOnce('sess-2');
 
@@ -123,7 +123,7 @@ describe('TrackPoolService', () => {
       { id: 'user-2', spotifyUserId: 'sp-2' },
     ]);
 
-    sessionService.getSessionIdBySpotifyUserId
+    sessionService.getSessionIdByUserId
       .mockResolvedValueOnce('sess-1')
       .mockResolvedValueOnce(null); // player 2 has no session
 
@@ -151,14 +151,14 @@ describe('TrackPoolService', () => {
 
     expect(result).toHaveLength(1);
     // Only player 1's session was used
-    expect(sessionService.getSessionIdBySpotifyUserId).toHaveBeenCalledTimes(2);
+    expect(sessionService.getSessionIdByUserId).toHaveBeenCalledTimes(2);
   });
 
   it('should throw when no active sessions exist', async () => {
     prisma.user.findMany.mockResolvedValue([
       { id: 'user-1', spotifyUserId: 'sp-1' },
     ]);
-    sessionService.getSessionIdBySpotifyUserId.mockResolvedValue(null);
+    sessionService.getSessionIdByUserId.mockResolvedValue(null);
 
     await expect(service.selectTracksForRoom(['user-1'], 3)).rejects.toThrow(
       'No active sessions found',
@@ -169,7 +169,7 @@ describe('TrackPoolService', () => {
     prisma.user.findMany.mockResolvedValue([
       { id: 'user-1', spotifyUserId: 'sp-1' },
     ]);
-    sessionService.getSessionIdBySpotifyUserId.mockResolvedValue('sess-1');
+    sessionService.getSessionIdByUserId.mockResolvedValue('sess-1');
     playlistService.getLikedSongsMetadata.mockResolvedValue({
       totalTracks: 10,
     } as any);
@@ -205,7 +205,7 @@ describe('TrackPoolService', () => {
       { id: 'user-2', spotifyUserId: 'sp-2' },
     ]);
 
-    sessionService.getSessionIdBySpotifyUserId
+    sessionService.getSessionIdByUserId
       .mockResolvedValueOnce('sess-1')
       .mockResolvedValueOnce('sess-2');
 
@@ -241,7 +241,7 @@ describe('TrackPoolService', () => {
     prisma.user.findMany.mockResolvedValue([
       { id: 'user-1', spotifyUserId: 'sp-1' },
     ]);
-    sessionService.getSessionIdBySpotifyUserId.mockResolvedValue('sess-1');
+    sessionService.getSessionIdByUserId.mockResolvedValue('sess-1');
     playlistService.getLikedSongsMetadata.mockResolvedValue({
       totalTracks: 1,
     } as any);

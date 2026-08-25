@@ -7,7 +7,11 @@ import { useTheme } from 'next-themes';
 import { useState } from 'react';
 import { useMe } from '@/hooks/auth/useMe';
 import { useUpdateProfile } from '@/hooks/auth/useUpdateProfile';
-import { useUserPreferences } from '@/hooks/user-preferences/useUserPreferences';
+import {
+  DEFAULT_PREFERENCES,
+  useUserPreferences,
+} from '@/hooks/user-preferences/useUserPreferences';
+import { LinkAccountSection } from './LinkAccountSection';
 import { useUpdateUserPreferences } from '@/hooks/user-preferences/useUpdateUserPreferences';
 import { GLASS_STYLE } from '@/lib/styles';
 import type { UserPreferenceDto } from '@/sdk';
@@ -46,7 +50,7 @@ function ToggleRow({ label, description, checked, onChange }: ToggleRowProps) {
   );
 }
 
-export function PreferencesPage() {
+export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
   const { data: user } = useMe();
   const { data: preferences } = useUserPreferences();
   const { mutate: updatePreferences } = useUpdateUserPreferences();
@@ -56,14 +60,7 @@ export function PreferencesPage() {
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState('');
 
-  const prefs: UserPreferenceDto = preferences ?? {
-    showAlbumHint: true,
-    showTextHints: true,
-    reducedMotion: false,
-    showGuessHistory: true,
-    dailyChallengePlaylists: [],
-    timezone: 'UTC',
-  };
+  const prefs: UserPreferenceDto = preferences ?? DEFAULT_PREFERENCES;
 
   function handleToggle(key: keyof UserPreferenceDto, value: boolean) {
     updatePreferences({ [key]: value });
@@ -183,6 +180,14 @@ export function PreferencesPage() {
           </div>
         </div>
 
+        {/* The one thing on this page that is not a preference: it decides
+            whether anything else here survives losing the device. */}
+        {!user?.hasLinkedAccount && (
+          <div className="px-6 py-5 border-b border-fg/10">
+            <LinkAccountSection canSignIn={canSignIn} />
+          </div>
+        )}
+
         {/* Avatar */}
         <div className="px-6 border-b border-fg/10">
           <AvatarSection />
@@ -226,6 +231,19 @@ export function PreferencesPage() {
             description="Show genre, decade, and other clues as rounds progress"
             checked={prefs.showTextHints}
             onChange={(value) => handleToggle('showTextHints', value)}
+          />
+
+          <div className="-mx-6 border-t border-fg/10" />
+
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-fg/30 pt-4 pb-1">
+            Privacy
+          </p>
+
+          <ToggleRow
+            label="Show my name on leaderboards"
+            description="Off, you still rank — other players just see you as Anonymous"
+            checked={prefs.showStatsToOthers}
+            onChange={(value) => handleToggle('showStatsToOthers', value)}
           />
 
           <div className="-mx-6 border-t border-fg/10" />

@@ -4,7 +4,15 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Crown, Flame, Medal, Trophy, Zap } from 'lucide-react';
+import {
+  ArrowLeft,
+  Crown,
+  EyeOff,
+  Flame,
+  Medal,
+  Trophy,
+  Zap,
+} from 'lucide-react';
 import { useMe } from '@/hooks/auth/useMe';
 import { useGauntletLeaderboard } from '@/hooks/speed-run/useSpeedrunLeaderboard';
 import { GauntletControllerGetLeaderboardPeriodEnum as Period } from '@/sdk/apis/ApiApi';
@@ -89,7 +97,11 @@ function LeaderboardRow({
       <RankBadge rank={entry.rank} />
 
       <div className="w-9 h-9 rounded-full overflow-hidden bg-fg/[0.06] border border-fg/8 shrink-0">
-        {entry.avatarUrl ? (
+        {entry.isHidden ? (
+          <div className="w-full h-full flex items-center justify-center text-fg/25">
+            <EyeOff className="w-4 h-4" />
+          </div>
+        ) : entry.avatarUrl ? (
           <Image
             src={entry.avatarUrl}
             alt=""
@@ -109,9 +121,11 @@ function LeaderboardRow({
           className={`text-sm font-bold truncate ${
             isCurrentUser
               ? 'text-spotify-green'
-              : isPodium
-                ? 'text-fg'
-                : 'text-fg/80'
+              : entry.isHidden
+                ? 'text-fg/40 italic'
+                : isPodium
+                  ? 'text-fg'
+                  : 'text-fg/80'
           }`}
         >
           {entry.displayName}
@@ -153,7 +167,7 @@ export function SpeedRunLeaderboard() {
 
   const entries = data?.entries ?? [];
   const userEntry = data?.userEntry;
-  const userInList = entries.some((e) => e.userId === user?.spotifyUserId);
+  const userInList = entries.some((e) => e.userId === user?.userId);
 
   return (
     <div className="flex flex-col gap-5">
@@ -247,7 +261,7 @@ export function SpeedRunLeaderboard() {
             <LeaderboardRow
               key={`${entry.userId}-${entry.rank}`}
               entry={entry}
-              isCurrentUser={entry.userId === user?.spotifyUserId}
+              isCurrentUser={entry.userId === user?.userId}
               staggerIndex={i}
             />
           ))}

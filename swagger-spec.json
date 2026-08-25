@@ -68,6 +68,28 @@
         ]
       }
     },
+    "/auth/session": {
+      "post": {
+        "operationId": "AuthController_ensureSession",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ensure the caller has an identity, minting one if they have none",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "AuthController_me",
@@ -821,105 +843,6 @@
           }
         },
         "summary": "Search tracks (for game guess options)",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
-    "/guest/games": {
-      "post": {
-        "operationId": "GuestGameController_startGame",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GameStateDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Start a guest game from the curated pool",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
-    "/guest/games/{id}": {
-      "get": {
-        "operationId": "GuestGameController_getGameState",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "The guest round id",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GameStateDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get current guest game state",
-        "tags": [
-          "Api"
-        ]
-      }
-    },
-    "/guest/games/{id}/guess": {
-      "post": {
-        "operationId": "GuestGameController_submitGuess",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "The guest round id",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GuessDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GuessResultDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Rate limit exceeded"
-          }
-        },
-        "summary": "Submit a guess for a guest round",
         "tags": [
           "Api"
         ]
@@ -2006,9 +1929,18 @@
       "AuthMeResponseDto": {
         "type": "object",
         "properties": {
+          "userId": {
+            "type": "string",
+            "description": "Stable user id, the only safe way to identify this player"
+          },
           "spotifyUserId": {
             "type": "string",
-            "description": "Unique identifier for the user"
+            "description": "Spotify user ID, present only when the account is linked"
+          },
+          "hasLinkedAccount": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether any credential is attached. False means an anonymous player, who has nothing to log out of."
           },
           "displayName": {
             "type": "string",
@@ -2048,7 +1980,8 @@
           }
         },
         "required": [
-          "spotifyUserId",
+          "userId",
+          "hasLinkedAccount",
           "displayName",
           "avatarSource",
           "isTrusted",
@@ -2780,6 +2713,10 @@
             "type": "boolean",
             "description": "Show guess history during gameplay"
           },
+          "showStatsToOthers": {
+            "type": "boolean",
+            "description": "Show this player by name on public leaderboards. Off by default: a player ranks anonymously until they choose to be named."
+          },
           "dailyChallengePlaylists": {
             "description": "Playlist IDs to source daily challenge songs from. Empty means Liked Songs.",
             "type": "array",
@@ -2798,6 +2735,7 @@
           "showTextHints",
           "reducedMotion",
           "showGuessHistory",
+          "showStatsToOthers",
           "dailyChallengePlaylists",
           "timezone"
         ]
@@ -2820,6 +2758,10 @@
           "showGuessHistory": {
             "type": "boolean",
             "description": "Show guess history during gameplay"
+          },
+          "showStatsToOthers": {
+            "type": "boolean",
+            "description": "Show this player by name on public leaderboards"
           },
           "dailyChallengePlaylists": {
             "description": "Playlist IDs to source daily challenge songs from. Must have at least one entry when provided.",
@@ -3137,7 +3079,6 @@
         },
         "required": [
           "id",
-          "spotifyUserId",
           "displayName",
           "isTrusted",
           "isAdmin",
@@ -3182,9 +3123,6 @@
           "userId": {
             "type": "string"
           },
-          "spotifyUserId": {
-            "type": "string"
-          },
           "displayName": {
             "type": "string"
           },
@@ -3205,7 +3143,6 @@
         "required": [
           "id",
           "userId",
-          "spotifyUserId",
           "displayName",
           "isReady",
           "totalScore",
@@ -3699,11 +3636,15 @@
           },
           "userId": {
             "type": "string",
-            "description": "User ID"
+            "description": "User ID. Opaque placeholder for a hidden entry, so the row cannot be traced back to a player."
           },
           "displayName": {
             "type": "string",
             "description": "User display name"
+          },
+          "isHidden": {
+            "type": "boolean",
+            "description": "This player chose not to be named on the leaderboard"
           },
           "avatarUrl": {
             "type": "string",
@@ -3718,6 +3659,7 @@
           "rank",
           "userId",
           "displayName",
+          "isHidden",
           "score"
         ]
       },

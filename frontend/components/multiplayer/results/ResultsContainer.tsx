@@ -88,9 +88,7 @@ export function ResultsContainer({ roomId }: ResultsContainerProps) {
       return undefined;
     }
 
-    return room.players.find(
-      (player) => player.spotifyUserId === me.spotifyUserId,
-    )?.userId;
+    return room.players.find((player) => player.userId === me.userId)?.userId;
   }, [me, room]);
 
   const sortedStandings = useMemo(

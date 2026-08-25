@@ -36,6 +36,13 @@ export class UpdateUserPreferenceDto {
   showGuessHistory?: boolean;
 
   @ApiPropertyOptional({
+    description: 'Show this player by name on public leaderboards',
+  })
+  @IsOptional()
+  @IsBoolean()
+  showStatsToOthers?: boolean;
+
+  @ApiPropertyOptional({
     description:
       'Playlist IDs to source daily challenge songs from. Must have at least one entry when provided.',
     type: [String],
