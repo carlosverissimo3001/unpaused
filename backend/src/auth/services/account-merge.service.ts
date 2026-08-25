@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { Transactional } from '@transaction/transactional.decorator';
 
@@ -20,6 +20,12 @@ export class AccountMergeService {
         where: { id: survivorUserId },
       }),
     ]);
+
+    // This deletes the source row, so it refuses anything that could be a
+    // real account. The caller checks too; this is the primitive's own guard.
+    if (source.spotifyUserId) {
+      throw new BadRequestException('Cannot merge away an account');
+    }
 
     await this.mergeStats(sourceUserId, survivorUserId);
     await this.mergeRoomPlayers(sourceUserId, survivorUserId);

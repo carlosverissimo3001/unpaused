@@ -224,6 +224,23 @@ describe('AccountMergeService', () => {
     });
   });
 
+  it('refuses to merge away a row that has an account', async () => {
+    mockPrismaService.stats.findMany.mockResolvedValue([]);
+    mockPrismaService.user.findUniqueOrThrow.mockImplementation(
+      ({ where }: { where: { id: string } }) =>
+        Promise.resolve({
+          id: where.id,
+          answeredQuestionIds: [],
+          spotifyUserId: where.id === SOURCE ? 'spotify-1' : 'spotify-2',
+        }),
+    );
+
+    await expect(service.merge(SOURCE, SURVIVOR)).rejects.toThrow(
+      'Cannot merge away an account',
+    );
+    expect(mockPrismaService.user.delete).not.toHaveBeenCalled();
+  });
+
   it('deletes the source row last', async () => {
     mockPrismaService.stats.findMany.mockResolvedValue([]);
 

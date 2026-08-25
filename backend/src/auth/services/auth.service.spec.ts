@@ -128,6 +128,9 @@ describe('AuthService', () => {
       });
       mockSessionService.createSession.mockResolvedValue('session-new');
       mockUserRepository.upsert.mockResolvedValue(makeUser());
+      mockUserRepository.findById.mockResolvedValue(
+        makeUser({ id: GUEST_ID, spotifyUserId: undefined }),
+      );
       mockUserRepository.attachSpotify.mockResolvedValue(
         makeUser({ id: GUEST_ID }),
       );
@@ -165,9 +168,74 @@ describe('AuthService', () => {
       expect(mockUserRepository.attachSpotify).not.toHaveBeenCalled();
     });
 
+    it('never merges away a session that already has an account', async () => {
+      // A shared browser: someone left signed in, someone else signs in.
+      mockSessionService.getSession.mockResolvedValue(
+        makeSession({ userId: 'alice', spotifyUserId: 'spotify-alice' }),
+      );
+      mockUserRepository.findById.mockResolvedValue(
+        makeUser({ id: 'alice', spotifyUserId: 'spotify-alice' }),
+      );
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
+
+      await service.handleCallback('code', 'state', 'session-alice');
+
+      expect(mockAccountMergeService.merge).not.toHaveBeenCalled();
+      expect(mockUserRepository.attachSpotify).not.toHaveBeenCalled();
+    });
+
+    it('never re-points an account at a different Spotify id', async () => {
+      mockSessionService.getSession.mockResolvedValue(
+        makeSession({ userId: 'alice', spotifyUserId: 'spotify-alice' }),
+      );
+      mockUserRepository.findById.mockResolvedValue(
+        makeUser({ id: 'alice', spotifyUserId: 'spotify-alice' }),
+      );
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(null);
+
+      await service.handleCallback('code', 'state', 'session-alice');
+
+      expect(mockUserRepository.attachSpotify).not.toHaveBeenCalled();
+      expect(mockUserRepository.upsert).toHaveBeenCalled();
+    });
+
+    it('drops the guest session once its row has been merged away', async () => {
+      mockSessionService.getSession.mockResolvedValue(
+        makeSession({ userId: GUEST_ID, spotifyUserId: undefined }),
+      );
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
+
+      await service.handleCallback('code', 'state', 'session-guest');
+
+      expect(mockSessionService.deleteSession).toHaveBeenCalledWith(
+        'session-guest',
+      );
+    });
+
+    it('treats a session whose row is gone as nothing to merge', async () => {
+      mockSessionService.getSession.mockResolvedValue(
+        makeSession({ userId: GUEST_ID, spotifyUserId: undefined }),
+      );
+      mockUserRepository.findById.mockResolvedValue(null);
+      mockUserRepository.findBySpotifyUserId.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
+
+      await service.handleCallback('code', 'state', 'session-stale');
+
+      expect(mockAccountMergeService.merge).not.toHaveBeenCalled();
+    });
+
     it('does not merge a row into itself on an ordinary re-login', async () => {
       mockSessionService.getSession.mockResolvedValue(
         makeSession({ userId: EXISTING_ID }),
+      );
+      mockUserRepository.findById.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
       );
       mockUserRepository.findBySpotifyUserId.mockResolvedValue(
         makeUser({ id: EXISTING_ID }),

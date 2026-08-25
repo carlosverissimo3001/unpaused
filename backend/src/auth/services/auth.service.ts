@@ -73,16 +73,29 @@ export class AuthService {
     const currentUserId = await this.resolveCurrentUserId(currentSessionId);
     const existing = await this.userRepository.findBySpotifyUserId(profile.id);
 
-    // A player signed in as someone who already has a row: fold what they did
-    // as a guest into it before Spotify takes the row over.
-    if (existing && currentUserId && currentUserId !== existing.id) {
-      await this.accountMergeService.merge(currentUserId, existing.id);
+    // Only a row with no credentials may be claimed by this sign-in. A session
+    // that already belongs to someone is a person switching accounts — on a
+    // shared browser, treating it as a guest would delete the account they
+    // walked away from.
+    const current = currentUserId
+      ? await this.userRepository.findById(currentUserId)
+      : null;
+    const claimable = current && !current.spotifyUserId ? current : null;
+
+    if (existing && claimable && claimable.id !== existing.id) {
+      await this.accountMergeService.merge(claimable.id, existing.id);
+
+      // The merged-away row is gone; a session still pointing at it would
+      // fail every request and wedge this callback on any other device.
+      if (currentSessionId) {
+        await this.sessionService.deleteSession(currentSessionId);
+      }
     }
 
     // The common path: an existing guest claims a Spotify id nobody holds.
     const user: UserEntity =
-      !existing && currentUserId
-        ? await this.userRepository.attachSpotify(currentUserId, {
+      !existing && claimable
+        ? await this.userRepository.attachSpotify(claimable.id, {
             spotifyUserId: profile.id,
             avatarUrl: profile.avatarUrl,
             country: profile.country,
