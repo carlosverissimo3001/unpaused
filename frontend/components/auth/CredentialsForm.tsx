@@ -16,12 +16,18 @@ interface CredentialsFormProps {
    * player is not editing their email — they are being greeted by it.
    */
   lockedEmail?: string;
+  /**
+   * Only where signing up creates a new person. In preferences it claims the
+   * row the player already has, so there is nothing to start over from.
+   */
+  warnAboutSpotify?: boolean;
   onDone?: () => void;
 }
 
 export function CredentialsForm({
   initialMode = 'signup',
   lockedEmail,
+  warnAboutSpotify = false,
   onDone,
 }: CredentialsFormProps) {
   const [mode, setMode] = useState<Mode>(lockedEmail ? 'login' : initialMode);
@@ -66,6 +72,13 @@ export function CredentialsForm({
         required
         className="w-full rounded-full border border-fg/10 bg-fg/5 px-4 py-2.5 text-sm text-fg placeholder:text-fg/30 focus:border-spotify-green/50 focus:outline-none transition-colors"
       />
+
+      {mode === 'signup' && warnAboutSpotify && (
+        <p className="rounded-xl border border-amber-500/25 bg-amber-500/[0.07] px-3 py-2 text-[11px] leading-relaxed text-amber-200/80">
+          Played here before with Spotify? Don&apos;t create an account — it
+          starts you over. Use your secret word to sign back in instead.
+        </p>
+      )}
 
       {mode === 'signup' && (
         <p className="px-1 text-[11px] text-fg/40">

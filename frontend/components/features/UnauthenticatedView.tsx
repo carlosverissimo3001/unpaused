@@ -193,7 +193,9 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
               <div className="flex flex-col items-center gap-2">
                 <SpotifyButton canSignIn={canSignIn} />
                 <span className="text-xs text-fg/45">
-                  Play your own library
+                  {canSignIn
+                    ? 'Play your own library'
+                    : 'Needs your secret word'}
                 </span>
               </div>
             )}
@@ -203,7 +205,7 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
               from here: both buttons above start something new. */}
           {returningAs ? null : showSignIn ? (
             <div className="w-full max-w-xs">
-              <CredentialsForm initialMode="login" />
+              <CredentialsForm initialMode="login" warnAboutSpotify />
             </div>
           ) : (
             <button
@@ -220,12 +222,14 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
             (showInvite ? (
               <InviteForm />
             ) : (
+              // Not an easter egg: for someone whose cookies have expired this
+              // is the only way back to the account they already have.
               <button
                 type="button"
                 onClick={() => setShowInvite(true)}
-                className="text-xs text-fg/40 underline underline-offset-4 hover:text-fg/60 transition-colors"
+                className="cursor-pointer rounded-full border border-fg/15 px-5 py-2.5 text-sm font-semibold text-fg/70 transition-colors hover:border-fg/30 hover:bg-fg/5 hover:text-fg"
               >
-                Have a secret word?
+                Played here before? Enter your secret word
               </button>
             ))}
         </div>
