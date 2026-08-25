@@ -180,6 +180,14 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
           </div>
         </div>
 
+        {/* The one thing on this page that is not a preference: it decides
+            whether anything else here survives losing the device. */}
+        {!user?.hasLinkedAccount && (
+          <div className="px-6 py-5 border-b border-fg/10">
+            <LinkAccountSection canSignIn={canSignIn} />
+          </div>
+        )}
+
         {/* Avatar */}
         <div className="px-6 border-b border-fg/10">
           <AvatarSection />
@@ -224,10 +232,6 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
             checked={prefs.showTextHints}
             onChange={(value) => handleToggle('showTextHints', value)}
           />
-
-          {!user?.hasLinkedAccount && (
-            <LinkAccountSection canSignIn={canSignIn} />
-          )}
 
           <div className="-mx-6 border-t border-fg/10" />
 
