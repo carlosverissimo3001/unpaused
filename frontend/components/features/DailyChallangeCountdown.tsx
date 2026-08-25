@@ -46,14 +46,14 @@ export function DailyChallengeCountdown() {
           transition={{ duration: 2, repeat: Infinity }}
           className="shrink-0 self-center flex items-center"
         >
-          <Clock className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-spotify-green" />
+          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-spotify-green" />
         </motion.div>
 
-        <span className="lg:hidden text-[9px] font-black uppercase tracking-widest text-spotify-green/90 mr-0.5 whitespace-nowrap">
-          Next Drop:
+        <span className="text-[9px] font-black uppercase tracking-widest text-spotify-green/90 mr-0.5 whitespace-nowrap">
+          Next:
         </span>
 
-        <div className="flex items-center font-mono font-bold text-fg text-[11px] sm:text-lg tabular-nums">
+        <div className="flex items-center font-mono font-bold text-fg text-[11px] sm:text-sm tabular-nums">
           <RollingDigit value={timeLeft.h} label="h" />
           <span className="mx-0.5 opacity-30">:</span>
           <RollingDigit value={timeLeft.m} label="m" />
@@ -70,7 +70,7 @@ function RollingDigit({ value, label }: { value: number; label: string }) {
 
   return (
     <div className="flex items-baseline shrink-0">
-      <div className="relative h-[1.2em] overflow-hidden flex items-center justify-center min-w-[2.2ch] sm:min-w-[1.2ch]">
+      <div className="relative h-[1.2em] overflow-hidden flex items-center justify-center min-w-[2.2ch] sm:min-w-[1.6ch]">
         <AnimatePresence mode="popLayout">
           <motion.span
             key={displayValue}

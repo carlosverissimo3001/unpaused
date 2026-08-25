@@ -26,7 +26,7 @@ export function AccountRequiredNotice({ mode }: { mode: string }) {
       </div>
 
       <Link
-        href="/game/guest?start=1"
+        href="/shuffle"
         className="inline-flex items-center justify-center h-11 px-6 rounded-full bg-spotify-green text-black text-sm font-black hover:brightness-110 active:scale-95 transition-all"
       >
         Play a round

@@ -3,8 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { ArrowLeft, Play } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { usePoolGameOrchestrator } from '@/hooks/game/usePoolGameOrchestrator';
+import { useMe } from '@/hooks/auth/useMe';
 import { useVolume } from '@/hooks/game/useVolume';
 import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
 import { useImageColor } from '@/hooks/misc/useImageColor';
@@ -30,23 +31,16 @@ const SHAKE_VARIANTS: Variants = {
 };
 
 /**
- * GamePage for a visitor who has not signed in: the same presentational
- * components and the same endpoints, against a round drawn from the curated
- * pool. No playlist picker and no stats panel, though the round itself is
- * recorded like any other - starting one is what mints the account.
+ * A round drawn from the curated pool rather than a playlist: the same
+ * presentational components and the same endpoints, minus the playlist picker
+ * and stats panel. Open to anyone — for a signed-out visitor, starting one is
+ * also what mints their account.
  */
-export function GuestGamePage({
-  canSignIn,
-  autoStart = false,
-}: {
-  canSignIn: boolean;
-  autoStart?: boolean;
-}) {
+export function ShuffleGamePage({ canSignIn }: { canSignIn: boolean }) {
   const { volume, setVolume } = useVolume();
+  const { data: user } = useMe();
 
   const {
-    hasBegun,
-    begin,
     gameState,
     isLoading,
     error,
@@ -58,7 +52,7 @@ export function GuestGamePage({
     handleSubmit,
     handleSkip,
     handlePlayAgain,
-  } = usePoolGameOrchestrator({ volume, autoStart });
+  } = usePoolGameOrchestrator({ volume });
 
   const {
     audioRef,
@@ -77,62 +71,6 @@ export function GuestGamePage({
       ? gameState.answer.albumImageUrl
       : null,
   );
-
-  // The round is what mints the account, so it waits for a deliberate tap
-  // rather than firing on page load.
-  if (!hasBegun) {
-    return (
-      <div
-        className="h-screen h-[100dvh] flex items-center justify-center overflow-visible"
-        style={{ background: 'rgb(var(--bg))' }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="relative z-10 text-center flex flex-col gap-8 sm:gap-12 max-w-2xl px-6"
-        >
-          <div className="flex flex-col gap-4 sm:gap-6">
-            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter text-fg leading-[0.9]">
-              Name the
-              <br />
-              <span className="text-spotify-green drop-shadow-[0_0_40px_rgba(30,215,96,0.35)]">
-                song.
-              </span>
-            </h1>
-            <p className="text-sm sm:text-base md:text-lg text-fg/50 max-w-[280px] sm:max-w-md mx-auto leading-relaxed font-medium">
-              Six chances. It starts with one second.
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center gap-6">
-            <div className="flex flex-col items-center gap-2 w-full max-w-[240px]">
-              <div className="relative group w-full">
-                <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
-                <Button
-                  variant="spotify"
-                  onClick={begin}
-                  className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold gap-2 transition-all duration-500 shadow-xl"
-                >
-                  <Play fill="currentColor" className="w-4 h-4" />
-                  Play
-                </Button>
-              </div>
-              <span className="text-xs text-fg/45">No sign-in needed</span>
-            </div>
-
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-xs font-bold text-fg/40 hover:text-fg/70 transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Back
-            </Link>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -228,7 +166,7 @@ export function GuestGamePage({
             </div>
             {/* Nothing at all while the site is gated: /api/auth/login is
                 blocked without the access cookie, so offering it is a dead end. */}
-            {canSignIn && (
+            {canSignIn && !user?.hasLinkedAccount && (
               <a href="/api/auth/login" className="shrink-0">
                 <Button
                   variant="outline"

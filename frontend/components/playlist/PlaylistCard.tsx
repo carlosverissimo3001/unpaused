@@ -26,7 +26,7 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
   const glowColor = ambientColor.replace('0.15', '0.1').replace('0.1', '0.08');
 
   return (
-    <Link href={`/game/${playlist.id}`}>
+    <Link href={`/playlist/${playlist.id}`}>
       <motion.div
         onMouseEnter={() => {
           setIsHovered(true);

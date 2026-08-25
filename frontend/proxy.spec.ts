@@ -19,18 +19,20 @@ const SESSION = { unpaused_session: 'a-session-id' };
 
 describe('proxy route gating', () => {
   test('lets a signed out visitor reach guest play', async () => {
-    const response = await proxy(request('/game/guest'));
+    const response = await proxy(request('/shuffle'));
     expect(response.status).toBe(200);
     expect(response.headers.get('location')).toBeNull();
   });
 
   test('sends a signed out visitor away from a playlist game', async () => {
-    const response = await proxy(request('/game/some-playlist-id'));
+    const response = await proxy(request('/playlist/some-playlist-id'));
     expect(response.headers.get('location')).toBe('https://unpaused.test/');
   });
 
   test('lets a signed in visitor reach a playlist game', async () => {
-    const response = await proxy(request('/game/some-playlist-id', SESSION));
+    const response = await proxy(
+      request('/playlist/some-playlist-id', SESSION),
+    );
     expect(response.status).toBe(200);
   });
 
