@@ -301,8 +301,16 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
               key={mode.id}
               variants={itemVariants}
               whileTap={{ scale: 0.98 }}
+              style={
+                { '--mode-glow': modeGlow[mode.id] } as React.CSSProperties
+              }
               className={cn(
-                'group relative overflow-hidden rounded-[2rem] border border-fg/10 bg-surface dark:bg-[#0A0A0A] flex flex-col shadow-2xl',
+                'group relative overflow-hidden rounded-[2rem] border border-fg/10 flex flex-col',
+                'bg-surface dark:bg-[#0A0A0A]',
+                'hover:bg-fg/[0.08] dark:hover:bg-fg/[0.08]',
+                'shadow-[0_10px_30px_-15px_rgba(0,0,0,0.4)]',
+                'hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.6),0_0_24px_var(--mode-glow)]',
+                'transition-[background-color,box-shadow] duration-300',
                 isFullWidth ? 'col-span-2 lg:col-span-1' : 'col-span-1',
               )}
             >
