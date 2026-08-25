@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
-import { GuestGamePage } from '@/components/game/GuestGamePage';
+import { ShuffleGamePage } from '@/components/game/ShuffleGamePage';
 import { SITE_ACCESS_COOKIE, isAccessTokenValid } from '@/lib/site-access';
 
-export default async function GuestPlaylistGamePage({
+export default async function ShufflePage({
   searchParams,
 }: {
   searchParams: Promise<{ start?: string }>;
@@ -16,5 +16,5 @@ export default async function GuestPlaylistGamePage({
     (await cookies()).get(SITE_ACCESS_COOKIE)?.value,
   );
 
-  return <GuestGamePage canSignIn={canSignIn} autoStart={autoStart} />;
+  return <ShuffleGamePage canSignIn={canSignIn} autoStart={autoStart} />;
 }

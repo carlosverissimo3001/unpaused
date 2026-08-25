@@ -19,7 +19,7 @@ const SESSION = { unpaused_session: 'a-session-id' };
 
 describe('proxy route gating', () => {
   test('lets a signed out visitor reach guest play', async () => {
-    const response = await proxy(request('/game/guest'));
+    const response = await proxy(request('/play/shuffle'));
     expect(response.status).toBe(200);
     expect(response.headers.get('location')).toBeNull();
   });

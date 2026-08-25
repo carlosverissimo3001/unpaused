@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ArrowLeft, Play } from 'lucide-react';
 import { usePoolGameOrchestrator } from '@/hooks/game/usePoolGameOrchestrator';
+import { useMe } from '@/hooks/auth/useMe';
 import { useVolume } from '@/hooks/game/useVolume';
 import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
 import { useImageColor } from '@/hooks/misc/useImageColor';
@@ -30,12 +31,12 @@ const SHAKE_VARIANTS: Variants = {
 };
 
 /**
- * GamePage for a visitor who has not signed in: the same presentational
- * components and the same endpoints, against a round drawn from the curated
- * pool. No playlist picker and no stats panel, though the round itself is
- * recorded like any other - starting one is what mints the account.
+ * A round drawn from the curated pool rather than a playlist: the same
+ * presentational components and the same endpoints, minus the playlist picker
+ * and stats panel. Open to anyone — for a signed-out visitor, starting one is
+ * also what mints their account.
  */
-export function GuestGamePage({
+export function ShuffleGamePage({
   canSignIn,
   autoStart = false,
 }: {
@@ -43,6 +44,7 @@ export function GuestGamePage({
   autoStart?: boolean;
 }) {
   const { volume, setVolume } = useVolume();
+  const { data: user } = useMe();
 
   const {
     hasBegun,
@@ -228,7 +230,7 @@ export function GuestGamePage({
             </div>
             {/* Nothing at all while the site is gated: /api/auth/login is
                 blocked without the access cookie, so offering it is a dead end. */}
-            {canSignIn && (
+            {canSignIn && !user?.hasLinkedAccount && (
               <a href="/api/auth/login" className="shrink-0">
                 <Button
                   variant="outline"
