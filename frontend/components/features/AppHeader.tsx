@@ -18,9 +18,10 @@ interface AppHeaderProps {
 function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
   const { theme, setTheme } = useTheme();
 
-  // Everyone who plays a round has a session, so a session is not a sign-in.
-  // The rule lives here rather than in each page that renders the header.
-  const isSignedIn = !!user?.hasLinkedAccount;
+  // A guest gets the same header as anyone else — name, avatar, history,
+  // preferences. Only logout is withheld: they have nothing to log out of,
+  // and doing it would silently discard the row holding their progress.
+  const canLogOut = !!user?.hasLinkedAccount;
 
   return (
     <header className="sticky top-0 z-50 px-4 sm:px-6 py-3 sm:py-4 bg-surface/60 backdrop-blur-xl border-t border-fg/10">
@@ -36,7 +37,7 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
           </Link>
         </div>
 
-        {isSignedIn && user && (
+        {user && (
           <div className="flex items-center gap-2 sm:gap-6">
             <nav className="flex items-center gap-1 sm:gap-4 mr-2 sm:mr-4 border-r border-fg/10 pr-4 sm:pr-8">
               <Link
@@ -107,17 +108,19 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
                 )}
               </motion.button>
 
-              <motion.div whileTap={{ scale: 0.9 }}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onLogout}
-                  disabled={isLoggingOut}
-                  className="text-fg/30 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </motion.div>
+              {canLogOut && (
+                <motion.div whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onLogout}
+                    disabled={isLoggingOut}
+                    className="text-fg/30 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </div>
         )}

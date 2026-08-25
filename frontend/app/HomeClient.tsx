@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useMe } from '@/hooks/auth/useMe';
-import { consumeAuthReturnUrl, peekAuthReturnUrl } from '@/lib/auth-return';
-import { StreakFreezePrompt } from '@/components/streak/StreakFreezePrompt';
-import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
-import { useLogout } from '@/hooks/auth/useLogout';
-import { usePlaylistFilters } from '@/hooks/playlists/usePlaylistFilters';
-import { useAuthError } from '@/hooks/auth/useAuthError';
-import { ErrorBanner } from '@/components/ui/ErrorBanner';
-import { AppHeader } from '@/components/features/AppHeader';
-import { GameModesGallery } from '@/components/features/GameModesGallery';
-import { PlaylistFilters } from '@/components/features/playlist/PlaylistFilters';
-import { PlaylistGrid } from '@/components/features/playlist/PlaylistGrid';
-import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
-import { AppFooter } from '@/components/features/AppFooter';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useMe } from "@/hooks/auth/useMe";
+import { consumeAuthReturnUrl, peekAuthReturnUrl } from "@/lib/auth-return";
+import { StreakFreezePrompt } from "@/components/streak/StreakFreezePrompt";
+import { useMyPlaylists } from "@/hooks/playlists/useMyPlaylists";
+import { useLogout } from "@/hooks/auth/useLogout";
+import { usePlaylistFilters } from "@/hooks/playlists/usePlaylistFilters";
+import { useAuthError } from "@/hooks/auth/useAuthError";
+import { ErrorBanner } from "@/components/ui/ErrorBanner";
+import { AppHeader } from "@/components/features/AppHeader";
+import { GameModesGallery } from "@/components/features/GameModesGallery";
+import { PlaylistFilters } from "@/components/features/playlist/PlaylistFilters";
+import { PlaylistGrid } from "@/components/features/playlist/PlaylistGrid";
+import { UnauthenticatedView } from "@/components/features/UnauthenticatedView";
+import { AppFooter } from "@/components/features/AppFooter";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useTimezoneSync } from "@/hooks/user-preferences/useTimezoneSync";
 
 export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   const playlistFilters = usePlaylistFilters();
@@ -56,8 +56,8 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   }, [hasAccount]);
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } =
     useMyPlaylists({
-      onlyPublic: playlistFilters.visibility === 'public',
-      onlyPrivate: playlistFilters.visibility === 'private',
+      onlyPublic: playlistFilters.visibility === "public",
+      onlyPrivate: playlistFilters.visibility === "private",
       sortBy: playlistFilters.sortBy,
       enabled: hasAccount,
     });
@@ -93,8 +93,8 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
           className="absolute inset-0 opacity-40"
           style={{
             background:
-              'radial-gradient(circle 80% 50% at 50% 0%, rgba(30,215,96,0.1), transparent 70%)',
-            filter: 'blur(60px)',
+              "radial-gradient(circle 80% 50% at 50% 0%, rgba(30,215,96,0.1), transparent 70%)",
+            filter: "blur(60px)",
           }}
         />
       </div>
@@ -109,7 +109,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
         <div className="max-w-5xl mx-auto flex flex-col gap-3 sm:gap-6">
           <ErrorBanner error={error} />
 
-          {hasAccount ? (
+          {user ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -118,37 +118,43 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
             >
               <GameModesGallery isTrusted={user.isTrusted} />
 
-              {/* Main Content Header */}
-              <div className="mt-1 sm:mt-2">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 relative z-10">
-                  <div className="flex items-baseline gap-2 sm:gap-3">
-                    <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-fg whitespace-nowrap">
-                      Your Playlists
-                    </h1>
+              {/* The playlist grid is the one thing a Spotify credential
+                  buys, so it is the one thing a guest's home leaves out. */}
+              {hasAccount && (
+                <>
+                  {/* Main Content Header */}
+                  <div className="mt-1 sm:mt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 relative z-10">
+                      <div className="flex items-baseline gap-2 sm:gap-3">
+                        <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-fg whitespace-nowrap">
+                          Your Playlists
+                        </h1>
 
-                    {!isLoadingPlaylists && (
-                      <span className="text-sm sm:text-lg font-mono text-spotify-green/70 font-light tracking-tighter shrink-0">
-                        /{playlists.length.toString().padStart(2, '0')}
-                      </span>
-                    )}
+                        {!isLoadingPlaylists && (
+                          <span className="text-sm sm:text-lg font-mono text-spotify-green/70 font-light tracking-tighter shrink-0">
+                            /{playlists.length.toString().padStart(2, "0")}
+                          </span>
+                        )}
+                      </div>
+
+                      <PlaylistFilters
+                        visibility={playlistFilters.visibility}
+                        onVisibilityChange={playlistFilters.setVisibility}
+                        sortBy={playlistFilters.sortBy}
+                        onSortByChange={playlistFilters.setSortBy}
+                      />
+                    </div>
+
+                    <div className="mt-4" />
                   </div>
 
-                  <PlaylistFilters
-                    visibility={playlistFilters.visibility}
-                    onVisibilityChange={playlistFilters.setVisibility}
-                    sortBy={playlistFilters.sortBy}
-                    onSortByChange={playlistFilters.setSortBy}
+                  <PlaylistGrid
+                    playlists={playlists}
+                    isLoading={isLoadingPlaylists}
+                    onClearFilters={playlistFilters.clearFilters}
                   />
-                </div>
-
-                <div className="mt-4" />
-              </div>
-
-              <PlaylistGrid
-                playlists={playlists}
-                isLoading={isLoadingPlaylists}
-                onClearFilters={playlistFilters.clearFilters}
-              />
+                </>
+              )}
             </motion.div>
           ) : (
             <UnauthenticatedView canSignIn={canSignIn} />
