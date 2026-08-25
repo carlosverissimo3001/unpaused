@@ -1,18 +1,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  async redirects() {
-    return [
-      // The pool round was the guest game before anyone signed in could play
-      // it. Links to the old path are already out there.
-      {
-        source: '/game/guest',
-        destination: '/play/shuffle',
-        permanent: true,
-      },
-    ];
-  },
-
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
