@@ -3,8 +3,8 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMe } from '@/hooks/auth/useMe';
+import { useEnsureSession } from '@/hooks/auth/useEnsureSession';
 import { useJoinRoom } from '@/hooks/multiplayer/useJoinRoom';
-import { setAuthReturnUrl } from '@/lib/auth-return';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 
@@ -12,6 +12,7 @@ export default function JoinManualPage() {
   const [code, setCode] = useState('');
   const router = useRouter();
   const { data: user, isLoading: isLoadingUser } = useMe();
+  const ensureSession = useEnsureSession();
   const joinMutation = useJoinRoom();
 
   function extractCodeFromInput(value: string): string {
@@ -31,15 +32,6 @@ export default function JoinManualPage() {
       .slice(0, 8);
   }
 
-  // Auth gate
-  useEffect(() => {
-    if (isLoadingUser) return;
-    if (!user?.hasLinkedAccount) {
-      setAuthReturnUrl('/multiplayer/join');
-      window.location.href = '/api/auth/login';
-    }
-  }, [user, isLoadingUser]);
-
   // Success: redirect to room lobby
   useEffect(() => {
     if (joinMutation.data) {
@@ -51,9 +43,15 @@ export default function JoinManualPage() {
     setCode(extractCodeFromInput(value));
   }
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (code.length === 0) return;
+
+    // Submitting is the deliberate click that mints an identity for a visitor
+    // who has none — a page load must never create a user.
+    if (!user) {
+      await ensureSession.mutateAsync();
+    }
     joinMutation.mutate(code);
   }
 

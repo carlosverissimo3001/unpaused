@@ -41,10 +41,9 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
-    y: 0,
     scale: 1,
     transition: { type: 'spring' as const, damping: 20, stiffness: 300 },
   },
@@ -187,7 +186,7 @@ function SpeedrunCardContent() {
       <div className="flex items-center gap-2 w-full">
         <Link
           href="/speed-run"
-          className="flex-[2] flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black text-white transition-all active:scale-90 shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
+          className="flex-[2] flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-xs sm:text-sm font-black text-white transition-all active:scale-90 shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
           style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)' }}
         >
           <Play fill="currentColor" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -195,7 +194,7 @@ function SpeedrunCardContent() {
         </Link>
         <Link
           href="/speed-run/leaderboard"
-          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black transition-all active:scale-95 border border-orange-500/30 bg-orange-500/5 text-orange-600 dark:text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
+          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-95 border border-orange-500/30 bg-orange-500/5 text-orange-600 dark:text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
         >
           <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline lg:hidden">Leaderboard</span>
@@ -240,7 +239,7 @@ function MultiplayerCardContent({
       <div className="flex items-center gap-2 w-full">
         <button
           onClick={onJoin}
-          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black border border-fg/10 bg-fg/5 hover:bg-fg/10 text-fg transition-all active:scale-95"
+          className="flex cursor-pointer items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-xs sm:text-sm font-black border border-fg/10 bg-fg/5 hover:bg-fg/10 text-fg transition-all active:scale-95"
         >
           <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline lg:hidden">Join</span>
@@ -248,7 +247,7 @@ function MultiplayerCardContent({
 
         <button
           onClick={onCreate}
-          className="flex-[2] flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
+          className="flex-[2] flex cursor-pointer items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-xs sm:text-sm font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
         >
           <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>Create</span>
@@ -258,13 +257,7 @@ function MultiplayerCardContent({
   );
 }
 
-function GameModesGalleryComponent({
-  isTrusted,
-  hasAccount,
-}: {
-  isTrusted: boolean;
-  hasAccount: boolean;
-}) {
+function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -274,8 +267,9 @@ function GameModesGalleryComponent({
     { id: 'speedrun', show: isTrusted, render: () => <SpeedrunCardContent /> },
     {
       id: 'multiplayer',
-      // Closed to anonymous players until CAR-190, so it is not offered to them.
-      show: hasAccount,
+      // A room with an unlinked player runs on the curated pool, so anyone can
+      // host or join one.
+      show: true,
       render: () => (
         <MultiplayerCardContent
           onJoin={() => setShowJoinModal(true)}
@@ -306,10 +300,17 @@ function GameModesGalleryComponent({
             <motion.div
               key={mode.id}
               variants={itemVariants}
-              whileHover={{ y: -5 }}
               whileTap={{ scale: 0.98 }}
+              style={
+                { '--mode-glow': modeGlow[mode.id] } as React.CSSProperties
+              }
               className={cn(
-                'group relative overflow-hidden rounded-[2rem] border border-fg/10 bg-surface dark:bg-[#0A0A0A] flex flex-col shadow-2xl',
+                'group relative overflow-hidden rounded-[2rem] border border-fg/10 flex flex-col',
+                'bg-surface dark:bg-[#0A0A0A]',
+                'hover:bg-fg/[0.08] dark:hover:bg-fg/[0.08]',
+                'shadow-[0_10px_30px_-15px_rgba(0,0,0,0.4)]',
+                'hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.6),0_0_24px_var(--mode-glow)]',
+                'transition-[background-color,box-shadow] duration-300',
                 isFullWidth ? 'col-span-2 lg:col-span-1' : 'col-span-1',
               )}
             >

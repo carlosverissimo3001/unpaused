@@ -58,6 +58,12 @@ export interface RoomDto {
      */
     status: RoomDtoStatusEnum;
     /**
+     * Where this room draws its songs from
+     * @type {string}
+     * @memberof RoomDto
+     */
+    trackSource: RoomDtoTrackSourceEnum;
+    /**
      * 
      * @type {Array<RoomPlayerDto>}
      * @memberof RoomDto
@@ -95,6 +101,15 @@ export const RoomDtoStatusEnum = {
 } as const;
 export type RoomDtoStatusEnum = typeof RoomDtoStatusEnum[keyof typeof RoomDtoStatusEnum];
 
+/**
+ * @export
+ */
+export const RoomDtoTrackSourceEnum = {
+    Pool: 'POOL',
+    Libraries: 'LIBRARIES'
+} as const;
+export type RoomDtoTrackSourceEnum = typeof RoomDtoTrackSourceEnum[keyof typeof RoomDtoTrackSourceEnum];
+
 
 /**
  * Check if a given object implements the RoomDto interface.
@@ -105,6 +120,7 @@ export function instanceOfRoomDto(value: object): value is RoomDto {
     if (!('hostId' in value) || value['hostId'] === undefined) return false;
     if (!('roundCount' in value) || value['roundCount'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
+    if (!('trackSource' in value) || value['trackSource'] === undefined) return false;
     if (!('players' in value) || value['players'] === undefined) return false;
     if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     return true;
@@ -125,6 +141,7 @@ export function RoomDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean): R
         'hostId': json['hostId'],
         'roundCount': json['roundCount'],
         'status': json['status'],
+        'trackSource': json['trackSource'],
         'players': ((json['players'] as Array<any>).map(RoomPlayerDtoFromJSON)),
         'createdAt': (new Date(json['createdAt'])),
         'startedAt': json['startedAt'] == null ? undefined : (new Date(json['startedAt'])),
@@ -148,6 +165,7 @@ export function RoomDtoToJSONTyped(value?: RoomDto | null, ignoreDiscriminator: 
         'hostId': value['hostId'],
         'roundCount': value['roundCount'],
         'status': value['status'],
+        'trackSource': value['trackSource'],
         'players': ((value['players'] as Array<any>).map(RoomPlayerDtoToJSON)),
         'createdAt': value['createdAt'].toISOString(),
         'startedAt': value['startedAt'] == null ? value['startedAt'] : value['startedAt'].toISOString(),

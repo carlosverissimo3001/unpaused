@@ -326,8 +326,19 @@ export function useGameAudio({
     ...mediaSessionCallbacks,
   });
 
+  // The reveal plays the full song once, when the round ends. Without the
+  // guard it replays on every re-minted preview link — which lands mid
+  // transition to the next round and leaks a second of audio.
+  const revealPlayedRef = useRef(false);
   useEffect(() => {
-    if (!isGameOver || !previewUrl) return;
+    if (!isGameOver) {
+      revealPlayedRef.current = false;
+    }
+  }, [isGameOver]);
+
+  useEffect(() => {
+    if (!isGameOver || !previewUrl || revealPlayedRef.current) return;
+    revealPlayedRef.current = true;
 
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);

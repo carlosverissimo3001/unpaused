@@ -5,7 +5,9 @@ import { SessionService } from '../../auth/services/session.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { TrackDto } from '../../track/dto/track.dto';
 import { shuffleInPlace } from '../../game/utils/utils';
-import { PrismaService } from '../../prisma/prisma.service';
+import { TrackSource } from '@prisma/client';
+import { UserRepository } from '../../auth/repositories/user.repository';
+import { PoolService } from '../../pool/services/pool.service';
 
 /** Number of 50-track batches to fetch per player */
 const BATCHES_PER_PLAYER = 3;
@@ -25,7 +27,8 @@ export class TrackPoolService {
     private readonly playlistService: PlaylistService,
     private readonly trackService: TrackService,
     private readonly sessionService: SessionService,
-    private readonly prisma: PrismaService,
+    private readonly userRepository: UserRepository,
+    private readonly poolService: PoolService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(TrackPoolService.name);
@@ -47,9 +50,27 @@ export class TrackPoolService {
   async selectTracksForRoom(
     playerUserIds: string[],
     roundCount: number,
+    trackSource: TrackSource = TrackSource.POOL,
   ): Promise<string[]> {
+    if (trackSource === TrackSource.POOL) {
+      return this.selectFromCuratedPool(roundCount);
+    }
+
+    // Only the players who have a library can contribute one. A guest in the
+    // room plays against the others' music rather than overriding the host's
+    // choice — the host picked this, and nothing should change it under them.
+    const linkedUserIds =
+      await this.userRepository.filterWithCredential(playerUserIds);
+
+    if (linkedUserIds.length === 0) {
+      this.logger.warn(
+        'A libraries room has no linked players, falling back to the pool',
+      );
+      return this.selectFromCuratedPool(roundCount);
+    }
+
     // 1. Resolve userIds -> sessionIds
-    const sessionIds = await this.resolvePlayerSessions(playerUserIds);
+    const sessionIds = await this.resolvePlayerSessions(linkedUserIds);
 
     if (sessionIds.length === 0) {
       throw new BadRequestException(
@@ -72,14 +93,38 @@ export class TrackPoolService {
     return selectedTrackIds;
   }
 
+  /**
+   * Draws from the committed pool, which is local, so a room with a guest in it
+   * costs nothing upstream to start.
+   */
+  async selectFromCuratedPool(roundCount: number): Promise<string[]> {
+    const trackIds: string[] = [];
+
+    for (let i = 0; i < roundCount; i++) {
+      try {
+        // A copy: the same array is passed on every draw, and the callee
+        // holding onto it would let one round rewrite the next.
+        const track = await this.poolService.pickTrack([...trackIds]);
+        trackIds.push(track.id);
+      } catch (err) {
+        this.logger.warn(
+          `Curated pool exhausted after ${trackIds.length} tracks: ${(err as Error).message}`,
+        );
+        break;
+      }
+    }
+
+    if (trackIds.length === 0) {
+      throw new BadRequestException('No curated tracks available');
+    }
+
+    return trackIds;
+  }
+
   private async resolvePlayerSessions(userIds: string[]): Promise<string[]> {
     // Fetch all users in a single query to avoid N+1 DB calls
-    const users = await this.prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true },
-    });
-
-    const foundUserIds = new Set(users.map((u) => u.id));
+    const existingIds = await this.userRepository.findExistingIds(userIds);
+    const foundUserIds = new Set(existingIds);
 
     // Log missing users (present in input but not in DB)
     for (const userId of userIds) {
@@ -90,13 +135,12 @@ export class TrackPoolService {
 
     // Resolve sessions in parallel for found users
     const sessionIdsWithNulls = await Promise.all(
-      users.map(async (user) => {
-        const sessionId = await this.sessionService.getSessionIdByUserId(
-          user.id,
-        );
+      existingIds.map(async (userId) => {
+        const sessionId =
+          await this.sessionService.getSessionIdByUserId(userId);
 
         if (!sessionId) {
-          this.logger.warn(`No active session for user ${user.id}, skipping`);
+          this.logger.warn(`No active session for user ${userId}, skipping`);
           return null;
         }
 

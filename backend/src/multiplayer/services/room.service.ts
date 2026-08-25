@@ -1,10 +1,12 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
-import { RoomStatus } from '@prisma/client';
+import { RoomStatus, TrackSource } from '@prisma/client';
 import { AuthService } from '../../auth/services/auth.service';
 import {
   RoomRepository,
@@ -25,6 +27,7 @@ export class RoomService {
     private readonly authService: AuthService,
     private readonly roomRepository: RoomRepository,
     private readonly trackPoolService: TrackPoolService,
+    @Inject(forwardRef(() => RoomsGateway))
     private readonly roomsGateway: RoomsGateway,
   ) {}
 
@@ -41,8 +44,20 @@ export class RoomService {
     return RoomDto.fromEntity(room);
   }
 
-  async getRoomState(roomId: string): Promise<RoomDto> {
+  /**
+   * Members only. The room id is not a secret — it is in the url of everyone
+   * who has ever played — while the invite code this returns is exactly the
+   * thing that decides who gets in, alongside the roster and everyone's name.
+   * The way into a room is the code, not the id.
+   */
+  async getRoomState(sessionId: string, roomId: string): Promise<RoomDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
     const room = await this.findRoomOrThrow(roomId);
+
+    if (!room.players.some((player) => player.userId === userId)) {
+      throw new ForbiddenException('You are not in this room');
+    }
+
     return RoomDto.fromEntity(room);
   }
 
@@ -75,6 +90,35 @@ export class RoomService {
     const updated = await this.findRoomOrThrow(room.id);
     const dto = RoomDto.fromEntity(updated);
     this.roomsGateway.emitRoomUpdate(room.id, dto);
+    return dto;
+  }
+
+  /**
+   * The host chooses where the songs come from. Deliberately not inferred from
+   * who is in the room, so it cannot change under them when someone joins.
+   */
+  async setTrackSource(
+    sessionId: string,
+    roomId: string,
+    trackSource: TrackSource,
+  ): Promise<RoomDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const room = await this.findRoomOrThrow(roomId);
+
+    if (room.hostId !== userId) {
+      throw new ForbiddenException('Only the host can change the song source');
+    }
+
+    if (room.status !== RoomStatus.WAITING) {
+      throw new BadRequestException('The game has already started');
+    }
+
+    const updated = await this.roomRepository.setTrackSource(
+      roomId,
+      trackSource,
+    );
+    const dto = RoomDto.fromEntity(updated);
+    this.roomsGateway.emitRoomUpdate(roomId, dto);
     return dto;
   }
 
@@ -122,6 +166,7 @@ export class RoomService {
       trackIds = await this.trackPoolService.selectTracksForRoom(
         playerUserIds,
         room.roundCount,
+        room.trackSource,
       );
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -177,6 +222,73 @@ export class RoomService {
     await this.roomRepository.removePlayer(roomId, userId);
     const updated = await this.findRoomOrThrow(roomId);
     this.roomsGateway.emitRoomUpdate(roomId, RoomDto.fromEntity(updated));
+  }
+
+  /**
+   * The host clears out someone who is not coming back. Not available once the
+   * game is under way: by then they have a score, and removing them would
+   * rewrite a game the others already played.
+   */
+  async kickPlayer(
+    sessionId: string,
+    roomId: string,
+    targetUserId: string,
+  ): Promise<RoomDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const room = await this.findRoomOrThrow(roomId);
+
+    if (room.hostId !== userId) {
+      throw new ForbiddenException('Only the host can remove players');
+    }
+
+    if (room.status !== RoomStatus.WAITING) {
+      throw new BadRequestException('The game has already started');
+    }
+
+    if (targetUserId === room.hostId) {
+      throw new BadRequestException('The host cannot be removed');
+    }
+
+    if (!room.players.some((player) => player.userId === targetUserId)) {
+      throw new NotFoundException('That player is not in this room');
+    }
+
+    await this.roomRepository.removePlayer(roomId, targetUserId);
+    const updated = await this.findRoomOrThrow(roomId);
+    const dto = RoomDto.fromEntity(updated);
+
+    // Told directly, so their own tab stops pretending they are still in.
+    this.roomsGateway.emitPlayerRemoved(roomId, targetUserId);
+    this.roomsGateway.emitRoomUpdate(roomId, dto);
+    return dto;
+  }
+
+  /**
+   * Gives up the seat of someone whose grace period lapsed. Only in a lobby:
+   * once a game is running, a player's rounds are part of it whether they are
+   * watching or not, and completion already stops waiting on them.
+   */
+  async releaseSeat(roomId: string, userId: string): Promise<void> {
+    const room = await this.roomRepository.findById(roomId);
+    if (!room || room.status !== RoomStatus.WAITING) {
+      return;
+    }
+
+    if (!room.players.some((player) => player.userId === userId)) {
+      return;
+    }
+
+    // The host leaving is the room ending, which leaveRoom already knows how
+    // to do; a seat sweep should not quietly expire everyone else's lobby.
+    if (room.hostId === userId) {
+      return;
+    }
+
+    await this.roomRepository.removePlayer(roomId, userId);
+    const updated = await this.roomRepository.findById(roomId);
+    if (updated) {
+      this.roomsGateway.emitRoomUpdate(roomId, RoomDto.fromEntity(updated));
+    }
   }
 
   private async findRoomOrThrow(roomId: string): Promise<RoomWithPlayers> {

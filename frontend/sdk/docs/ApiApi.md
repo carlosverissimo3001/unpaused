@@ -35,7 +35,9 @@ All URIs are relative to *http://localhost*
 | [**multiplayerControllerGetRoundState**](ApiApi.md#multiplayercontrollergetroundstate) | **GET** /multiplayer/rooms/{id}/round | Get current round state for the player |
 | [**multiplayerControllerGetScoreboard**](ApiApi.md#multiplayercontrollergetscoreboard) | **GET** /multiplayer/rooms/{id}/scoreboard | Get scoreboard (only completed rounds visible) |
 | [**multiplayerControllerJoinRoom**](ApiApi.md#multiplayercontrollerjoinroom) | **POST** /multiplayer/rooms/{code}/join | Join a room by invite code |
+| [**multiplayerControllerKickPlayer**](ApiApi.md#multiplayercontrollerkickplayer) | **POST** /multiplayer/rooms/{id}/kick | Remove a player from the room (host only) |
 | [**multiplayerControllerLeaveRoom**](ApiApi.md#multiplayercontrollerleaveroom) | **POST** /multiplayer/rooms/{id}/leave | Leave a room (host leaving expires it) |
+| [**multiplayerControllerSetTrackSource**](ApiApi.md#multiplayercontrollersettracksource) | **POST** /multiplayer/rooms/{id}/track-source | Choose where the room draws its songs from |
 | [**multiplayerControllerStartGame**](ApiApi.md#multiplayercontrollerstartgame) | **POST** /multiplayer/rooms/{id}/start | Start the game (host only) |
 | [**multiplayerControllerSubmitGuess**](ApiApi.md#multiplayercontrollersubmitguess) | **POST** /multiplayer/rooms/{id}/guess | Submit a guess for the current round |
 | [**multiplayerControllerToggleReady**](ApiApi.md#multiplayercontrollertoggleready) | **POST** /multiplayer/rooms/{id}/ready | Toggle ready status for current player |
@@ -1913,7 +1915,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // string | Room ID
+    // string
     id: id_example,
   } satisfies MultiplayerControllerGetRoomStateRequest;
 
@@ -1934,7 +1936,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **id** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1954,6 +1956,7 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** |  |  -  |
+| **403** | You are not in this room |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -1982,7 +1985,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // string | Room ID
+    // string
     id: id_example,
   } satisfies MultiplayerControllerGetRoundStateRequest;
 
@@ -2003,7 +2006,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **id** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2051,7 +2054,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // string | Room ID
+    // string
     id: id_example,
   } satisfies MultiplayerControllerGetScoreboardRequest;
 
@@ -2072,7 +2075,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **id** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2120,7 +2123,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // string | Room invite code
+    // string
     code: code_example,
   } satisfies MultiplayerControllerJoinRoomRequest;
 
@@ -2141,7 +2144,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **code** | `string` | Room invite code | [Defaults to `undefined`] |
+| **code** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2161,6 +2164,79 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerKickPlayer
+
+> RoomDto multiplayerControllerKickPlayer(id, kickPlayerDto)
+
+Remove a player from the room (host only)
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerKickPlayerRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string
+    id: id_example,
+    // KickPlayerDto
+    kickPlayerDto: ...,
+  } satisfies MultiplayerControllerKickPlayerRequest;
+
+  try {
+    const data = await api.multiplayerControllerKickPlayer(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` |  | [Defaults to `undefined`] |
+| **kickPlayerDto** | [KickPlayerDto](KickPlayerDto.md) |  | |
+
+### Return type
+
+[**RoomDto**](RoomDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+| **403** | Only the host can remove players |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -2189,7 +2265,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // string | Room ID
+    // string
     id: id_example,
   } satisfies MultiplayerControllerLeaveRoomRequest;
 
@@ -2210,7 +2286,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **id** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2230,6 +2306,78 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerSetTrackSource
+
+> RoomDto multiplayerControllerSetTrackSource(id, setTrackSourceDto)
+
+Choose where the room draws its songs from
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerSetTrackSourceRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string
+    id: id_example,
+    // SetTrackSourceDto
+    setTrackSourceDto: ...,
+  } satisfies MultiplayerControllerSetTrackSourceRequest;
+
+  try {
+    const data = await api.multiplayerControllerSetTrackSource(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` |  | [Defaults to `undefined`] |
+| **setTrackSourceDto** | [SetTrackSourceDto](SetTrackSourceDto.md) |  | |
+
+### Return type
+
+[**RoomDto**](RoomDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -2258,7 +2406,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // string | Room ID
+    // string
     id: id_example,
   } satisfies MultiplayerControllerStartGameRequest;
 
@@ -2279,7 +2427,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **id** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2327,7 +2475,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // string | Room ID
+    // string
     id: id_example,
     // GuessDto
     guessDto: ...,
@@ -2350,7 +2498,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **id** | `string` |  | [Defaults to `undefined`] |
 | **guessDto** | [GuessDto](GuessDto.md) |  | |
 
 ### Return type
@@ -2400,7 +2548,7 @@ async function example() {
   const api = new ApiApi(config);
 
   const body = {
-    // string | Room ID
+    // string
     id: id_example,
   } satisfies MultiplayerControllerToggleReadyRequest;
 
@@ -2421,7 +2569,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **id** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 

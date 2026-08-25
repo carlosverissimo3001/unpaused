@@ -28,6 +28,7 @@ import type {
   GauntletRunStateDto,
   GuessDto,
   GuessResultDto,
+  KickPlayerDto,
   MultiplayerRoundStateDto,
   PatchUserDto,
   PersonalBestDto,
@@ -38,6 +39,7 @@ import type {
   QuizResultDto,
   RoomDto,
   ScoreboardDto,
+  SetTrackSourceDto,
   ShareResultDto,
   StartGameDto,
   StartRunDto,
@@ -80,6 +82,8 @@ import {
     GuessDtoToJSON,
     GuessResultDtoFromJSON,
     GuessResultDtoToJSON,
+    KickPlayerDtoFromJSON,
+    KickPlayerDtoToJSON,
     MultiplayerRoundStateDtoFromJSON,
     MultiplayerRoundStateDtoToJSON,
     PatchUserDtoFromJSON,
@@ -100,6 +104,8 @@ import {
     RoomDtoToJSON,
     ScoreboardDtoFromJSON,
     ScoreboardDtoToJSON,
+    SetTrackSourceDtoFromJSON,
+    SetTrackSourceDtoToJSON,
     ShareResultDtoFromJSON,
     ShareResultDtoToJSON,
     StartGameDtoFromJSON,
@@ -239,8 +245,18 @@ export interface MultiplayerControllerJoinRoomRequest {
     code: string;
 }
 
+export interface MultiplayerControllerKickPlayerRequest {
+    id: string;
+    kickPlayerDto: KickPlayerDto;
+}
+
 export interface MultiplayerControllerLeaveRoomRequest {
     id: string;
+}
+
+export interface MultiplayerControllerSetTrackSourceRequest {
+    id: string;
+    setTrackSourceDto: SetTrackSourceDto;
 }
 
 export interface MultiplayerControllerStartGameRequest {
@@ -1476,6 +1492,53 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Remove a player from the room (host only)
+     */
+    async multiplayerControllerKickPlayerRaw(requestParameters: MultiplayerControllerKickPlayerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoomDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerKickPlayer().'
+            );
+        }
+
+        if (requestParameters['kickPlayerDto'] == null) {
+            throw new runtime.RequiredError(
+                'kickPlayerDto',
+                'Required parameter "kickPlayerDto" was null or undefined when calling multiplayerControllerKickPlayer().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/multiplayer/rooms/{id}/kick`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: KickPlayerDtoToJSON(requestParameters['kickPlayerDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RoomDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Remove a player from the room (host only)
+     */
+    async multiplayerControllerKickPlayer(requestParameters: MultiplayerControllerKickPlayerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoomDto> {
+        const response = await this.multiplayerControllerKickPlayerRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Leave a room (host leaving expires it)
      */
     async multiplayerControllerLeaveRoomRaw(requestParameters: MultiplayerControllerLeaveRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -1509,6 +1572,53 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async multiplayerControllerLeaveRoom(requestParameters: MultiplayerControllerLeaveRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.multiplayerControllerLeaveRoomRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Choose where the room draws its songs from
+     */
+    async multiplayerControllerSetTrackSourceRaw(requestParameters: MultiplayerControllerSetTrackSourceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoomDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerSetTrackSource().'
+            );
+        }
+
+        if (requestParameters['setTrackSourceDto'] == null) {
+            throw new runtime.RequiredError(
+                'setTrackSourceDto',
+                'Required parameter "setTrackSourceDto" was null or undefined when calling multiplayerControllerSetTrackSource().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/multiplayer/rooms/{id}/track-source`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SetTrackSourceDtoToJSON(requestParameters['setTrackSourceDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RoomDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Choose where the room draws its songs from
+     */
+    async multiplayerControllerSetTrackSource(requestParameters: MultiplayerControllerSetTrackSourceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoomDto> {
+        const response = await this.multiplayerControllerSetTrackSourceRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

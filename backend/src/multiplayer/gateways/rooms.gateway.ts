@@ -1,4 +1,10 @@
-import { Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+  forwardRef,
+} from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -12,12 +18,14 @@ import { Server, Socket } from 'socket.io';
 import { parse as parseCookie } from 'cookie';
 import { AuthService } from '../../auth/services/auth.service';
 import { SessionService } from '../../auth/services/session.service';
-import { hasCredential } from '../../auth/utils/credentials';
 import { RoomRepository } from '../repositories/room.repository';
 import { RoomPresenceService } from '../services/room-presence.service';
+import { MultiplayerGameService } from '../services/multiplayer-game.service';
+import { RoomService } from '../services/room.service';
 import { RoomDto } from '../dto/room.dto';
 import {
   ROOM_HOST_GONE_GRACE_MS,
+  ROOM_PLAYER_GONE_GRACE_MS,
   ROOM_SWEEP_INTERVAL_MS,
   SESSION_COOKIE_NAME,
 } from '../../consts';
@@ -57,6 +65,12 @@ export class RoomsGateway
     private readonly authService: AuthService,
     private readonly roomRepository: RoomRepository,
     private readonly presence: RoomPresenceService,
+    // The game service emits through this gateway, so the two refer to each
+    // other; forwardRef is what lets Nest build the pair.
+    @Inject(forwardRef(() => MultiplayerGameService))
+    private readonly gameService: MultiplayerGameService,
+    @Inject(forwardRef(() => RoomService))
+    private readonly roomService: RoomService,
   ) {}
 
   onModuleInit(): void {
@@ -88,15 +102,9 @@ export class RoomsGateway
         return;
       }
 
-      // Validate session exists
-      const session = await this.sessionService.getSession(sessionId);
-
-      // The HTTP routes are closed to anonymous players, so the socket is too.
-      // CAR-179 opens both together.
-      if (!hasCredential(session)) {
-        client.disconnect();
-        return;
-      }
+      // Validate session exists. Any player with a session may hold a socket,
+      // account or not — room membership is what the joinRoom handler checks.
+      await this.sessionService.getSession(sessionId);
 
       // Resolve user
       const user = await this.authService.getUserBySessionId(sessionId);
@@ -119,6 +127,14 @@ export class RoomsGateway
       for (const roomId of roomIds) {
         await this.presence.leave(roomId, userId);
         await this.emitPresenceUpdate(roomId);
+
+        // A refresh looks exactly like this, so the seat is only forfeit once
+        // enough time has passed that it cannot have been one.
+        await this.presence.startPlayerGrace(
+          roomId,
+          userId,
+          Date.now() + ROOM_PLAYER_GONE_GRACE_MS,
+        );
 
         try {
           const room = await this.roomRepository.findById(roomId);
@@ -169,6 +185,7 @@ export class RoomsGateway
     (client.data.roomIds as Set<string>).add(payload.roomId);
 
     await this.presence.join(payload.roomId, userId);
+    await this.presence.cancelPlayerGrace(payload.roomId, userId);
     await this.emitPresenceUpdate(payload.roomId);
 
     // Cancel a pending host-disconnect countdown if the host is reconnecting
@@ -248,6 +265,19 @@ export class RoomsGateway
         err instanceof Error ? err.stack : String(err),
       );
     }
+
+    try {
+      const seats = await this.presence.claimForfeitedSeats();
+      for (const { roomId, userId } of seats) {
+        await this.roomService.releaseSeat(roomId, userId);
+        this.logger.debug(`Released seat of ${userId} in room ${roomId}`);
+      }
+    } catch (err) {
+      this.logger.error(
+        'seat sweep failed',
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   private async emitPresenceUpdate(
@@ -258,6 +288,10 @@ export class RoomsGateway
       const onlineUserIds = await this.presence.onlineUserIds(roomId);
 
       const signature = [...onlineUserIds].sort().join(',');
+      const previous = this.lastBroadcast.get(roomId);
+      const shrank =
+        previous !== undefined &&
+        previous.split(',').length > onlineUserIds.length;
       if (onlyIfChanged && this.lastBroadcast.get(roomId) === signature) {
         return;
       }
@@ -269,9 +303,26 @@ export class RoomsGateway
       }
 
       this.server.to(roomId).emit('presenceUpdate', { roomId, onlineUserIds });
+
+      // Someone left: whoever is still here may now be the last to finish.
+      if (shrank) {
+        await this.gameService.reconcileCompletion(roomId);
+      }
     } catch (err) {
       this.logger.error(
         `emitPresenceUpdate failed for room ${roomId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+  }
+
+  /** Tells one player they are out, so their tab can act on it. */
+  emitPlayerRemoved(roomId: string, userId: string): void {
+    try {
+      this.server.to(roomId).emit('playerRemoved', { roomId, userId });
+    } catch (err) {
+      this.logger.error(
+        `emitPlayerRemoved failed for room ${roomId}`,
         err instanceof Error ? err.stack : String(err),
       );
     }

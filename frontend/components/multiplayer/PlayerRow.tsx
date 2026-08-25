@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Crown } from 'lucide-react';
+import { Crown, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { RoomPlayerDto } from '@/sdk';
 
@@ -10,10 +10,13 @@ type PlayerRowProps = {
   index: number;
   isReady?: boolean;
   isOnline?: boolean;
+  /** Present only when the viewer is the host and the room has not started. */
+  onKick?: () => void;
 };
 
 function PlayerRow(props: PlayerRowProps) {
-  const { player, isHost, isCurrentUser, index, isReady, isOnline } = props;
+  const { player, isHost, isCurrentUser, index, isReady, isOnline, onKick } =
+    props;
   return (
     <motion.div
       layout
@@ -80,6 +83,17 @@ function PlayerRow(props: PlayerRowProps) {
         <span className="shrink-0 text-[10px] uppercase tracking-wider font-bold text-yellow-500/80 px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/20">
           Host
         </span>
+      )}
+
+      {onKick && (
+        <button
+          type="button"
+          onClick={onKick}
+          aria-label={`Remove ${player.displayName} from the room`}
+          className="shrink-0 rounded-full p-1 text-fg/30 transition-colors hover:bg-red-500/10 hover:text-red-400"
+        >
+          <X className="h-4 w-4" />
+        </button>
       )}
     </motion.div>
   );

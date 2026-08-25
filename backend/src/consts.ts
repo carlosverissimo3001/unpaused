@@ -105,4 +105,12 @@ export const ROOM_PRESENCE_TTL = 5 * 60;
 
 /** Grace for a page refresh before the room is told its host is gone. */
 export const ROOM_HOST_GONE_GRACE_MS = 5 * 1000;
+
+/**
+ * Sorted set of "roomId:userId" -> when the seat is forfeit. Closing a tab and
+ * refreshing look identical to the server, so a seat is only given up after
+ * long enough that it cannot have been a refresh.
+ */
+export const ROOM_PLAYER_GONE_KEY = 'room:player-gone';
+export const ROOM_PLAYER_GONE_GRACE_MS = 20 * 1000;
 export const ROOM_SWEEP_INTERVAL_MS = 2 * 1000;

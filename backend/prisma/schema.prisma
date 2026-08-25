@@ -201,9 +201,9 @@ model GauntletRun {
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  score      Int                 @default(0)
-  status     GauntletRunStatus   @default(PLAYING)
-  endReason  GauntletEndReason?  @map("end_reason")
+  score      Int                @default(0)
+  status     GauntletRunStatus  @default(PLAYING)
+  endReason  GauntletEndReason? @map("end_reason")
   difficulty GauntletDifficulty
 
   trackIds String[] @default([]) @map("track_ids")
@@ -270,6 +270,13 @@ model StreakFreezeUsage {
   @@map("streak_freeze_usages")
 }
 
+/// Where a room's songs come from. The host picks; it is not inferred from who
+/// is in the room, so it cannot change under them when someone joins.
+enum TrackSource {
+  POOL
+  LIBRARIES
+}
+
 enum RoomStatus {
   WAITING
   PLAYING
@@ -283,8 +290,9 @@ model MultiplayerRoom {
   hostId     String @map("host_id")
   host       User   @relation("hostedRooms", fields: [hostId], references: [id], onDelete: Cascade)
 
-  roundCount Int        @map("round_count")
-  status     RoomStatus @default(WAITING)
+  roundCount  Int         @map("round_count")
+  status      RoomStatus  @default(WAITING)
+  trackSource TrackSource @default(POOL) @map("track_source")
 
   trackIds String[] @default([]) @map("track_ids")
 

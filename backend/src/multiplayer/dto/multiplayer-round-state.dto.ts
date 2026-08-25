@@ -19,6 +19,13 @@ export class MultiplayerRoundStateDto {
   @ApiProperty({ description: 'Snippet duration for the current guess' })
   snippetDuration: number;
 
+  @ApiProperty({
+    description:
+      'Snippet length for every guess, so the progress bar can scale to them',
+    type: [Number],
+  })
+  snippetSteps: number[];
+
   @ApiProperty({ description: 'Maximum number of guesses per song' })
   maxGuessesPerSong: number;
 

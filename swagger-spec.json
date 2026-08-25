@@ -1107,7 +1107,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1123,6 +1122,9 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "You are not in this room"
           }
         },
         "security": [
@@ -1144,7 +1146,6 @@
             "name": "code",
             "required": true,
             "in": "path",
-            "description": "Room invite code",
             "schema": {
               "type": "string"
             }
@@ -1173,6 +1174,101 @@
         ]
       }
     },
+    "/multiplayer/rooms/{id}/track-source": {
+      "post": {
+        "operationId": "MultiplayerController_setTrackSource",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetTrackSourceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Choose where the room draws its songs from",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/multiplayer/rooms/{id}/kick": {
+      "post": {
+        "operationId": "MultiplayerController_kickPlayer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KickPlayerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the host can remove players"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Remove a player from the room (host only)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/multiplayer/rooms/{id}/ready": {
       "post": {
         "operationId": "MultiplayerController_toggleReady",
@@ -1181,7 +1277,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1218,7 +1313,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1255,7 +1349,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1285,7 +1378,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1322,7 +1414,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1372,7 +1463,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -3173,6 +3263,14 @@
               "EXPIRED"
             ]
           },
+          "trackSource": {
+            "type": "string",
+            "enum": [
+              "POOL",
+              "LIBRARIES"
+            ],
+            "description": "Where this room draws its songs from"
+          },
           "players": {
             "type": "array",
             "items": {
@@ -3198,8 +3296,37 @@
           "hostId",
           "roundCount",
           "status",
+          "trackSource",
           "players",
           "createdAt"
+        ]
+      },
+      "SetTrackSourceDto": {
+        "type": "object",
+        "properties": {
+          "trackSource": {
+            "type": "string",
+            "enum": [
+              "POOL",
+              "LIBRARIES"
+            ],
+            "description": "Where the room should draw its songs from"
+          }
+        },
+        "required": [
+          "trackSource"
+        ]
+      },
+      "KickPlayerDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "The player to remove from the room"
+          }
+        },
+        "required": [
+          "userId"
         ]
       },
       "MultiplayerRoundStateDto": {
@@ -3224,6 +3351,13 @@
           "snippetDuration": {
             "type": "number",
             "description": "Snippet duration for the current guess"
+          },
+          "snippetSteps": {
+            "description": "Snippet length for every guess, so the progress bar can scale to them",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           },
           "maxGuessesPerSong": {
             "type": "number",
@@ -3263,6 +3397,7 @@
           "totalRounds",
           "currentGuess",
           "snippetDuration",
+          "snippetSteps",
           "maxGuessesPerSong",
           "status",
           "guesses",

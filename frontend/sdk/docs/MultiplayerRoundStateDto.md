@@ -11,6 +11,7 @@ Name | Type
 `totalRounds` | number
 `currentGuess` | number
 `snippetDuration` | number
+`snippetSteps` | Array&lt;number&gt;
 `maxGuessesPerSong` | number
 `status` | string
 `guesses` | [Array&lt;GuessHistoryDto&gt;](GuessHistoryDto.md)
@@ -29,6 +30,7 @@ const example = {
   "totalRounds": null,
   "currentGuess": null,
   "snippetDuration": null,
+  "snippetSteps": null,
   "maxGuessesPerSong": null,
   "status": null,
   "guesses": null,

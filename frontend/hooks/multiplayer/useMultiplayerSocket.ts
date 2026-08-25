@@ -23,11 +23,14 @@ interface UseMultiplayerSocketOptions {
 export function useMultiplayerSocket(
   roomId: string | undefined,
   options?: UseMultiplayerSocketOptions,
+  currentUserId?: string,
 ) {
   const queryClient = useQueryClient();
   const [connected, setConnected] = useState(false);
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
   const [hostDisconnected, setHostDisconnected] = useState(false);
+  /** Set when the host removes you, so the page can stop showing the room. */
+  const [removed, setRemoved] = useState(false);
 
   const onPlayerRoundCompleteRef = useRef(options?.onPlayerRoundComplete);
   useEffect(() => {
@@ -95,6 +98,10 @@ export function useMultiplayerSocket(
       },
     );
 
+    socket.on('playerRemoved', (data: { userId: string }) => {
+      if (data.userId === currentUserId) setRemoved(true);
+    });
+
     socket.on('hostDisconnected', () => setHostDisconnected(true));
     socket.on('hostReconnected', () => setHostDisconnected(false));
 
@@ -104,8 +111,9 @@ export function useMultiplayerSocket(
       setConnected(false);
       setOnlineUserIds([]);
       setHostDisconnected(false);
+      setRemoved(false);
     };
-  }, [roomId, queryClient]);
+  }, [roomId, queryClient, currentUserId]);
 
-  return { connected, onlineUserIds, hostDisconnected };
+  return { connected, onlineUserIds, hostDisconnected, removed };
 }

@@ -72,9 +72,8 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
           aria-modal="true"
           aria-labelledby={titleId}
         >
-          {/* Backdrop - Unified to backdrop-blur-md */}
           <motion.div
-            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            className="absolute inset-0 bg-black/85"
             onClick={onClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -102,7 +101,7 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
               <button
                 onClick={onClose}
                 aria-label="Close modal"
-                className="absolute top-5 right-5 p-2 rounded-full text-fg/40 hover:text-fg hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
+                className="absolute top-5 right-5 p-2 rounded-full text-fg/40 hover:text-fg hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -148,7 +147,7 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
                           role="radio"
                           aria-checked={isSelected}
                           onClick={() => setRoundCount(option.value)}
-                          className={`flex flex-col items-center gap-1 rounded-2xl border py-4 transition-all active:scale-95 ${
+                          className={`flex flex-col items-center gap-1 rounded-2xl border py-4 transition-[background-color,border-color,transform] active:scale-95 ${
                             isSelected
                               ? 'border-purple-500/50 bg-purple-500/10 text-fg'
                               : 'border-white/5 bg-white/5 text-fg/40 hover:border-white/10'
@@ -186,7 +185,7 @@ export function CreateRoomModal({ open, onClose }: CreateRoomModalProps) {
                   <button
                     onClick={handleCreate}
                     disabled={createRoom.isPending}
-                    className="w-full flex items-center justify-center gap-2 rounded-2xl bg-purple-500 px-6 py-5 text-base font-black text-white hover:bg-purple-400 active:scale-[0.98] disabled:opacity-20 transition-all shadow-[0_8px_25px_rgba(168,85,247,0.25)]"
+                    className="w-full flex items-center justify-center gap-2 rounded-2xl bg-purple-500 px-6 py-5 text-base font-black text-white hover:bg-purple-400 active:scale-[0.98] disabled:opacity-20 transition-[background-color,transform,opacity] shadow-[0_8px_25px_rgba(168,85,247,0.25)]"
                   >
                     {createRoom.isPending ? (
                       <Loader2 className="w-6 h-6 animate-spin" />
