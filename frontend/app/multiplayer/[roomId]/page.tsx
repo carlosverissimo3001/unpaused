@@ -69,9 +69,7 @@ export default function RoomLobbyPage() {
   // Find current user's player entry to determine host status
   const currentPlayer = useMemo(() => {
     if (!room || !user) return null;
-    return (
-      room.players.find((p) => p.userId === user.userId) ?? null
-    );
+    return room.players.find((p) => p.userId === user.userId) ?? null;
   }, [room, user]);
 
   const isHost = currentPlayer ? currentPlayer.userId === room?.hostId : false;

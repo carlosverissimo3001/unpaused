@@ -222,7 +222,9 @@ describe('AuthService', () => {
       mockUserRepository.findBySpotifyUserId.mockResolvedValue(
         makeUser({ id: EXISTING_ID }),
       );
-      mockUserRepository.upsert.mockResolvedValue(makeUser({ id: EXISTING_ID }));
+      mockUserRepository.upsert.mockResolvedValue(
+        makeUser({ id: EXISTING_ID }),
+      );
 
       await service.handleCallback('code', 'state', 'session-guest');
 

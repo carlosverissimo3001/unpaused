@@ -12,9 +12,7 @@ describe('generateHandle', () => {
   });
 
   it('does not always return the same handle', () => {
-    const handles = new Set(
-      Array.from({ length: 50 }, () => generateHandle()),
-    );
+    const handles = new Set(Array.from({ length: 50 }, () => generateHandle()));
 
     expect(handles.size).toBeGreaterThan(1);
   });
