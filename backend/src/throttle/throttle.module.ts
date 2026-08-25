@@ -10,6 +10,7 @@ import {
   THROTTLE_SEARCH,
   THROTTLE_TTL,
   THROTTLE_START,
+  THROTTLE_CREDENTIALS,
   THROTTLE_DEFAULT_LIMIT,
 } from './throttle.constants';
 
@@ -37,6 +38,11 @@ import {
           },
           {
             name: THROTTLE_START,
+            ttl: THROTTLE_TTL,
+            limit: THROTTLE_DEFAULT_LIMIT,
+          },
+          {
+            name: THROTTLE_CREDENTIALS,
             ttl: THROTTLE_TTL,
             limit: THROTTLE_DEFAULT_LIMIT,
           },

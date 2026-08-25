@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useSiteUnlock } from '@/hooks/auth/useSiteUnlock';
 import { useEnsureSession } from '@/hooks/auth/useEnsureSession';
+import { CredentialsForm } from '@/components/auth/CredentialsForm';
 
 function InviteForm() {
   const [secret, setSecret] = useState('');
@@ -93,6 +94,7 @@ function SpotifyButton({ canSignIn }: { canSignIn: boolean }) {
 
 function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
   const [showInvite, setShowInvite] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
   // useMe's cache is updated by the mutation, so the home page re-renders
   // into the signed-in shell without a navigation.
   const ensureSession = useEnsureSession();
@@ -144,6 +146,22 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
               <span className="text-xs text-fg/45">Play your own library</span>
             </div>
           </div>
+
+          {/* Without this an account made on another device has no way back in
+              from here: both buttons above start something new. */}
+          {showSignIn ? (
+            <div className="w-full max-w-xs">
+              <CredentialsForm initialMode="login" />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowSignIn(true)}
+              className="cursor-pointer text-xs text-fg/40 underline underline-offset-4 hover:text-fg/60 transition-colors"
+            >
+              Already have an account? Sign in
+            </button>
+          )}
 
           {!canSignIn &&
             (showInvite ? (

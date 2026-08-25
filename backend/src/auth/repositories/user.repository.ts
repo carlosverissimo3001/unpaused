@@ -105,6 +105,37 @@ export class UserRepository {
     return this.fromPrisma(user);
   }
 
+  async findByEmail(email: string): Promise<UserEntity | null> {
+    const user = await this.prismaService.user.findUnique({
+      where: { email },
+    });
+    return user ? this.fromPrisma(user) : null;
+  }
+
+  /** Turns an existing row into an account, keeping everything it has played. */
+  async attachPassword(
+    userId: string,
+    email: string,
+    passwordHash: string,
+  ): Promise<UserEntity> {
+    const user = await this.prismaService.user.update({
+      where: { id: userId },
+      data: { email, passwordHash },
+    });
+    return this.fromPrisma(user);
+  }
+
+  async createWithPassword(
+    email: string,
+    passwordHash: string,
+    displayName: string,
+  ): Promise<UserEntity> {
+    const user = await this.prismaService.user.create({
+      data: { email, passwordHash, displayName },
+    });
+    return this.fromPrisma(user);
+  }
+
   async attachSpotify(
     userId: string,
     data: AttachSpotifyDto,
@@ -138,6 +169,8 @@ export class UserRepository {
     return {
       ...user,
       spotifyUserId: user.spotifyUserId ?? undefined,
+      email: user.email ?? undefined,
+      passwordHash: user.passwordHash ?? undefined,
       avatarUrl: user.avatarUrl ?? undefined,
       customAvatarUrl: user.customAvatarUrl ?? undefined,
       country: user.country ?? undefined,

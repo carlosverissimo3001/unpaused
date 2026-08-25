@@ -29,6 +29,7 @@ import type {
   GuessDto,
   GuessResultDto,
   KickPlayerDto,
+  LoginDto,
   MultiplayerRoundStateDto,
   PatchUserDto,
   PersonalBestDto,
@@ -41,6 +42,7 @@ import type {
   ScoreboardDto,
   SetTrackSourceDto,
   ShareResultDto,
+  SignupDto,
   StartGameDto,
   StartRunDto,
   StreakQuestionDto,
@@ -84,6 +86,8 @@ import {
     GuessResultDtoToJSON,
     KickPlayerDtoFromJSON,
     KickPlayerDtoToJSON,
+    LoginDtoFromJSON,
+    LoginDtoToJSON,
     MultiplayerRoundStateDtoFromJSON,
     MultiplayerRoundStateDtoToJSON,
     PatchUserDtoFromJSON,
@@ -108,6 +112,8 @@ import {
     SetTrackSourceDtoToJSON,
     ShareResultDtoFromJSON,
     ShareResultDtoToJSON,
+    SignupDtoFromJSON,
+    SignupDtoToJSON,
     StartGameDtoFromJSON,
     StartGameDtoToJSON,
     StartRunDtoFromJSON,
@@ -159,6 +165,14 @@ export interface AuthControllerCallbackRequest {
     state: string;
     error?: object;
     ubi?: object;
+}
+
+export interface AuthControllerLoginWithPasswordRequest {
+    loginDto: LoginDto;
+}
+
+export interface AuthControllerSignupRequest {
+    signupDto: SignupDto;
 }
 
 export interface AuthControllerUpdateMeRequest {
@@ -652,6 +666,45 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Sign in with an email and password
+     */
+    async authControllerLoginWithPasswordRaw(requestParameters: AuthControllerLoginWithPasswordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthMeResponseDto>> {
+        if (requestParameters['loginDto'] == null) {
+            throw new runtime.RequiredError(
+                'loginDto',
+                'Required parameter "loginDto" was null or undefined when calling authControllerLoginWithPassword().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/auth/login`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LoginDtoToJSON(requestParameters['loginDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthMeResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Sign in with an email and password
+     */
+    async authControllerLoginWithPassword(requestParameters: AuthControllerLoginWithPasswordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthMeResponseDto> {
+        const response = await this.authControllerLoginWithPasswordRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Logout and clear session
      */
     async authControllerLogoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -705,6 +758,45 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async authControllerMe(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthMeResponseDto> {
         const response = await this.authControllerMeRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Create an account, keeping any guest progress
+     */
+    async authControllerSignupRaw(requestParameters: AuthControllerSignupRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthMeResponseDto>> {
+        if (requestParameters['signupDto'] == null) {
+            throw new runtime.RequiredError(
+                'signupDto',
+                'Required parameter "signupDto" was null or undefined when calling authControllerSignup().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/auth/signup`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SignupDtoToJSON(requestParameters['signupDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthMeResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Create an account, keeping any guest progress
+     */
+    async authControllerSignup(requestParameters: AuthControllerSignupRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthMeResponseDto> {
+        const response = await this.authControllerSignupRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

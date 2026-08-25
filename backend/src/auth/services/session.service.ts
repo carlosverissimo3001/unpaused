@@ -11,6 +11,7 @@ export interface CreateSessionParams {
   displayName: string;
   isTrusted: boolean;
   spotifyUserId?: string;
+  email?: string;
 }
 
 @Injectable()
@@ -75,6 +76,7 @@ export class SessionService {
       sessionId,
       userId: params.userId,
       spotifyUserId: params.spotifyUserId,
+      email: params.email,
       displayName: params.displayName,
       isTrusted: params.isTrusted,
       createdAt: Date.now(),

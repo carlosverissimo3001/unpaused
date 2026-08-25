@@ -42,3 +42,12 @@ export const THROTTLE_AVATAR = 'avatar';
  * can mint a session now, and every upload spends third-party quota.
  */
 export const THROTTLE_AVATAR_LIMIT = 5;
+
+/** Named throttler for signup and login */
+export const THROTTLE_CREDENTIALS = 'credentials';
+
+/**
+ * Per IP and deliberately tight: these are the only routes where guessing a
+ * value repeatedly is worth anything.
+ */
+export const THROTTLE_CREDENTIALS_LIMIT = 10;

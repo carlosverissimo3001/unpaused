@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   UnauthorizedException,
@@ -13,6 +14,8 @@ import { LoginStartResult } from '../types';
 import { UserRepository } from '../repositories/user.repository';
 import { UserEntity } from '../entities/user.entity';
 import { hasCredential } from '../utils/credentials';
+import { hashPassword, verifyPassword } from '../utils/password';
+import { generateHandle } from '../utils/handle-generator';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
@@ -127,6 +130,93 @@ export class AuthService {
     return sessionId;
   }
 
+  /**
+   * Signing up turns the row the player already has into an account, so the
+   * rounds they played as a guest are the rounds the account starts with.
+   */
+  async signup(
+    email: string,
+    password: string,
+    currentSessionId?: string,
+  ): Promise<string> {
+    if (await this.userRepository.findByEmail(email)) {
+      throw new ConflictException('That email is already registered');
+    }
+
+    const currentUserId = await this.resolveCurrentUserId(currentSessionId);
+    const current = currentUserId
+      ? await this.userRepository.findById(currentUserId)
+      : null;
+
+    // Same rule as the Spotify callback: only a row with nothing attached can
+    // be claimed. On a shared browser the session may belong to someone else.
+    const claimable = current && !hasCredential(current) ? current : null;
+    const passwordHash = await hashPassword(password);
+
+    const user = claimable
+      ? await this.userRepository.attachPassword(
+          claimable.id,
+          email,
+          passwordHash,
+        )
+      : await this.userRepository.createWithPassword(
+          email,
+          passwordHash,
+          generateHandle(),
+        );
+
+    return this.sessionService.createSession({
+      userId: user.id,
+      displayName: user.displayName,
+      isTrusted: user.isTrusted,
+      spotifyUserId: user.spotifyUserId,
+      email: user.email,
+    });
+  }
+
+  /**
+   * Logging in from a guest session brings that guest's progress with it, the
+   * same way the Spotify callback does.
+   */
+  async login(
+    email: string,
+    password: string,
+    currentSessionId?: string,
+  ): Promise<string> {
+    const user = await this.userRepository.findByEmail(email);
+
+    // One message for both halves, so this cannot be used to find out which
+    // addresses have accounts.
+    const failed = new UnauthorizedException('Email or password is incorrect');
+    if (!user?.passwordHash) {
+      throw failed;
+    }
+    if (!(await verifyPassword(password, user.passwordHash))) {
+      throw failed;
+    }
+
+    const currentUserId = await this.resolveCurrentUserId(currentSessionId);
+    const current = currentUserId
+      ? await this.userRepository.findById(currentUserId)
+      : null;
+    const claimable = current && !hasCredential(current) ? current : null;
+
+    if (claimable && claimable.id !== user.id) {
+      await this.accountMergeService.merge(claimable.id, user.id);
+      if (currentSessionId) {
+        await this.sessionService.deleteSession(currentSessionId);
+      }
+    }
+
+    return this.sessionService.createSession({
+      userId: user.id,
+      displayName: user.displayName,
+      isTrusted: user.isTrusted,
+      spotifyUserId: user.spotifyUserId,
+      email: user.email,
+    });
+  }
+
   /** A stale cookie is not an error here: it just means there is nothing to merge. */
   private async resolveCurrentUserId(
     sessionId?: string,
@@ -166,7 +256,10 @@ export class AuthService {
     return {
       userId: user.id,
       spotifyUserId: session.spotifyUserId,
+      // Two different questions: one asks whether we can read their library,
+      // the other whether their progress survives this browser.
       hasLinkedAccount: !!user.spotifyUserId,
+      hasAccount: hasCredential(user),
       displayName: session.displayName,
       isTrusted: user.isTrusted,
       isAdmin: user.isAdmin,

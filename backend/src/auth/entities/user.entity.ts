@@ -10,6 +10,14 @@ export class UserEntity {
   })
   spotifyUserId?: string;
 
+  @ApiPropertyOptional({
+    description: 'Email address, when the account was created with one',
+  })
+  email?: string;
+
+  /** Never leaves the backend; excluded from every response DTO. */
+  passwordHash?: string;
+
   @ApiProperty({ description: 'John Doe' })
   displayName: string;
 

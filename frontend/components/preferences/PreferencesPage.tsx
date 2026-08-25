@@ -182,7 +182,7 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
 
         {/* The one thing on this page that is not a preference: it decides
             whether anything else here survives losing the device. */}
-        {!user?.hasLinkedAccount && (
+        {!user?.hasAccount && (
           <div className="px-6 py-5 border-b border-fg/10">
             <LinkAccountSection canSignIn={canSignIn} />
           </div>

@@ -16,6 +16,9 @@ export function AvatarSection() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // Nothing to take a photo from without a linked library, so the card is not
+  // offered rather than shown as an empty choice.
+  const hasSpotify = !!user?.hasLinkedAccount;
   const avatarSource = user?.avatarSource ?? AvatarSource.Spotify;
   const initials = user?.displayName?.[0]?.toUpperCase();
 
@@ -41,56 +44,60 @@ export function AvatarSection() {
         Profile photo
       </p>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div
+        className={`grid gap-3 ${hasSpotify ? 'grid-cols-2' : 'grid-cols-1'}`}
+      >
         {/* ── Spotify card ── */}
-        <button
-          onClick={() => handleSelectSource(AvatarSource.Spotify)}
-          disabled={isUploading || isSwitching}
-          className={`group relative flex flex-col items-center gap-3 py-5 px-3 rounded-2xl border transition-all duration-200 active:scale-[0.97] disabled:pointer-events-none ${
-            spotifyActive
-              ? 'border-[#1DB954]/40 bg-[#1DB954]/[0.07]'
-              : 'border-fg/[0.08] bg-fg/[0.03] hover:border-fg/20'
-          }`}
-        >
-          <div
-            className={`relative w-[72px] h-[72px] rounded-full overflow-hidden transition-all duration-200 ${
+        {hasSpotify && (
+          <button
+            onClick={() => handleSelectSource(AvatarSource.Spotify)}
+            disabled={isUploading || isSwitching}
+            className={`group relative flex flex-col items-center gap-3 py-5 px-3 rounded-2xl border transition-all duration-200 active:scale-[0.97] disabled:pointer-events-none ${
               spotifyActive
-                ? 'ring-2 ring-[#1DB954] ring-offset-2 ring-offset-bg'
-                : 'ring-1 ring-fg/10'
+                ? 'border-[#1DB954]/40 bg-[#1DB954]/[0.07]'
+                : 'border-fg/[0.08] bg-fg/[0.03] hover:border-fg/20'
             }`}
           >
-            {user?.spotifyAvatarUrl ? (
-              <Image
-                src={user.spotifyAvatarUrl}
-                alt="Spotify avatar"
-                fill
-                className="object-cover"
-                sizes="72px"
-              />
-            ) : (
-              <div className="w-full h-full bg-fg/10 flex items-center justify-center text-xl font-black text-fg/40">
-                {initials}
-              </div>
-            )}
-            {isSwitching && !spotifyActive && (
-              <div className="absolute inset-0 bg-bg/70 flex items-center justify-center">
-                <Loader2 className="w-5 h-5 text-[#1DB954] animate-spin" />
-              </div>
-            )}
-          </div>
+            <div
+              className={`relative w-[72px] h-[72px] rounded-full overflow-hidden transition-all duration-200 ${
+                spotifyActive
+                  ? 'ring-2 ring-[#1DB954] ring-offset-2 ring-offset-bg'
+                  : 'ring-1 ring-fg/10'
+              }`}
+            >
+              {user?.spotifyAvatarUrl ? (
+                <Image
+                  src={user.spotifyAvatarUrl}
+                  alt="Spotify avatar"
+                  fill
+                  className="object-cover"
+                  sizes="72px"
+                />
+              ) : (
+                <div className="w-full h-full bg-fg/10 flex items-center justify-center text-xl font-black text-fg/40">
+                  {initials}
+                </div>
+              )}
+              {isSwitching && !spotifyActive && (
+                <div className="absolute inset-0 bg-bg/70 flex items-center justify-center">
+                  <Loader2 className="w-5 h-5 text-[#1DB954] animate-spin" />
+                </div>
+              )}
+            </div>
 
-          <span
-            className={`text-[11px] font-black uppercase tracking-[0.15em] transition-colors ${
-              spotifyActive ? 'text-[#1DB954]' : 'text-fg/35'
-            }`}
-          >
-            Spotify
-          </span>
+            <span
+              className={`text-[11px] font-black uppercase tracking-[0.15em] transition-colors ${
+                spotifyActive ? 'text-[#1DB954]' : 'text-fg/35'
+              }`}
+            >
+              Spotify
+            </span>
 
-          {spotifyActive && (
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#1DB954]" />
-          )}
-        </button>
+            {spotifyActive && (
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#1DB954]" />
+            )}
+          </button>
+        )}
 
         {/* ── Custom card ── */}
         <div

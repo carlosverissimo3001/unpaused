@@ -166,7 +166,7 @@ export function ShuffleGamePage({ canSignIn }: { canSignIn: boolean }) {
             </div>
             {/* Nothing at all while the site is gated: /api/auth/login is
                 blocked without the access cookie, so offering it is a dead end. */}
-            {canSignIn && !user?.hasLinkedAccount && (
+            {canSignIn && !user?.hasAccount && (
               <a href="/api/auth/login" className="shrink-0">
                 <Button
                   variant="outline"

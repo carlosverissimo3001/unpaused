@@ -19,6 +19,13 @@ export class AuthMeResponseDto {
   })
   hasLinkedAccount: boolean;
 
+  @ApiProperty({
+    example: false,
+    description:
+      'Whether this player has any credential at all, Spotify or email. False means an anonymous player whose progress lives on this device.',
+  })
+  hasAccount: boolean;
+
   @ApiProperty({ description: 'John Doe' })
   displayName: string;
 

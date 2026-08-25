@@ -25,11 +25,11 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
 
   const { data: user, isLoading: isLoadingUser } = useMe();
 
-  // Every visitor who starts a round has a session, so a session no longer
-  // means signed in. Only a linked credential does.
-  const hasAccount = !!user?.hasLinkedAccount;
+  // The playlist grid is the one thing a Spotify credential buys, so this
+  // asks for the library rather than for an account.
+  const hasSpotify = !!user?.hasLinkedAccount;
 
-  useTimezoneSync({ enabled: hasAccount });
+  useTimezoneSync({ enabled: hasSpotify });
 
   // Detect post-OAuth pending redirect synchronously on mount so we can
   // render a blank overlay instead of a flash of the homepage while
@@ -47,19 +47,19 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   // Hard navigation: a return url can point at a rewrite the client router
   // cannot resolve locally.
   useEffect(() => {
-    if (hasAccount) {
+    if (hasSpotify) {
       const returnUrl = consumeAuthReturnUrl();
       if (returnUrl) {
         window.location.replace(returnUrl);
       }
     }
-  }, [hasAccount]);
+  }, [hasSpotify]);
   const { data: playlistsResponse, isLoading: isLoadingPlaylists } =
     useMyPlaylists({
       onlyPublic: playlistFilters.visibility === 'public',
       onlyPrivate: playlistFilters.visibility === 'private',
       sortBy: playlistFilters.sortBy,
-      enabled: hasAccount,
+      enabled: hasSpotify,
     });
   const logoutMutation = useLogout();
   const [streakDismissed, setStreakDismissed] = useState(false);
@@ -120,7 +120,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
 
               {/* The playlist grid is the one thing a Spotify credential
                   buys, so it is the one thing a guest's home leaves out. */}
-              {hasAccount && (
+              {hasSpotify && (
                 <>
                   {/* Main Content Header */}
                   <div className="mt-1 sm:mt-2">
