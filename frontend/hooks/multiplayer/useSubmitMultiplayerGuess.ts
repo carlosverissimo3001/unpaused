@@ -37,7 +37,11 @@ export function useSubmitMultiplayerGuess() {
       // Patched, not refetched, exactly as solo play does it. The preview link
       // is re-minted on every fetch, so refetching mid-song hands the player a
       // new url for the same audio and the waveform decodes all over again.
-      if (current) {
+      //
+      // Only while the song is still in play: the answer arrives with the
+      // fetch, so flipping the status here first would mount the reveal card
+      // on a round that has nothing to reveal yet.
+      if (current && !result.gameOver) {
         const played: GuessHistoryDto = {
           trackId: guess.trackId ?? null,
           trackName: guess.trackName ?? null,

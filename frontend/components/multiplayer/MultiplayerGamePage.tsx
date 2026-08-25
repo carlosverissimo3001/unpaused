@@ -29,7 +29,7 @@ import {
   StartGameDtoModeEnum as GameMode,
   MultiplayerRoundStateDto,
 } from '@/sdk';
-import { ChevronRight, Trophy } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { GLASS_STYLE } from '@/lib/styles';
 import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
 import { HostDisconnectedBanner } from './HostDisconnectedBanner';
@@ -196,8 +196,9 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
 
   useWarnOnLeave(!!roundState && !isGameOver);
 
-  // Invalidate stats & history so they're fresh when the user navigates away
-  // and auto-redirect to results after 5 seconds
+  // Invalidate stats & history so they're fresh when the user navigates away.
+  // The last round's reveal is not shown: the results page covers every round,
+  // so lingering on one of them only delays where the player is going.
   useEffect(() => {
     if (!isGameOver) return;
     void queryClient.invalidateQueries({ queryKey: queryKeys.game.allStats });
@@ -206,10 +207,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
       queryKey: queryKeys.game.playedToday,
     });
 
-    const timer = window.setTimeout(() => {
-      router.push(`/multiplayer/${roomId}/results`);
-    }, 5000);
-    return () => window.clearTimeout(timer);
+    router.replace(`/multiplayer/${roomId}/results`);
   }, [isGameOver, queryClient, roomId, router]);
 
   // Derive past round results from scoreboard for the round dots
@@ -370,41 +368,15 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
             </h2>
           </div>
 
-          {/* Auto-redirect to results (game over) */}
+          {/* The results page is the destination; this only covers the hop. */}
           {isGameOver && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-              className="flex flex-col items-center gap-2 mb-6 w-full max-w-xs mx-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center gap-3 py-16"
             >
-              <motion.button
-                onClick={() => router.push(`/multiplayer/${roomId}/results`)}
-                className="group relative flex items-center justify-center gap-2 w-full px-8 py-3.5 bg-[#1DB954] text-black font-bold rounded-full hover:bg-[#1ed760] transition-colors overflow-hidden"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                {/* Countdown bar filling from left */}
-                <motion.div
-                  className="absolute inset-0 bg-black/15 origin-right"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 5, ease: 'linear' }}
-                />
-                <span className="relative flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  View Results
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </motion.button>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="text-xs text-fg/30"
-              >
-                Redirecting to results...
-              </motion.p>
+              <LoadingSpinner size="md" />
+              <p className="text-sm text-fg/50">Taking you to the results...</p>
             </motion.div>
           )}
 
@@ -447,7 +419,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
           )}
 
           <AnimatePresence mode="wait">
-            {isRoundComplete ? (
+            {isGameOver ? null : isRoundComplete ? (
               <motion.div
                 key={`reveal-${transitionKey}`}
                 initial={{ opacity: 0, scale: 0.96, y: 12 }}
