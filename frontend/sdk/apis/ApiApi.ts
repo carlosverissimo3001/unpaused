@@ -579,6 +579,35 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Ensure the caller has an identity, minting one if they have none
+     */
+    async authControllerEnsureSessionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthMeResponseDto>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/auth/session`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AuthMeResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Ensure the caller has an identity, minting one if they have none
+     */
+    async authControllerEnsureSession(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthMeResponseDto> {
+        const response = await this.authControllerEnsureSessionRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Start Spotify OAuth flow
      */
     async authControllerLoginRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {

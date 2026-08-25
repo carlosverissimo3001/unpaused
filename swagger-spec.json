@@ -68,6 +68,28 @@
         ]
       }
     },
+    "/auth/session": {
+      "post": {
+        "operationId": "AuthController_ensureSession",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ensure the caller has an identity, minting one if they have none",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "AuthController_me",

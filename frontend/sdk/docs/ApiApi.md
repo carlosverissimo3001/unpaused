@@ -11,6 +11,7 @@ All URIs are relative to *http://localhost*
 | [**adminControllerUpdateStreakQuestion**](ApiApi.md#admincontrollerupdatestreakquestion) | **PATCH** /admin/streak-questions/{id} | Update a streak quiz question |
 | [**adminControllerUpdateUserRole**](ApiApi.md#admincontrollerupdateuserrole) | **PATCH** /admin/users/{id} | Update user role flags |
 | [**authControllerCallback**](ApiApi.md#authcontrollercallback) | **GET** /auth/callback | Handle Spotify OAuth callback |
+| [**authControllerEnsureSession**](ApiApi.md#authcontrollerensuresession) | **POST** /auth/session | Ensure the caller has an identity, minting one if they have none |
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
 | [**authControllerLogout**](ApiApi.md#authcontrollerlogout) | **POST** /auth/logout | Logout and clear session |
 | [**authControllerMe**](ApiApi.md#authcontrollerme) | **GET** /auth/me | Get current authenticated user |
@@ -526,6 +527,63 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **302** | Redirects to frontend after auth |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## authControllerEnsureSession
+
+> AuthMeResponseDto authControllerEnsureSession()
+
+Ensure the caller has an identity, minting one if they have none
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AuthControllerEnsureSessionRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  try {
+    const data = await api.authControllerEnsureSession();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**AuthMeResponseDto**](AuthMeResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

@@ -9,6 +9,7 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -24,6 +25,13 @@ import { PatchUserDto } from '../dto/patch-user.dto';
 import { AuthService } from '../services/auth.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { SessionId } from '../../utils/decorators/sessionId.decorator';
+import { ProvisioningSessionGuard } from '../../utils/guards/provisioning-session.guard';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
+import {
+  THROTTLE_START,
+  THROTTLE_START_LIMIT,
+  THROTTLE_TTL,
+} from '@throttle/throttle.constants';
 import { SpotifyOAuthCallbackDto } from '../dto/spotify/spotify-oauth-callback.dto';
 import {
   buildErrorRedirect,
@@ -95,6 +103,22 @@ export class AuthController {
       this.logger.error('OAuth callback error:', err);
       res.redirect(buildErrorRedirect(this.frontendUrl, 'auth_failed'));
     }
+  }
+
+  @Post('session')
+  @HttpCode(200)
+  @UseGuards(ThrottlerGuard, ProvisioningSessionGuard)
+  @Throttle({
+    [THROTTLE_START]: { limit: THROTTLE_START_LIMIT, ttl: THROTTLE_TTL },
+  })
+  @ApiOperation({
+    summary: 'Ensure the caller has an identity, minting one if they have none',
+  })
+  @ApiResponse({ status: 200, type: AuthMeResponseDto })
+  async ensureSession(
+    @SessionId() sessionId: string,
+  ): Promise<AuthMeResponseDto> {
+    return this.authService.getCurrentUser(sessionId);
   }
 
   @Get('me')

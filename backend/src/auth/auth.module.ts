@@ -6,6 +6,7 @@ import { SpotifyService } from './services/spotify.service';
 import { SpotifyAuthService } from './services/spotify-auth.service';
 import { SessionService } from './services/session.service';
 import { UserRepository } from './repositories/user.repository';
+import { ProvisioningSessionGuard } from '../utils/guards/provisioning-session.guard';
 
 @Module({
   controllers: [AuthController],
@@ -16,6 +17,7 @@ import { UserRepository } from './repositories/user.repository';
     SpotifyAuthService,
     SessionService,
     UserRepository,
+    ProvisioningSessionGuard,
   ],
   exports: [
     AuthService,

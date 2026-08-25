@@ -12,6 +12,7 @@ import {
   Users,
   Plus,
   Gamepad2,
+  Shuffle,
 } from 'lucide-react';
 import { usePlayedToday } from '@/hooks/game/usePlayedToday';
 import { DailyChallengeCountdown } from './DailyChallangeCountdown';
@@ -25,6 +26,7 @@ const cardPadding = 'p-4 sm:p-6';
 /** Corner glow per mode. A gradient, not a blur filter: iOS WebKit won't clip a filtered layer to the card's radius. */
 const modeGlow: Record<string, string> = {
   daily: '#1DB954',
+  pool: '#0ea5e9',
   speedrun: '#ea580c',
   multiplayer: '#9333ea',
 };
@@ -109,6 +111,45 @@ function DailyCardContent() {
             <DailyChallengeCountdown />
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function PoolCardContent() {
+  return (
+    <div
+      className={cn(
+        'h-full flex flex-col justify-between relative z-10 w-full',
+        cardPadding,
+      )}
+    >
+      <div className="flex flex-col gap-1 sm:gap-2 mb-4">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 w-fit text-[10px] uppercase tracking-widest font-black text-sky-600 dark:text-sky-400">
+          <Shuffle className="w-3 h-3" />
+          <span>Random</span>
+        </div>
+        <div className="space-y-0.5">
+          <h2 className="font-black tracking-tighter text-fg text-xl sm:text-2xl leading-tight">
+            The{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-cyan-400">
+              Shuffle
+            </span>
+          </h2>
+          <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
+            Any song, any era. No playlist needed.
+          </p>
+        </div>
+      </div>
+
+      <div className="w-full">
+        <Link
+          href="/game/guest?start=1"
+          className="flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black text-white bg-sky-500 shadow-[0_8px_20px_rgba(14,165,233,0.2)] transition-all hover:brightness-110 active:scale-90 w-fit"
+        >
+          <Play fill="currentColor" className="w-4 h-4" />
+          <span>Play</span>
+        </Link>
       </div>
     </div>
   );
@@ -225,6 +266,7 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
 
   const modes = [
     { id: 'daily', show: isTrusted, render: () => <DailyCardContent /> },
+    { id: 'pool', show: true, render: () => <PoolCardContent /> },
     { id: 'speedrun', show: isTrusted, render: () => <SpeedrunCardContent /> },
     {
       id: 'multiplayer',
@@ -239,9 +281,11 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
   ].filter((m) => m.show);
 
   const gridClass =
-    modes.length === 3
-      ? 'grid-cols-2 lg:grid-cols-3'
-      : 'grid-cols-1 sm:grid-cols-2';
+    modes.length === 4
+      ? 'grid-cols-2 lg:grid-cols-4'
+      : modes.length === 3
+        ? 'grid-cols-2 lg:grid-cols-3'
+        : 'grid-cols-1 sm:grid-cols-2';
 
   return (
     <>

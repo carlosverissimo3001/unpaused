@@ -11,6 +11,7 @@ import {
   DEFAULT_PREFERENCES,
   useUserPreferences,
 } from '@/hooks/user-preferences/useUserPreferences';
+import { LinkAccountSection } from './LinkAccountSection';
 import { useUpdateUserPreferences } from '@/hooks/user-preferences/useUpdateUserPreferences';
 import { GLASS_STYLE } from '@/lib/styles';
 import type { UserPreferenceDto } from '@/sdk';
@@ -49,7 +50,7 @@ function ToggleRow({ label, description, checked, onChange }: ToggleRowProps) {
   );
 }
 
-export function PreferencesPage() {
+export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
   const { data: user } = useMe();
   const { data: preferences } = useUserPreferences();
   const { mutate: updatePreferences } = useUpdateUserPreferences();
@@ -223,6 +224,10 @@ export function PreferencesPage() {
             checked={prefs.showTextHints}
             onChange={(value) => handleToggle('showTextHints', value)}
           />
+
+          {!user?.hasLinkedAccount && (
+            <LinkAccountSection canSignIn={canSignIn} />
+          )}
 
           <div className="-mx-6 border-t border-fg/10" />
 

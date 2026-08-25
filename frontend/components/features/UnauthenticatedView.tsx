@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useSiteUnlock } from '@/hooks/auth/useSiteUnlock';
+import { useEnsureSession } from '@/hooks/auth/useEnsureSession';
 
 function InviteForm() {
   const [secret, setSecret] = useState('');
@@ -93,6 +94,9 @@ function SpotifyButton({ canSignIn }: { canSignIn: boolean }) {
 
 function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
   const [showInvite, setShowInvite] = useState(false);
+  // useMe's cache is updated by the mutation, so the home page re-renders
+  // into the signed-in shell without a navigation.
+  const ensureSession = useEnsureSession();
 
   return (
     <div className="relative flex-1 flex flex-col items-center justify-center min-h-[80vh] overflow-visible">
@@ -122,15 +126,17 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
               guest mode by mistake. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-md">
             <div className="flex flex-col items-center gap-2">
-              <Link href="/game/guest?start=1" className="relative group w-full">
+              <div className="relative group w-full">
                 <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
                 <Button
                   variant="spotify"
+                  onClick={() => ensureSession.mutate()}
+                  disabled={ensureSession.isPending}
                   className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold transition-all duration-500 shadow-xl"
                 >
-                  Play now
+                  {ensureSession.isPending ? 'Starting…' : 'Play now'}
                 </Button>
-              </Link>
+              </div>
               <span className="text-xs text-fg/45">No sign-in needed</span>
             </div>
 
