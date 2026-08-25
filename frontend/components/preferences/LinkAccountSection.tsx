@@ -46,8 +46,8 @@ export function LinkAccountSection({ canSignIn }: { canSignIn: boolean }) {
         </a>
       ) : (
         <p className="text-xs text-fg/45 leading-relaxed">
-          Spotify caps development apps at five users, so linking is invite only
-          for now. Email sign-up is coming.
+          Signing up with a username and password is coming shortly. Spotify
+          caps development apps at five users, so linking one is invite only.
         </p>
       )}
     </div>
