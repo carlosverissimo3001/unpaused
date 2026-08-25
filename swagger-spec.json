@@ -14,39 +14,6 @@
         "tags": [
           "Api"
         ]
-      },
-      "post": {
-        "operationId": "AuthController_loginWithPassword",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthMeResponseDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Email or password is incorrect"
-          }
-        },
-        "summary": "Sign in with an email and password",
-        "tags": [
-          "Api"
-        ]
       }
     },
     "/auth/callback": {
@@ -153,6 +120,41 @@
           }
         },
         "summary": "Create an account, keeping any guest progress",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "operationId": "AuthController_loginWithPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Email or password is incorrect"
+          }
+        },
+        "summary": "Sign in with an email and password",
         "tags": [
           "Api"
         ]

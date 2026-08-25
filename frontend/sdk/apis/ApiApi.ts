@@ -683,7 +683,7 @@ export class ApiApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
 
-        let urlPath = `/auth/login`;
+        let urlPath = `/auth/signin`;
 
         const response = await this.request({
             path: urlPath,

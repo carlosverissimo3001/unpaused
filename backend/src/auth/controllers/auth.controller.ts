@@ -184,7 +184,9 @@ export class AuthController {
     return this.authService.getCurrentUser(sessionId);
   }
 
-  @Post('login')
+  // Not 'login': that path is the Spotify OAuth start, and the proxy gates it
+  // on the site password by pathname alone, method be damned.
+  @Post('signin')
   @HttpCode(200)
   @UseGuards(ThrottlerGuard)
   @Throttle({

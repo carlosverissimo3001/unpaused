@@ -19,6 +19,7 @@ export function useLogin() {
       }
     },
     onSuccess: (data) => {
+      rememberSignedIn(data.email);
       // Everything on screen belonged to whoever was here before.
       queryClient.setQueryData(queryKeys.auth.me, data);
       void queryClient.invalidateQueries();
