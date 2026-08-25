@@ -136,11 +136,17 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
               has an account, and both buttons below make a new person. */}
           {returningAs && (
             <div className="w-full max-w-xs flex flex-col gap-3">
-              <p className="text-sm text-fg/60">
-                Welcome back,{' '}
-                <span className="font-semibold text-fg/80">{returningAs}</span>
-              </p>
-              <CredentialsForm initialMode="login" initialEmail={returningAs} />
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm text-fg/50">Welcome back</p>
+                <p className="text-sm font-semibold text-fg/80">
+                  {returningAs}
+                </p>
+              </div>
+              <CredentialsForm lockedEmail={returningAs} />
+
+              {/* One door for every exception, rather than five on screen at
+                  once. Forgetting the address is what reveals them: the full
+                  first-time layout is already the answer to "more ways in". */}
               <button
                 type="button"
                 onClick={() => {
@@ -149,7 +155,7 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
                 }}
                 className="cursor-pointer text-[11px] text-fg/35 underline underline-offset-4 hover:text-fg/60"
               >
-                Not you?
+                Not you? More ways in
               </button>
             </div>
           )}
@@ -158,32 +164,39 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
               paths read as a deliberate choice rather than a primary and a
               stray. The caption is what stops a whitelisted user landing in
               guest mode by mistake. */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-md">
-            <div className="flex flex-col items-center gap-2">
-              <div className="relative group w-full">
-                <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
-                <Button
-                  variant="spotify"
-                  onClick={() => ensureSession.mutate()}
-                  disabled={ensureSession.isPending}
-                  className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold transition-all duration-500 shadow-xl"
-                >
-                  {ensureSession.isPending
-                    ? 'Starting…'
-                    : returningAs
-                      ? 'Play as guest'
-                      : 'Play now'}
-                </Button>
+          <div
+            className={`grid gap-3 sm:gap-4 w-full max-w-md ${
+              returningAs ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'
+            }`}
+          >
+            {!returningAs && (
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative group w-full">
+                  <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
+                  <Button
+                    variant="spotify"
+                    onClick={() => ensureSession.mutate()}
+                    disabled={ensureSession.isPending}
+                    className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold transition-all duration-500 shadow-xl"
+                  >
+                    {ensureSession.isPending ? 'Starting…' : 'Play now'}
+                  </Button>
+                </div>
+                <span className="text-xs text-fg/45">No sign-in needed</span>
               </div>
-              <span className="text-xs text-fg/45">
-                {returningAs ? 'Save your progress later' : 'No sign-in needed'}
-              </span>
-            </div>
+            )}
 
-            <div className="flex flex-col items-center gap-2">
-              <SpotifyButton canSignIn={canSignIn} />
-              <span className="text-xs text-fg/45">Play your own library</span>
-            </div>
+            {/* Kept in view for a returning player: the people holding the site
+                password are the ones on the Spotify dashboard, so this is the
+                habit rather than the exception for them. */}
+            {(!returningAs || canSignIn) && (
+              <div className="flex flex-col items-center gap-2">
+                <SpotifyButton canSignIn={canSignIn} />
+                <span className="text-xs text-fg/45">
+                  Play your own library
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Without this an account made on another device has no way back in
@@ -202,7 +215,8 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
             </button>
           )}
 
-          {!canSignIn &&
+          {!returningAs &&
+            !canSignIn &&
             (showInvite ? (
               <InviteForm />
             ) : (
