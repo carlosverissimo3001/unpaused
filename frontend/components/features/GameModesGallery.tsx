@@ -77,13 +77,17 @@ function DailyCardContent() {
           <h2 className="font-black tracking-tighter text-fg text-2xl sm:text-3xl leading-tight">
             The <span className="text-spotify-green">Mystery</span>
           </h2>
-          <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
-            One song. Six chances. Guess in 1s.
-          </p>
+          {showAsPlayed && !playedTodayLoading ? (
+            <DailyChallengeCountdown />
+          ) : (
+            <p className="text-fg/50 text-xs sm:text-sm tracking-tight">
+              One song. Six chances. Guess in 1s.
+            </p>
+          )}
         </div>
       </div>
 
-      <div className="w-full flex flex-row items-center justify-between gap-3">
+      <div className="w-full">
         <Link
           href={showAsPlayed ? '/daily/stats' : '/daily'}
           className={cn(
@@ -105,12 +109,6 @@ function DailyCardContent() {
             </>
           )}
         </Link>
-
-        {showAsPlayed && !playedTodayLoading && (
-          <div className="shrink-0 text-xs font-mono font-bold text-fg/50 pr-1">
-            <DailyChallengeCountdown />
-          </div>
-        )}
       </div>
     </div>
   );
