@@ -6,6 +6,7 @@ import { AppLoggerService } from '../../logger/logger.service';
 import { TrackDto } from '../../track/dto/track.dto';
 import { shuffleInPlace } from '../../game/utils/utils';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PoolService } from '../../pool/services/pool.service';
 
 /** Number of 50-track batches to fetch per player */
 const BATCHES_PER_PLAYER = 3;
@@ -26,6 +27,7 @@ export class TrackPoolService {
     private readonly trackService: TrackService,
     private readonly sessionService: SessionService,
     private readonly prisma: PrismaService,
+    private readonly poolService: PoolService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(TrackPoolService.name);
@@ -48,6 +50,17 @@ export class TrackPoolService {
     playerUserIds: string[],
     roundCount: number,
   ): Promise<string[]> {
+    // Liked-song pooling needs every player to have a library. One player
+    // without an account puts the whole room on the curated pool rather than
+    // half a pool: nobody gets a home-field advantage, and everyone faces the
+    // same catalogue.
+    if (await this.hasUnlinkedPlayer(playerUserIds)) {
+      this.logger.log(
+        'Room has a player with no linked account, using the curated pool',
+      );
+      return this.selectFromCuratedPool(roundCount);
+    }
+
     // 1. Resolve userIds -> sessionIds
     const sessionIds = await this.resolvePlayerSessions(playerUserIds);
 
@@ -70,6 +83,42 @@ export class TrackPoolService {
     const selectedTrackIds = await this.weightedSelect(pool, roundCount);
 
     return selectedTrackIds;
+  }
+
+  /** True when any player in the room has no linked music account. */
+  private async hasUnlinkedPlayer(userIds: string[]): Promise<boolean> {
+    const unlinked = await this.prisma.user.count({
+      where: { id: { in: userIds }, spotifyUserId: null },
+    });
+    return unlinked > 0;
+  }
+
+  /**
+   * Draws from the committed pool, which is local, so a room with a guest in it
+   * costs nothing upstream to start.
+   */
+  async selectFromCuratedPool(roundCount: number): Promise<string[]> {
+    const trackIds: string[] = [];
+
+    for (let i = 0; i < roundCount; i++) {
+      try {
+        // A copy: the same array is passed on every draw, and the callee
+        // holding onto it would let one round rewrite the next.
+        const track = await this.poolService.pickTrack([...trackIds]);
+        trackIds.push(track.id);
+      } catch (err) {
+        this.logger.warn(
+          `Curated pool exhausted after ${trackIds.length} tracks: ${(err as Error).message}`,
+        );
+        break;
+      }
+    }
+
+    if (trackIds.length === 0) {
+      throw new BadRequestException('No curated tracks available');
+    }
+
+    return trackIds;
   }
 
   private async resolvePlayerSessions(userIds: string[]): Promise<string[]> {

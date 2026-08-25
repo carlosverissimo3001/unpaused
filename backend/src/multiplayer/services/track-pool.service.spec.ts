@@ -5,6 +5,7 @@ import { TrackService } from '../../track/services/track.service';
 import { SessionService } from '../../auth/services/session.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PoolService } from '../../pool/services/pool.service';
 
 function makeTrack(id: string, name = `Track ${id}`) {
   return {
@@ -30,7 +31,8 @@ describe('TrackPoolService', () => {
   let playlistService: jest.Mocked<PlaylistService>;
   let trackService: jest.Mocked<TrackService>;
   let sessionService: jest.Mocked<SessionService>;
-  let prisma: { user: { findMany: jest.Mock } };
+  let prisma: { user: { findMany: jest.Mock; count: jest.Mock } };
+  let poolService: { pickTrack: jest.Mock };
 
   beforeEach(async () => {
     playlistService = {
@@ -47,8 +49,11 @@ describe('TrackPoolService', () => {
     } as any;
 
     prisma = {
-      user: { findMany: jest.fn() },
+      // Every existing case is an all-linked room unless it says otherwise.
+      user: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
     };
+
+    poolService = { pickTrack: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -57,6 +62,7 @@ describe('TrackPoolService', () => {
         { provide: TrackService, useValue: trackService },
         { provide: SessionService, useValue: sessionService },
         { provide: PrismaService, useValue: prisma },
+        { provide: PoolService, useValue: poolService },
         { provide: AppLoggerService, useValue: new AppLoggerService() },
       ],
     }).compile();
@@ -266,5 +272,86 @@ describe('TrackPoolService', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]).toBe('only-track');
+  });
+});
+
+describe('rooms with an unlinked player', () => {
+  // Redeclared here so these cases are readable on their own.
+  let service: TrackPoolService;
+  let prisma: { user: { findMany: jest.Mock; count: jest.Mock } };
+  let poolService: { pickTrack: jest.Mock };
+  let playlistService: { getLikedSongsMetadata: jest.Mock };
+
+  beforeEach(async () => {
+    prisma = {
+      user: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(1) },
+    };
+    poolService = { pickTrack: jest.fn() };
+    playlistService = { getLikedSongsMetadata: jest.fn() };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TrackPoolService,
+        { provide: PlaylistService, useValue: playlistService },
+        { provide: TrackService, useValue: { getTrackWithPreview: jest.fn() } },
+        {
+          provide: SessionService,
+          useValue: { getSessionIdByUserId: jest.fn() },
+        },
+        { provide: PrismaService, useValue: prisma },
+        { provide: PoolService, useValue: poolService },
+        { provide: AppLoggerService, useValue: new AppLoggerService() },
+      ],
+    }).compile();
+
+    service = module.get(TrackPoolService);
+  });
+
+  it('draws from the curated pool', async () => {
+    poolService.pickTrack
+      .mockResolvedValueOnce({ id: 'pool-1' })
+      .mockResolvedValueOnce({ id: 'pool-2' });
+
+    const result = await service.selectTracksForRoom(['user-1', 'user-2'], 2);
+
+    expect(result).toEqual(['pool-1', 'pool-2']);
+  });
+
+  it('never reaches for anyone liked songs, so no player has home advantage', async () => {
+    poolService.pickTrack.mockResolvedValue({ id: 'pool-1' });
+
+    await service.selectTracksForRoom(['user-1', 'user-2'], 1);
+
+    expect(playlistService.getLikedSongsMetadata).not.toHaveBeenCalled();
+  });
+
+  it('excludes tracks already drawn so a room cannot repeat a song', async () => {
+    poolService.pickTrack
+      .mockResolvedValueOnce({ id: 'pool-1' })
+      .mockResolvedValueOnce({ id: 'pool-2' });
+
+    await service.selectTracksForRoom(['user-1'], 2);
+
+    expect(poolService.pickTrack).toHaveBeenNthCalledWith(2, ['pool-1']);
+  });
+
+  it('returns what it has when the pool runs dry mid-selection', async () => {
+    poolService.pickTrack
+      .mockResolvedValueOnce({ id: 'pool-1' })
+      .mockRejectedValueOnce(new Error('No guest track available'));
+
+    const result = await service.selectTracksForRoom(['user-1'], 3);
+
+    expect(result).toEqual(['pool-1']);
+  });
+
+  it('fails loudly when the pool is empty rather than starting an empty room', async () => {
+    poolService.pickTrack.mockRejectedValue(
+      new Error('No guest track available'),
+    );
+
+    await expect(service.selectTracksForRoom(['user-1'], 3)).rejects.toThrow(
+      'No curated tracks available',
+    );
   });
 });

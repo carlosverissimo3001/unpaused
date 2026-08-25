@@ -12,7 +12,6 @@ import { Server, Socket } from 'socket.io';
 import { parse as parseCookie } from 'cookie';
 import { AuthService } from '../../auth/services/auth.service';
 import { SessionService } from '../../auth/services/session.service';
-import { hasCredential } from '../../auth/utils/credentials';
 import { RoomRepository } from '../repositories/room.repository';
 import { RoomPresenceService } from '../services/room-presence.service';
 import { RoomDto } from '../dto/room.dto';
@@ -88,15 +87,9 @@ export class RoomsGateway
         return;
       }
 
-      // Validate session exists
-      const session = await this.sessionService.getSession(sessionId);
-
-      // The HTTP routes are closed to anonymous players, so the socket is too.
-      // CAR-179 opens both together.
-      if (!hasCredential(session)) {
-        client.disconnect();
-        return;
-      }
+      // Validate session exists. Any player with a session may hold a socket,
+      // account or not — room membership is what the joinRoom handler checks.
+      await this.sessionService.getSession(sessionId);
 
       // Resolve user
       const user = await this.authService.getUserBySessionId(sessionId);

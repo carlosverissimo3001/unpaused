@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
 import { PlaylistModule } from '../playlist/playlist.module';
 import { TrackModule } from '../track/track.module';
+import { PoolModule } from '../pool/pool.module';
 import { MultiplayerController } from './controllers/multiplayer.controller';
 import { RoomService } from './services/room.service';
 import { MultiplayerGameService } from './services/multiplayer-game.service';
@@ -10,10 +11,9 @@ import { RoomRepository } from './repositories/room.repository';
 import { MultiplayerGameSessionRepository } from './repositories/multiplayer-game-session.repository';
 import { RoomsGateway } from './gateways/rooms.gateway';
 import { RoomPresenceService } from './services/room-presence.service';
-import { LinkedAccountGuard } from '@utils/guards/linked-account.guard';
 
 @Module({
-  imports: [AuthModule, PlaylistModule, TrackModule],
+  imports: [AuthModule, PlaylistModule, TrackModule, PoolModule],
   controllers: [MultiplayerController],
   providers: [
     RoomService,
@@ -23,7 +23,6 @@ import { LinkedAccountGuard } from '@utils/guards/linked-account.guard';
     MultiplayerGameSessionRepository,
     RoomsGateway,
     RoomPresenceService,
-    LinkedAccountGuard,
   ],
   exports: [RoomService, MultiplayerGameService, RoomRepository],
 })

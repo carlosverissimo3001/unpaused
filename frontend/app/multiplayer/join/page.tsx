@@ -31,10 +31,11 @@ export default function JoinManualPage() {
       .slice(0, 8);
   }
 
-  // Auth gate
+  // The proxy provisions a session before this renders, so a visitor without
+  // one has had it fail or expire — sign in is the only way back.
   useEffect(() => {
     if (isLoadingUser) return;
-    if (!user?.hasLinkedAccount) {
+    if (!user) {
       setAuthReturnUrl('/multiplayer/join');
       window.location.href = '/api/auth/login';
     }

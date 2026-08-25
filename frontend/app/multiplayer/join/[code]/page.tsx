@@ -22,10 +22,11 @@ export default function JoinByCodePage() {
   const joinMutation = useJoinRoom();
   const joinFiredRef = useRef(false);
 
-  // Auth gate: redirect to login if not authenticated
+  // The proxy provisions a session before this renders, so a visitor without
+  // one has had it fail or expire — sign in is the only way back.
   useEffect(() => {
     if (isLoadingUser || !isValidCode) return;
-    if (!user?.hasLinkedAccount) {
+    if (!user) {
       setAuthReturnUrl(`/multiplayer/join/${rawCode}`);
       window.location.href = '/api/auth/login';
     }

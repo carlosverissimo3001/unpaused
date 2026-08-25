@@ -258,13 +258,7 @@ function MultiplayerCardContent({
   );
 }
 
-function GameModesGalleryComponent({
-  isTrusted,
-  hasAccount,
-}: {
-  isTrusted: boolean;
-  hasAccount: boolean;
-}) {
+function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -274,8 +268,9 @@ function GameModesGalleryComponent({
     { id: 'speedrun', show: isTrusted, render: () => <SpeedrunCardContent /> },
     {
       id: 'multiplayer',
-      // Closed to anonymous players until CAR-190, so it is not offered to them.
-      show: hasAccount,
+      // A room with an unlinked player runs on the curated pool, so anyone can
+      // host or join one.
+      show: true,
       render: () => (
         <MultiplayerCardContent
           onJoin={() => setShowJoinModal(true)}
