@@ -12,25 +12,92 @@ interface JoinRoomModalProps {
   onClose: () => void;
 }
 
-export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
+/** Pasting the whole invite link should work as well as typing the code. */
+function extractCodeFromInput(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+
+  const joinPathPattern = /(?:^|\/+)multiplayer\/join\/([^/?#\s]+)/i;
+  const pathMatch = trimmed.match(joinPathPattern);
+  const candidate = pathMatch?.[1] ?? trimmed;
+
+  return candidate
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase()
+    .slice(0, 8);
+}
+
+/** Own component so a keystroke re-renders this, not the animated shell. */
+function JoinRoomForm({ onClose }: { onClose: () => void }) {
   const [code, setCode] = useState('');
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const joinRoom = useJoinRoom();
 
-  const extractCodeFromInput = (value: string): string => {
-    const trimmed = value.trim();
-    if (!trimmed) return '';
+  const handleSubmit = useCallback(() => {
+    if (!code || joinRoom.isPending) return;
+    joinRoom.mutate(code, {
+      onSuccess: (data) => {
+        router.push(`/multiplayer/${data.id}`);
+        onClose();
+      },
+    });
+  }, [code, joinRoom, router, onClose]);
 
-    const joinPathPattern = /(?:^|\/+)multiplayer\/join\/([^/?#\s]+)/i;
-    const pathMatch = trimmed.match(joinPathPattern);
-    const candidate = pathMatch?.[1] ?? trimmed;
+  return (
+    <div className="space-y-6">
+      <div>
+        <label htmlFor="room-code-input" className="sr-only">
+          Invite Code
+        </label>
+        <input
+          id="room-code-input"
+          type="text"
+          value={code}
+          onChange={(e) => setCode(extractCodeFromInput(e.target.value))}
+          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+          placeholder="CODE123"
+          maxLength={8}
+          autoFocus
+          autoComplete="off"
+          spellCheck="false"
+          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-center text-4xl font-mono font-black tracking-[0.3em] text-fg placeholder:text-white/5 focus:border-spotify-green/50 focus:outline-none transition-colors uppercase shadow-inner"
+        />
+      </div>
 
-    return candidate
-      .replace(/[^a-zA-Z0-9]/g, '')
-      .toUpperCase()
-      .slice(0, 8);
-  };
+      <AnimatePresence mode="wait">
+        {joinRoom.isError && (
+          <motion.p
+            role="alert"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="text-sm text-red-400 text-center font-bold"
+          >
+            {joinRoom.error.message}
+          </motion.p>
+        )}
+      </AnimatePresence>
+
+      <button
+        onClick={handleSubmit}
+        disabled={!code || joinRoom.isPending}
+        className="group w-full flex items-center justify-center gap-2 rounded-2xl bg-spotify-green px-6 py-5 text-base font-black text-black hover:bg-spotify-green/90 active:scale-[0.98] disabled:opacity-20 disabled:pointer-events-none transition-[background-color,transform,opacity] shadow-[0_8px_20px_rgba(30,215,96,0.2)]"
+      >
+        {joinRoom.isPending ? (
+          <Loader2 className="w-6 h-6 animate-spin" />
+        ) : (
+          <>
+            <span>Join Game</span>
+            <ArrowRight className="w-5 h-5" />
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
+export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
+  const [mounted, setMounted] = useState(false);
 
   const modalId = useId();
   const titleId = `${modalId}-title`;
@@ -62,20 +129,6 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
     };
   }, [open, onClose]);
 
-  const handleCodeChange = (value: string) => {
-    setCode(extractCodeFromInput(value));
-  };
-
-  const handleSubmit = useCallback(() => {
-    if (!code || joinRoom.isPending) return;
-    joinRoom.mutate(code, {
-      onSuccess: (data) => {
-        router.push(`/multiplayer/${data.id}`);
-        onClose();
-      },
-    });
-  }, [code, joinRoom, router, onClose]);
-
   // Define the modal JSX
   const modalContent = (
     <AnimatePresence>
@@ -87,16 +140,14 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
           aria-labelledby={titleId}
           aria-describedby={descriptionId}
         >
-          {/* Backdrop */}
           <motion.div
-            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            className="absolute inset-0 bg-black/85"
             onClick={onClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
 
-          {/* Modal Container */}
           <motion.div
             className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-surface shadow-2xl"
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -105,7 +156,6 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
             transition={{ type: 'spring', damping: 25, stiffness: 400 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Visual Flare */}
             <div
               className="absolute -top-24 -right-24 w-48 h-48 rounded-full pointer-events-none opacity-40"
               style={{
@@ -118,7 +168,7 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
               <button
                 onClick={onClose}
                 aria-label="Close modal"
-                className="absolute top-5 right-5 p-2 rounded-full text-fg/40 hover:text-fg hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-spotify-green focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                className="absolute top-5 right-5 p-2 rounded-full text-fg/40 hover:text-fg hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-spotify-green focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               >
                 <X className="w-5 h-5" aria-hidden="true" />
               </button>
@@ -146,55 +196,7 @@ export function JoinRoomModal({ open, onClose }: JoinRoomModalProps) {
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div>
-                  <label htmlFor="room-code-input" className="sr-only">
-                    Invite Code
-                  </label>
-                  <input
-                    id="room-code-input"
-                    type="text"
-                    value={code}
-                    onChange={(e) => handleCodeChange(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                    placeholder="CODE123"
-                    maxLength={8}
-                    autoFocus
-                    autoComplete="off"
-                    spellCheck="false"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-center text-4xl font-mono font-black  tracking-[0.3em] text-fg placeholder:text-white/5 focus:border-spotify-green/50 focus:outline-none transition-all uppercase shadow-inner"
-                  />
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {joinRoom.isError && (
-                    <motion.p
-                      role="alert"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-sm text-red-400 text-center font-bold"
-                    >
-                      {joinRoom.error.message}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-
-                <button
-                  onClick={handleSubmit}
-                  disabled={!code || joinRoom.isPending}
-                  className="group w-full flex items-center justify-center gap-2 rounded-2xl bg-spotify-green px-6 py-5 text-base font-black text-black hover:bg-spotify-green/90 active:scale-[0.98] disabled:opacity-20 disabled:pointer-events-none transition-all shadow-[0_8px_20px_rgba(30,215,96,0.2)]"
-                >
-                  {joinRoom.isPending ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <>
-                      <span>Join Game</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
-              </div>
+              <JoinRoomForm onClose={onClose} />
             </div>
           </motion.div>
         </div>
