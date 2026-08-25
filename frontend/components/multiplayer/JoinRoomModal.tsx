@@ -80,7 +80,7 @@ function JoinRoomForm({ onClose }: { onClose: () => void }) {
 
       <button
         onClick={handleSubmit}
-        disabled={!code || joinRoom.isPending}
+        disabled={code.length !== 8 || joinRoom.isPending}
         className="group w-full flex items-center justify-center gap-2 rounded-2xl bg-spotify-green px-6 py-5 text-base font-black text-black hover:bg-spotify-green/90 active:scale-[0.98] disabled:opacity-20 disabled:pointer-events-none transition-[background-color,transform,opacity] shadow-[0_8px_20px_rgba(30,215,96,0.2)]"
       >
         {joinRoom.isPending ? (
