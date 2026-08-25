@@ -142,7 +142,7 @@ function PoolCardContent() {
 
       <div className="w-full">
         <Link
-          href="/shuffle?start=1"
+          href="/shuffle"
           className="flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black text-white bg-sky-500 shadow-[0_8px_20px_rgba(14,165,233,0.2)] transition-all hover:brightness-110 active:scale-90 w-fit"
         >
           <Play fill="currentColor" className="w-4 h-4" />
