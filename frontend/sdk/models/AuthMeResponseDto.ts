@@ -44,6 +44,12 @@ export interface AuthMeResponseDto {
      */
     hasAccount: boolean;
     /**
+     * Email of the account, when it was created with one
+     * @type {string}
+     * @memberof AuthMeResponseDto
+     */
+    email?: string;
+    /**
      * John Doe
      * @type {string}
      * @memberof AuthMeResponseDto
@@ -132,6 +138,7 @@ export function AuthMeResponseDtoFromJSONTyped(json: any, ignoreDiscriminator: b
         'spotifyUserId': json['spotifyUserId'] == null ? undefined : json['spotifyUserId'],
         'hasLinkedAccount': json['hasLinkedAccount'],
         'hasAccount': json['hasAccount'],
+        'email': json['email'] == null ? undefined : json['email'],
         'displayName': json['displayName'],
         'avatarUrl': json['avatarUrl'] == null ? undefined : json['avatarUrl'],
         'customAvatarUrl': json['customAvatarUrl'] == null ? undefined : json['customAvatarUrl'],
@@ -158,6 +165,7 @@ export function AuthMeResponseDtoToJSONTyped(value?: AuthMeResponseDto | null, i
         'spotifyUserId': value['spotifyUserId'],
         'hasLinkedAccount': value['hasLinkedAccount'],
         'hasAccount': value['hasAccount'],
+        'email': value['email'],
         'displayName': value['displayName'],
         'avatarUrl': value['avatarUrl'],
         'customAvatarUrl': value['customAvatarUrl'],

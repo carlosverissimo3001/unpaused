@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { rememberSignedIn } from '@/lib/returning-player';
 import { api } from '@/sdk/client';
 import type { AuthMeResponseDto, LoginDto } from '@/sdk';
 

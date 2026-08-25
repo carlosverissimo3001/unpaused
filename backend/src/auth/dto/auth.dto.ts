@@ -26,6 +26,11 @@ export class AuthMeResponseDto {
   })
   hasAccount: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Email of the account, when it was created with one',
+  })
+  email?: string;
+
   @ApiProperty({ description: 'John Doe' })
   displayName: string;
 

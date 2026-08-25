@@ -260,6 +260,7 @@ export class AuthService {
       // the other whether their progress survives this browser.
       hasLinkedAccount: !!user.spotifyUserId,
       hasAccount: hasCredential(user),
+      email: user.email,
       displayName: session.displayName,
       isTrusted: user.isTrusted,
       isAdmin: user.isAdmin,
