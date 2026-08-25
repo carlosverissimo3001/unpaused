@@ -47,3 +47,18 @@ function pick<T>(items: readonly T[]): T {
 export function generateHandle(): string {
   return `${pick(ADJECTIVES)} ${pick(NOUNS)}`;
 }
+
+/**
+ * Whether a name is still one we made up, so a real one may replace it. A name
+ * the player chose is theirs, even if they happened to choose "Vinyl Chorus".
+ */
+export function isGeneratedHandle(name: string): boolean {
+  const [adjective, noun, ...rest] = name.trim().split(' ');
+  if (rest.length || !adjective || !noun) {
+    return false;
+  }
+  return (
+    (ADJECTIVES as readonly string[]).includes(adjective) &&
+    (NOUNS as readonly string[]).includes(noun)
+  );
+}

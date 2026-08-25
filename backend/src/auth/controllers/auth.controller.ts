@@ -19,7 +19,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { DEVICE_COOKIE_NAME, SESSION_COOKIE_NAME } from '../../consts';
+import {
+  DEVICE_COOKIE_NAME,
+  OAUTH_STATE_COOKIE_NAME,
+  OAUTH_STATE_TTL,
+  SESSION_COOKIE_NAME,
+} from '../../consts';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
 import { AuthService } from '../services/auth.service';
@@ -66,7 +71,16 @@ export class AuthController {
     description: 'Redirects to Spotify authorization',
   })
   async login(@Res() res: Response) {
-    const { authUrl } = await this.authService.startLogin();
+    const { authUrl, state } = await this.authService.startLogin();
+
+    // The callback is a bare GET with a lax cookie, so without this a link
+    // could complete someone else's sign-in in the victim's browser.
+    res.cookie(
+      OAUTH_STATE_COOKIE_NAME,
+      state,
+      getCookieOptions({ sessionMaxAge: OAUTH_STATE_TTL }),
+    );
+
     res.redirect(authUrl);
   }
 
@@ -81,7 +95,18 @@ export class AuthController {
     const { code, state, error } = params;
 
     if (error) {
+      res.clearCookie(OAUTH_STATE_COOKIE_NAME, getClearCookieOptions());
       return res.redirect(buildErrorRedirect(this.frontendUrl, error));
+    }
+
+    const expectedState = req.cookies?.[OAUTH_STATE_COOKIE_NAME] as
+      | string
+      | undefined;
+    res.clearCookie(OAUTH_STATE_COOKIE_NAME, getClearCookieOptions());
+
+    if (!expectedState || expectedState !== state) {
+      this.logger.warn('OAuth callback state did not match this browser');
+      return res.redirect(buildErrorRedirect(this.frontendUrl, 'auth_failed'));
     }
 
     try {

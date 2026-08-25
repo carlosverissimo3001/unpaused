@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { LoginStartResult } from '../types';
 import { UserRepository } from '../repositories/user.repository';
 import { UserEntity } from '../entities/user.entity';
+import { hasCredential } from '../utils/credentials';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
@@ -80,7 +81,7 @@ export class AuthService {
     const current = currentUserId
       ? await this.userRepository.findById(currentUserId)
       : null;
-    const claimable = current && !current.spotifyUserId ? current : null;
+    const claimable = current && !hasCredential(current) ? current : null;
 
     if (existing && claimable && claimable.id !== existing.id) {
       await this.accountMergeService.merge(claimable.id, existing.id);
@@ -99,6 +100,7 @@ export class AuthService {
             spotifyUserId: profile.id,
             avatarUrl: profile.avatarUrl,
             country: profile.country,
+            displayName,
           })
         : await this.userRepository.upsert({
             spotifyUserId: profile.id,

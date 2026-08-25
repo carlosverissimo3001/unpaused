@@ -260,7 +260,13 @@ function MultiplayerCardContent({
   );
 }
 
-function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
+function GameModesGalleryComponent({
+  isTrusted,
+  hasAccount,
+}: {
+  isTrusted: boolean;
+  hasAccount: boolean;
+}) {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -270,7 +276,8 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
     { id: 'speedrun', show: isTrusted, render: () => <SpeedrunCardContent /> },
     {
       id: 'multiplayer',
-      show: true,
+      // Closed to anonymous players until CAR-190, so it is not offered to them.
+      show: hasAccount,
       render: () => (
         <MultiplayerCardContent
           onJoin={() => setShowJoinModal(true)}

@@ -4,6 +4,7 @@ import { UserEntity } from '../entities/user.entity';
 import { PrismaService } from '@prisma/prisma.service';
 import { UpsertUserDto } from '../dto/upsert-user.dto';
 import { AttachSpotifyDto } from '../dto/attach-spotify.dto';
+import { isGeneratedHandle } from '../utils/handle-generator';
 
 @Injectable()
 export class UserRepository {
@@ -81,12 +82,21 @@ export class UserRepository {
     userId: string,
     data: AttachSpotifyDto,
   ): Promise<UserEntity> {
+    const existing = await this.prismaService.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { displayName: true },
+    });
+
+    const takeName =
+      !!data.displayName && isGeneratedHandle(existing.displayName);
+
     const user = await this.prismaService.user.update({
       where: { id: userId },
       data: {
         spotifyUserId: data.spotifyUserId,
         avatarUrl: data.avatarUrl,
         country: data.country,
+        ...(takeName && { displayName: data.displayName }),
       },
     });
     return this.fromPrisma(user);

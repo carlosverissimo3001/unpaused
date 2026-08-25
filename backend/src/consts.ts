@@ -6,6 +6,10 @@ export const SESSION_COOKIE_NAME = 'unpaused_session';
 export const DEVICE_COOKIE_NAME = 'unpaused_device';
 export const DEVICE_TOKEN_TTL = 365 * 24 * 60 * 60; // 1 year in seconds
 export const DEVICE_TOKEN_PREFIX = 'device:';
+
+/** Ties an OAuth callback to the browser that started the flow. */
+export const OAUTH_STATE_COOKIE_NAME = 'unpaused_oauth_state';
+export const OAUTH_STATE_TTL = 600; // 10 minutes, matching the PKCE state
 export const TRACK_PREVIEW_CACHE_TTL = 86400; // 24 hours in seconds
 export const TRACK_PREVIEW_CACHE_PREFIX = 'track_preview:';
 export const LIKED_SONGS_ID_SUFFIX = '-liked-songs';

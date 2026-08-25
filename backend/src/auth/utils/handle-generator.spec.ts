@@ -1,4 +1,9 @@
-import { generateHandle, ADJECTIVES, NOUNS } from './handle-generator';
+import {
+  generateHandle,
+  isGeneratedHandle,
+  ADJECTIVES,
+  NOUNS,
+} from './handle-generator';
 
 // ── Tests ────────────────────────────────────────────────────────────
 
@@ -15,5 +20,17 @@ describe('generateHandle', () => {
     const handles = new Set(Array.from({ length: 50 }, () => generateHandle()));
 
     expect(handles.size).toBeGreaterThan(1);
+  });
+});
+
+describe('isGeneratedHandle', () => {
+  it('recognises a name we made up', () => {
+    expect(isGeneratedHandle(generateHandle())).toBe(true);
+  });
+
+  it('leaves a chosen name alone', () => {
+    expect(isGeneratedHandle('Carlos')).toBe(false);
+    expect(isGeneratedHandle('Vinyl Chorus Extra')).toBe(false);
+    expect(isGeneratedHandle('Neon Person')).toBe(false);
   });
 });

@@ -34,3 +34,11 @@ export const THROTTLE_START = 'start';
  * this is what keeps a crawler from filling the table.
  */
 export const THROTTLE_START_LIMIT = 40;
+
+/** Named throttler for avatar upload */
+export const THROTTLE_AVATAR = 'avatar';
+/**
+ * Per session. Spotify's five-user cap used to be the rate limit here; anyone
+ * can mint a session now, and every upload spends third-party quota.
+ */
+export const THROTTLE_AVATAR_LIMIT = 5;

@@ -58,6 +58,8 @@ export class AccountMergeService {
       },
     });
 
+    // StreakFreezeUsage needs nothing: it cascades, and only a trusted user
+    // can have any, which a credential-free row never is.
     await this.prismaService.user.delete({ where: { id: sourceUserId } });
   }
 
@@ -90,8 +92,9 @@ export class AccountMergeService {
           totalWins: into.totalWins + from.totalWins,
           currentStreak: Math.max(into.currentStreak, from.currentStreak),
           bestStreak: Math.max(into.bestStreak, from.bestStreak),
-          roundDistribution: into.roundDistribution.map(
-            (value, index) => value + (from.roundDistribution[index] ?? 0),
+          roundDistribution: sumDistributions(
+            into.roundDistribution,
+            from.roundDistribution,
           ),
           lastWinDate: laterOf(into.lastWinDate, from.lastWinDate),
         },
@@ -131,6 +134,12 @@ export class AccountMergeService {
       });
     }
   }
+}
+
+/** Element-wise, over the longer of the two: neither side may be truncated. */
+function sumDistributions(a: number[], b: number[]): number[] {
+  const length = Math.max(a.length, b.length);
+  return Array.from({ length }, (_, i) => (a[i] ?? 0) + (b[i] ?? 0));
 }
 
 function laterOf(a: Date | null, b: Date | null): Date | null {

@@ -241,6 +241,23 @@ describe('AccountMergeService', () => {
     expect(mockPrismaService.user.delete).not.toHaveBeenCalled();
   });
 
+  it('sums distributions over the longer of the two', async () => {
+    mockPrismaService.stats.findMany.mockResolvedValue([
+      makeStats(SOURCE, { roundDistribution: [1, 1, 1, 1, 1, 1, 1, 5] }),
+      makeStats(SURVIVOR, { roundDistribution: [1, 0, 0, 0, 0, 0, 0] }),
+    ]);
+
+    await service.merge(SOURCE, SURVIVOR);
+
+    expect(mockPrismaService.stats.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          roundDistribution: [2, 1, 1, 1, 1, 1, 1, 5],
+        }),
+      }),
+    );
+  });
+
   it('deletes the source row last', async () => {
     mockPrismaService.stats.findMany.mockResolvedValue([]);
 

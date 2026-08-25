@@ -58,8 +58,7 @@ export class GauntletController {
   }
 
   @Post(':id/guess')
-  @UseGuards(LinkedAccountGuard)
-  @UseGuards(SessionThrottlerGuard)
+  @UseGuards(SessionThrottlerGuard, LinkedAccountGuard)
   @Throttle({
     [THROTTLE_GUESS]: { limit: THROTTLE_GUESS_LIMIT, ttl: THROTTLE_TTL },
   })

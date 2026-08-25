@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { SessionService } from '@auth/services/session.service';
 import { UserRepository } from '@auth/repositories/user.repository';
 import { generateHandle } from '@auth/utils/handle-generator';
+import { hasCredential } from '@auth/utils/credentials';
 import { getCookieOptions } from '@auth/utils/http-helpers';
 import {
   DEVICE_COOKIE_NAME,
@@ -49,7 +50,7 @@ export class ProvisioningSessionGuard implements CanActivate {
         );
 
         // Sessions predating the device cookie still deserve one.
-        if (!deviceToken && !session.spotifyUserId) {
+        if (!deviceToken && !hasCredential(session)) {
           await this.issueDeviceToken(request, response, session.userId);
         }
         return true;
@@ -63,8 +64,8 @@ export class ProvisioningSessionGuard implements CanActivate {
       const user = userId ? await this.userRepository.findById(userId) : null;
 
       // A device token re-attaches an anonymous row and nothing else: honouring
-      // it for a credentialed account would make a cookie a login.
-      if (user && !user.spotifyUserId) {
+      // it for an account of any kind would make a cookie a login.
+      if (user && !hasCredential(user)) {
         const sessionId = await this.sessionService.createSession({
           userId: user.id,
           displayName: user.displayName,
