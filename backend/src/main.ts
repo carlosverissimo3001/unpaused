@@ -4,6 +4,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { VALIDATION_CONFIG } from './utils/validators/validators';
+import { RedisIoAdapter } from './redis/redis-io.adapter';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const module: any;
@@ -44,6 +45,11 @@ async function bootstrap() {
   });
 
   app.useGlobalPipes(VALIDATION_CONFIG);
+
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connect();
+  app.useWebSocketAdapter(redisIoAdapter);
+
   await app.listen(process.env.PORT ?? 3001);
 
   if (module.hot) {

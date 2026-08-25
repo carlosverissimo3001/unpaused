@@ -79,3 +79,30 @@ export const POOL_PLAYLIST_TRACKS_CACHE_PREFIX = 'pool:playlist_tracks:';
 export const POOL_PLAYLIST_TRACKS_CACHE_TTL = 6 * 60 * 60;
 
 export const POOL_MAX_PREVIEW_ATTEMPTS = 10;
+
+// Multiplayer room state (Redis-backed so it survives a restart and is shared across instances)
+export const ROOM_PRESENCE_PREFIX = 'room:presence:';
+/** Sorted set of roomId -> host-disconnect deadline, so the sweep is a range query and ZREM is the atomic claim. */
+export const ROOM_HOST_GONE_KEY = 'room:host-gone';
+
+/**
+ * Set once the room has been told its host is gone. Without it a host who comes
+ * back after the grace lapses is never announced, and the room stays stuck on
+ * "host disconnected" with no way to recover.
+ */
+export const ROOM_HOST_ANNOUNCED_PREFIX = 'room:host-announced:';
+export const ROOM_HOST_ANNOUNCED_TTL = 60 * 60;
+
+/**
+ * A member is online while their last heartbeat is inside this window. It must
+ * comfortably exceed ROOM_HEARTBEAT_MS or a slow round-trip reads as a leave.
+ */
+export const ROOM_PRESENCE_STALE_MS = 45 * 1000;
+export const ROOM_HEARTBEAT_MS = 15 * 1000;
+
+/** Outlives the staleness window so a dead instance's members lapse, not linger. */
+export const ROOM_PRESENCE_TTL = 5 * 60;
+
+/** Grace for a page refresh before the room is told its host is gone. */
+export const ROOM_HOST_GONE_GRACE_MS = 5 * 1000;
+export const ROOM_SWEEP_INTERVAL_MS = 2 * 1000;

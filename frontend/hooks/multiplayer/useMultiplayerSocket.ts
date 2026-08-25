@@ -6,6 +6,12 @@ import { io } from 'socket.io-client';
 import { queryKeys } from '@/lib/queryKeys';
 import type { RoomDto } from '@/sdk';
 
+/**
+ * Presence is a heartbeat window on the server, so a member who stops sending
+ * these lapses out of the room. Must stay well under the server's stale window.
+ */
+const HEARTBEAT_MS = 15_000;
+
 interface UseMultiplayerSocketOptions {
   onPlayerRoundComplete?: (data: {
     userId: string;
@@ -56,6 +62,10 @@ export function useMultiplayerSocket(
 
     socket.on('disconnect', () => setConnected(false));
 
+    const heartbeat = setInterval(() => {
+      if (socket.connected) socket.emit('heartbeat');
+    }, HEARTBEAT_MS);
+
     socket.on('roomUpdated', (data: RoomDto) => {
       const currentRoomId = roomIdRef.current!;
       queryClient.setQueryData(queryKeys.multiplayer.room(currentRoomId), data);
@@ -89,6 +99,7 @@ export function useMultiplayerSocket(
     socket.on('hostReconnected', () => setHostDisconnected(false));
 
     return () => {
+      clearInterval(heartbeat);
       socket.disconnect();
       setConnected(false);
       setOnlineUserIds([]);
