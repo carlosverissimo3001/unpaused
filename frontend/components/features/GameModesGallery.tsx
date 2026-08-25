@@ -41,10 +41,9 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
-    y: 0,
     scale: 1,
     transition: { type: 'spring' as const, damping: 20, stiffness: 300 },
   },
@@ -240,7 +239,7 @@ function MultiplayerCardContent({
       <div className="flex items-center gap-2 w-full">
         <button
           onClick={onJoin}
-          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black border border-fg/10 bg-fg/5 hover:bg-fg/10 text-fg transition-all active:scale-95"
+          className="flex cursor-pointer items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black border border-fg/10 bg-fg/5 hover:bg-fg/10 text-fg transition-all active:scale-95"
         >
           <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline lg:hidden">Join</span>
@@ -248,7 +247,7 @@ function MultiplayerCardContent({
 
         <button
           onClick={onCreate}
-          className="flex-[2] flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
+          className="flex-[2] flex cursor-pointer items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
         >
           <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>Create</span>
@@ -301,7 +300,6 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
             <motion.div
               key={mode.id}
               variants={itemVariants}
-              whileHover={{ y: -5 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
                 'group relative overflow-hidden rounded-[2rem] border border-fg/10 bg-surface dark:bg-[#0A0A0A] flex flex-col shadow-2xl',
