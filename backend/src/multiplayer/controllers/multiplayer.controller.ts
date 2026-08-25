@@ -29,6 +29,7 @@ import { GuessResultDto } from '../../game/dto/guess/guess-result.dto';
 import { RoomService } from '../services/room.service';
 import { MultiplayerGameService } from '../services/multiplayer-game.service';
 import { CreateRoomDto } from '../dto/create-room.dto';
+import { SetTrackSourceDto } from '../dto/set-track-source.dto';
 import { RoomDto } from '../dto/room.dto';
 import { MultiplayerRoundStateDto } from '../dto/multiplayer-round-state.dto';
 import { ScoreboardDto } from '../dto/scoreboard.dto';
@@ -58,8 +59,12 @@ export class MultiplayerController {
   @ApiOperation({ summary: 'Get room state with players' })
   @ApiParam({ name: 'id', description: 'Room ID' })
   @ApiResponse({ status: 200, type: RoomDto })
-  async getRoomState(@Param('id') id: string): Promise<RoomDto> {
-    return this.roomService.getRoomState(id);
+  @ApiResponse({ status: 403, description: 'You are not in this room' })
+  async getRoomState(
+    @SessionId() sessionId: string,
+    @Param('id') id: string,
+  ): Promise<RoomDto> {
+    return this.roomService.getRoomState(sessionId, id);
   }
 
   @Post('rooms/:code/join')
@@ -72,6 +77,20 @@ export class MultiplayerController {
     @Param('code') code: string,
   ): Promise<RoomDto> {
     return this.roomService.joinRoom(sessionId, code);
+  }
+
+  @Post('rooms/:id/track-source')
+  @HttpCode(HttpStatus.OK)
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Choose where the room draws its songs from' })
+  @ApiParam({ name: 'id', description: 'Room ID' })
+  @ApiResponse({ status: 200, type: RoomDto })
+  async setTrackSource(
+    @SessionId() sessionId: string,
+    @Param('id') id: string,
+    @Body() dto: SetTrackSourceDto,
+  ): Promise<RoomDto> {
+    return this.roomService.setTrackSource(sessionId, id, dto.trackSource);
   }
 
   @Post('rooms/:id/ready')

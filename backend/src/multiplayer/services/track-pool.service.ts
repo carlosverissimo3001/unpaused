@@ -5,6 +5,7 @@ import { SessionService } from '../../auth/services/session.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { TrackDto } from '../../track/dto/track.dto';
 import { shuffleInPlace } from '../../game/utils/utils';
+import { TrackSource } from '@prisma/client';
 import { UserRepository } from '../../auth/repositories/user.repository';
 import { PoolService } from '../../pool/services/pool.service';
 
@@ -49,20 +50,27 @@ export class TrackPoolService {
   async selectTracksForRoom(
     playerUserIds: string[],
     roundCount: number,
+    trackSource: TrackSource = TrackSource.POOL,
   ): Promise<string[]> {
-    // Liked-song pooling needs every player to have a library. One player
-    // without an account puts the whole room on the curated pool rather than
-    // half a pool: nobody gets a home-field advantage, and everyone faces the
-    // same catalogue.
-    if (await this.hasUnlinkedPlayer(playerUserIds)) {
-      this.logger.log(
-        'Room has a player with no linked account, using the curated pool',
+    if (trackSource === TrackSource.POOL) {
+      return this.selectFromCuratedPool(roundCount);
+    }
+
+    // Only the players who have a library can contribute one. A guest in the
+    // room plays against the others' music rather than overriding the host's
+    // choice — the host picked this, and nothing should change it under them.
+    const linkedUserIds =
+      await this.userRepository.filterWithCredential(playerUserIds);
+
+    if (linkedUserIds.length === 0) {
+      this.logger.warn(
+        'A libraries room has no linked players, falling back to the pool',
       );
       return this.selectFromCuratedPool(roundCount);
     }
 
     // 1. Resolve userIds -> sessionIds
-    const sessionIds = await this.resolvePlayerSessions(playerUserIds);
+    const sessionIds = await this.resolvePlayerSessions(linkedUserIds);
 
     if (sessionIds.length === 0) {
       throw new BadRequestException(
@@ -83,11 +91,6 @@ export class TrackPoolService {
     const selectedTrackIds = await this.weightedSelect(pool, roundCount);
 
     return selectedTrackIds;
-  }
-
-  /** True when any player in the room has no linked music account. */
-  private async hasUnlinkedPlayer(userIds: string[]): Promise<boolean> {
-    return (await this.userRepository.countWithoutCredential(userIds)) > 0;
   }
 
   /**

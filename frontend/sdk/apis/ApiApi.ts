@@ -38,6 +38,7 @@ import type {
   QuizResultDto,
   RoomDto,
   ScoreboardDto,
+  SetTrackSourceDto,
   ShareResultDto,
   StartGameDto,
   StartRunDto,
@@ -100,6 +101,8 @@ import {
     RoomDtoToJSON,
     ScoreboardDtoFromJSON,
     ScoreboardDtoToJSON,
+    SetTrackSourceDtoFromJSON,
+    SetTrackSourceDtoToJSON,
     ShareResultDtoFromJSON,
     ShareResultDtoToJSON,
     StartGameDtoFromJSON,
@@ -241,6 +244,11 @@ export interface MultiplayerControllerJoinRoomRequest {
 
 export interface MultiplayerControllerLeaveRoomRequest {
     id: string;
+}
+
+export interface MultiplayerControllerSetTrackSourceRequest {
+    id: string;
+    setTrackSourceDto: SetTrackSourceDto;
 }
 
 export interface MultiplayerControllerStartGameRequest {
@@ -1509,6 +1517,53 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async multiplayerControllerLeaveRoom(requestParameters: MultiplayerControllerLeaveRoomRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.multiplayerControllerLeaveRoomRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Choose where the room draws its songs from
+     */
+    async multiplayerControllerSetTrackSourceRaw(requestParameters: MultiplayerControllerSetTrackSourceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RoomDto>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling multiplayerControllerSetTrackSource().'
+            );
+        }
+
+        if (requestParameters['setTrackSourceDto'] == null) {
+            throw new runtime.RequiredError(
+                'setTrackSourceDto',
+                'Required parameter "setTrackSourceDto" was null or undefined when calling multiplayerControllerSetTrackSource().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/multiplayer/rooms/{id}/track-source`;
+        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SetTrackSourceDtoToJSON(requestParameters['setTrackSourceDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RoomDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Choose where the room draws its songs from
+     */
+    async multiplayerControllerSetTrackSource(requestParameters: MultiplayerControllerSetTrackSourceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RoomDto> {
+        const response = await this.multiplayerControllerSetTrackSourceRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

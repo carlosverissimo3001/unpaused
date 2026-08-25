@@ -4,6 +4,7 @@ import { PlaylistService } from '../../playlist/services/playlist.service';
 import { TrackService } from '../../track/services/track.service';
 import { SessionService } from '../../auth/services/session.service';
 import { AppLoggerService } from '../../logger/logger.service';
+import { TrackSource } from '@prisma/client';
 import { UserRepository } from '../../auth/repositories/user.repository';
 import { PoolService } from '../../pool/services/pool.service';
 
@@ -33,7 +34,7 @@ describe('TrackPoolService', () => {
   let sessionService: jest.Mocked<SessionService>;
   let userRepository: {
     findExistingIds: jest.Mock;
-    countWithoutCredential: jest.Mock;
+    filterWithCredential: jest.Mock;
   };
   let poolService: { pickTrack: jest.Mock };
 
@@ -53,8 +54,10 @@ describe('TrackPoolService', () => {
 
     userRepository = {
       findExistingIds: jest.fn(),
-      // Every existing case is an all-linked room unless it says otherwise.
-      countWithoutCredential: jest.fn().mockResolvedValue(0),
+      // Every player is linked unless a case says otherwise.
+      filterWithCredential: jest
+        .fn()
+        .mockImplementation((ids: string[]) => Promise.resolve(ids)),
     };
 
     poolService = { pickTrack: jest.fn() };
@@ -115,7 +118,11 @@ describe('TrackPoolService', () => {
         }) as any,
     );
 
-    const result = await service.selectTracksForRoom(['user-1', 'user-2'], 2);
+    const result = await service.selectTracksForRoom(
+      ['user-1', 'user-2'],
+      2,
+      TrackSource.LIBRARIES,
+    );
 
     expect(result).toHaveLength(2);
     expect(result).toContain('track-A');
@@ -151,7 +158,11 @@ describe('TrackPoolService', () => {
       createdAt: new Date(),
     } as any);
 
-    const result = await service.selectTracksForRoom(['user-1', 'user-2'], 1);
+    const result = await service.selectTracksForRoom(
+      ['user-1', 'user-2'],
+      1,
+      TrackSource.LIBRARIES,
+    );
 
     expect(result).toHaveLength(1);
     // Only player 1's session was used
@@ -162,9 +173,9 @@ describe('TrackPoolService', () => {
     userRepository.findExistingIds.mockResolvedValue(['user-1']);
     sessionService.getSessionIdByUserId.mockResolvedValue(null);
 
-    await expect(service.selectTracksForRoom(['user-1'], 3)).rejects.toThrow(
-      'No active sessions found',
-    );
+    await expect(
+      service.selectTracksForRoom(['user-1'], 3, TrackSource.LIBRARIES),
+    ).rejects.toThrow('No active sessions found');
   });
 
   it('should throw when no tracks have valid previews', async () => {
@@ -192,9 +203,9 @@ describe('TrackPoolService', () => {
       createdAt: new Date(),
     } as any);
 
-    await expect(service.selectTracksForRoom(['user-1'], 3)).rejects.toThrow(
-      'Could not find any tracks with valid preview URLs',
-    );
+    await expect(
+      service.selectTracksForRoom(['user-1'], 3, TrackSource.LIBRARIES),
+    ).rejects.toThrow('Could not find any tracks with valid preview URLs');
   });
 
   it('should handle player with empty liked songs gracefully', async () => {
@@ -227,7 +238,11 @@ describe('TrackPoolService', () => {
       createdAt: new Date(),
     } as any);
 
-    const result = await service.selectTracksForRoom(['user-1', 'user-2'], 1);
+    const result = await service.selectTracksForRoom(
+      ['user-1', 'user-2'],
+      1,
+      TrackSource.LIBRARIES,
+    );
 
     expect(result).toHaveLength(1);
   });
@@ -257,19 +272,23 @@ describe('TrackPoolService', () => {
     } as any);
 
     // Asking for 5 but only 1 track available
-    const result = await service.selectTracksForRoom(['user-1'], 5);
+    const result = await service.selectTracksForRoom(
+      ['user-1'],
+      5,
+      TrackSource.LIBRARIES,
+    );
 
     expect(result).toHaveLength(1);
     expect(result[0]).toBe('only-track');
   });
 });
 
-describe('rooms with an unlinked player', () => {
+describe('choosing where a room draws from', () => {
   // Redeclared here so these cases are readable on their own.
   let service: TrackPoolService;
   let userRepository: {
     findExistingIds: jest.Mock;
-    countWithoutCredential: jest.Mock;
+    filterWithCredential: jest.Mock;
   };
   let poolService: { pickTrack: jest.Mock };
   let playlistService: { getLikedSongsMetadata: jest.Mock };
@@ -277,7 +296,8 @@ describe('rooms with an unlinked player', () => {
   beforeEach(async () => {
     userRepository = {
       findExistingIds: jest.fn(),
-      countWithoutCredential: jest.fn().mockResolvedValue(1),
+      // Overridden per case: who in the room actually has a library.
+      filterWithCredential: jest.fn().mockResolvedValue([]),
     };
     poolService = { pickTrack: jest.fn() };
     playlistService = { getLikedSongsMetadata: jest.fn() };
@@ -300,22 +320,60 @@ describe('rooms with an unlinked player', () => {
     service = module.get(TrackPoolService);
   });
 
-  it('draws from the curated pool', async () => {
+  it('draws from the curated pool when the room asked for the pool', async () => {
     poolService.pickTrack
       .mockResolvedValueOnce({ id: 'pool-1' })
       .mockResolvedValueOnce({ id: 'pool-2' });
 
-    const result = await service.selectTracksForRoom(['user-1', 'user-2'], 2);
+    const result = await service.selectTracksForRoom(
+      ['user-1', 'user-2'],
+      2,
+      TrackSource.POOL,
+    );
 
     expect(result).toEqual(['pool-1', 'pool-2']);
   });
 
-  it('never reaches for anyone liked songs, so no player has home advantage', async () => {
+  it('defaults to the pool, so a room never starts on someone library by accident', async () => {
     poolService.pickTrack.mockResolvedValue({ id: 'pool-1' });
 
-    await service.selectTracksForRoom(['user-1', 'user-2'], 1);
+    await service.selectTracksForRoom(['user-1'], 1);
 
     expect(playlistService.getLikedSongsMetadata).not.toHaveBeenCalled();
+  });
+
+  it('pools only the linked players when a guest is in a libraries room', async () => {
+    userRepository.filterWithCredential.mockResolvedValue(['linked-user']);
+    userRepository.findExistingIds.mockResolvedValue(['linked-user']);
+    playlistService.getLikedSongsMetadata.mockResolvedValue({ totalTracks: 0 });
+
+    await service
+      .selectTracksForRoom(
+        ['linked-user', 'guest-user'],
+        2,
+        TrackSource.LIBRARIES,
+      )
+      .catch(() => {
+        /* an empty library is not what this case is about */
+      });
+
+    // The guest is never looked up for a session, so never pooled from.
+    expect(userRepository.findExistingIds).toHaveBeenCalledWith([
+      'linked-user',
+    ]);
+  });
+
+  it('falls back to the pool when a libraries room has nobody with a library', async () => {
+    userRepository.filterWithCredential.mockResolvedValue([]);
+    poolService.pickTrack.mockResolvedValue({ id: 'pool-1' });
+
+    const result = await service.selectTracksForRoom(
+      ['guest-1', 'guest-2'],
+      1,
+      TrackSource.LIBRARIES,
+    );
+
+    expect(result).toEqual(['pool-1']);
   });
 
   it('excludes tracks already drawn so a room cannot repeat a song', async () => {
@@ -323,7 +381,7 @@ describe('rooms with an unlinked player', () => {
       .mockResolvedValueOnce({ id: 'pool-1' })
       .mockResolvedValueOnce({ id: 'pool-2' });
 
-    await service.selectTracksForRoom(['user-1'], 2);
+    await service.selectTracksForRoom(['user-1'], 2, TrackSource.POOL);
 
     expect(poolService.pickTrack).toHaveBeenNthCalledWith(2, ['pool-1']);
   });
@@ -333,7 +391,11 @@ describe('rooms with an unlinked player', () => {
       .mockResolvedValueOnce({ id: 'pool-1' })
       .mockRejectedValueOnce(new Error('No guest track available'));
 
-    const result = await service.selectTracksForRoom(['user-1'], 3);
+    const result = await service.selectTracksForRoom(
+      ['user-1'],
+      3,
+      TrackSource.POOL,
+    );
 
     expect(result).toEqual(['pool-1']);
   });
@@ -343,8 +405,8 @@ describe('rooms with an unlinked player', () => {
       new Error('No guest track available'),
     );
 
-    await expect(service.selectTracksForRoom(['user-1'], 3)).rejects.toThrow(
-      'No curated tracks available',
-    );
+    await expect(
+      service.selectTracksForRoom(['user-1'], 3, TrackSource.POOL),
+    ).rejects.toThrow('No curated tracks available');
   });
 });

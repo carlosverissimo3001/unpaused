@@ -9,6 +9,7 @@ import { useMultiplayerSocket } from '@/hooks/multiplayer/useMultiplayerSocket';
 import { useRoom } from '@/hooks/multiplayer/useRoom';
 import { useStartRoom } from '@/hooks/multiplayer/useStartRoom';
 import { useToggleReady } from '@/hooks/multiplayer/useToggleReady';
+import { TrackSourcePicker } from '@/components/multiplayer/TrackSourcePicker';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -145,13 +146,22 @@ export default function RoomLobbyPage() {
             <Users className="w-6 h-6 text-red-400" />
           </div>
           <h2 className="text-lg font-bold text-fg mb-2">
-            {room?.status === 'EXPIRED' ? 'Room Expired' : 'Room Not Found'}
+            {room?.status === 'EXPIRED'
+              ? 'Room Expired'
+              : isError
+                ? 'Room Unavailable'
+                : 'Room Not Found'}
           </h2>
           <p className="text-fg/50 text-sm mb-6">
             {isError
-              ? (error?.message ?? 'Could not load room.')
+              ? (error?.message ?? 'Could not load this room.')
               : 'This room is no longer available.'}
           </p>
+          {isError && (
+            <p className="text-fg/40 text-xs mb-6">
+              Rooms are invite only. Ask for the code to join.
+            </p>
+          )}
           <button
             onClick={() => router.replace('/')}
             className="flex items-center gap-2 mx-auto text-spotify-green hover:underline text-sm font-medium"
@@ -320,6 +330,12 @@ export default function RoomLobbyPage() {
             transition={{ delay: 0.3 }}
             className="flex flex-col gap-3"
           >
+            <TrackSourcePicker
+              room={room}
+              isHost={isHost}
+              hasLinkedAccount={!!user?.hasLinkedAccount}
+            />
+
             {/* Ready toggle — available for all players */}
             <button
               onClick={handleToggleReady}

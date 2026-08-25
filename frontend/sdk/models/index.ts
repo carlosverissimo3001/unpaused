@@ -45,6 +45,7 @@ export * from './ScoreboardDto';
 export * from './ScoreboardPlayerRoundDto';
 export * from './ScoreboardPlayerTotalDto';
 export * from './ScoreboardRoundDto';
+export * from './SetTrackSourceDto';
 export * from './ShareResultDto';
 export * from './StartDemoRoundDto';
 export * from './StartGameDto';

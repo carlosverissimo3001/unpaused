@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { RoomStatus } from '@prisma/client';
+import { RoomStatus, TrackSource } from '@prisma/client';
 import { AuthService } from '../../auth/services/auth.service';
 import {
   RoomRepository,
@@ -41,8 +41,20 @@ export class RoomService {
     return RoomDto.fromEntity(room);
   }
 
-  async getRoomState(roomId: string): Promise<RoomDto> {
+  /**
+   * Members only. The room id is not a secret — it is in the url of everyone
+   * who has ever played — while the invite code this returns is exactly the
+   * thing that decides who gets in, alongside the roster and everyone's name.
+   * The way into a room is the code, not the id.
+   */
+  async getRoomState(sessionId: string, roomId: string): Promise<RoomDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
     const room = await this.findRoomOrThrow(roomId);
+
+    if (!room.players.some((player) => player.userId === userId)) {
+      throw new ForbiddenException('You are not in this room');
+    }
+
     return RoomDto.fromEntity(room);
   }
 
@@ -75,6 +87,35 @@ export class RoomService {
     const updated = await this.findRoomOrThrow(room.id);
     const dto = RoomDto.fromEntity(updated);
     this.roomsGateway.emitRoomUpdate(room.id, dto);
+    return dto;
+  }
+
+  /**
+   * The host chooses where the songs come from. Deliberately not inferred from
+   * who is in the room, so it cannot change under them when someone joins.
+   */
+  async setTrackSource(
+    sessionId: string,
+    roomId: string,
+    trackSource: TrackSource,
+  ): Promise<RoomDto> {
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const room = await this.findRoomOrThrow(roomId);
+
+    if (room.hostId !== userId) {
+      throw new ForbiddenException('Only the host can change the song source');
+    }
+
+    if (room.status !== RoomStatus.WAITING) {
+      throw new BadRequestException('The game has already started');
+    }
+
+    const updated = await this.roomRepository.setTrackSource(
+      roomId,
+      trackSource,
+    );
+    const dto = RoomDto.fromEntity(updated);
+    this.roomsGateway.emitRoomUpdate(roomId, dto);
     return dto;
   }
 
@@ -122,6 +163,7 @@ export class RoomService {
       trackIds = await this.trackPoolService.selectTracksForRoom(
         playerUserIds,
         room.roundCount,
+        room.trackSource,
       );
     } catch (error) {
       if (error instanceof BadRequestException) {

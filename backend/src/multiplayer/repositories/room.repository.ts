@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
-import { MultiplayerRoom, RoomPlayer, RoomStatus, User } from '@prisma/client';
+import {
+  MultiplayerRoom,
+  RoomPlayer,
+  RoomStatus,
+  TrackSource,
+  User,
+} from '@prisma/client';
 
 const PLAYERS_INCLUDE = {
   players: {
@@ -96,6 +102,17 @@ export class RoomRepository {
     await this.prisma.roomPlayer.update({
       where: { id: playerId },
       data: { totalScore: { increment: score } },
+    });
+  }
+
+  async setTrackSource(
+    roomId: string,
+    trackSource: TrackSource,
+  ): Promise<RoomWithPlayers> {
+    return this.prisma.multiplayerRoom.update({
+      where: { id: roomId },
+      data: { trackSource },
+      include: PLAYERS_INCLUDE,
     });
   }
 

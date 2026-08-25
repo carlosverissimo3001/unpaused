@@ -37,14 +37,16 @@ export class UserRepository {
   }
 
   /**
-   * How many of the given users have no credential attached.
-   * @param ids - The IDs to check
-   * @returns The count of anonymous rows among them
+   * Of the given users, those that are accounts rather than anonymous rows.
+   * @param ids - The IDs to filter
+   * @returns The subset with a credential attached
    */
-  async countWithoutCredential(ids: string[]): Promise<number> {
-    return this.prismaService.user.count({
-      where: { id: { in: ids }, spotifyUserId: null },
+  async filterWithCredential(ids: string[]): Promise<string[]> {
+    const users = await this.prismaService.user.findMany({
+      where: { id: { in: ids }, spotifyUserId: { not: null } },
+      select: { id: true },
     });
+    return users.map((user) => user.id);
   }
 
   /**

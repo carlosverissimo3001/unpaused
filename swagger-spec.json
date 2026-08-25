@@ -1173,6 +1173,53 @@
         ]
       }
     },
+    "/multiplayer/rooms/{id}/track-source": {
+      "post": {
+        "operationId": "MultiplayerController_setTrackSource",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Room ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetTrackSourceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Choose where the room draws its songs from",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/multiplayer/rooms/{id}/ready": {
       "post": {
         "operationId": "MultiplayerController_toggleReady",
@@ -3173,6 +3220,14 @@
               "EXPIRED"
             ]
           },
+          "trackSource": {
+            "type": "string",
+            "enum": [
+              "POOL",
+              "LIBRARIES"
+            ],
+            "description": "Where this room draws its songs from"
+          },
           "players": {
             "type": "array",
             "items": {
@@ -3198,8 +3253,25 @@
           "hostId",
           "roundCount",
           "status",
+          "trackSource",
           "players",
           "createdAt"
+        ]
+      },
+      "SetTrackSourceDto": {
+        "type": "object",
+        "properties": {
+          "trackSource": {
+            "type": "string",
+            "enum": [
+              "POOL",
+              "LIBRARIES"
+            ],
+            "description": "Where the room should draw its songs from"
+          }
+        },
+        "required": [
+          "trackSource"
         ]
       },
       "MultiplayerRoundStateDto": {

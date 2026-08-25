@@ -36,6 +36,7 @@ All URIs are relative to *http://localhost*
 | [**multiplayerControllerGetScoreboard**](ApiApi.md#multiplayercontrollergetscoreboard) | **GET** /multiplayer/rooms/{id}/scoreboard | Get scoreboard (only completed rounds visible) |
 | [**multiplayerControllerJoinRoom**](ApiApi.md#multiplayercontrollerjoinroom) | **POST** /multiplayer/rooms/{code}/join | Join a room by invite code |
 | [**multiplayerControllerLeaveRoom**](ApiApi.md#multiplayercontrollerleaveroom) | **POST** /multiplayer/rooms/{id}/leave | Leave a room (host leaving expires it) |
+| [**multiplayerControllerSetTrackSource**](ApiApi.md#multiplayercontrollersettracksource) | **POST** /multiplayer/rooms/{id}/track-source | Choose where the room draws its songs from |
 | [**multiplayerControllerStartGame**](ApiApi.md#multiplayercontrollerstartgame) | **POST** /multiplayer/rooms/{id}/start | Start the game (host only) |
 | [**multiplayerControllerSubmitGuess**](ApiApi.md#multiplayercontrollersubmitguess) | **POST** /multiplayer/rooms/{id}/guess | Submit a guess for the current round |
 | [**multiplayerControllerToggleReady**](ApiApi.md#multiplayercontrollertoggleready) | **POST** /multiplayer/rooms/{id}/ready | Toggle ready status for current player |
@@ -2230,6 +2231,78 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## multiplayerControllerSetTrackSource
+
+> RoomDto multiplayerControllerSetTrackSource(id, setTrackSourceDto)
+
+Choose where the room draws its songs from
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { MultiplayerControllerSetTrackSourceRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // string | Room ID
+    id: id_example,
+    // SetTrackSourceDto
+    setTrackSourceDto: ...,
+  } satisfies MultiplayerControllerSetTrackSourceRequest;
+
+  try {
+    const data = await api.multiplayerControllerSetTrackSource(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `string` | Room ID | [Defaults to `undefined`] |
+| **setTrackSourceDto** | [SetTrackSourceDto](SetTrackSourceDto.md) |  | |
+
+### Return type
+
+[**RoomDto**](RoomDto.md)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

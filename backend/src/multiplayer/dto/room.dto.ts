@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { RoomStatus, MultiplayerRoom, RoomPlayer, User } from '@prisma/client';
+import {
+  RoomStatus,
+  TrackSource,
+  MultiplayerRoom,
+  RoomPlayer,
+  User,
+} from '@prisma/client';
 import { RoomPlayerDto } from './room-player.dto';
 
 type RoomWithPlayers = MultiplayerRoom & {
@@ -24,6 +30,12 @@ export class RoomDto {
   @ApiProperty({ enum: RoomStatus })
   status: RoomStatus;
 
+  @ApiProperty({
+    enum: TrackSource,
+    description: 'Where this room draws its songs from',
+  })
+  trackSource: TrackSource;
+
   @ApiProperty({ type: [RoomPlayerDto] })
   players: RoomPlayerDto[];
 
@@ -43,6 +55,7 @@ export class RoomDto {
       hostId: room.hostId,
       roundCount: room.roundCount,
       status: room.status,
+      trackSource: room.trackSource,
       players: room.players.map(RoomPlayerDto.fromEntity),
       createdAt: room.createdAt,
       startedAt: room.startedAt ?? undefined,

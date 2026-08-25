@@ -4,7 +4,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { RoomStatus } from '@prisma/client';
+import { RoomStatus, TrackSource } from '@prisma/client';
 import { RoomService } from './room.service';
 import { RoomRepository } from '../repositories/room.repository';
 import { AuthService } from '../../auth/services/auth.service';
@@ -21,12 +21,18 @@ describe('RoomService', () => {
   const ROOM_ID = 'room-123';
   const INVITE_CODE = 'ABCD1234';
 
+  const mockRoomsGateway = {
+    emitRoomUpdate: jest.fn(),
+    emitPlayerRoundComplete: jest.fn(),
+  };
+
   const makeRoom = (overrides?: Record<string, unknown>) => ({
     id: ROOM_ID,
     inviteCode: INVITE_CODE,
     hostId: HOST_USER_ID,
     roundCount: 5,
     status: RoomStatus.WAITING,
+    trackSource: TrackSource.POOL,
     trackIds: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -58,6 +64,8 @@ describe('RoomService', () => {
     addPlayer: jest.fn(),
     removePlayer: jest.fn(),
     updateStatus: jest.fn(),
+    setTrackSource: jest.fn(),
+    toggleReady: jest.fn(),
     inviteCodeExists: jest.fn(),
   };
 
@@ -72,13 +80,7 @@ describe('RoomService', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: RoomRepository, useValue: mockRoomRepository },
         { provide: TrackPoolService, useValue: mockTrackPoolService },
-        {
-          provide: RoomsGateway,
-          useValue: {
-            emitRoomUpdate: jest.fn(),
-            emitPlayerRoundComplete: jest.fn(),
-          },
-        },
+        { provide: RoomsGateway, useValue: mockRoomsGateway },
       ],
     }).compile();
 
@@ -205,6 +207,97 @@ describe('RoomService', () => {
     });
   });
 
+  describe('getRoomState', () => {
+    it('shows the room to a player who is in it', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      const result = await service.getRoomState(HOST_SESSION, ROOM_ID);
+
+      expect(result.id).toBe(ROOM_ID);
+    });
+
+    it('hides it from anyone else, invite code included', async () => {
+      // The room id is in the url of everyone who has ever played; the invite
+      // code is what actually decides who gets in.
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: 'a-stranger',
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      await expect(service.getRoomState(HOST_SESSION, ROOM_ID)).rejects.toThrow(
+        'You are not in this room',
+      );
+    });
+  });
+
+  describe('setTrackSource', () => {
+    it('lets the host choose the libraries', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockRoomRepository.setTrackSource.mockResolvedValue(
+        makeRoom({ trackSource: TrackSource.LIBRARIES }),
+      );
+
+      const result = await service.setTrackSource(
+        HOST_SESSION,
+        ROOM_ID,
+        TrackSource.LIBRARIES,
+      );
+
+      expect(result.trackSource).toBe(TrackSource.LIBRARIES);
+    });
+
+    it('tells the room, so the choice is not a secret the host keeps', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockRoomRepository.setTrackSource.mockResolvedValue(
+        makeRoom({ trackSource: TrackSource.LIBRARIES }),
+      );
+
+      await service.setTrackSource(
+        HOST_SESSION,
+        ROOM_ID,
+        TrackSource.LIBRARIES,
+      );
+
+      expect(mockRoomsGateway.emitRoomUpdate).toHaveBeenCalledWith(
+        ROOM_ID,
+        expect.objectContaining({ trackSource: TrackSource.LIBRARIES }),
+      );
+    });
+
+    it('refuses anyone who is not the host', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: 'someone-else',
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      await expect(
+        service.setTrackSource(HOST_SESSION, ROOM_ID, TrackSource.LIBRARIES),
+      ).rejects.toThrow('Only the host can change the song source');
+    });
+
+    it('refuses once the game is under way', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(
+        makeRoom({ status: RoomStatus.PLAYING }),
+      );
+
+      await expect(
+        service.setTrackSource(HOST_SESSION, ROOM_ID, TrackSource.LIBRARIES),
+      ).rejects.toThrow('The game has already started');
+    });
+  });
+
   describe('startGame', () => {
     it('should let host start a WAITING room with track pooling', async () => {
       mockAuthService.getUserBySessionId.mockResolvedValue({
@@ -228,6 +321,7 @@ describe('RoomService', () => {
       expect(mockTrackPoolService.selectTracksForRoom).toHaveBeenCalledWith(
         [HOST_USER_ID],
         5,
+        TrackSource.POOL,
       );
       expect(mockRoomRepository.updateStatus).toHaveBeenCalledWith(
         ROOM_ID,

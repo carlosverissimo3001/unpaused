@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { queryKeys } from '@/lib/queryKeys';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/sdk/client';
 import type { MultiplayerRoundStateDto } from '@/sdk';
 import { MultiplayerRoundStateDtoStatusEnum } from '@/sdk';
@@ -15,7 +16,14 @@ export function useMultiplayerRound(
 
   const query = useQuery<MultiplayerRoundStateDto>({
     queryKey: queryKeys.multiplayer.round(roomId!),
-    queryFn: () => api.multiplayerControllerGetRoundState({ id: roomId! }),
+    // Unwrapped, or the page shows the SDK's generic error text.
+    queryFn: async () => {
+      try {
+        return await api.multiplayerControllerGetRoundState({ id: roomId! });
+      } catch (e) {
+        throw new Error(await getApiErrorMessage(e));
+      }
+    },
     enabled: !!roomId,
     /**
      * Only poll when the round is complete — waiting for other players
