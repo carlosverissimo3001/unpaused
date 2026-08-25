@@ -28,6 +28,7 @@ export * from './GuessDto';
 export * from './GuessHistoryDto';
 export * from './GuessResultDto';
 export * from './HintDto';
+export * from './KickPlayerDto';
 export * from './LastfmDataVo';
 export * from './MultiplayerRoundStateDto';
 export * from './PaginationMetaDto';

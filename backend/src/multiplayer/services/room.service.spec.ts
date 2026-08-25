@@ -24,6 +24,7 @@ describe('RoomService', () => {
   const mockRoomsGateway = {
     emitRoomUpdate: jest.fn(),
     emitPlayerRoundComplete: jest.fn(),
+    emitPlayerRemoved: jest.fn(),
   };
 
   const makeRoom = (overrides?: Record<string, unknown>) => ({
@@ -230,6 +231,140 @@ describe('RoomService', () => {
       await expect(service.getRoomState(HOST_SESSION, ROOM_ID)).rejects.toThrow(
         'You are not in this room',
       );
+    });
+  });
+
+  describe('kickPlayer', () => {
+    const OTHER_USER_ID = 'user-2';
+
+    /** makeRoom holds only the host, and there is nobody to remove from that. */
+    const roomWithTwo = (overrides?: Record<string, unknown>) => {
+      const base = makeRoom(overrides);
+      return {
+        ...base,
+        players: [
+          ...base.players,
+          {
+            id: 'player-2',
+            roomId: ROOM_ID,
+            userId: OTHER_USER_ID,
+            totalScore: 0,
+            isReady: false,
+            joinedAt: new Date(),
+            user: { displayName: 'Guest', avatarUrl: null },
+          },
+        ],
+      };
+    };
+
+    it('lets the host clear out a player', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(roomWithTwo());
+
+      await service.kickPlayer(HOST_SESSION, ROOM_ID, OTHER_USER_ID);
+
+      expect(mockRoomRepository.removePlayer).toHaveBeenCalledWith(
+        ROOM_ID,
+        OTHER_USER_ID,
+      );
+    });
+
+    it('tells the room so the kicked tab stops pretending', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(roomWithTwo());
+
+      await service.kickPlayer(HOST_SESSION, ROOM_ID, OTHER_USER_ID);
+
+      expect(mockRoomsGateway.emitPlayerRemoved).toHaveBeenCalledWith(
+        ROOM_ID,
+        OTHER_USER_ID,
+      );
+    });
+
+    it('refuses anyone who is not the host', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: OTHER_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      await expect(
+        service.kickPlayer(HOST_SESSION, ROOM_ID, HOST_USER_ID),
+      ).rejects.toThrow('Only the host can remove players');
+    });
+
+    it('refuses to remove the host, who would take the room with them', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      await expect(
+        service.kickPlayer(HOST_SESSION, ROOM_ID, HOST_USER_ID),
+      ).rejects.toThrow('The host cannot be removed');
+    });
+
+    it('refuses once the game is under way, when scores already exist', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(
+        roomWithTwo({ status: RoomStatus.PLAYING }),
+      );
+
+      await expect(
+        service.kickPlayer(HOST_SESSION, ROOM_ID, OTHER_USER_ID),
+      ).rejects.toThrow('The game has already started');
+    });
+  });
+
+  describe('releaseSeat', () => {
+    const OTHER_USER_ID = 'user-2';
+
+    it('gives up the seat of someone who never came back', async () => {
+      mockRoomRepository.findById.mockResolvedValue({
+        ...makeRoom(),
+        players: [
+          ...makeRoom().players,
+          {
+            id: 'player-2',
+            roomId: ROOM_ID,
+            userId: OTHER_USER_ID,
+            totalScore: 0,
+            isReady: false,
+            joinedAt: new Date(),
+            user: { displayName: 'Guest', avatarUrl: null },
+          },
+        ],
+      });
+
+      await service.releaseSeat(ROOM_ID, OTHER_USER_ID);
+
+      expect(mockRoomRepository.removePlayer).toHaveBeenCalledWith(
+        ROOM_ID,
+        OTHER_USER_ID,
+      );
+    });
+
+    it('leaves a running game alone, where their rounds are part of it', async () => {
+      mockRoomRepository.findById.mockResolvedValue(
+        makeRoom({ status: RoomStatus.PLAYING }),
+      );
+
+      await service.releaseSeat(ROOM_ID, OTHER_USER_ID);
+
+      expect(mockRoomRepository.removePlayer).not.toHaveBeenCalled();
+    });
+
+    it('never sweeps out the host, which would end everyone else lobby', async () => {
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+
+      await service.releaseSeat(ROOM_ID, HOST_USER_ID);
+
+      expect(mockRoomRepository.removePlayer).not.toHaveBeenCalled();
     });
   });
 

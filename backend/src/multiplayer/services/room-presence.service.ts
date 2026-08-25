@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '../../redis/redis.service';
 import {
+  ROOM_PLAYER_GONE_KEY,
   ROOM_HOST_ANNOUNCED_PREFIX,
   ROOM_HOST_ANNOUNCED_TTL,
   ROOM_HOST_GONE_KEY,
@@ -101,6 +102,60 @@ export class RoomPresenceService {
       .getClient()
       .del(this.hostAnnouncedKey(roomId));
     return removed > 0;
+  }
+
+  private seatMember(roomId: string, userId: string): string {
+    return `${roomId}:${userId}`;
+  }
+
+  /** Starts the countdown on a seat the player has walked away from. */
+  async startPlayerGrace(
+    roomId: string,
+    userId: string,
+    deadlineMs: number,
+  ): Promise<void> {
+    await this.redis
+      .getClient()
+      .zadd(ROOM_PLAYER_GONE_KEY, deadlineMs, this.seatMember(roomId, userId));
+  }
+
+  /** They came back inside the window, so the seat is theirs again. */
+  async cancelPlayerGrace(roomId: string, userId: string): Promise<void> {
+    await this.redis
+      .getClient()
+      .zrem(ROOM_PLAYER_GONE_KEY, this.seatMember(roomId, userId));
+  }
+
+  /**
+   * Seats whose grace has elapsed. As with the host, ZREM is the claim, so one
+   * instance acts on each seat however many are running.
+   */
+  async claimForfeitedSeats(): Promise<
+    Array<{ roomId: string; userId: string }>
+  > {
+    const client = this.redis.getClient();
+    const due = await client.zrangebyscore(
+      ROOM_PLAYER_GONE_KEY,
+      '-inf',
+      Date.now(),
+    );
+
+    const claimed: Array<{ roomId: string; userId: string }> = [];
+    for (const member of due) {
+      if ((await client.zrem(ROOM_PLAYER_GONE_KEY, member)) === 0) {
+        continue;
+      }
+      // A uuid has no colon in it, so the first one is the separator.
+      const separator = member.indexOf(':');
+      if (separator > 0) {
+        claimed.push({
+          roomId: member.slice(0, separator),
+          userId: member.slice(separator + 1),
+        });
+      }
+    }
+
+    return claimed;
   }
 
   /**

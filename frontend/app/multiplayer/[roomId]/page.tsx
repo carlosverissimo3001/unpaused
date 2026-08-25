@@ -9,6 +9,7 @@ import { useMultiplayerSocket } from '@/hooks/multiplayer/useMultiplayerSocket';
 import { useRoom } from '@/hooks/multiplayer/useRoom';
 import { useStartRoom } from '@/hooks/multiplayer/useStartRoom';
 import { useToggleReady } from '@/hooks/multiplayer/useToggleReady';
+import { useKickPlayer } from '@/hooks/multiplayer/useKickPlayer';
 import { TrackSourcePicker } from '@/components/multiplayer/TrackSourcePicker';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -31,14 +32,22 @@ export default function RoomLobbyPage() {
   const roomId = params.roomId;
   const router = useRouter();
   const { data: user } = useMe();
-  const { connected, onlineUserIds, hostDisconnected } =
-    useMultiplayerSocket(roomId);
+  const { connected, onlineUserIds, hostDisconnected, removed } =
+    useMultiplayerSocket(roomId, undefined, user?.userId);
   const { data: room, isLoading, isError, error } = useRoom(roomId, connected);
   const startRoom = useStartRoom();
   const leaveRoom = useLeaveRoom();
   const toggleReady = useToggleReady();
+  const kickPlayer = useKickPlayer();
   const [copied, setCopied] = useState(false);
   const knownPlayerIdsRef = useRef<Set<string> | null>(null);
+
+  // Removed by the host: there is no room to show any more.
+  useEffect(() => {
+    if (!removed) return;
+    toast.error('The host removed you from the room');
+    router.replace('/');
+  }, [removed, router]);
 
   // Toast when a new player joins via polling
   useEffect(() => {
@@ -317,6 +326,15 @@ export default function RoomLobbyPage() {
                     index={index}
                     isReady={player.isReady}
                     isOnline={onlineUserIds.includes(player.userId)}
+                    onKick={
+                      isHost && player.userId !== room.hostId
+                        ? () =>
+                            kickPlayer.mutate({
+                              roomId: room.id,
+                              userId: player.userId,
+                            })
+                        : undefined
+                    }
                   />
                 ))}
               </AnimatePresence>
@@ -336,43 +354,49 @@ export default function RoomLobbyPage() {
               hasLinkedAccount={!!user?.hasLinkedAccount}
             />
 
-            {/* Ready toggle — available for all players */}
-            <button
-              onClick={handleToggleReady}
-              disabled={toggleReady.isPending}
-              className={`w-full flex items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-bold transition-all ${
-                currentPlayer?.isReady
-                  ? 'bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20'
-                  : 'bg-fg/5 border border-fg/10 text-fg/70 hover:bg-fg/10'
-              }`}
-            >
-              {toggleReady.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : currentPlayer?.isReady ? (
-                <Check className="w-4 h-4" />
-              ) : null}
-              {currentPlayer?.isReady ? 'Ready' : 'Mark as Ready'}
-            </button>
+            {/* Side by side: two full-width buttons stacked pushed the room
+                itself below the fold on a phone. */}
+            <div className="flex items-stretch gap-3">
+              <button
+                onClick={handleToggleReady}
+                disabled={toggleReady.isPending}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-bold transition-all ${
+                  currentPlayer?.isReady
+                    ? 'bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20'
+                    : 'bg-fg/5 border border-fg/10 text-fg/70 hover:bg-fg/10'
+                }`}
+              >
+                {toggleReady.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : currentPlayer?.isReady ? (
+                  <Check className="w-4 h-4" />
+                ) : null}
+                {currentPlayer?.isReady ? 'Ready' : 'Mark as Ready'}
+              </button>
 
-            {isHost && (
-              <>
+              {isHost && (
                 <button
                   onClick={handleStartGame}
                   disabled={!canStart || startRoom.isPending || isStarting}
-                  className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-spotify-green px-6 py-4 text-base font-bold text-black hover:bg-spotify-green/90 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 transition-all shadow-[0_0_30px_rgba(30,215,96,0.15)]"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-spotify-green px-4 py-3.5 text-sm font-bold text-black hover:bg-spotify-green/90 active:scale-[0.98] disabled:opacity-40 transition-all shadow-[0_0_30px_rgba(30,215,96,0.15)]"
                 >
                   {startRoom.isPending || isStarting ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       Starting...
                     </>
                   ) : (
                     <>
-                      <Play className="w-5 h-5" fill="currentColor" />
+                      <Play className="w-4 h-4" fill="currentColor" />
                       Start Game
                     </>
                   )}
                 </button>
+              )}
+            </div>
+
+            {isHost && (
+              <>
                 {!canStart && (
                   <p className="text-xs text-fg/30 text-center">
                     {(room?.players.length ?? 0) < 2
@@ -383,6 +407,11 @@ export default function RoomLobbyPage() {
                 {startRoom.isError && (
                   <p className="text-sm text-red-400 text-center">
                     {startRoom.error.message}
+                  </p>
+                )}
+                {kickPlayer.isError && (
+                  <p className="text-sm text-red-400 text-center">
+                    {kickPlayer.error.message}
                   </p>
                 )}
               </>

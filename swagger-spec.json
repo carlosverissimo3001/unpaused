@@ -1107,7 +1107,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1123,6 +1122,9 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "You are not in this room"
           }
         },
         "security": [
@@ -1144,7 +1146,6 @@
             "name": "code",
             "required": true,
             "in": "path",
-            "description": "Room invite code",
             "schema": {
               "type": "string"
             }
@@ -1181,7 +1182,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1220,6 +1220,55 @@
         ]
       }
     },
+    "/multiplayer/rooms/{id}/kick": {
+      "post": {
+        "operationId": "MultiplayerController_kickPlayer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KickPlayerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the host can remove players"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Remove a player from the room (host only)",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/multiplayer/rooms/{id}/ready": {
       "post": {
         "operationId": "MultiplayerController_toggleReady",
@@ -1228,7 +1277,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1265,7 +1313,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1302,7 +1349,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1332,7 +1378,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1369,7 +1414,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -1419,7 +1463,6 @@
             "name": "id",
             "required": true,
             "in": "path",
-            "description": "Room ID",
             "schema": {
               "type": "string"
             }
@@ -3272,6 +3315,18 @@
         },
         "required": [
           "trackSource"
+        ]
+      },
+      "KickPlayerDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "The player to remove from the room"
+          }
+        },
+        "required": [
+          "userId"
         ]
       },
       "MultiplayerRoundStateDto": {
