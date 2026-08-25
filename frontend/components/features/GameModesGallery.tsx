@@ -186,7 +186,7 @@ function SpeedrunCardContent() {
       <div className="flex items-center gap-2 w-full">
         <Link
           href="/speed-run"
-          className="flex-[2] flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black text-white transition-all active:scale-90 shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
+          className="flex-[2] flex items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-xs sm:text-sm font-black text-white transition-all active:scale-90 shadow-[0_8px_20px_rgba(249,115,22,0.2)]"
           style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)' }}
         >
           <Play fill="currentColor" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -194,7 +194,7 @@ function SpeedrunCardContent() {
         </Link>
         <Link
           href="/speed-run/leaderboard"
-          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black transition-all active:scale-95 border border-orange-500/30 bg-orange-500/5 text-orange-600 dark:text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
+          className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-95 border border-orange-500/30 bg-orange-500/5 text-orange-600 dark:text-orange-400 hover:bg-orange-500/10 hover:border-orange-500/50"
         >
           <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline lg:hidden">Leaderboard</span>
@@ -239,7 +239,7 @@ function MultiplayerCardContent({
       <div className="flex items-center gap-2 w-full">
         <button
           onClick={onJoin}
-          className="flex cursor-pointer items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-[11px] sm:text-xs font-black border border-fg/10 bg-fg/5 hover:bg-fg/10 text-fg transition-all active:scale-95"
+          className="flex cursor-pointer items-center justify-center h-10 w-10 sm:h-12 sm:w-auto sm:flex-1 sm:gap-1.5 lg:w-10 lg:flex-none lg:gap-0 rounded-2xl text-xs sm:text-sm font-black border border-fg/10 bg-fg/5 hover:bg-fg/10 text-fg transition-all active:scale-95"
         >
           <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline lg:hidden">Join</span>
@@ -247,7 +247,7 @@ function MultiplayerCardContent({
 
         <button
           onClick={onCreate}
-          className="flex-[2] flex cursor-pointer items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-[11px] sm:text-xs font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
+          className="flex-[2] flex cursor-pointer items-center justify-center gap-1.5 h-10 sm:h-12 rounded-2xl text-xs sm:text-sm font-black bg-purple-500 text-white shadow-[0_8px_20px_rgba(168,85,247,0.2)] active:scale-95"
         >
           <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>Create</span>
