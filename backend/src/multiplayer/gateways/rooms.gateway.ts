@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -14,7 +14,13 @@ import { AuthService } from '../../auth/services/auth.service';
 import { SessionService } from '../../auth/services/session.service';
 import { hasCredential } from '../../auth/utils/credentials';
 import { RoomRepository } from '../repositories/room.repository';
+import { RoomPresenceService } from '../services/room-presence.service';
 import { RoomDto } from '../dto/room.dto';
+import {
+  ROOM_HOST_GONE_GRACE_MS,
+  ROOM_SWEEP_INTERVAL_MS,
+  SESSION_COOKIE_NAME,
+} from '../../consts';
 
 @WebSocketGateway({
   cors: {
@@ -25,26 +31,47 @@ import { RoomDto } from '../dto/room.dto';
     credentials: true,
   },
 })
-export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class RoomsGateway
+  implements
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    OnModuleInit,
+    OnModuleDestroy
+{
   @WebSocketServer()
   server: Server;
 
   private readonly logger = new Logger(RoomsGateway.name);
 
-  /** roomId → Set of online userIds */
-  private readonly presence = new Map<string, Set<string>>();
+  private sweepTimer?: ReturnType<typeof setInterval>;
 
-  /** roomId → pending host-disconnect timeout (debounce refresh flicker) */
-  private readonly hostDisconnectTimers = new Map<
-    string,
-    ReturnType<typeof setTimeout>
-  >();
+  /**
+   * roomId -> the online set this instance last broadcast, so a heartbeat only
+   * emits when the room actually changed. Purely a cache: losing it on restart
+   * costs one redundant emit, never a missed one.
+   */
+  private readonly lastBroadcast = new Map<string, string>();
 
   constructor(
     private readonly sessionService: SessionService,
     private readonly authService: AuthService,
     private readonly roomRepository: RoomRepository,
+    private readonly presence: RoomPresenceService,
   ) {}
+
+  onModuleInit(): void {
+    // Every instance sweeps; the claim inside makes each room announce once.
+    this.sweepTimer = setInterval(() => {
+      void this.sweepHostGraces();
+    }, ROOM_SWEEP_INTERVAL_MS);
+    this.sweepTimer.unref?.();
+  }
+
+  onModuleDestroy(): void {
+    if (this.sweepTimer) {
+      clearInterval(this.sweepTimer);
+    }
+  }
 
   async handleConnection(client: Socket): Promise<void> {
     try {
@@ -55,7 +82,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       const cookies = parseCookie(cookieHeader);
-      const sessionId = cookies['unpaused_session'];
+      const sessionId = cookies[SESSION_COOKIE_NAME];
       if (!sessionId) {
         client.disconnect();
         return;
@@ -64,8 +91,8 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Validate session exists
       const session = await this.sessionService.getSession(sessionId);
 
-      // The HTTP routes are closed to anonymous players, so the socket is too:
-      // otherwise they could still hold one open on a single-instance gateway.
+      // The HTTP routes are closed to anonymous players, so the socket is too.
+      // CAR-179 opens both together.
       if (!hasCredential(session)) {
         client.disconnect();
         return;
@@ -84,35 +111,31 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  handleDisconnect(client: Socket): void {
+  async handleDisconnect(client: Socket): Promise<void> {
     const userId = client.data.userId as string | undefined;
-    const roomIds = (client.data.roomIds as Set<string>) ?? new Set();
+    const roomIds = (client.data.roomIds as Set<string>) ?? new Set<string>();
 
     if (userId) {
       for (const roomId of roomIds) {
-        this.presence.get(roomId)?.delete(userId);
-        this.emitPresenceUpdate(roomId);
+        await this.presence.leave(roomId, userId);
+        await this.emitPresenceUpdate(roomId);
 
-        // Debounced host-disconnect detection (5s grace for page refreshes)
-        this.roomRepository
-          .findById(roomId)
-          .then((room) => {
-            if (
-              room &&
-              room.hostId === userId &&
-              (room.status === 'WAITING' || room.status === 'PLAYING')
-            ) {
-              const timer = setTimeout(() => {
-                this.hostDisconnectTimers.delete(roomId);
-                this.server.to(roomId).emit('hostDisconnected', { roomId });
-                this.logger.debug(`Host disconnect emitted for room ${roomId}`);
-              }, 5000);
-              this.hostDisconnectTimers.set(roomId, timer);
-            }
-          })
-          .catch(() => {
-            /* room may already be deleted */
-          });
+        try {
+          const room = await this.roomRepository.findById(roomId);
+          if (
+            room &&
+            room.hostId === userId &&
+            (room.status === 'WAITING' || room.status === 'PLAYING')
+          ) {
+            // A grace period, so a refresh does not read as the host leaving.
+            await this.presence.startHostGrace(
+              roomId,
+              Date.now() + ROOM_HOST_GONE_GRACE_MS,
+            );
+          }
+        } catch {
+          /* room may already be deleted */
+        }
       }
     }
 
@@ -124,7 +147,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { roomId: string },
   ): Promise<void> {
-    const userId = client.data.userId;
+    const userId = client.data.userId as string | undefined;
     if (!userId || !payload.roomId) {
       return;
     }
@@ -140,24 +163,24 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     await client.join(payload.roomId);
 
-    // Track presence
     if (!client.data.roomIds) {
       client.data.roomIds = new Set<string>();
     }
     (client.data.roomIds as Set<string>).add(payload.roomId);
 
-    if (!this.presence.has(payload.roomId)) {
-      this.presence.set(payload.roomId, new Set());
-    }
-    this.presence.get(payload.roomId)!.add(userId);
-    this.emitPresenceUpdate(payload.roomId);
+    await this.presence.join(payload.roomId, userId);
+    await this.emitPresenceUpdate(payload.roomId);
 
-    // Cancel pending host-disconnect timer if the host is reconnecting
-    if (this.hostDisconnectTimers.has(payload.roomId)) {
-      const room = await this.roomRepository.findById(payload.roomId);
-      if (room && room.hostId === userId) {
-        clearTimeout(this.hostDisconnectTimers.get(payload.roomId));
-        this.hostDisconnectTimers.delete(payload.roomId);
+    // Cancel a pending host-disconnect countdown if the host is reconnecting
+    const room = await this.roomRepository.findById(payload.roomId);
+    if (room && room.hostId === userId) {
+      // Either the countdown is still running, or it already fired and the room
+      // is sitting on a "host disconnected" it needs taking back.
+      const wasPending = await this.presence.cancelHostGrace(payload.roomId);
+      const wasAnnounced = await this.presence.clearHostAnnounced(
+        payload.roomId,
+      );
+      if (wasPending || wasAnnounced) {
         this.server
           .to(payload.roomId)
           .emit('hostReconnected', { roomId: payload.roomId });
@@ -183,16 +206,68 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = client.data.userId as string | undefined;
     if (userId) {
       (client.data.roomIds as Set<string> | undefined)?.delete(payload.roomId);
-      this.presence.get(payload.roomId)?.delete(userId);
-      this.emitPresenceUpdate(payload.roomId);
+      await this.presence.leave(payload.roomId, userId);
+      await this.emitPresenceUpdate(payload.roomId);
     }
 
     this.logger.debug(`Client ${client.id} left room ${payload.roomId}`);
   }
 
-  private emitPresenceUpdate(roomId: string): void {
+  /**
+   * Keeps the member entry fresh. Without it the heartbeat lapses and the room
+   * drops them, which is what should happen to a dead instance members and not
+   * to a live one.
+   */
+  @SubscribeMessage('heartbeat')
+  async handleHeartbeat(@ConnectedSocket() client: Socket): Promise<void> {
+    const userId = client.data.userId as string | undefined;
+    const roomIds = (client.data.roomIds as Set<string>) ?? new Set<string>();
+    if (!userId) {
+      return;
+    }
+
+    for (const roomId of roomIds) {
+      await this.presence.join(roomId, userId);
+      // A member lost with their instance produces no disconnect event, so the
+      // survivors only learn they are gone when someone next reads presence.
+      await this.emitPresenceUpdate(roomId, { onlyIfChanged: true });
+    }
+  }
+
+  private async sweepHostGraces(): Promise<void> {
     try {
-      const onlineUserIds = [...(this.presence.get(roomId) ?? [])];
+      const roomIds = await this.presence.claimLapsedHostGraces();
+      for (const roomId of roomIds) {
+        await this.presence.markHostAnnounced(roomId);
+        this.server.to(roomId).emit('hostDisconnected', { roomId });
+        this.logger.debug(`Host disconnect emitted for room ${roomId}`);
+      }
+    } catch (err) {
+      this.logger.error(
+        'host-disconnect sweep failed',
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+  }
+
+  private async emitPresenceUpdate(
+    roomId: string,
+    { onlyIfChanged = false }: { onlyIfChanged?: boolean } = {},
+  ): Promise<void> {
+    try {
+      const onlineUserIds = await this.presence.onlineUserIds(roomId);
+
+      const signature = [...onlineUserIds].sort().join(',');
+      if (onlyIfChanged && this.lastBroadcast.get(roomId) === signature) {
+        return;
+      }
+      // An empty room is over, so drop its entry rather than grow the map.
+      if (onlineUserIds.length) {
+        this.lastBroadcast.set(roomId, signature);
+      } else {
+        this.lastBroadcast.delete(roomId);
+      }
+
       this.server.to(roomId).emit('presenceUpdate', { roomId, onlineUserIds });
     } catch (err) {
       this.logger.error(
