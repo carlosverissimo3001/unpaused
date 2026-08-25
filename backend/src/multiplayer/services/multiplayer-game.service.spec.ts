@@ -10,6 +10,7 @@ import { RoomRepository } from '../repositories/room.repository';
 import { MultiplayerGameSessionRepository } from '../repositories/multiplayer-game-session.repository';
 import { AuthService } from '../../auth/services/auth.service';
 import { RoomsGateway } from '../gateways/rooms.gateway';
+import { RoomPresenceService } from './room-presence.service';
 import { TrackService } from '../../track/services/track.service';
 
 describe('MultiplayerGameService', () => {
@@ -109,6 +110,12 @@ describe('MultiplayerGameService', () => {
     emitPlayerRoundComplete: jest.fn(),
   };
 
+  // Rooms only finish for players who are still in them, so every existing
+  // case has to say who that is.
+  const mockPresence = {
+    onlineUserIds: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -120,10 +127,12 @@ describe('MultiplayerGameService', () => {
           useValue: mockGameSessionRepository,
         },
         { provide: RoomsGateway, useValue: mockRoomsGateway },
+        { provide: RoomPresenceService, useValue: mockPresence },
         {
           provide: TrackService,
           useValue: {
-            playableUrl: jest
+            // A pool track carries no preview, so the round mints one.
+            resolvePreview: jest
               .fn()
               .mockImplementation((track: { previewUrl?: string | null }) =>
                 Promise.resolve(track?.previewUrl ?? null),
@@ -138,6 +147,14 @@ describe('MultiplayerGameService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    // Everyone is still in the room unless a case says otherwise.
+    mockPresence.onlineUserIds.mockResolvedValue([
+      HOST_USER_ID,
+      PLAYER_USER_ID,
+    ]);
   });
 
   describe('getRoundState', () => {
@@ -359,6 +376,71 @@ describe('MultiplayerGameService', () => {
         ROOM_ID,
         RoomStatus.COMPLETED,
         { completedAt: expect.any(Date) },
+      );
+    });
+
+    it('completes the room when the only unfinished player has left', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockRoomRepository.updateStatus.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findActiveSession.mockResolvedValue(
+        makeSession(),
+      );
+      // The other player closed their tab, so their heartbeat has lapsed.
+      mockPresence.onlineUserIds.mockResolvedValue([HOST_USER_ID]);
+      // Only the host is ever counted; the absent player has finished nothing.
+      mockGameSessionRepository.countCompletedSessions.mockResolvedValue(2);
+
+      await service.submitGuess(HOST_SESSION, ROOM_ID, guessDto);
+
+      expect(mockRoomRepository.updateStatus).toHaveBeenCalledWith(
+        ROOM_ID,
+        RoomStatus.COMPLETED,
+        { completedAt: expect.any(Date) },
+      );
+    });
+
+    it('keeps waiting on a player who is still in the room', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findActiveSession.mockResolvedValue(
+        makeSession(),
+      );
+      mockGameSessionRepository.countCompletedSessions
+        .mockResolvedValueOnce(2) // host is done
+        .mockResolvedValueOnce(1); // the other player is not
+
+      await service.submitGuess(HOST_SESSION, ROOM_ID, guessDto);
+
+      expect(mockRoomRepository.updateStatus).not.toHaveBeenCalledWith(
+        ROOM_ID,
+        RoomStatus.COMPLETED,
+        expect.anything(),
+      );
+    });
+
+    it('does not finish a room behind the back of an empty lobby', async () => {
+      mockAuthService.getUserBySessionId.mockResolvedValue({
+        id: HOST_USER_ID,
+      });
+      mockRoomRepository.findById.mockResolvedValue(makeRoom());
+      mockGameSessionRepository.findActiveSession.mockResolvedValue(
+        makeSession(),
+      );
+      // Everyone's socket dropped — a network blip, not a finished game.
+      mockPresence.onlineUserIds.mockResolvedValue([]);
+      mockGameSessionRepository.countCompletedSessions.mockResolvedValue(2);
+
+      await service.submitGuess(HOST_SESSION, ROOM_ID, guessDto);
+
+      expect(mockRoomRepository.updateStatus).not.toHaveBeenCalledWith(
+        ROOM_ID,
+        RoomStatus.COMPLETED,
+        expect.anything(),
       );
     });
   });

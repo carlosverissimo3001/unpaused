@@ -410,7 +410,9 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
 
           <audio
             ref={audioRef}
-            src={roundState.previewUrl ?? undefined}
+            // `||`, not `??`: the API sends '' when no audio could be minted,
+            // and an empty src makes the browser refetch the page.
+            src={roundState.previewUrl || undefined}
             preload="auto"
             crossOrigin="anonymous"
           />
@@ -428,6 +430,7 @@ export function MultiplayerGamePage({ roomId }: MultiplayerGamePageProps) {
               currentRound={roundState.currentGuess}
               guesses={roundState.guesses}
               totalRounds={roundState.maxGuessesPerSong}
+              snippetSteps={roundState.snippetSteps}
               progress={snippetProgress}
               peaks={snippetPeaks}
               isPlaying={isPlaying}

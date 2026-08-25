@@ -23,6 +23,31 @@ export class UserRepository {
   }
 
   /**
+   * Ids that exist, of those given. Callers use it to drop players whose row
+   * has since gone before fanning out per-user work.
+   * @param ids - The IDs to look for
+   * @returns The subset that exists
+   */
+  async findExistingIds(ids: string[]): Promise<string[]> {
+    const users = await this.prismaService.user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true },
+    });
+    return users.map((user) => user.id);
+  }
+
+  /**
+   * How many of the given users have no credential attached.
+   * @param ids - The IDs to check
+   * @returns The count of anonymous rows among them
+   */
+  async countWithoutCredential(ids: string[]): Promise<number> {
+    return this.prismaService.user.count({
+      where: { id: { in: ids }, spotifyUserId: null },
+    });
+  }
+
+  /**
    * Finds a user by their Spotify user ID
    * @param spotifyUserId - The Spotify user ID of the user
    * @returns The UserEntity

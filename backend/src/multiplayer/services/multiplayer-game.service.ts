@@ -1,15 +1,17 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { GameStatus, RoomStatus } from '@prisma/client';
 import { AuthService } from '../../auth/services/auth.service';
 import { GuessDto } from '../../game/dto/guess/guess.dto';
 import { GuessResultDto } from '../../game/dto/guess/guess-result.dto';
 import { GuessHistoryDto } from '../../game/dto/guess/guess-history.dto';
-import { MAX_ROUNDS } from '../../game/consts';
+import { MAX_ROUNDS, ROUND_DURATIONS } from '../../game/consts';
 import {
   evaluateGuess,
   addGuessToHistory,
@@ -27,6 +29,7 @@ import {
   ScoreboardPlayerTotalDto,
 } from '../dto/scoreboard.dto';
 import { RoomsGateway } from '../gateways/rooms.gateway';
+import { RoomPresenceService } from './room-presence.service';
 import { RoomDto } from '../dto/room.dto';
 import { TrackEntity } from '../../track/entities/track.entity';
 import { TrackService } from '../../track/services/track.service';
@@ -39,8 +42,10 @@ export class MultiplayerGameService {
     private readonly authService: AuthService,
     private readonly roomRepository: RoomRepository,
     private readonly gameSessionRepository: MultiplayerGameSessionRepository,
+    @Inject(forwardRef(() => RoomsGateway))
     private readonly roomsGateway: RoomsGateway,
     private readonly trackService: TrackService,
+    private readonly presence: RoomPresenceService,
   ) {}
 
   async getRoundState(
@@ -97,7 +102,9 @@ export class MultiplayerGameService {
     const guesses =
       (currentSession.guesses as unknown as GuessHistoryDto[]) ?? [];
     const isComplete = currentSession.status !== GameStatus.PLAYING;
-    const previewUrl = (await this.trackService.playableUrl(track)) ?? '';
+    // resolvePreview, not playableUrl: a pool track is seeded without audio
+    // because Deezer's links expire in minutes, so it has to be minted here.
+    const previewUrl = (await this.trackService.resolvePreview(track)) ?? '';
 
     return {
       sessionId: currentSession.id,
@@ -105,6 +112,7 @@ export class MultiplayerGameService {
       totalRounds: room.roundCount,
       currentGuess: currentSession.currentRound,
       snippetDuration: getSnippetDuration(currentSession.currentRound),
+      snippetSteps: [...ROUND_DURATIONS],
       maxGuessesPerSong: MAX_ROUNDS,
       status: currentSession.status,
       guesses,
@@ -305,6 +313,17 @@ export class MultiplayerGameService {
     };
   }
 
+  /**
+   * Called when someone drops out of a room, because a player who closes their
+   * tab mid-round never finishes and would otherwise hold the results hostage.
+   */
+  async reconcileCompletion(roomId: string): Promise<void> {
+    const room = await this.roomRepository.findById(roomId);
+    if (room) {
+      await this.checkRoomCompletion(roomId, room.roundCount);
+    }
+  }
+
   private async checkRoomCompletion(
     roomId: string,
     roundCount: number,
@@ -314,8 +333,21 @@ export class MultiplayerGameService {
       return;
     }
 
-    // For each player, count their completed sessions in this room
+    // A player who walked away cannot be waited on. Presence lapses only after
+    // the heartbeat window, so a refresh does not count as leaving.
+    const present = new Set(await this.presence.onlineUserIds(roomId));
+
+    // Nobody left to show results to: leave it playing rather than finishing a
+    // room behind everyone's back. A dead room is the cleanup job's problem.
+    if (present.size === 0) {
+      return;
+    }
+
     for (const player of room.players) {
+      if (!present.has(player.userId)) {
+        continue;
+      }
+
       const completedCount =
         await this.gameSessionRepository.countCompletedSessions(
           player.userId,
@@ -323,11 +355,11 @@ export class MultiplayerGameService {
         );
 
       if (completedCount < roundCount) {
-        return; // At least one player hasn't finished all rounds
+        return; // Someone still here has rounds left
       }
     }
 
-    // All players finished all rounds
+    // Everyone still in the room has finished
     const updated = await this.roomRepository.updateStatus(
       roomId,
       RoomStatus.COMPLETED,

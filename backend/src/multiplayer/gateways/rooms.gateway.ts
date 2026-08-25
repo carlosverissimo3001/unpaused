@@ -1,4 +1,10 @@
-import { Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+  forwardRef,
+} from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -14,6 +20,7 @@ import { AuthService } from '../../auth/services/auth.service';
 import { SessionService } from '../../auth/services/session.service';
 import { RoomRepository } from '../repositories/room.repository';
 import { RoomPresenceService } from '../services/room-presence.service';
+import { MultiplayerGameService } from '../services/multiplayer-game.service';
 import { RoomDto } from '../dto/room.dto';
 import {
   ROOM_HOST_GONE_GRACE_MS,
@@ -56,6 +63,10 @@ export class RoomsGateway
     private readonly authService: AuthService,
     private readonly roomRepository: RoomRepository,
     private readonly presence: RoomPresenceService,
+    // The game service emits through this gateway, so the two refer to each
+    // other; forwardRef is what lets Nest build the pair.
+    @Inject(forwardRef(() => MultiplayerGameService))
+    private readonly gameService: MultiplayerGameService,
   ) {}
 
   onModuleInit(): void {
@@ -251,6 +262,10 @@ export class RoomsGateway
       const onlineUserIds = await this.presence.onlineUserIds(roomId);
 
       const signature = [...onlineUserIds].sort().join(',');
+      const previous = this.lastBroadcast.get(roomId);
+      const shrank =
+        previous !== undefined &&
+        previous.split(',').length > onlineUserIds.length;
       if (onlyIfChanged && this.lastBroadcast.get(roomId) === signature) {
         return;
       }
@@ -262,6 +277,11 @@ export class RoomsGateway
       }
 
       this.server.to(roomId).emit('presenceUpdate', { roomId, onlineUserIds });
+
+      // Someone left: whoever is still here may now be the last to finish.
+      if (shrank) {
+        await this.gameService.reconcileCompletion(roomId);
+      }
     } catch (err) {
       this.logger.error(
         `emitPresenceUpdate failed for room ${roomId}`,

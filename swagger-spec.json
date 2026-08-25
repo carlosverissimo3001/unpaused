@@ -3225,6 +3225,13 @@
             "type": "number",
             "description": "Snippet duration for the current guess"
           },
+          "snippetSteps": {
+            "description": "Snippet length for every guess, so the progress bar can scale to them",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
           "maxGuessesPerSong": {
             "type": "number",
             "description": "Maximum number of guesses per song"
@@ -3263,6 +3270,7 @@
           "totalRounds",
           "currentGuess",
           "snippetDuration",
+          "snippetSteps",
           "maxGuessesPerSong",
           "status",
           "guesses",

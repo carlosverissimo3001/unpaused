@@ -5,7 +5,7 @@ import { SessionService } from '../../auth/services/session.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { TrackDto } from '../../track/dto/track.dto';
 import { shuffleInPlace } from '../../game/utils/utils';
-import { PrismaService } from '../../prisma/prisma.service';
+import { UserRepository } from '../../auth/repositories/user.repository';
 import { PoolService } from '../../pool/services/pool.service';
 
 /** Number of 50-track batches to fetch per player */
@@ -26,7 +26,7 @@ export class TrackPoolService {
     private readonly playlistService: PlaylistService,
     private readonly trackService: TrackService,
     private readonly sessionService: SessionService,
-    private readonly prisma: PrismaService,
+    private readonly userRepository: UserRepository,
     private readonly poolService: PoolService,
     appLogger: AppLoggerService,
   ) {
@@ -87,10 +87,7 @@ export class TrackPoolService {
 
   /** True when any player in the room has no linked music account. */
   private async hasUnlinkedPlayer(userIds: string[]): Promise<boolean> {
-    const unlinked = await this.prisma.user.count({
-      where: { id: { in: userIds }, spotifyUserId: null },
-    });
-    return unlinked > 0;
+    return (await this.userRepository.countWithoutCredential(userIds)) > 0;
   }
 
   /**
@@ -123,12 +120,8 @@ export class TrackPoolService {
 
   private async resolvePlayerSessions(userIds: string[]): Promise<string[]> {
     // Fetch all users in a single query to avoid N+1 DB calls
-    const users = await this.prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true },
-    });
-
-    const foundUserIds = new Set(users.map((u) => u.id));
+    const existingIds = await this.userRepository.findExistingIds(userIds);
+    const foundUserIds = new Set(existingIds);
 
     // Log missing users (present in input but not in DB)
     for (const userId of userIds) {
@@ -139,13 +132,12 @@ export class TrackPoolService {
 
     // Resolve sessions in parallel for found users
     const sessionIdsWithNulls = await Promise.all(
-      users.map(async (user) => {
-        const sessionId = await this.sessionService.getSessionIdByUserId(
-          user.id,
-        );
+      existingIds.map(async (userId) => {
+        const sessionId =
+          await this.sessionService.getSessionIdByUserId(userId);
 
         if (!sessionId) {
-          this.logger.warn(`No active session for user ${user.id}, skipping`);
+          this.logger.warn(`No active session for user ${userId}, skipping`);
           return null;
         }
 

@@ -4,7 +4,7 @@ import { PlaylistService } from '../../playlist/services/playlist.service';
 import { TrackService } from '../../track/services/track.service';
 import { SessionService } from '../../auth/services/session.service';
 import { AppLoggerService } from '../../logger/logger.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { UserRepository } from '../../auth/repositories/user.repository';
 import { PoolService } from '../../pool/services/pool.service';
 
 function makeTrack(id: string, name = `Track ${id}`) {
@@ -31,7 +31,10 @@ describe('TrackPoolService', () => {
   let playlistService: jest.Mocked<PlaylistService>;
   let trackService: jest.Mocked<TrackService>;
   let sessionService: jest.Mocked<SessionService>;
-  let prisma: { user: { findMany: jest.Mock; count: jest.Mock } };
+  let userRepository: {
+    findExistingIds: jest.Mock;
+    countWithoutCredential: jest.Mock;
+  };
   let poolService: { pickTrack: jest.Mock };
 
   beforeEach(async () => {
@@ -48,9 +51,10 @@ describe('TrackPoolService', () => {
       getSessionIdByUserId: jest.fn(),
     } as any;
 
-    prisma = {
+    userRepository = {
+      findExistingIds: jest.fn(),
       // Every existing case is an all-linked room unless it says otherwise.
-      user: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
+      countWithoutCredential: jest.fn().mockResolvedValue(0),
     };
 
     poolService = { pickTrack: jest.fn() };
@@ -61,7 +65,7 @@ describe('TrackPoolService', () => {
         { provide: PlaylistService, useValue: playlistService },
         { provide: TrackService, useValue: trackService },
         { provide: SessionService, useValue: sessionService },
-        { provide: PrismaService, useValue: prisma },
+        { provide: UserRepository, useValue: userRepository },
         { provide: PoolService, useValue: poolService },
         { provide: AppLoggerService, useValue: new AppLoggerService() },
       ],
@@ -75,10 +79,7 @@ describe('TrackPoolService', () => {
     const trackA = makeTrack('track-A');
     const trackB = makeTrack('track-B');
 
-    prisma.user.findMany.mockResolvedValueOnce([
-      { id: 'user-1', spotifyUserId: 'sp-1' },
-      { id: 'user-2', spotifyUserId: 'sp-2' },
-    ]);
+    userRepository.findExistingIds.mockResolvedValueOnce(['user-1', 'user-2']);
 
     sessionService.getSessionIdByUserId
       .mockResolvedValueOnce('sess-1')
@@ -124,10 +125,7 @@ describe('TrackPoolService', () => {
   it('should skip players without active sessions', async () => {
     const track = makeTrack('track-1');
 
-    prisma.user.findMany.mockResolvedValueOnce([
-      { id: 'user-1', spotifyUserId: 'sp-1' },
-      { id: 'user-2', spotifyUserId: 'sp-2' },
-    ]);
+    userRepository.findExistingIds.mockResolvedValueOnce(['user-1', 'user-2']);
 
     sessionService.getSessionIdByUserId
       .mockResolvedValueOnce('sess-1')
@@ -161,9 +159,7 @@ describe('TrackPoolService', () => {
   });
 
   it('should throw when no active sessions exist', async () => {
-    prisma.user.findMany.mockResolvedValue([
-      { id: 'user-1', spotifyUserId: 'sp-1' },
-    ]);
+    userRepository.findExistingIds.mockResolvedValue(['user-1']);
     sessionService.getSessionIdByUserId.mockResolvedValue(null);
 
     await expect(service.selectTracksForRoom(['user-1'], 3)).rejects.toThrow(
@@ -172,9 +168,7 @@ describe('TrackPoolService', () => {
   });
 
   it('should throw when no tracks have valid previews', async () => {
-    prisma.user.findMany.mockResolvedValue([
-      { id: 'user-1', spotifyUserId: 'sp-1' },
-    ]);
+    userRepository.findExistingIds.mockResolvedValue(['user-1']);
     sessionService.getSessionIdByUserId.mockResolvedValue('sess-1');
     playlistService.getLikedSongsMetadata.mockResolvedValue({
       totalTracks: 10,
@@ -206,10 +200,7 @@ describe('TrackPoolService', () => {
   it('should handle player with empty liked songs gracefully', async () => {
     const track = makeTrack('track-1');
 
-    prisma.user.findMany.mockResolvedValue([
-      { id: 'user-1', spotifyUserId: 'sp-1' },
-      { id: 'user-2', spotifyUserId: 'sp-2' },
-    ]);
+    userRepository.findExistingIds.mockResolvedValue(['user-1', 'user-2']);
 
     sessionService.getSessionIdByUserId
       .mockResolvedValueOnce('sess-1')
@@ -244,9 +235,7 @@ describe('TrackPoolService', () => {
   it('should return fewer tracks when pool is too small', async () => {
     const track = makeTrack('only-track');
 
-    prisma.user.findMany.mockResolvedValue([
-      { id: 'user-1', spotifyUserId: 'sp-1' },
-    ]);
+    userRepository.findExistingIds.mockResolvedValue(['user-1']);
     sessionService.getSessionIdByUserId.mockResolvedValue('sess-1');
     playlistService.getLikedSongsMetadata.mockResolvedValue({
       totalTracks: 1,
@@ -278,13 +267,17 @@ describe('TrackPoolService', () => {
 describe('rooms with an unlinked player', () => {
   // Redeclared here so these cases are readable on their own.
   let service: TrackPoolService;
-  let prisma: { user: { findMany: jest.Mock; count: jest.Mock } };
+  let userRepository: {
+    findExistingIds: jest.Mock;
+    countWithoutCredential: jest.Mock;
+  };
   let poolService: { pickTrack: jest.Mock };
   let playlistService: { getLikedSongsMetadata: jest.Mock };
 
   beforeEach(async () => {
-    prisma = {
-      user: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(1) },
+    userRepository = {
+      findExistingIds: jest.fn(),
+      countWithoutCredential: jest.fn().mockResolvedValue(1),
     };
     poolService = { pickTrack: jest.fn() };
     playlistService = { getLikedSongsMetadata: jest.fn() };
@@ -298,7 +291,7 @@ describe('rooms with an unlinked player', () => {
           provide: SessionService,
           useValue: { getSessionIdByUserId: jest.fn() },
         },
-        { provide: PrismaService, useValue: prisma },
+        { provide: UserRepository, useValue: userRepository },
         { provide: PoolService, useValue: poolService },
         { provide: AppLoggerService, useValue: new AppLoggerService() },
       ],

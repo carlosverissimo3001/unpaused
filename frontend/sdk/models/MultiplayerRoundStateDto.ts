@@ -65,6 +65,12 @@ export interface MultiplayerRoundStateDto {
      */
     snippetDuration: number;
     /**
+     * Snippet length for every guess, so the progress bar can scale to them
+     * @type {Array<number>}
+     * @memberof MultiplayerRoundStateDto
+     */
+    snippetSteps: Array<number>;
+    /**
      * Maximum number of guesses per song
      * @type {number}
      * @memberof MultiplayerRoundStateDto
@@ -118,6 +124,7 @@ export function instanceOfMultiplayerRoundStateDto(value: object): value is Mult
     if (!('totalRounds' in value) || value['totalRounds'] === undefined) return false;
     if (!('currentGuess' in value) || value['currentGuess'] === undefined) return false;
     if (!('snippetDuration' in value) || value['snippetDuration'] === undefined) return false;
+    if (!('snippetSteps' in value) || value['snippetSteps'] === undefined) return false;
     if (!('maxGuessesPerSong' in value) || value['maxGuessesPerSong'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('guesses' in value) || value['guesses'] === undefined) return false;
@@ -140,6 +147,7 @@ export function MultiplayerRoundStateDtoFromJSONTyped(json: any, ignoreDiscrimin
         'totalRounds': json['totalRounds'],
         'currentGuess': json['currentGuess'],
         'snippetDuration': json['snippetDuration'],
+        'snippetSteps': json['snippetSteps'],
         'maxGuessesPerSong': json['maxGuessesPerSong'],
         'status': json['status'],
         'guesses': ((json['guesses'] as Array<any>).map(GuessHistoryDtoFromJSON)),
@@ -164,6 +172,7 @@ export function MultiplayerRoundStateDtoToJSONTyped(value?: MultiplayerRoundStat
         'totalRounds': value['totalRounds'],
         'currentGuess': value['currentGuess'],
         'snippetDuration': value['snippetDuration'],
+        'snippetSteps': value['snippetSteps'],
         'maxGuessesPerSong': value['maxGuessesPerSong'],
         'status': value['status'],
         'guesses': ((value['guesses'] as Array<any>).map(GuessHistoryDtoToJSON)),
