@@ -179,8 +179,9 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
             home page only asks about once before it can be dismissed. */}
         {user?.email && (
           <div className="px-6 border-b border-fg/10">
-            <VerifyEmailSection user={user} />
-            <ChangePasswordSection />
+            <VerifyEmailSection user={user}>
+              <ChangePasswordSection />
+            </VerifyEmailSection>
           </div>
         )}
 

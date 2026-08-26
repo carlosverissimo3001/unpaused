@@ -1,5 +1,6 @@
 'use client';
 
+import { ReactNode } from 'react';
 import { MailCheck, MailWarning } from 'lucide-react';
 import { useResendVerification } from '@/hooks/auth/useResendVerification';
 import type { AuthMeResponseDto } from '@/sdk';
@@ -9,7 +10,13 @@ import type { AuthMeResponseDto } from '@/sdk';
  * dismissed, so without this the only way back to it would be to remember it
  * existed and reload.
  */
-export function VerifyEmailSection({ user }: { user: AuthMeResponseDto }) {
+export function VerifyEmailSection({
+  user,
+  children,
+}: {
+  user: AuthMeResponseDto;
+  children?: ReactNode;
+}) {
   const { resend, sent, pending, secondsLeft } = useResendVerification();
   const verified = user.emailVerified;
 
@@ -56,6 +63,7 @@ export function VerifyEmailSection({ user }: { user: AuthMeResponseDto }) {
                   : 'Send the link'}
           </button>
         )}
+        {children}
       </div>
     </div>
   );
