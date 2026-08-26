@@ -1,16 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { useMe } from '@/hooks/auth/useMe';
 import { useResendVerification } from '@/hooks/auth/useResendVerification';
+import type { AuthMeResponseDto } from '@/sdk';
 
 /**
  * Being unverified costs one thing: no password reset. So this asks rather
  * than blocks, and can be dismissed — a player who wants to keep playing
  * without confirming an address is not doing anything wrong.
+ *
+ * Takes the user rather than asking for it. The page that renders this hides
+ * itself behind a spinner while that query is loading, so subscribing here
+ * would mount an observer that can refetch the query the spinner waits on.
  */
-export function UnverifiedEmailBanner() {
-  const { data: user } = useMe();
+export function UnverifiedEmailBanner({
+  user,
+}: {
+  user: AuthMeResponseDto | null | undefined;
+}) {
   const [dismissed, setDismissed] = useState(false);
   const { resend, sent, pending, secondsLeft } = useResendVerification();
 

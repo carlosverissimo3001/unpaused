@@ -111,7 +111,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
       <div className="flex-1 px-4 sm:px-6 py-2 sm:py-8 relative z-10">
         <div className="max-w-5xl mx-auto flex flex-col gap-3 sm:gap-6">
           <ErrorBanner error={error} />
-          <UnverifiedEmailBanner />
+          <UnverifiedEmailBanner user={user} />
 
           {user ? (
             <motion.div
