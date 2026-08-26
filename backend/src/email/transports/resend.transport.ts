@@ -1,11 +1,6 @@
 import { Resend } from 'resend';
-import { EmailMessage, EmailTransport } from '../types';
+import { EmailMessage, EmailSender, EmailTransport } from '../types';
 
-/**
- * Resend was chosen over SendGrid, which no longer has a free plan, and over
- * SES, whose sandbox only sends to addresses already verified — the one thing
- * a signup confirmation cannot do.
- */
 export class ResendEmailTransport implements EmailTransport {
   readonly name = 'resend';
 
@@ -15,11 +10,12 @@ export class ResendEmailTransport implements EmailTransport {
     this.client = new Resend(apiKey);
   }
 
-  async send(message: EmailMessage, from: string): Promise<void> {
+  async send(message: EmailMessage, sender: EmailSender): Promise<void> {
     // The SDK reports failures in the body rather than by throwing, so a
     // caller that only catches would treat a rejected send as delivered.
     const { error } = await this.client.emails.send({
-      from,
+      from: sender.from,
+      ...(sender.replyTo && { replyTo: sender.replyTo }),
       to: message.to,
       subject: message.subject,
       html: message.html,

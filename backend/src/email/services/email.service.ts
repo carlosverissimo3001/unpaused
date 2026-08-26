@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppLoggerService } from '../../logger/logger.service';
-import { EMAIL_FROM, RESEND_API_KEY } from '../consts';
+import { EMAIL_FROM, EMAIL_REPLY_TO, RESEND_API_KEY } from '../consts';
 import { ConsoleEmailTransport } from '../transports/console.transport';
 import { ResendEmailTransport } from '../transports/resend.transport';
-import { EmailMessage, EmailTransport } from '../types';
+import { EmailMessage, EmailSender, EmailTransport } from '../types';
 
 const DEFAULT_FROM = 'unpaused <onboarding@resend.dev>';
 
@@ -12,14 +12,17 @@ const DEFAULT_FROM = 'unpaused <onboarding@resend.dev>';
 export class EmailService {
   private readonly logger: AppLoggerService;
   private readonly transport: EmailTransport;
-  private readonly from: string;
+  private readonly sender: EmailSender;
 
   constructor(
     private readonly configService: ConfigService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(EmailService.name);
-    this.from = this.configService.get<string>(EMAIL_FROM) || DEFAULT_FROM;
+    this.sender = {
+      from: this.configService.get<string>(EMAIL_FROM) || DEFAULT_FROM,
+      replyTo: this.configService.get<string>(EMAIL_REPLY_TO) || undefined,
+    };
 
     const apiKey = this.configService.get<string>(RESEND_API_KEY);
     this.transport = apiKey
@@ -41,7 +44,7 @@ export class EmailService {
    */
   async send(message: EmailMessage): Promise<boolean> {
     try {
-      await this.transport.send(message, this.from);
+      await this.transport.send(message, this.sender);
       return true;
     } catch (err) {
       // The address is deliberately absent: a log that lists who was mailed is
