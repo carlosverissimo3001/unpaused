@@ -23,6 +23,7 @@ const mockLimiter = { claim: jest.fn() };
 
 const VERIFIED_ACCOUNT = {
   id: 'user-1',
+  displayName: 'Loud Needle',
   passwordHash: 'a-stored-hash',
   emailVerifiedAt: new Date(),
 };
@@ -68,6 +69,21 @@ describe('PasswordResetService', () => {
       expect(mockTokenRepository.issue).toHaveBeenCalledWith(
         expect.objectContaining({ type: AuthTokenType.PASSWORD_RESET }),
       );
+    });
+
+    // Naming the account is what keeps this out of the shape a phishing
+    // template takes, which is what got it filtered before.
+    it('addresses the player by name rather than nobody', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(VERIFIED_ACCOUNT);
+      const service = await build();
+
+      await service.request('player@example.com');
+
+      const [message] = mockEmailService.send.mock.calls[0];
+      expect(message.subject).toContain('Loud Needle');
+      expect(message.text).toContain('Loud Needle');
+      expect(message.html).toContain('Loud Needle');
+      expect(message.text).not.toContain('undefined');
     });
 
     it('sends nothing to an address nobody has registered', async () => {

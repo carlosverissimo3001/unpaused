@@ -61,7 +61,9 @@ export class PasswordResetService {
     });
 
     const link = `${this.frontendUrl}/reset?token=${token}`;
-    await this.emailService.send(passwordResetEmail(email, link));
+    await this.emailService.send(
+      passwordResetEmail(email, link, user.displayName),
+    );
   }
 
   /**

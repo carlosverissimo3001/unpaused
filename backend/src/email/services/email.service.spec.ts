@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { AppLoggerService } from '../../logger/logger.service';
 import { EmailService } from './email.service';
-import { EMAIL_FROM, RESEND_API_KEY } from '../consts';
+import { EMAIL_FROM, EMAIL_REPLY_TO, RESEND_API_KEY } from '../consts';
 import { ResendEmailTransport } from '../transports/resend.transport';
 
 // The package too, not just our wrapper: automock still loads the module to
@@ -59,15 +59,16 @@ describe('EmailService', () => {
     send.mockResolvedValue(undefined);
     const service = await buildService({
       [RESEND_API_KEY]: 'a-sending-key',
-      [EMAIL_FROM]: 'unpaused <no-reply@example.com>',
+      [EMAIL_FROM]: 'unpaused <unpaused@example.com>',
+      [EMAIL_REPLY_TO]: 'carlos@example.com',
     });
 
     expect(service.canSend).toBe(true);
     expect(await service.send(MESSAGE)).toBe(true);
-    expect(send).toHaveBeenCalledWith(
-      MESSAGE,
-      'unpaused <no-reply@example.com>',
-    );
+    expect(send).toHaveBeenCalledWith(MESSAGE, {
+      from: 'unpaused <unpaused@example.com>',
+      replyTo: 'carlos@example.com',
+    });
   });
 
   it('falls back to a from address rather than sending without one', async () => {
@@ -75,7 +76,10 @@ describe('EmailService', () => {
     const service = await buildService({ [RESEND_API_KEY]: 'a-sending-key' });
 
     await service.send(MESSAGE);
-    expect(send).toHaveBeenCalledWith(MESSAGE, expect.stringContaining('@'));
+    expect(send).toHaveBeenCalledWith(
+      MESSAGE,
+      expect.objectContaining({ from: expect.stringContaining('@') }),
+    );
   });
 
   it('answers false instead of throwing, so a caller cannot leak the failure', async () => {
@@ -83,6 +87,15 @@ describe('EmailService', () => {
     const service = await buildService({ [RESEND_API_KEY]: 'a-sending-key' });
 
     await expect(service.send(MESSAGE)).resolves.toBe(false);
+  });
+
+  it('sends no replyTo when none is configured, rather than an empty one', async () => {
+    send.mockResolvedValue(undefined);
+    const service = await buildService({ [RESEND_API_KEY]: 'a-sending-key' });
+
+    await service.send(MESSAGE);
+
+    expect(send.mock.calls[0][1].replyTo).toBeUndefined();
   });
 
   it('keeps the recipient out of the log when a send fails', async () => {

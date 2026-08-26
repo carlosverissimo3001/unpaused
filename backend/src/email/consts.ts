@@ -8,6 +8,7 @@
  */
 export const RESEND_API_KEY = 'RESEND_API_KEY';
 export const EMAIL_FROM = 'EMAIL_FROM';
+export const EMAIL_REPLY_TO = 'EMAIL_REPLY_TO';
 
 /** Resend's free plan allows 3,000 a month and no more than 100 in a day. */
 export const EMAIL_DAILY_ALLOWANCE = 100;

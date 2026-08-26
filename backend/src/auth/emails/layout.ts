@@ -20,6 +20,11 @@ const FONT =
 
 export interface EmailBody {
   heading: string;
+  /**
+   * Who this is for. A template sent to a list cannot say this, so naming the
+   * account is one of the few honest signals a filter can weigh in our favour.
+   */
+  greeting?: string;
   /** One per paragraph, in order. */
   paragraphs: string[];
   action: { label: string; href: string };
@@ -29,6 +34,7 @@ export interface EmailBody {
 
 export function renderEmail({
   heading,
+  greeting,
   paragraphs,
   action,
   footnote,
@@ -51,6 +57,11 @@ export function renderEmail({
           <td style="padding:28px 32px 0">
             <p style="margin:0 0 24px;font-size:13px;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;color:${GREEN}">unpaused</p>
             <h1 style="margin:0 0 16px;font-size:21px;line-height:1.3;font-weight:800;color:${INK}">${heading}</h1>
+            ${
+              greeting
+                ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${INK}">${greeting}</p>`
+                : ''
+            }
             ${body}
           </td>
         </tr>

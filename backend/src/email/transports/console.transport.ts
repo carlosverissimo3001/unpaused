@@ -1,5 +1,5 @@
 import { AppLoggerService } from '../../logger/logger.service';
-import { EmailMessage, EmailTransport } from '../types';
+import { EmailMessage, EmailSender, EmailTransport } from '../types';
 
 /**
  * Writes the mail to the log instead of sending it. Used wherever there is no
@@ -13,10 +13,11 @@ export class ConsoleEmailTransport implements EmailTransport {
 
   constructor(private readonly logger: AppLoggerService) {}
 
-  send(message: EmailMessage, from: string): Promise<void> {
+  send(message: EmailMessage, sender: EmailSender): Promise<void> {
     this.logger.log(
       `Email not sent (no provider configured)\n` +
-        `  from:    ${from}\n` +
+        `  from:    ${sender.from}\n` +
+        (sender.replyTo ? `  replyTo: ${sender.replyTo}\n` : '') +
         `  to:      ${message.to}\n` +
         `  subject: ${message.subject}\n` +
         `${message.text}`,

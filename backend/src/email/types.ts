@@ -6,7 +6,21 @@ export interface EmailMessage {
   text: string;
 }
 
+export interface EmailSender {
+  from: string;
+  /**
+   * Where a reply goes. Worth setting even though almost nobody replies: a
+   * sender that cannot be answered reads as one way, and someone with no
+   * other way to respond reaches for "report spam" instead.
+   */
+  replyTo?: string;
+}
+
+/**
+ * Somewhere to hand a message to. Two of these exist: one that talks to
+ * Resend, and one that writes to the log for every environment that cannot.
+ */
 export interface EmailTransport {
   readonly name: string;
-  send(message: EmailMessage, from: string): Promise<void>;
+  send(message: EmailMessage, sender: EmailSender): Promise<void>;
 }
