@@ -6,10 +6,6 @@ export interface EmailMessage {
   text: string;
 }
 
-/**
- * Somewhere to hand a message to. Two of these exist: one that talks to
- * Resend, and one that writes to the log for every environment that cannot.
- */
 export interface EmailTransport {
   readonly name: string;
   send(message: EmailMessage, from: string): Promise<void>;

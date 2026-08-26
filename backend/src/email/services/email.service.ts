@@ -8,10 +8,6 @@ import { EmailMessage, EmailTransport } from '../types';
 
 const DEFAULT_FROM = 'unpaused <onboarding@resend.dev>';
 
-/**
- * The one way out of the app for mail. Callers describe the message; which
- * provider carries it, and whether one exists at all, is settled here.
- */
 @Injectable()
 export class EmailService {
   private readonly logger: AppLoggerService;

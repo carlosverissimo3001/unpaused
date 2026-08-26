@@ -7,6 +7,9 @@ import { SpotifyAuthService } from './services/spotify-auth.service';
 import { SessionService } from './services/session.service';
 import { UserRepository } from './repositories/user.repository';
 import { ProvisioningSessionGuard } from '../utils/guards/provisioning-session.guard';
+import { AuthTokenRepository } from './repositories/auth-token.repository';
+import { EmailSendLimiter } from './services/email-send-limiter.service';
+import { EmailVerificationService } from './services/email-verification.service';
 
 @Module({
   controllers: [AuthController],
@@ -17,6 +20,9 @@ import { ProvisioningSessionGuard } from '../utils/guards/provisioning-session.g
     SpotifyAuthService,
     SessionService,
     UserRepository,
+    AuthTokenRepository,
+    EmailSendLimiter,
+    EmailVerificationService,
     ProvisioningSessionGuard,
   ],
   exports: [
@@ -25,6 +31,7 @@ import { ProvisioningSessionGuard } from '../utils/guards/provisioning-session.g
     SessionService,
     SpotifyAuthService,
     UserRepository,
+    EmailVerificationService,
   ],
 })
 export class AuthModule {}

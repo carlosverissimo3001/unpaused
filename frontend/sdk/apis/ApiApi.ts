@@ -17,8 +17,10 @@ import * as runtime from '../runtime';
 import type {
   AdminUserDto,
   AuthMeResponseDto,
+  ConfirmEmailDto,
   CreateRoomDto,
   CreateStreakQuestionDto,
+  EmailVerificationResultDto,
   GameHistoryDto,
   GameStateDto,
   GameStatsDto,
@@ -62,10 +64,14 @@ import {
     AdminUserDtoToJSON,
     AuthMeResponseDtoFromJSON,
     AuthMeResponseDtoToJSON,
+    ConfirmEmailDtoFromJSON,
+    ConfirmEmailDtoToJSON,
     CreateRoomDtoFromJSON,
     CreateRoomDtoToJSON,
     CreateStreakQuestionDtoFromJSON,
     CreateStreakQuestionDtoToJSON,
+    EmailVerificationResultDtoFromJSON,
+    EmailVerificationResultDtoToJSON,
     GameHistoryDtoFromJSON,
     GameHistoryDtoToJSON,
     GameStateDtoFromJSON,
@@ -165,6 +171,10 @@ export interface AuthControllerCallbackRequest {
     state: string;
     error?: object;
     ubi?: object;
+}
+
+export interface AuthControllerConfirmEmailRequest {
+    confirmEmailDto: ConfirmEmailDto;
 }
 
 export interface AuthControllerLoginWithPasswordRequest {
@@ -609,6 +619,45 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Spend a verification link
+     */
+    async authControllerConfirmEmailRaw(requestParameters: AuthControllerConfirmEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailVerificationResultDto>> {
+        if (requestParameters['confirmEmailDto'] == null) {
+            throw new runtime.RequiredError(
+                'confirmEmailDto',
+                'Required parameter "confirmEmailDto" was null or undefined when calling authControllerConfirmEmail().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/auth/verify-email/confirm`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ConfirmEmailDtoToJSON(requestParameters['confirmEmailDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EmailVerificationResultDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Spend a verification link
+     */
+    async authControllerConfirmEmail(requestParameters: AuthControllerConfirmEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmailVerificationResultDto> {
+        const response = await this.authControllerConfirmEmailRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Ensure the caller has an identity, minting one if they have none
      */
     async authControllerEnsureSessionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthMeResponseDto>> {
@@ -759,6 +808,34 @@ export class ApiApi extends runtime.BaseAPI {
     async authControllerMe(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthMeResponseDto> {
         const response = await this.authControllerMeRaw(initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Send the verification link again
+     */
+    async authControllerResendVerificationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/auth/verify-email/resend`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Send the verification link again
+     */
+    async authControllerResendVerification(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authControllerResendVerificationRaw(initOverrides);
     }
 
     /**

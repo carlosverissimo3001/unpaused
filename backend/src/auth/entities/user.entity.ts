@@ -18,6 +18,12 @@ export class UserEntity {
   /** Never leaves the backend; excluded from every response DTO. */
   passwordHash?: string;
 
+  @ApiPropertyOptional({
+    description:
+      'When the address was proved. Absent means the address is claimed but not owned.',
+  })
+  emailVerifiedAt?: Date;
+
   @ApiProperty({ description: 'John Doe' })
   displayName: string;
 

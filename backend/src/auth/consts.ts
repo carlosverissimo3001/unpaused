@@ -8,3 +8,18 @@ export const SCOPES = [
   'playlist-read-collaborative', // Access collaborative playlists
   'user-library-read', // Access liked songs
 ];
+
+/** A verification link is good for a day. Nothing is at stake in a stale one. */
+export const EMAIL_VERIFICATION_TTL_SECONDS = 24 * 60 * 60;
+
+/**
+ * One mail per address per minute, and no more than a handful a day. The
+ * minute stops someone being mail-bombed; the daily cap is what keeps a script
+ * from burning the provider's 100-a-day allowance on one inbox.
+ */
+export const EMAIL_SEND_COOLDOWN_SECONDS = 60;
+export const EMAIL_SEND_DAILY_LIMIT = 5;
+export const EMAIL_SEND_DAY_SECONDS = 24 * 60 * 60;
+
+export const EMAIL_COOLDOWN_PREFIX = 'mail:cooldown:';
+export const EMAIL_DAILY_PREFIX = 'mail:daily:';

@@ -112,6 +112,29 @@ export class UserRepository {
     return user ? this.fromPrisma(user) : null;
   }
 
+  /**
+   * Settles who owns an address. An unverified email is a claim, not a
+   * possession, so proving it takes it off anyone else still claiming it --
+   * otherwise verification would protect whoever typed the address first
+   * rather than whoever can read the inbox.
+   *
+   * The other row loses its password with the address. A password built on an
+   * address someone else owns is not a way back into anything, and leaving it
+   * behind would be an account with a credential and no way to sign in.
+   */
+  async markEmailVerified(userId: string, email: string): Promise<void> {
+    await this.prismaService.$transaction(async (tx) => {
+      await tx.user.updateMany({
+        where: { email, emailVerifiedAt: null, id: { not: userId } },
+        data: { email: null, passwordHash: null },
+      });
+      await tx.user.update({
+        where: { id: userId },
+        data: { email, emailVerifiedAt: new Date() },
+      });
+    });
+  }
+
   /** Turns an existing row into an account, keeping everything it has played. */
   async attachPassword(
     userId: string,
@@ -174,6 +197,7 @@ export class UserRepository {
       avatarUrl: user.avatarUrl ?? undefined,
       customAvatarUrl: user.customAvatarUrl ?? undefined,
       country: user.country ?? undefined,
+      emailVerifiedAt: user.emailVerifiedAt ?? undefined,
     };
   }
 

@@ -26,6 +26,11 @@ model User {
   isTrusted Boolean @default(false) @map("is_trusted")
   isAdmin   Boolean @default(false) @map("is_admin")
 
+  /// When the address was proved to belong to whoever holds this row. Null is
+  /// a claim on an address, not possession of it, and can be taken by whoever
+  /// verifies it first.
+  emailVerifiedAt DateTime? @map("email_verified_at")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -43,6 +48,7 @@ model User {
 
   preferences  UserPreference?
   gauntletRuns GauntletRun[]
+  authTokens   AuthToken[]
 
   @@map("users")
 }
@@ -329,14 +335,14 @@ model MultiplayerRoom {
 }
 
 model UserPreference {
-  userId                  String   @id @map("user_id")
-  showAlbumHint           Boolean  @default(true) @map("show_album_hint")
-  showTextHints           Boolean  @default(true) @map("show_text_hints")
-  reducedMotion           Boolean  @default(false) @map("reduced_motion")
-  showGuessHistory        Boolean  @default(true) @map("show_guess_history")
-  showStatsToOthers       Boolean  @default(false) @map("show_stats_to_others")
-  timezone                String   @default("UTC") @map("timezone")
-  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String  @id @map("user_id")
+  showAlbumHint     Boolean @default(true) @map("show_album_hint")
+  showTextHints     Boolean @default(true) @map("show_text_hints")
+  reducedMotion     Boolean @default(false) @map("reduced_motion")
+  showGuessHistory  Boolean @default(true) @map("show_guess_history")
+  showStatsToOthers Boolean @default(false) @map("show_stats_to_others")
+  timezone          String  @default("UTC") @map("timezone")
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_preferences")
 }
@@ -356,4 +362,36 @@ model RoomPlayer {
   @@index([roomId])
   @@index([userId])
   @@map("room_players")
+}
+
+enum AuthTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+/// A single-use link sent to an address. Verification and password reset want
+/// exactly the same thing, so they share a table and differ by type rather
+/// than by having two of everything.
+model AuthToken {
+  id String @id @default(uuid())
+
+  /// SHA-256 of the token, never the token. The value is 256 bits of entropy,
+  /// so there is nothing to brute force and no reason to pay a password KDF —
+  /// but a leaked table must not hand out working links either.
+  tokenHash String        @unique @map("token_hash")
+  type      AuthTokenType
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The address this was sent to, which is not always the one on the row: an
+  /// address can be changed while a link for the old one is still in flight.
+  email String
+
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, type])
+  @@index([expiresAt])
+  @@map("auth_tokens")
 }

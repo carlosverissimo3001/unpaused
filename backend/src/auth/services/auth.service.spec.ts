@@ -9,6 +9,7 @@ import { SessionService } from './session.service';
 import { UserRepository } from '../repositories/user.repository';
 import { hashPassword } from '../utils/password';
 import { AccountMergeService } from './account-merge.service';
+import { EmailVerificationService } from './email-verification.service';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { UserEntity } from '../entities/user.entity';
 
@@ -62,6 +63,11 @@ const mockSpotifyService = {
 
 const mockAccountMergeService = { merge: jest.fn() };
 
+const mockEmailVerificationService = {
+  send: jest.fn().mockResolvedValue(undefined),
+  confirm: jest.fn(),
+};
+
 const mockSpotifyAuthService = {
   getValidAccessToken: jest.fn(),
   revokeTokens: jest.fn(),
@@ -103,6 +109,10 @@ describe('AuthService', () => {
         { provide: SessionService, useValue: mockSessionService },
         { provide: UserRepository, useValue: mockUserRepository },
         { provide: AccountMergeService, useValue: mockAccountMergeService },
+        {
+          provide: EmailVerificationService,
+          useValue: mockEmailVerificationService,
+        },
       ],
     }).compile();
 

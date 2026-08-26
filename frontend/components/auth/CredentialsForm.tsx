@@ -82,8 +82,9 @@ export function CredentialsForm({
 
       {mode === 'signup' && (
         <p className="px-1 text-[11px] text-fg/40">
-          At least {MIN_PASSWORD_LENGTH} characters. There is no password reset
-          yet, so pick one you will remember.
+          At least {MIN_PASSWORD_LENGTH} characters. We will email you a link to
+          confirm your address. There is no password reset yet, so pick one you
+          will remember.
         </p>
       )}
 

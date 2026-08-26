@@ -3,6 +3,7 @@
 export * from './ActualTrackDto';
 export * from './AdminUserDto';
 export * from './AuthMeResponseDto';
+export * from './ConfirmEmailDto';
 export * from './CreateRoomDto';
 export * from './CreateStreakQuestionDto';
 export * from './DemoAnswerDto';
@@ -10,6 +11,7 @@ export * from './DemoGuessResultDto';
 export * from './DemoOptionDto';
 export * from './DemoPlaylistDto';
 export * from './DemoRoundDto';
+export * from './EmailVerificationResultDto';
 export * from './GameHistoryDto';
 export * from './GameHistoryEntryDto';
 export * from './GameStateDto';

@@ -50,6 +50,12 @@ export interface AuthMeResponseDto {
      */
     email?: string;
     /**
+     * Whether the address has been proved. False on an account with no email at all, and on one whose address is only claimed.
+     * @type {boolean}
+     * @memberof AuthMeResponseDto
+     */
+    emailVerified: boolean;
+    /**
      * John Doe
      * @type {string}
      * @memberof AuthMeResponseDto
@@ -117,6 +123,7 @@ export function instanceOfAuthMeResponseDto(value: object): value is AuthMeRespo
     if (!('userId' in value) || value['userId'] === undefined) return false;
     if (!('hasLinkedAccount' in value) || value['hasLinkedAccount'] === undefined) return false;
     if (!('hasAccount' in value) || value['hasAccount'] === undefined) return false;
+    if (!('emailVerified' in value) || value['emailVerified'] === undefined) return false;
     if (!('displayName' in value) || value['displayName'] === undefined) return false;
     if (!('avatarSource' in value) || value['avatarSource'] === undefined) return false;
     if (!('isTrusted' in value) || value['isTrusted'] === undefined) return false;
@@ -139,6 +146,7 @@ export function AuthMeResponseDtoFromJSONTyped(json: any, ignoreDiscriminator: b
         'hasLinkedAccount': json['hasLinkedAccount'],
         'hasAccount': json['hasAccount'],
         'email': json['email'] == null ? undefined : json['email'],
+        'emailVerified': json['emailVerified'],
         'displayName': json['displayName'],
         'avatarUrl': json['avatarUrl'] == null ? undefined : json['avatarUrl'],
         'customAvatarUrl': json['customAvatarUrl'] == null ? undefined : json['customAvatarUrl'],
@@ -166,6 +174,7 @@ export function AuthMeResponseDtoToJSONTyped(value?: AuthMeResponseDto | null, i
         'hasLinkedAccount': value['hasLinkedAccount'],
         'hasAccount': value['hasAccount'],
         'email': value['email'],
+        'emailVerified': value['emailVerified'],
         'displayName': value['displayName'],
         'avatarUrl': value['avatarUrl'],
         'customAvatarUrl': value['customAvatarUrl'],

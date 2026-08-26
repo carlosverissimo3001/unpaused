@@ -222,6 +222,58 @@
         ]
       }
     },
+    "/auth/verify-email/resend": {
+      "post": {
+        "operationId": "AuthController_resendVerification",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "Accepted. Says nothing about whether a mail went out: an address that is already verified, or being sent to too often, gets this same answer."
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Send the verification link again",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/auth/verify-email/confirm": {
+      "post": {
+        "operationId": "AuthController_confirmEmail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailVerificationResultDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Spend a verification link",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/auth/logout": {
       "post": {
         "operationId": "AuthController_logout",
@@ -2111,6 +2163,11 @@
             "type": "string",
             "description": "Email of the account, when it was created with one"
           },
+          "emailVerified": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether the address has been proved. False on an account with no email at all, and on one whose address is only claimed."
+          },
           "displayName": {
             "type": "string",
             "description": "John Doe"
@@ -2152,6 +2209,7 @@
           "userId",
           "hasLinkedAccount",
           "hasAccount",
+          "emailVerified",
           "displayName",
           "avatarSource",
           "isTrusted",
@@ -2202,6 +2260,31 @@
         },
         "required": [
           "displayName"
+        ]
+      },
+      "ConfirmEmailDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The token from the link in the email"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "EmailVerificationResultDto": {
+        "type": "object",
+        "properties": {
+          "verified": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether the link was live. False covers wrong, expired and already used alike: all three mean the same thing to whoever is holding it."
+          }
+        },
+        "required": [
+          "verified"
         ]
       },
       "PlaylistDto": {

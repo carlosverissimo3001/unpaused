@@ -11,6 +11,7 @@ Name | Type
 `hasLinkedAccount` | boolean
 `hasAccount` | boolean
 `email` | string
+`emailVerified` | boolean
 `displayName` | string
 `avatarUrl` | string
 `customAvatarUrl` | string
@@ -32,6 +33,7 @@ const example = {
   "hasLinkedAccount": false,
   "hasAccount": false,
   "email": null,
+  "emailVerified": false,
   "displayName": null,
   "avatarUrl": null,
   "customAvatarUrl": null,

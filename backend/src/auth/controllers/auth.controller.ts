@@ -32,6 +32,9 @@ import { LoginDto } from '../dto/login.dto';
 import { AuthService } from '../services/auth.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { SessionId } from '../../utils/decorators/sessionId.decorator';
+import { ConfirmEmailDto } from '../dto/confirm-email.dto';
+import { EmailVerificationResultDto } from '../dto/email-verification.dto';
+import { EmailVerificationService } from '../services/email-verification.service';
 import { ProvisioningSessionGuard } from '../../utils/guards/provisioning-session.guard';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import {
@@ -58,6 +61,7 @@ export class AuthController {
 
   constructor(
     private authService: AuthService,
+    private readonly emailVerification: EmailVerificationService,
     private configService: ConfigService,
     appLogger: AppLoggerService,
   ) {
@@ -243,6 +247,43 @@ export class AuthController {
     @Body() dto: PatchUserDto,
   ): Promise<AuthMeResponseDto> {
     return this.authService.updateProfile(sessionId, dto);
+  }
+
+  @Post('verify-email/resend')
+  @HttpCode(202)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    [THROTTLE_CREDENTIALS]: {
+      limit: THROTTLE_CREDENTIALS_LIMIT,
+      ttl: THROTTLE_TTL,
+    },
+  })
+  @ApiOperation({ summary: 'Send the verification link again' })
+  @ApiCookieAuth()
+  @ApiResponse({
+    status: 202,
+    description:
+      'Accepted. Says nothing about whether a mail went out: an address that is already verified, or being sent to too often, gets this same answer.',
+  })
+  async resendVerification(@SessionId() sessionId: string): Promise<void> {
+    await this.authService.resendVerificationEmail(sessionId);
+  }
+
+  @Post('verify-email/confirm')
+  @HttpCode(200)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    [THROTTLE_CREDENTIALS]: {
+      limit: THROTTLE_CREDENTIALS_LIMIT,
+      ttl: THROTTLE_TTL,
+    },
+  })
+  @ApiOperation({ summary: 'Spend a verification link' })
+  @ApiResponse({ status: 200, type: EmailVerificationResultDto })
+  async confirmEmail(
+    @Body() dto: ConfirmEmailDto,
+  ): Promise<EmailVerificationResultDto> {
+    return { verified: await this.emailVerification.confirm(dto.token) };
   }
 
   @Post('logout')

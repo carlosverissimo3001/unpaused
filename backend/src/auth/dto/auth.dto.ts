@@ -31,6 +31,13 @@ export class AuthMeResponseDto {
   })
   email?: string;
 
+  @ApiProperty({
+    example: false,
+    description:
+      'Whether the address has been proved. False on an account with no email at all, and on one whose address is only claimed.',
+  })
+  emailVerified: boolean;
+
   @ApiProperty({ description: 'John Doe' })
   displayName: string;
 
