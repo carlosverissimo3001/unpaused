@@ -11,12 +11,15 @@ All URIs are relative to *http://localhost*
 | [**adminControllerUpdateStreakQuestion**](ApiApi.md#admincontrollerupdatestreakquestion) | **PATCH** /admin/streak-questions/{id} | Update a streak quiz question |
 | [**adminControllerUpdateUserRole**](ApiApi.md#admincontrollerupdateuserrole) | **PATCH** /admin/users/{id} | Update user role flags |
 | [**authControllerCallback**](ApiApi.md#authcontrollercallback) | **GET** /auth/callback | Handle Spotify OAuth callback |
+| [**authControllerChangePassword**](ApiApi.md#authcontrollerchangepassword) | **POST** /auth/password | Change the password of the signed in account |
 | [**authControllerConfirmEmail**](ApiApi.md#authcontrollerconfirmemail) | **POST** /auth/verify-email/confirm | Spend a verification link |
+| [**authControllerConfirmPasswordReset**](ApiApi.md#authcontrollerconfirmpasswordreset) | **POST** /auth/password-reset/confirm | Spend a reset link and set a new password |
 | [**authControllerEnsureSession**](ApiApi.md#authcontrollerensuresession) | **POST** /auth/session | Ensure the caller has an identity, minting one if they have none |
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
 | [**authControllerLoginWithPassword**](ApiApi.md#authcontrollerloginwithpassword) | **POST** /auth/signin | Sign in with an email and password |
 | [**authControllerLogout**](ApiApi.md#authcontrollerlogout) | **POST** /auth/logout | Logout and clear session |
 | [**authControllerMe**](ApiApi.md#authcontrollerme) | **GET** /auth/me | Get current authenticated user |
+| [**authControllerRequestPasswordReset**](ApiApi.md#authcontrollerrequestpasswordreset) | **POST** /auth/password-reset | Ask for a link to choose a new password |
 | [**authControllerResendVerification**](ApiApi.md#authcontrollerresendverification) | **POST** /auth/verify-email/resend | Send the verification link again |
 | [**authControllerSignup**](ApiApi.md#authcontrollersignup) | **POST** /auth/signup | Create an account, keeping any guest progress |
 | [**authControllerUpdateMe**](ApiApi.md#authcontrollerupdateme) | **PATCH** /auth/me | Update current user profile |
@@ -537,6 +540,76 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## authControllerChangePassword
+
+> authControllerChangePassword(changePasswordDto)
+
+Change the password of the signed in account
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AuthControllerChangePasswordRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
+    // To configure API key authorization: cookie
+    apiKey: "YOUR API KEY",
+  });
+  const api = new ApiApi(config);
+
+  const body = {
+    // ChangePasswordDto
+    changePasswordDto: ...,
+  } satisfies AuthControllerChangePasswordRequest;
+
+  try {
+    const data = await api.authControllerChangePassword(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **changePasswordDto** | [ChangePasswordDto](ChangePasswordDto.md) |  | |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Password changed |  -  |
+| **401** | Current password is incorrect |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## authControllerConfirmEmail
 
 > EmailVerificationResultDto authControllerConfirmEmail(confirmEmailDto)
@@ -583,6 +656,71 @@ example().catch(console.error);
 ### Return type
 
 [**EmailVerificationResultDto**](EmailVerificationResultDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## authControllerConfirmPasswordReset
+
+> PasswordResetResultDto authControllerConfirmPasswordReset(confirmPasswordResetDto)
+
+Spend a reset link and set a new password
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AuthControllerConfirmPasswordResetRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // ConfirmPasswordResetDto
+    confirmPasswordResetDto: ...,
+  } satisfies AuthControllerConfirmPasswordResetRequest;
+
+  try {
+    const data = await api.authControllerConfirmPasswordReset(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **confirmPasswordResetDto** | [ConfirmPasswordResetDto](ConfirmPasswordResetDto.md) |  | |
+
+### Return type
+
+[**PasswordResetResultDto**](PasswordResetResultDto.md)
 
 ### Authorization
 
@@ -900,6 +1038,71 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## authControllerRequestPasswordReset
+
+> authControllerRequestPasswordReset(requestPasswordResetDto)
+
+Ask for a link to choose a new password
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AuthControllerRequestPasswordResetRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // RequestPasswordResetDto
+    requestPasswordResetDto: ...,
+  } satisfies AuthControllerRequestPasswordResetRequest;
+
+  try {
+    const data = await api.authControllerRequestPasswordReset(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **requestPasswordResetDto** | [RequestPasswordResetDto](RequestPasswordResetDto.md) |  | |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **202** | Accepted, and deliberately says nothing else. An unknown address, an unverified one and a Spotify-only account all get this same answer, so the endpoint cannot be used to find out which addresses are registered. |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

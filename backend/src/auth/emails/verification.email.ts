@@ -1,10 +1,6 @@
 import { EmailMessage } from '../../email/types';
+import { renderEmail } from './layout';
 
-/**
- * Deliberately plain. A transactional mail that looks like a newsletter is a
- * mail that gets filed like one, and the only thing anyone needs from this is
- * the link.
- */
 export function verificationEmail(to: string, link: string): EmailMessage {
   return {
     to,
@@ -17,12 +13,14 @@ export function verificationEmail(to: string, link: string): EmailMessage {
       'The link works once and expires in 24 hours.',
       'If you did not sign up, you can ignore this - nothing was created for you.',
     ].join('\n'),
-    html: [
-      '<p>Confirm your address to finish setting up your unpaused account:</p>',
-      `<p><a href="${link}">Confirm my email</a></p>`,
-      '<p>The link works once and expires in 24 hours.</p>',
-      '<p>If you did not sign up, you can ignore this &mdash; nothing was created for you.</p>',
-      `<p style="color:#888;font-size:12px">If the button does not work, paste this into your browser:<br>${link}</p>`,
-    ].join('\n'),
+    html: renderEmail({
+      heading: 'Confirm your email',
+      paragraphs: [
+        'One click and this address is yours on unpaused, which is what lets you get back in if you ever forget your password.',
+      ],
+      action: { label: 'Confirm my email', href: link },
+      footnote:
+        'The link works once and expires in 24 hours. If you did not sign up, ignore this &mdash; nothing was created for you.',
+    }),
   };
 }

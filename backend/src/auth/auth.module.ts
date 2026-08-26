@@ -10,6 +10,7 @@ import { ProvisioningSessionGuard } from '../utils/guards/provisioning-session.g
 import { AuthTokenRepository } from './repositories/auth-token.repository';
 import { EmailSendLimiter } from './services/email-send-limiter.service';
 import { EmailVerificationService } from './services/email-verification.service';
+import { PasswordResetService } from './services/password-reset.service';
 
 @Module({
   controllers: [AuthController],
@@ -23,6 +24,7 @@ import { EmailVerificationService } from './services/email-verification.service'
     AuthTokenRepository,
     EmailSendLimiter,
     EmailVerificationService,
+    PasswordResetService,
     ProvisioningSessionGuard,
   ],
   exports: [

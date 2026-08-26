@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useLogin } from '@/hooks/auth/useLogin';
+import { MIN_PASSWORD_LENGTH } from '@/lib/consts';
+import { ForgotPassword } from './ForgotPassword';
 import { useSignup } from '@/hooks/auth/useSignup';
-
-const MIN_PASSWORD_LENGTH = 8;
 
 type Mode = 'signup' | 'login';
 
@@ -33,6 +33,7 @@ export function CredentialsForm({
   const [mode, setMode] = useState<Mode>(lockedEmail ? 'login' : initialMode);
   const [email, setEmail] = useState(lockedEmail ?? '');
   const [password, setPassword] = useState('');
+  const [forgot, setForgot] = useState(false);
 
   const signup = useSignup();
   const login = useLogin();
@@ -45,6 +46,12 @@ export function CredentialsForm({
     e.preventDefault();
     if (!canSubmit) return;
     active.mutate({ email, password }, { onSuccess: () => onDone?.() });
+  }
+
+  if (forgot) {
+    return (
+      <ForgotPassword initialEmail={email} onCancel={() => setForgot(false)} />
+    );
   }
 
   return (
@@ -83,8 +90,7 @@ export function CredentialsForm({
       {mode === 'signup' && (
         <p className="px-1 text-[11px] text-fg/40">
           At least {MIN_PASSWORD_LENGTH} characters. We will email you a link to
-          confirm your address. There is no password reset yet, so pick one you
-          will remember.
+          confirm your address, so you can reset it if you forget.
         </p>
       )}
 
@@ -101,6 +107,18 @@ export function CredentialsForm({
         <p role="alert" className="px-1 text-xs text-red-400">
           {active.error.message}
         </p>
+      )}
+
+      {/* The only way back into an account whose password is gone, so it sits
+          on the form rather than behind anything. */}
+      {mode === 'login' && (
+        <button
+          type="button"
+          onClick={() => setForgot(true)}
+          className="cursor-pointer px-1 text-left text-[11px] text-fg/45 underline-offset-2 hover:text-fg/70 hover:underline"
+        >
+          Forgot your password?
+        </button>
       )}
 
       {!lockedEmail && (

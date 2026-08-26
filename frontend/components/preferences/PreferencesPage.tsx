@@ -17,6 +17,7 @@ import { SOLID_SURFACE_STYLE } from '@/lib/styles';
 import type { UserPreferenceDto } from '@/sdk';
 import { AvatarSection } from './AvatarSection';
 import { VerifyEmailSection } from './VerifyEmailSection';
+import { ChangePasswordSection } from './ChangePasswordSection';
 
 interface ToggleRowProps {
   label: string;
@@ -179,6 +180,7 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
         {user?.email && (
           <div className="px-6 border-b border-fg/10">
             <VerifyEmailSection user={user} />
+            <ChangePasswordSection />
           </div>
         )}
 

@@ -35,6 +35,13 @@ import { SessionId } from '../../utils/decorators/sessionId.decorator';
 import { ConfirmEmailDto } from '../dto/confirm-email.dto';
 import { EmailVerificationResultDto } from '../dto/email-verification.dto';
 import { EmailVerificationService } from '../services/email-verification.service';
+import { PasswordResetService } from '../services/password-reset.service';
+import {
+  ChangePasswordDto,
+  ConfirmPasswordResetDto,
+  PasswordResetResultDto,
+  RequestPasswordResetDto,
+} from '../dto/password-reset.dto';
 import { ProvisioningSessionGuard } from '../../utils/guards/provisioning-session.guard';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import {
@@ -62,6 +69,7 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private readonly emailVerification: EmailVerificationService,
+    private readonly passwordReset: PasswordResetService,
     private configService: ConfigService,
     appLogger: AppLoggerService,
   ) {
@@ -284,6 +292,68 @@ export class AuthController {
     @Body() dto: ConfirmEmailDto,
   ): Promise<EmailVerificationResultDto> {
     return { verified: await this.emailVerification.confirm(dto.token) };
+  }
+
+  @Post('password-reset')
+  @HttpCode(202)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    [THROTTLE_CREDENTIALS]: {
+      limit: THROTTLE_CREDENTIALS_LIMIT,
+      ttl: THROTTLE_TTL,
+    },
+  })
+  @ApiOperation({ summary: 'Ask for a link to choose a new password' })
+  @ApiResponse({
+    status: 202,
+    description:
+      'Accepted, and deliberately says nothing else. An unknown address, an unverified one and a Spotify-only account all get this same answer, so the endpoint cannot be used to find out which addresses are registered.',
+  })
+  async requestPasswordReset(
+    @Body() dto: RequestPasswordResetDto,
+  ): Promise<void> {
+    await this.passwordReset.request(dto.email);
+  }
+
+  @Post('password-reset/confirm')
+  @HttpCode(200)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    [THROTTLE_CREDENTIALS]: {
+      limit: THROTTLE_CREDENTIALS_LIMIT,
+      ttl: THROTTLE_TTL,
+    },
+  })
+  @ApiOperation({ summary: 'Spend a reset link and set a new password' })
+  @ApiResponse({ status: 200, type: PasswordResetResultDto })
+  async confirmPasswordReset(
+    @Body() dto: ConfirmPasswordResetDto,
+  ): Promise<PasswordResetResultDto> {
+    return { reset: await this.passwordReset.confirm(dto.token, dto.password) };
+  }
+
+  @Post('password')
+  @HttpCode(200)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    [THROTTLE_CREDENTIALS]: {
+      limit: THROTTLE_CREDENTIALS_LIMIT,
+      ttl: THROTTLE_TTL,
+    },
+  })
+  @ApiOperation({ summary: 'Change the password of the signed in account' })
+  @ApiCookieAuth()
+  @ApiResponse({ status: 200, description: 'Password changed' })
+  @ApiResponse({ status: 401, description: 'Current password is incorrect' })
+  async changePassword(
+    @SessionId() sessionId: string,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<void> {
+    await this.authService.changePassword(
+      sessionId,
+      dto.currentPassword,
+      dto.newPassword,
+    );
   }
 
   @Post('logout')

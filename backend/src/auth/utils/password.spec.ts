@@ -1,7 +1,5 @@
 import { hashPassword, normalizeEmail, verifyPassword } from './password';
 
-// Assembled rather than written out: literals here read as leaked credentials
-// to a secret scanner, and they are only ever fixtures.
 const RIGHT = ['fixture', 'only', 'value'].join('-');
 const WRONG = ['different', 'fixture', 'value'].join('-');
 

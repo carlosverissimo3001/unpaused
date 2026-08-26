@@ -6,3 +6,6 @@ export const POOL_PLAYLIST_ID = 'pool';
  * the enforcement is server side, and the server never says it applied.
  */
 export const RESEND_COOLDOWN_SECONDS = 60;
+
+/** Matches the backend's MIN_PASSWORD_LENGTH; the server is what enforces it. */
+export const MIN_PASSWORD_LENGTH = 8;

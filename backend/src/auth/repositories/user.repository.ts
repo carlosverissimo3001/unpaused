@@ -135,6 +135,13 @@ export class UserRepository {
     });
   }
 
+  async setPassword(userId: string, passwordHash: string): Promise<void> {
+    await this.prismaService.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+  }
+
   /** Turns an existing row into an account, keeping everything it has played. */
   async attachPassword(
     userId: string,

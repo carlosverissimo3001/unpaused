@@ -95,6 +95,14 @@ export class SessionService {
       this.sessionMaxAge,
     );
 
+    // Every session, not just the newest. The mapping above holds one, which
+    // is all the multiplayer lookup wants; signing someone out everywhere
+    // needs the whole set.
+    const client = this.redisService.getClient();
+    const setKey = `user-sessions:${params.userId}`;
+    await client.sadd(setKey, sessionId);
+    await client.expire(setKey, this.sessionMaxAge);
+
     return sessionId;
   }
 
@@ -227,12 +235,36 @@ export class SessionService {
           if (currentSessionId === sessionId) {
             await this.redisService.del(userSessionKey);
           }
+          await this.redisService
+            .getClient()
+            .srem(`user-sessions:${session.userId}`, sessionId);
         } catch {
           // Ignore parse errors during cleanup
         }
       }
     } finally {
       await this.redisService.del(sessionKey);
+    }
+  }
+
+  /**
+   * Signs a user out of every browser. Used where a password has changed:
+   * "I want a new password" and "someone else has my old one" are the same
+   * request, so both are answered by ending every session but the one asking.
+   */
+  async deleteSessionsForUser(userId: string, keep?: string): Promise<void> {
+    const client = this.redisService.getClient();
+    const setKey = `user-sessions:${userId}`;
+    const sessionIds = await client.smembers(setKey);
+
+    for (const sessionId of sessionIds) {
+      if (sessionId === keep) continue;
+      await this.deleteSession(sessionId);
+      await client.srem(setKey, sessionId);
+    }
+
+    if (!keep) {
+      await this.redisService.del(setKey);
     }
   }
 }

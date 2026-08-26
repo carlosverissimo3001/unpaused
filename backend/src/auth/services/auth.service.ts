@@ -365,6 +365,37 @@ export class AuthService {
   }
 
   /**
+   * Changes a password the player still knows. The current one is required:
+   * a session on a browser someone walked away from must not be enough to
+   * lock its owner out of their own account.
+   */
+  async changePassword(
+    sessionId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const session = await this.sessionService.getSession(sessionId);
+    const user = await this.userRepository.findById(session.userId);
+
+    const failed = new UnauthorizedException('Current password is incorrect');
+    if (!user?.passwordHash) {
+      throw failed;
+    }
+    if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+      throw failed;
+    }
+
+    await this.userRepository.setPassword(
+      user.id,
+      await hashPassword(newPassword),
+    );
+
+    // Everywhere but here. Whoever is doing this stays signed in; anything
+    // else signed in as them does not.
+    await this.sessionService.deleteSessionsForUser(user.id, sessionId);
+  }
+
+  /**
    * Logout: delete session and revoke cached tokens
    * @param sessionId - The session ID
    */
