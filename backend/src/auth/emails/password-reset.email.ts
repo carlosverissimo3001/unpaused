@@ -1,26 +1,42 @@
 import { EmailMessage } from '../../email/types';
 import { renderEmail } from './layout';
 
-export function passwordResetEmail(to: string, link: string): EmailMessage {
+/**
+ * Deliberately unlike the shape a phishing template takes: named rather than
+ * addressed to nobody, the link written out plainly before the button, and no
+ * alarm about who asked. That silhouette -- third person warning, big coloured
+ * call to action, urgency about expiry -- is what filters weigh, and reset mail
+ * is judged hardest of anything we send.
+ */
+export function passwordResetEmail(
+  to: string,
+  link: string,
+  displayName: string,
+): EmailMessage {
   return {
     to,
-    subject: 'Reset your unpaused password',
+    subject: `Set a new password for ${displayName} on unpaused`,
     text: [
-      'Someone asked to reset the password for your unpaused account.',
+      `Hi ${displayName},`,
+      '',
+      'Here is your link to set a new password on unpaused:',
       '',
       link,
       '',
-      'The link works once and expires in an hour.',
-      'If that was not you, nothing has changed and you can ignore this.',
+      'Your stats, streak and history are all still there.',
+      'The link works once, for the next hour.',
+      'Not you? Nothing has changed, and you can ignore this.',
     ].join('\n'),
     html: renderEmail({
-      heading: 'Choose a new password',
+      heading: 'Set a new password',
+      greeting: `Hi ${displayName},`,
       paragraphs: [
-        'Someone asked to reset the password for your unpaused account. Your stats, streak and history are all still there.',
+        `Here is your link to set a new password on unpaused: <a href="${link}" style="color:#1db954">${link}</a>`,
+        'Your stats, streak and history are all still there, waiting on the same account.',
       ],
-      action: { label: 'Choose a new password', href: link },
+      action: { label: 'Open the link', href: link },
       footnote:
-        'The link works once and expires in an hour. If that was not you, nothing has changed and you can ignore this.',
+        'The link works once, for the next hour. Not you? Nothing has changed, and you can ignore this.',
     }),
   };
 }
