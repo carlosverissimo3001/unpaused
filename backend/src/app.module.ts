@@ -4,6 +4,7 @@ import { LoggerModule } from './logger/logger.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { RedisModule } from './redis/redis.module';
+import { EmailModule } from './email/email.module';
 import { AuthModule } from './auth/auth.module';
 import { PlaylistModule } from './playlist/playlist.module';
 import { SearchModule } from './search/search.module';
@@ -29,6 +30,7 @@ import { GAME_CLEANUP_QUEUE, JOB_OPTIONS_WITH_BACKOFF } from './consts';
     PrismaModule,
     TransactionModule,
     RedisModule,
+    EmailModule,
     ThrottleModule,
     AuthModule,
     PlaylistModule,
