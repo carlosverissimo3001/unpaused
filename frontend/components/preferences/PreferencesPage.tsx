@@ -16,6 +16,7 @@ import { useUpdateUserPreferences } from '@/hooks/user-preferences/useUpdateUser
 import { SOLID_SURFACE_STYLE } from '@/lib/styles';
 import type { UserPreferenceDto } from '@/sdk';
 import { AvatarSection } from './AvatarSection';
+import { VerifyEmailSection } from './VerifyEmailSection';
 
 interface ToggleRowProps {
   label: string;
@@ -170,6 +171,14 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
         {!user?.hasAccount && (
           <div className="px-6 py-5 border-b border-fg/10">
             <LinkAccountSection canSignIn={canSignIn} />
+          </div>
+        )}
+
+        {/* Whether the address can get them back in, which the banner on the
+            home page only asks about once before it can be dismissed. */}
+        {user?.email && (
+          <div className="px-6 border-b border-fg/10">
+            <VerifyEmailSection user={user} />
           </div>
         )}
 
