@@ -85,7 +85,10 @@ describe('PasswordResetService', () => {
 
       await service.request('nobody@example.com');
 
-      expect(mockLimiter.claim).toHaveBeenCalledWith('nobody@example.com');
+      expect(mockLimiter.claim).toHaveBeenCalledWith(
+        'nobody@example.com',
+        'reset',
+      );
     });
 
     it('will not mail a way in to an address nobody has proved they read', async () => {

@@ -34,7 +34,7 @@ export class EmailVerificationService {
    * with an account and one without.
    */
   async send(userId: string, email: string): Promise<void> {
-    if (!(await this.limiter.claim(email))) {
+    if (!(await this.limiter.claim(email, 'verify'))) {
       return;
     }
 

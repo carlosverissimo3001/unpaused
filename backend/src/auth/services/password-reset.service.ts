@@ -40,7 +40,7 @@ export class PasswordResetService {
   async request(email: string): Promise<void> {
     // Claimed before anything is looked up, so the time this takes does not
     // depend on whether the address is known.
-    const allowed = await this.limiter.claim(email);
+    const allowed = await this.limiter.claim(email, 'reset');
 
     const user = await this.userRepository.findByEmail(email);
 
