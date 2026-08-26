@@ -33,21 +33,21 @@ export function ChangePasswordSection() {
   // No icon and no heading of its own: this sits under the address in that
   // row's column, because the address is what it belongs to.
   return (
-    <div className="mt-2">
+    <div>
       {change.isSuccess ? (
-        <p className="mt-0.5 text-xs leading-relaxed text-fg/60">
+        <p className="text-xs leading-relaxed text-fg/60">
           Changed. Any other browser signed in as you has been signed out.
         </p>
       ) : !open ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mt-1 cursor-pointer text-xs text-fg/50 underline underline-offset-4 hover:text-fg/80"
+          className="cursor-pointer text-xs text-fg/50 underline underline-offset-4 hover:text-fg/80"
         >
           Change your password
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-2.5">
+        <form onSubmit={handleSubmit} className="mt-2.5 flex flex-col gap-2.5">
           <input
             type="password"
             value={current}

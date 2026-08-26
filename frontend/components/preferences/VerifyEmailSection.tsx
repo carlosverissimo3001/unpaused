@@ -63,7 +63,9 @@ export function VerifyEmailSection({
                   : 'Send the link'}
           </button>
         )}
-        {children}
+        {/* Same offset the unverified line uses, so both states of this row
+            keep one rhythm under the address. */}
+        <div className="mt-0.5">{children}</div>
       </div>
     </div>
   );
