@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SITE_ACCESS_COOKIE, isAccessTokenValid } from '@/lib/site-access';
+import {
+  SITE_ACCESS_COOKIE,
+  SPOTIFY_RETURN_COOKIE,
+  isAccessTokenValid,
+  readSpotifyReturnToken,
+} from '@/lib/site-access';
 
 const SESSION_COOKIE = 'unpaused_session';
 const SHUFFLE_ROUTE = '/shuffle';
@@ -36,13 +41,42 @@ async function hasAccess(request: NextRequest): Promise<boolean> {
   return isAccessTokenValid(request.cookies.get(SITE_ACCESS_COOKIE)?.value);
 }
 
+/**
+ * The Spotify account this browser has signed in with before, if any. Only as
+ * good as the signature: the id travels in the cookie because nothing at the
+ * edge can look it up.
+ */
+async function returningSpotifyUser(
+  request: NextRequest,
+): Promise<string | null> {
+  return readSpotifyReturnToken(
+    request.cookies.get(SPOTIFY_RETURN_COOKIE)?.value,
+  );
+}
+
+/** Spotify ids that reach the private zone without the password*/
+function isZoneGuest(spotifyUserId: string | null): boolean {
+  if (!spotifyUserId) return false;
+  const allowed = process.env.PRIVATE_ZONE_SPOTIFY_IDS;
+  if (!allowed) return false;
+  return allowed
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean)
+    .includes(spotifyUserId);
+}
+
 /** The site is public; the password buys sign in and the private zone. */
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  // The disabled button is a hint, not the enforcement.
+  // The disabled button is a hint, not the enforcement. A browser that has
+  // done this before is let through without the password: the cap it protects
+  // has already made room for whoever is on the other side of it.
   if (pathname === '/api/auth/login') {
-    return (await hasAccess(request))
+    const allowed =
+      (await hasAccess(request)) || !!(await returningSpotifyUser(request));
+    return allowed
       ? NextResponse.next()
       : NextResponse.redirect(new URL('/', request.url));
   }
@@ -51,7 +85,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  if (!isPrivateZone(pathname) || (await hasAccess(request))) {
+  if (!isPrivateZone(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Signing in as a listed account is a stronger claim than the password,
+  // which is only ever handed to the same people by hand.
+  if (
+    (await hasAccess(request)) ||
+    isZoneGuest(await returningSpotifyUser(request))
+  ) {
     return NextResponse.next();
   }
 
