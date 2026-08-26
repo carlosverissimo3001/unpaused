@@ -10,6 +10,7 @@ import { TrackModule } from '../track/track.module';
 import { UserPreferencesModule } from '../user-preferences/user-preferences.module';
 import { StreakModule } from '../streak/streak.module';
 import { PoolModule } from '../pool/pool.module';
+import { DailyModule } from '../daily/daily.module';
 import { ProvisioningSessionGuard } from '../utils/guards/provisioning-session.guard';
 import { GameStatsRepository } from './repositories/game-stats.repository';
 import { BullModule } from '@nestjs/bullmq';
@@ -25,6 +26,7 @@ import { GameConsumer } from './consumers/game.consumer';
     UserPreferencesModule,
     StreakModule,
     PoolModule,
+    DailyModule,
     BullModule.registerQueue({
       name: GAME_CLEANUP_QUEUE,
       defaultJobOptions: JOB_OPTIONS_WITH_BACKOFF,

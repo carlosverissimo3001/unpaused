@@ -50,12 +50,6 @@ export interface UserPreferenceDto {
      */
     showStatsToOthers: boolean;
     /**
-     * Playlist IDs to source daily challenge songs from. Empty means Liked Songs.
-     * @type {Array<string>}
-     * @memberof UserPreferenceDto
-     */
-    dailyChallengePlaylists: Array<string>;
-    /**
      * IANA timezone string (e.g. America/New_York)
      * @type {string}
      * @memberof UserPreferenceDto
@@ -72,7 +66,6 @@ export function instanceOfUserPreferenceDto(value: object): value is UserPrefere
     if (!('reducedMotion' in value) || value['reducedMotion'] === undefined) return false;
     if (!('showGuessHistory' in value) || value['showGuessHistory'] === undefined) return false;
     if (!('showStatsToOthers' in value) || value['showStatsToOthers'] === undefined) return false;
-    if (!('dailyChallengePlaylists' in value) || value['dailyChallengePlaylists'] === undefined) return false;
     if (!('timezone' in value) || value['timezone'] === undefined) return false;
     return true;
 }
@@ -92,7 +85,6 @@ export function UserPreferenceDtoFromJSONTyped(json: any, ignoreDiscriminator: b
         'reducedMotion': json['reducedMotion'],
         'showGuessHistory': json['showGuessHistory'],
         'showStatsToOthers': json['showStatsToOthers'],
-        'dailyChallengePlaylists': json['dailyChallengePlaylists'],
         'timezone': json['timezone'],
     };
 }
@@ -113,7 +105,6 @@ export function UserPreferenceDtoToJSONTyped(value?: UserPreferenceDto | null, i
         'reducedMotion': value['reducedMotion'],
         'showGuessHistory': value['showGuessHistory'],
         'showStatsToOthers': value['showStatsToOthers'],
-        'dailyChallengePlaylists': value['dailyChallengePlaylists'],
         'timezone': value['timezone'],
     };
 }

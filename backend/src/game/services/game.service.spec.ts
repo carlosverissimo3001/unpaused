@@ -16,6 +16,7 @@ import { UserPreferencesService } from '../../user-preferences/services/user-pre
 import { StreakService } from '../../streak/services/streak.service';
 import { LastfmService } from '@/track/services/lastfm.service';
 import { PoolService } from '../../pool/services/pool.service';
+import { DailyTrackService } from '../../daily/services/daily-track.service';
 import { TrackEntity } from '../../track/entities/track.entity';
 
 jest.mock('@/playlist/services/playlist.service');
@@ -93,6 +94,7 @@ describe('GameService', () => {
   };
   const mockPrismaService = {};
   const mockPoolService = { pickTrack: jest.fn() };
+  const mockDailyTrackService = { today: jest.fn() };
   const mockUserPreferencesRepository = {
     findByUserId: jest.fn().mockResolvedValue({ timezone: 'UTC' }),
   };
@@ -111,6 +113,7 @@ describe('GameService', () => {
         { provide: PlaylistService, useValue: mockPlaylistService },
         { provide: TrackService, useValue: mockTrackService },
         { provide: PoolService, useValue: mockPoolService },
+        { provide: DailyTrackService, useValue: mockDailyTrackService },
         { provide: PrismaService, useValue: mockPrismaService },
         {
           provide: UserPreferencesRepository,

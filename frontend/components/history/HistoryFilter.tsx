@@ -20,7 +20,7 @@ const TABS: {
   trustedOnly?: boolean;
 }[] = [
   { value: 'all', label: 'All' },
-  { value: 'daily', label: 'Daily', trustedOnly: true },
+  { value: 'daily', label: 'Daily' },
   { value: 'gauntlet', label: 'Speed Run', trustedOnly: true },
 ];
 

@@ -11,7 +11,6 @@ Name | Type
 `reducedMotion` | boolean
 `showGuessHistory` | boolean
 `showStatsToOthers` | boolean
-`dailyChallengePlaylists` | Array&lt;string&gt;
 `timezone` | string
 
 ## Example
@@ -26,7 +25,6 @@ const example = {
   "reducedMotion": null,
   "showGuessHistory": null,
   "showStatsToOthers": null,
-  "dailyChallengePlaylists": null,
   "timezone": null,
 } satisfies UserPreferenceDto
 

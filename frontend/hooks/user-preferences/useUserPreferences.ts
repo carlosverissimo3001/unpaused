@@ -11,7 +11,6 @@ export const DEFAULT_PREFERENCES: UserPreferenceDto = {
   reducedMotion: false,
   showGuessHistory: true,
   showStatsToOthers: false,
-  dailyChallengePlaylists: [],
   timezone: 'UTC',
 };
 

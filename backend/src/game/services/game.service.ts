@@ -6,7 +6,6 @@ import { TrackService } from '@/track/services/track.service';
 import { AuthService } from '@auth/services/auth.service';
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -54,6 +53,7 @@ import { buildHintsForRound } from '../utils/hint-builder';
 import { buildShareText, guessToEmoji } from '../utils/share.utils';
 import { gameNumberFromDate, shuffleInPlace } from '../utils/utils';
 import { GameStatsService } from './game-stats.service';
+import { DailyTrackService } from '../../daily/services/daily-track.service';
 
 @Injectable()
 export class GameService {
@@ -70,6 +70,7 @@ export class GameService {
     private readonly streakService: StreakService,
     private readonly lastfmService: LastfmService,
     private readonly poolService: PoolService,
+    private readonly dailyTrackService: DailyTrackService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
@@ -81,17 +82,10 @@ export class GameService {
     params: StartGameDto,
   ): Promise<GameStateDto> {
     const { playlistId, mode } = params;
-    const { id: userId, isTrusted } =
-      await this.authService.getUserBySessionId(sessionId);
+    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
 
     const userTimezone =
       await this.userPreferencesService.getUserTimezone(userId);
-
-    if (mode === GameMode.DAILY && !isTrusted) {
-      throw new ForbiddenException(
-        'Daily challenge requires a trusted account',
-      );
-    }
 
     const existing =
       mode === GameMode.DAILY
@@ -111,56 +105,25 @@ export class GameService {
       return this.getGameState(sessionId, existing.id);
     }
 
-    if (mode !== GameMode.DAILY && playlistId === POOL_PLAYLIST_ID) {
+    // The daily is one song a day for everyone, so it never looks at whose
+    // library this is.
+    if (mode === GameMode.DAILY) {
+      return this.startDailyGame(userId);
+    }
+
+    if (playlistId === POOL_PLAYLIST_ID) {
       return this.startPoolGame(userId, mode);
     }
 
-    let targetPlaylistId: string | undefined;
-    if (mode === GameMode.DAILY) {
-      const prefs = await this.userPreferencesService.get(userId);
-      const selected = prefs?.dailyChallengePlaylists ?? [];
-
-      if (selected.length > 0) {
-        // Pick a random playlist from the user's selection.
-        // IDs ending in LIKED_SONGS_ID_SUFFIX are handled by resolveTrackWithPreview automatically.
-        targetPlaylistId =
-          selected[Math.floor(Math.random() * selected.length)];
-      } else {
-        targetPlaylistId = `${userId}-${LIKED_SONGS_ID_SUFFIX}`;
-      }
-    } else {
-      targetPlaylistId = playlistId;
-    }
-
+    const targetPlaylistId = playlistId;
     if (!targetPlaylistId) {
       throw new BadRequestException('Playlist ID is required');
     }
 
-    let resolveResult: Awaited<ReturnType<typeof this.resolveTrackWithPreview>>;
-    const likedSongsId = `${userId}-${LIKED_SONGS_ID_SUFFIX}`;
-    if (mode === GameMode.DAILY && targetPlaylistId !== likedSongsId) {
-      try {
-        resolveResult = await this.resolveTrackWithPreview(
-          sessionId,
-          targetPlaylistId,
-        );
-      } catch (err) {
-        this.logger.warn(
-          `Playlist ${targetPlaylistId} unavailable for daily game (user ${userId}); falling back to Liked Songs. Reason: ${(err as Error).message}`,
-        );
-        targetPlaylistId = likedSongsId;
-        resolveResult = await this.resolveTrackWithPreview(
-          sessionId,
-          likedSongsId,
-        );
-      }
-    } else {
-      resolveResult = await this.resolveTrackWithPreview(
-        sessionId,
-        targetPlaylistId,
-      );
-    }
-    const { selectedTrack, previewUrl } = resolveResult;
+    const { selectedTrack, previewUrl } = await this.resolveTrackWithPreview(
+      sessionId,
+      targetPlaylistId,
+    );
 
     const metadata = await this.fetchOrReuseMetadata(
       selectedTrack.id,
@@ -186,6 +149,33 @@ export class GameService {
       playlistId: targetPlaylistId,
       mode,
       track: { connect: { id: selectedTrack.id } },
+      currentRound: 0,
+      guesses: [],
+      status: GameStatus.PLAYING,
+    });
+
+    return mapInitialGameState(game.id, previewUrl);
+  }
+
+  /**
+   * The same track for everyone on the same UTC day. Whether the player has a
+   * Spotify library makes no difference, which is what lets a result be
+   * compared at all.
+   */
+  private async startDailyGame(userId: string): Promise<GameStateDto> {
+    const track = await this.dailyTrackService.today();
+    const previewUrl = await this.trackService.resolvePreview(track);
+    if (!previewUrl) {
+      throw new BadRequestException(
+        "Today's track has no preview audio right now.",
+      );
+    }
+
+    const game = await this.gameSessionRepository.createSession({
+      user: { connect: { id: userId } },
+      playlistId: POOL_PLAYLIST_ID,
+      mode: GameMode.DAILY,
+      track: { connect: { id: track.id } },
       currentRound: 0,
       guesses: [],
       status: GameStatus.PLAYING,

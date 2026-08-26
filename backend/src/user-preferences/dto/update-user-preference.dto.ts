@@ -1,14 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  ArrayMinSize,
-  IsArray,
-  IsBoolean,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsBoolean, IsOptional } from 'class-validator';
 import { IsIanaTimezone } from '@utils/decorators/isIanaTimezone.decorator';
 import { IsNotNullableOptional } from '../../utils/decorators/notNullableOptional.decorator';
-import { TransformToArray } from '../../utils/transformers/toArray.transform';
 
 export class UpdateUserPreferenceDto {
   @ApiPropertyOptional({
@@ -41,18 +34,6 @@ export class UpdateUserPreferenceDto {
   @IsOptional()
   @IsBoolean()
   showStatsToOthers?: boolean;
-
-  @ApiPropertyOptional({
-    description:
-      'Playlist IDs to source daily challenge songs from. Must have at least one entry when provided.',
-    type: [String],
-  })
-  @IsNotNullableOptional()
-  @TransformToArray()
-  @IsArray()
-  @ArrayMinSize(1, { message: 'At least one playlist must be selected' })
-  @IsString({ each: true })
-  dailyChallengePlaylists?: string[];
 
   @ApiPropertyOptional({
     description: 'IANA timezone string (e.g. America/New_York)',

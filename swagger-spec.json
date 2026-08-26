@@ -2920,13 +2920,6 @@
             "type": "boolean",
             "description": "Show this player by name on public leaderboards. Off by default: a player ranks anonymously until they choose to be named."
           },
-          "dailyChallengePlaylists": {
-            "description": "Playlist IDs to source daily challenge songs from. Empty means Liked Songs.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
           "timezone": {
             "type": "string",
             "description": "IANA timezone string (e.g. America/New_York)",
@@ -2939,7 +2932,6 @@
           "reducedMotion",
           "showGuessHistory",
           "showStatsToOthers",
-          "dailyChallengePlaylists",
           "timezone"
         ]
       },
@@ -2965,13 +2957,6 @@
           "showStatsToOthers": {
             "type": "boolean",
             "description": "Show this player by name on public leaderboards"
-          },
-          "dailyChallengePlaylists": {
-            "description": "Playlist IDs to source daily challenge songs from. Must have at least one entry when provided.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           },
           "timezone": {
             "type": "string",
