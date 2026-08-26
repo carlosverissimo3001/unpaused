@@ -24,7 +24,6 @@ export class UserPreferencesRepository {
         | 'reducedMotion'
         | 'showGuessHistory'
         | 'showStatsToOthers'
-        | 'dailyChallengePlaylists'
         | 'timezone'
       >
     >,
@@ -50,7 +49,6 @@ export class UserPreferencesRepository {
       reducedMotion: false,
       showGuessHistory: true,
       showStatsToOthers: false,
-      dailyChallengePlaylists: [],
       timezone: 'UTC',
     };
   }

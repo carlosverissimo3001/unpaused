@@ -13,10 +13,9 @@ import {
 } from '@/hooks/user-preferences/useUserPreferences';
 import { LinkAccountSection } from './LinkAccountSection';
 import { useUpdateUserPreferences } from '@/hooks/user-preferences/useUpdateUserPreferences';
-import { GLASS_STYLE } from '@/lib/styles';
+import { SOLID_SURFACE_STYLE } from '@/lib/styles';
 import type { UserPreferenceDto } from '@/sdk';
 import { AvatarSection } from './AvatarSection';
-import { DailyPlaylistSection } from './DailyPlaylistSection';
 
 interface ToggleRowProps {
   label: string;
@@ -66,20 +65,6 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
     updatePreferences({ [key]: value });
   }
 
-  function handlePlaylistToggle(playlistId: string) {
-    const current = prefs.dailyChallengePlaylists;
-    const isSelected = current.includes(playlistId);
-
-    // Enforce at least one selection once the user has configured something
-    if (isSelected && current.length <= 1) return;
-
-    const next = isSelected
-      ? current.filter((id) => id !== playlistId)
-      : [...current, playlistId];
-
-    updatePreferences({ dailyChallengePlaylists: next });
-  }
-
   return (
     <div
       className="h-screen h-[100dvh] p-4 sm:p-8 max-w-2xl mx-auto"
@@ -95,7 +80,7 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
         </Link>
       </div>
 
-      <div className="rounded-2xl overflow-hidden" style={GLASS_STYLE}>
+      <div className="rounded-2xl overflow-hidden" style={SOLID_SURFACE_STYLE}>
         {/* User header */}
         <div className="relative p-6 border-b border-fg/10 flex items-center gap-4">
           <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-fg/5 border border-fg/10 shrink-0">
@@ -199,13 +184,6 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
             Gameplay
           </p>
 
-          <DailyPlaylistSection
-            selected={prefs.dailyChallengePlaylists}
-            onToggle={handlePlaylistToggle}
-            onReconcile={(validIds) =>
-              updatePreferences({ dailyChallengePlaylists: validIds })
-            }
-          />
           <ToggleRow
             label="Show guess history"
             description="Display your previous guesses during a game"

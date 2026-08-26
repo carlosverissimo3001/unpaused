@@ -106,9 +106,27 @@ model Track {
 
   gameSessions GameSession[]
   gauntletRuns GauntletRun[]
+  dailyTracks  DailyTrack[]
 
   @@index([isrc])
   @@map("tracks")
+}
+
+/// The one song every player gets on a given day. Filled ahead of time rather
+/// than derived from the date, so the choice can be seen before it is played and
+/// a song can be kept from recurring by asking the table instead of recomputing.
+model DailyTrack {
+  /// The UTC day this is the answer to. The key itself, so two writers racing
+  /// to fill the same day cannot both win.
+  date DateTime @id @db.Date
+
+  trackId String @map("track_id")
+  track   Track  @relation(fields: [trackId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([trackId])
+  @@map("daily_tracks")
 }
 
 /// Which tracks a guest round may draw from. Deliberately thin: the track data
@@ -317,7 +335,6 @@ model UserPreference {
   reducedMotion           Boolean  @default(false) @map("reduced_motion")
   showGuessHistory        Boolean  @default(true) @map("show_guess_history")
   showStatsToOthers       Boolean  @default(false) @map("show_stats_to_others")
-  dailyChallengePlaylists String[] @default([]) @map("daily_challenge_playlists")
   timezone                String   @default("UTC") @map("timezone")
   user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

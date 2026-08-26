@@ -262,7 +262,8 @@ function GameModesGalleryComponent({ isTrusted }: { isTrusted: boolean }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const modes = [
-    { id: 'daily', show: isTrusted, render: () => <DailyCardContent /> },
+    // One song a day, drawn from the curated pool, so a library is not needed.
+    { id: 'daily', show: true, render: () => <DailyCardContent /> },
     { id: 'pool', show: true, render: () => <PoolCardContent /> },
     { id: 'speedrun', show: isTrusted, render: () => <SpeedrunCardContent /> },
     {

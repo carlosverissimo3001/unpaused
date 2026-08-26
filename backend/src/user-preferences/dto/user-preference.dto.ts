@@ -20,14 +20,6 @@ export class UserPreferenceDto {
   showStatsToOthers: boolean;
 
   @ApiProperty({
-    description:
-      'Playlist IDs to source daily challenge songs from. Empty means Liked Songs.',
-    type: String,
-    isArray: true,
-  })
-  dailyChallengePlaylists: string[];
-
-  @ApiProperty({
     description: 'IANA timezone string (e.g. America/New_York)',
     default: 'UTC',
   })
