@@ -2,6 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { Transactional } from '@transaction/transactional.decorator';
 
+// Note(Charly): A lot of raw prisma calls in a non-repo file
+// not ideal, we should be injecting gameSessionRepo, gauntletRepo...
+
 @Injectable()
 export class AccountMergeService {
   constructor(private readonly prismaService: PrismaService) {}

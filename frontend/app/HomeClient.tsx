@@ -18,6 +18,7 @@ import { UnauthenticatedView } from '@/components/features/UnauthenticatedView';
 import { AppFooter } from '@/components/features/AppFooter';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
+import { useSpotifyReturnMark } from '@/hooks/auth/useSpotifyReturnMark';
 
 export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   const playlistFilters = usePlaylistFilters();
@@ -30,6 +31,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   const hasSpotify = !!user?.hasLinkedAccount;
 
   useTimezoneSync({ enabled: hasSpotify });
+  useSpotifyReturnMark(hasSpotify);
 
   // Detect post-OAuth pending redirect synchronously on mount so we can
   // render a blank overlay instead of a flash of the homepage while

@@ -3,11 +3,10 @@ import { authGateRateLimiter } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/get-client-ip';
 import {
   SITE_ACCESS_COOKIE,
+  SITE_ACCESS_MAX_AGE,
   constantTimeEqual,
   getExpectedToken,
 } from '@/lib/site-access';
-
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 export async function POST(request: Request) {
   const clientIP = getClientIP(request);
@@ -63,7 +62,7 @@ export async function POST(request: Request) {
     secure: process.env.NODE_ENV === 'production',
     path: '/',
     sameSite: 'lax', // Need to be lax to allow OAuth redirects
-    maxAge: COOKIE_MAX_AGE,
+    maxAge: SITE_ACCESS_MAX_AGE,
   });
 
   return response;
