@@ -10,12 +10,20 @@ const USER_ID = 'user-1';
 
 // ── Mocks ────────────────────────────────────────────────────────────
 
+const mockRedisClient = {
+  sadd: jest.fn(),
+  srem: jest.fn(),
+  smembers: jest.fn().mockResolvedValue([]),
+  expire: jest.fn(),
+};
+
 const mockRedisService = {
   set: jest.fn(),
   get: jest.fn(),
   del: jest.fn(),
   exists: jest.fn(),
   ttl: jest.fn(),
+  getClient: () => mockRedisClient,
 };
 
 const mockConfigService = { get: jest.fn().mockReturnValue(604800) };

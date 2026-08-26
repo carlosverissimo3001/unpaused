@@ -3,11 +3,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { api } from '@/sdk/client';
+import { ResponseError } from '@/sdk';
 import type { AuthMeResponseDto } from '@/sdk';
 
 /**
- * Fetch current authenticated user
- * User profile can stay fresh longer (5 minutes staleTime)
+ * Who is signed in, or null for nobody. Not being signed in is an answer, not
+ * a failure: leaving the query in an error state makes it permanently stale,
+ * and every observer that mounts then refetches it.
  */
 export function useMe() {
   return useQuery<AuthMeResponseDto | null>({
@@ -17,19 +19,19 @@ export function useMe() {
         const response = await api.authControllerMe();
         return response ?? null;
       } catch (error: unknown) {
-        // If unauthorized, return null instead of throwing
-        if (
-          (error as { status?: number })?.status === 401 ||
-          (error as { status?: number })?.status === 403
-        ) {
+        // The generated client throws ResponseError, which carries the status
+        // on its response — reading `error.status` finds undefined and turns a
+        // signed-out visitor into a failed query.
+        const status =
+          error instanceof ResponseError ? error.response.status : undefined;
+        if (status === 401 || status === 403) {
           return null;
         }
-        // Re-throw other errors
         throw error;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - user profile doesn't change often
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
-    retry: false, // Don't retry on 401/403
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: false,
   });
 }

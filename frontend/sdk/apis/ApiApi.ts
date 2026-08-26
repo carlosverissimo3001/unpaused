@@ -17,8 +17,12 @@ import * as runtime from '../runtime';
 import type {
   AdminUserDto,
   AuthMeResponseDto,
+  ChangePasswordDto,
+  ConfirmEmailDto,
+  ConfirmPasswordResetDto,
   CreateRoomDto,
   CreateStreakQuestionDto,
+  EmailVerificationResultDto,
   GameHistoryDto,
   GameStateDto,
   GameStatsDto,
@@ -31,6 +35,7 @@ import type {
   KickPlayerDto,
   LoginDto,
   MultiplayerRoundStateDto,
+  PasswordResetResultDto,
   PatchUserDto,
   PersonalBestDto,
   PlayedTodayDto,
@@ -38,6 +43,7 @@ import type {
   PlaylistsResponseDto,
   QuizNextResponseDto,
   QuizResultDto,
+  RequestPasswordResetDto,
   RoomDto,
   ScoreboardDto,
   SetTrackSourceDto,
@@ -62,10 +68,18 @@ import {
     AdminUserDtoToJSON,
     AuthMeResponseDtoFromJSON,
     AuthMeResponseDtoToJSON,
+    ChangePasswordDtoFromJSON,
+    ChangePasswordDtoToJSON,
+    ConfirmEmailDtoFromJSON,
+    ConfirmEmailDtoToJSON,
+    ConfirmPasswordResetDtoFromJSON,
+    ConfirmPasswordResetDtoToJSON,
     CreateRoomDtoFromJSON,
     CreateRoomDtoToJSON,
     CreateStreakQuestionDtoFromJSON,
     CreateStreakQuestionDtoToJSON,
+    EmailVerificationResultDtoFromJSON,
+    EmailVerificationResultDtoToJSON,
     GameHistoryDtoFromJSON,
     GameHistoryDtoToJSON,
     GameStateDtoFromJSON,
@@ -90,6 +104,8 @@ import {
     LoginDtoToJSON,
     MultiplayerRoundStateDtoFromJSON,
     MultiplayerRoundStateDtoToJSON,
+    PasswordResetResultDtoFromJSON,
+    PasswordResetResultDtoToJSON,
     PatchUserDtoFromJSON,
     PatchUserDtoToJSON,
     PersonalBestDtoFromJSON,
@@ -104,6 +120,8 @@ import {
     QuizNextResponseDtoToJSON,
     QuizResultDtoFromJSON,
     QuizResultDtoToJSON,
+    RequestPasswordResetDtoFromJSON,
+    RequestPasswordResetDtoToJSON,
     RoomDtoFromJSON,
     RoomDtoToJSON,
     ScoreboardDtoFromJSON,
@@ -167,8 +185,24 @@ export interface AuthControllerCallbackRequest {
     ubi?: object;
 }
 
+export interface AuthControllerChangePasswordRequest {
+    changePasswordDto: ChangePasswordDto;
+}
+
+export interface AuthControllerConfirmEmailRequest {
+    confirmEmailDto: ConfirmEmailDto;
+}
+
+export interface AuthControllerConfirmPasswordResetRequest {
+    confirmPasswordResetDto: ConfirmPasswordResetDto;
+}
+
 export interface AuthControllerLoginWithPasswordRequest {
     loginDto: LoginDto;
+}
+
+export interface AuthControllerRequestPasswordResetRequest {
+    requestPasswordResetDto: RequestPasswordResetDto;
 }
 
 export interface AuthControllerSignupRequest {
@@ -609,6 +643,122 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Change the password of the signed in account
+     */
+    async authControllerChangePasswordRaw(requestParameters: AuthControllerChangePasswordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['changePasswordDto'] == null) {
+            throw new runtime.RequiredError(
+                'changePasswordDto',
+                'Required parameter "changePasswordDto" was null or undefined when calling authControllerChangePassword().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/auth/password`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ChangePasswordDtoToJSON(requestParameters['changePasswordDto']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Change the password of the signed in account
+     */
+    async authControllerChangePassword(requestParameters: AuthControllerChangePasswordRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authControllerChangePasswordRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Spend a verification link
+     */
+    async authControllerConfirmEmailRaw(requestParameters: AuthControllerConfirmEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailVerificationResultDto>> {
+        if (requestParameters['confirmEmailDto'] == null) {
+            throw new runtime.RequiredError(
+                'confirmEmailDto',
+                'Required parameter "confirmEmailDto" was null or undefined when calling authControllerConfirmEmail().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/auth/verify-email/confirm`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ConfirmEmailDtoToJSON(requestParameters['confirmEmailDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EmailVerificationResultDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Spend a verification link
+     */
+    async authControllerConfirmEmail(requestParameters: AuthControllerConfirmEmailRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmailVerificationResultDto> {
+        const response = await this.authControllerConfirmEmailRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Spend a reset link and set a new password
+     */
+    async authControllerConfirmPasswordResetRaw(requestParameters: AuthControllerConfirmPasswordResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PasswordResetResultDto>> {
+        if (requestParameters['confirmPasswordResetDto'] == null) {
+            throw new runtime.RequiredError(
+                'confirmPasswordResetDto',
+                'Required parameter "confirmPasswordResetDto" was null or undefined when calling authControllerConfirmPasswordReset().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/auth/password-reset/confirm`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ConfirmPasswordResetDtoToJSON(requestParameters['confirmPasswordResetDto']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PasswordResetResultDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Spend a reset link and set a new password
+     */
+    async authControllerConfirmPasswordReset(requestParameters: AuthControllerConfirmPasswordResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PasswordResetResultDto> {
+        const response = await this.authControllerConfirmPasswordResetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Ensure the caller has an identity, minting one if they have none
      */
     async authControllerEnsureSessionRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthMeResponseDto>> {
@@ -759,6 +909,72 @@ export class ApiApi extends runtime.BaseAPI {
     async authControllerMe(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AuthMeResponseDto> {
         const response = await this.authControllerMeRaw(initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Ask for a link to choose a new password
+     */
+    async authControllerRequestPasswordResetRaw(requestParameters: AuthControllerRequestPasswordResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['requestPasswordResetDto'] == null) {
+            throw new runtime.RequiredError(
+                'requestPasswordResetDto',
+                'Required parameter "requestPasswordResetDto" was null or undefined when calling authControllerRequestPasswordReset().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/auth/password-reset`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RequestPasswordResetDtoToJSON(requestParameters['requestPasswordResetDto']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Ask for a link to choose a new password
+     */
+    async authControllerRequestPasswordReset(requestParameters: AuthControllerRequestPasswordResetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authControllerRequestPasswordResetRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Send the verification link again
+     */
+    async authControllerResendVerificationRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/auth/verify-email/resend`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Send the verification link again
+     */
+    async authControllerResendVerification(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authControllerResendVerificationRaw(initOverrides);
     }
 
     /**

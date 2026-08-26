@@ -19,6 +19,7 @@ import { AppFooter } from '@/components/features/AppFooter';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
 import { useSpotifyReturnMark } from '@/hooks/auth/useSpotifyReturnMark';
+import { UnverifiedEmailBanner } from '@/components/auth/UnverifiedEmailBanner';
 
 export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   const playlistFilters = usePlaylistFilters();
@@ -110,6 +111,7 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
       <div className="flex-1 px-4 sm:px-6 py-2 sm:py-8 relative z-10">
         <div className="max-w-5xl mx-auto flex flex-col gap-3 sm:gap-6">
           <ErrorBanner error={error} />
+          <UnverifiedEmailBanner user={user} />
 
           {user ? (
             <motion.div

@@ -16,6 +16,7 @@ import { UserEntity } from '../entities/user.entity';
 import { hasCredential } from '../utils/credentials';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { generateHandle } from '../utils/handle-generator';
+import { EmailVerificationService } from './email-verification.service';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
@@ -30,6 +31,7 @@ export class AuthService {
     private sessionService: SessionService,
     private userRepository: UserRepository,
     private accountMergeService: AccountMergeService,
+    private emailVerification: EmailVerificationService,
   ) {}
 
   /**
@@ -165,6 +167,10 @@ export class AuthService {
           generateHandle(),
         );
 
+    // Swallows its own failures. The account exists either way, and a provider
+    // having a bad minute must not be the thing that fails a signup.
+    await this.emailVerification.send(user.id, email);
+
     return this.sessionService.createSession({
       userId: user.id,
       displayName: user.displayName,
@@ -261,6 +267,7 @@ export class AuthService {
       hasLinkedAccount: !!user.spotifyUserId,
       hasAccount: hasCredential(user),
       email: user.email,
+      emailVerified: !!user.emailVerifiedAt,
       displayName: session.displayName,
       isTrusted: user.isTrusted,
       isAdmin: user.isAdmin,
@@ -335,6 +342,57 @@ export class AuthService {
     await this.sessionService.updateSessionDisplayName(sessionId, displayName);
 
     return this.getCurrentUser(sessionId);
+  }
+
+  /**
+   * Sends the verification link again for whoever is signed in. Silent about
+   * the outcome: already verified, no address at all, and asking too often all
+   * look the same from outside, which is the only way none of them is an
+   * answer to a question about somebody else's account.
+   */
+  async resendVerificationEmail(sessionId: string): Promise<void> {
+    const session = await this.sessionService.getSession(sessionId);
+    if (!session) {
+      return;
+    }
+
+    const user = await this.userRepository.findById(session.userId);
+    if (!user?.email || user.emailVerifiedAt) {
+      return;
+    }
+
+    await this.emailVerification.send(user.id, user.email);
+  }
+
+  /**
+   * Changes a password the player still knows. The current one is required:
+   * a session on a browser someone walked away from must not be enough to
+   * lock its owner out of their own account.
+   */
+  async changePassword(
+    sessionId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const session = await this.sessionService.getSession(sessionId);
+    const user = await this.userRepository.findById(session.userId);
+
+    const failed = new UnauthorizedException('Current password is incorrect');
+    if (!user?.passwordHash) {
+      throw failed;
+    }
+    if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+      throw failed;
+    }
+
+    await this.userRepository.setPassword(
+      user.id,
+      await hashPassword(newPassword),
+    );
+
+    // Everywhere but here. Whoever is doing this stays signed in; anything
+    // else signed in as them does not.
+    await this.sessionService.deleteSessionsForUser(user.id, sessionId);
   }
 
   /**

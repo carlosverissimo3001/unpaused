@@ -16,6 +16,8 @@ import { useUpdateUserPreferences } from '@/hooks/user-preferences/useUpdateUser
 import { SOLID_SURFACE_STYLE } from '@/lib/styles';
 import type { UserPreferenceDto } from '@/sdk';
 import { AvatarSection } from './AvatarSection';
+import { VerifyEmailSection } from './VerifyEmailSection';
+import { ChangePasswordSection } from './ChangePasswordSection';
 
 interface ToggleRowProps {
   label: string;
@@ -50,7 +52,10 @@ function ToggleRow({ label, description, checked, onChange }: ToggleRowProps) {
 }
 
 export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
-  const { data: user } = useMe();
+  // Nothing keyed on identity renders until this settles: for the moment it
+  // is undefined the page would otherwise claim this is a guest with no
+  // account, and offer to create one to somebody who already has it.
+  const { data: user, isPending: isLoadingUser } = useMe();
   const { data: preferences } = useUserPreferences();
   const { mutate: updatePreferences } = useUpdateUserPreferences();
   const { theme, setTheme } = useTheme();
@@ -135,7 +140,7 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
               </form>
             ) : (
               <p className="text-base font-black text-fg leading-tight flex items-center gap-2">
-                {user?.displayName ?? '—'}
+                {user?.displayName ?? (isLoadingUser ? '' : '—')}
                 {user?.country && (
                   <Image
                     src={`https://flagcdn.com/16x12/${user.country.toLowerCase()}.png`}
@@ -167,9 +172,19 @@ export function PreferencesPage({ canSignIn }: { canSignIn: boolean }) {
 
         {/* The one thing on this page that is not a preference: it decides
             whether anything else here survives losing the device. */}
-        {!user?.hasAccount && (
+        {!isLoadingUser && !user?.hasAccount && (
           <div className="px-6 py-5 border-b border-fg/10">
             <LinkAccountSection canSignIn={canSignIn} />
+          </div>
+        )}
+
+        {/* Whether the address can get them back in, which the banner on the
+            home page only asks about once before it can be dismissed. */}
+        {!isLoadingUser && user?.email && (
+          <div className="px-6 border-b border-fg/10">
+            <VerifyEmailSection user={user}>
+              <ChangePasswordSection />
+            </VerifyEmailSection>
           </div>
         )}
 
