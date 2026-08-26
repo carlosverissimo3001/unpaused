@@ -21,7 +21,7 @@ export function VerifyEmailSection({
   const verified = user.emailVerified;
 
   return (
-    <div className="flex items-start gap-3 py-4">
+    <div className="flex items-center gap-3 py-4">
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
           verified
