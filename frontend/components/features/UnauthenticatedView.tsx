@@ -1,12 +1,14 @@
 'use client';
 
-import { memo, useState, FormEvent } from 'react';
+import { FormEvent, memo, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useSiteUnlock } from '@/hooks/auth/useSiteUnlock';
 import { useEnsureSession } from '@/hooks/auth/useEnsureSession';
+import { CredentialsForm } from '@/components/auth/CredentialsForm';
+import { forgetSignedIn, readSignedInAs } from '@/lib/returning-player';
 
 function InviteForm() {
   const [secret, setSecret] = useState('');
@@ -93,6 +95,17 @@ function SpotifyButton({ canSignIn }: { canSignIn: boolean }) {
 
 function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
   const [showInvite, setShowInvite] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+
+  /**
+   * Read after mount, never during render: the server has no localStorage and
+   * a mismatch here would flash the wrong door.
+   */
+  const [returningAs, setReturningAs] = useState<string | null>(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
+    setReturningAs(readSignedInAs());
+  }, []);
   // useMe's cache is updated by the mutation, so the home page re-renders
   // into the signed-in shell without a navigation.
   const ensureSession = useEnsureSession();
@@ -119,42 +132,104 @@ function UnauthenticatedViewComponent({ canSignIn }: { canSignIn: boolean }) {
         </div>
 
         <div className="flex flex-col items-center gap-6">
+          {/* Signing back in is the whole point of the visit for someone who
+              has an account, and both buttons below make a new person. */}
+          {returningAs && (
+            <div className="w-full max-w-xs flex flex-col gap-3">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm text-fg/50">Welcome back</p>
+                <p className="text-sm font-semibold text-fg/80">
+                  {returningAs}
+                </p>
+              </div>
+              <CredentialsForm lockedEmail={returningAs} />
+
+              {/* One door for every exception, rather than five on screen at
+                  once. Forgetting the address is what reveals them: the full
+                  first-time layout is already the answer to "more ways in". */}
+              <button
+                type="button"
+                onClick={() => {
+                  forgetSignedIn();
+                  setReturningAs(null);
+                }}
+                className="cursor-pointer text-[11px] text-fg/35 underline underline-offset-4 hover:text-fg/60"
+              >
+                Not you? More ways in
+              </button>
+            </div>
+          )}
+
           {/* Equal columns, each caption owned by its own button, so the two
               paths read as a deliberate choice rather than a primary and a
               stray. The caption is what stops a whitelisted user landing in
               guest mode by mistake. */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-md">
-            <div className="flex flex-col items-center gap-2">
-              <div className="relative group w-full">
-                <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
-                <Button
-                  variant="spotify"
-                  onClick={() => ensureSession.mutate()}
-                  disabled={ensureSession.isPending}
-                  className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold transition-all duration-500 shadow-xl"
-                >
-                  {ensureSession.isPending ? 'Starting…' : 'Play now'}
-                </Button>
+          <div
+            className={`grid gap-3 sm:gap-4 w-full max-w-md ${
+              returningAs ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'
+            }`}
+          >
+            {!returningAs && (
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative group w-full">
+                  <div className="absolute -inset-1 bg-spotify-green/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
+                  <Button
+                    variant="spotify"
+                    onClick={() => ensureSession.mutate()}
+                    disabled={ensureSession.isPending}
+                    className="relative !h-12 sm:!h-14 w-full !rounded-full text-base font-bold transition-all duration-500 shadow-xl"
+                  >
+                    {ensureSession.isPending ? 'Starting…' : 'Play now'}
+                  </Button>
+                </div>
+                <span className="text-xs text-fg/45">No sign-in needed</span>
               </div>
-              <span className="text-xs text-fg/45">No sign-in needed</span>
-            </div>
+            )}
 
-            <div className="flex flex-col items-center gap-2">
-              <SpotifyButton canSignIn={canSignIn} />
-              <span className="text-xs text-fg/45">Play your own library</span>
-            </div>
+            {/* Kept in view for a returning player: the people holding the site
+                password are the ones on the Spotify dashboard, so this is the
+                habit rather than the exception for them. */}
+            {(!returningAs || canSignIn) && (
+              <div className="flex flex-col items-center gap-2">
+                <SpotifyButton canSignIn={canSignIn} />
+                <span className="text-xs text-fg/45">
+                  {canSignIn
+                    ? 'Play your own library'
+                    : 'Needs your secret word'}
+                </span>
+              </div>
+            )}
           </div>
 
-          {!canSignIn &&
+          {/* Without this an account made on another device has no way back in
+              from here: both buttons above start something new. */}
+          {returningAs ? null : showSignIn ? (
+            <div className="w-full max-w-xs">
+              <CredentialsForm initialMode="login" warnAboutSpotify />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowSignIn(true)}
+              className="cursor-pointer text-xs text-fg/40 underline underline-offset-4 hover:text-fg/60 transition-colors"
+            >
+              Already have an account? Sign in
+            </button>
+          )}
+
+          {!returningAs &&
+            !canSignIn &&
             (showInvite ? (
               <InviteForm />
             ) : (
+              // Not an easter egg: for someone whose cookies have expired this
+              // is the only way back to the account they already have.
               <button
                 type="button"
                 onClick={() => setShowInvite(true)}
-                className="text-xs text-fg/40 underline underline-offset-4 hover:text-fg/60 transition-colors"
+                className="cursor-pointer rounded-full border border-fg/15 px-5 py-2.5 text-sm font-semibold text-fg/70 transition-colors hover:border-fg/30 hover:bg-fg/5 hover:text-fg"
               >
-                Have a secret word?
+                Played here before? Enter your secret word
               </button>
             ))}
         </div>

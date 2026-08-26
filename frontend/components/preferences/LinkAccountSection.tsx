@@ -3,12 +3,9 @@
 import Image from 'next/image';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CredentialsForm } from '@/components/auth/CredentialsForm';
 
-/**
- * Where a guest turns into an account holder. Spotify is the only credential
- * that exists today, and it is invite-capped, so when it is unavailable this
- * says so rather than offering a button that cannot work.
- */
+/** Where a guest turns into an account holder. */
 export function LinkAccountSection({ canSignIn }: { canSignIn: boolean }) {
   return (
     <div className="rounded-2xl border border-spotify-green/25 bg-spotify-green/[0.06] p-4 space-y-3">
@@ -21,34 +18,44 @@ export function LinkAccountSection({ canSignIn }: { canSignIn: boolean }) {
             Your progress lives on this device
           </p>
           <p className="mt-0.5 text-xs text-fg/60 leading-relaxed">
-            Rounds, stats and streak are tied to this browser. Link Spotify to
-            keep them anywhere you sign in — and to play your own playlists.
+            Rounds, stats and streak are tied to this browser. Create an account
+            to keep them anywhere you sign in.
           </p>
         </div>
       </div>
 
-      {canSignIn ? (
-        <a href="/api/auth/login" className="block">
-          <Button
-            variant="spotify"
-            className="!h-11 !rounded-full text-sm font-black w-full"
-          >
-            <Image
-              src="/spotify-icon.svg"
-              alt=""
-              width={16}
-              height={16}
-              // The icon ships dark, and this button is already green.
-              className="mr-2.5 shrink-0"
-            />
-            Link Spotify
-          </Button>
-        </a>
-      ) : (
-        <p className="text-xs text-fg/45 leading-relaxed">
-          Signing up with a username and password is coming shortly. Spotify
-          caps development apps at five users, so linking one is invite only.
-        </p>
+      <CredentialsForm />
+
+      {canSignIn && (
+        <>
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1 bg-fg/10" />
+            <span className="text-[10px] uppercase tracking-widest text-fg/30">
+              or
+            </span>
+            <span className="h-px flex-1 bg-fg/10" />
+          </div>
+
+          <a href="/api/auth/login" className="block">
+            <Button
+              variant="spotify"
+              className="!h-11 !rounded-full text-sm font-black w-full"
+            >
+              <Image
+                src="/spotify-icon.svg"
+                alt=""
+                width={16}
+                height={16}
+                // The icon ships dark, and this button is already green.
+                className="mr-2.5 shrink-0"
+              />
+              Link Spotify
+            </Button>
+          </a>
+          <p className="text-[11px] text-fg/40 leading-relaxed">
+            Linking Spotify also lets you play your own playlists.
+          </p>
+        </>
       )}
     </div>
   );

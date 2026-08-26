@@ -27,6 +27,8 @@ import {
 } from '../../consts';
 import { AuthMeResponseDto } from '../dto/auth.dto';
 import { PatchUserDto } from '../dto/patch-user.dto';
+import { SignupDto } from '../dto/signup.dto';
+import { LoginDto } from '../dto/login.dto';
 import { AuthService } from '../services/auth.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { SessionId } from '../../utils/decorators/sessionId.decorator';
@@ -34,6 +36,8 @@ import { ProvisioningSessionGuard } from '../../utils/guards/provisioning-sessio
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import {
   THROTTLE_START,
+  THROTTLE_CREDENTIALS,
+  THROTTLE_CREDENTIALS_LIMIT,
   THROTTLE_START_LIMIT,
   THROTTLE_TTL,
 } from '@throttle/throttle.constants';
@@ -143,6 +147,76 @@ export class AuthController {
   async ensureSession(
     @SessionId() sessionId: string,
   ): Promise<AuthMeResponseDto> {
+    return this.authService.getCurrentUser(sessionId);
+  }
+
+  @Post('signup')
+  @HttpCode(201)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    [THROTTLE_CREDENTIALS]: {
+      limit: THROTTLE_CREDENTIALS_LIMIT,
+      ttl: THROTTLE_TTL,
+    },
+  })
+  @ApiOperation({ summary: 'Create an account, keeping any guest progress' })
+  @ApiResponse({ status: 201, type: AuthMeResponseDto })
+  @ApiResponse({ status: 409, description: 'That email is already registered' })
+  async signup(
+    @Body() dto: SignupDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthMeResponseDto> {
+    const currentSessionId = req.cookies?.[SESSION_COOKIE_NAME] as
+      | string
+      | undefined;
+
+    const sessionId = await this.authService.signup(
+      dto.email,
+      dto.password,
+      currentSessionId,
+    );
+    res.cookie(
+      SESSION_COOKIE_NAME,
+      sessionId,
+      getCookieOptions({ sessionMaxAge: this.sessionMaxAge }),
+    );
+    return this.authService.getCurrentUser(sessionId);
+  }
+
+  // Not 'login': that path is the Spotify OAuth start, and the proxy gates it
+  // on the site password by pathname alone, method be damned.
+  @Post('signin')
+  @HttpCode(200)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    [THROTTLE_CREDENTIALS]: {
+      limit: THROTTLE_CREDENTIALS_LIMIT,
+      ttl: THROTTLE_TTL,
+    },
+  })
+  @ApiOperation({ summary: 'Sign in with an email and password' })
+  @ApiResponse({ status: 200, type: AuthMeResponseDto })
+  @ApiResponse({ status: 401, description: 'Email or password is incorrect' })
+  async loginWithPassword(
+    @Body() dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthMeResponseDto> {
+    const currentSessionId = req.cookies?.[SESSION_COOKIE_NAME] as
+      | string
+      | undefined;
+
+    const sessionId = await this.authService.login(
+      dto.email,
+      dto.password,
+      currentSessionId,
+    );
+    res.cookie(
+      SESSION_COOKIE_NAME,
+      sessionId,
+      getCookieOptions({ sessionMaxAge: this.sessionMaxAge }),
+    );
     return this.authService.getCurrentUser(sessionId);
   }
 

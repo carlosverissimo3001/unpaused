@@ -90,6 +90,76 @@
         ]
       }
     },
+    "/auth/signup": {
+      "post": {
+        "operationId": "AuthController_signup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "That email is already registered"
+          }
+        },
+        "summary": "Create an account, keeping any guest progress",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "operationId": "AuthController_loginWithPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Email or password is incorrect"
+          }
+        },
+        "summary": "Sign in with an email and password",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "AuthController_me",
@@ -2032,6 +2102,15 @@
             "example": false,
             "description": "Whether any credential is attached. False means an anonymous player, who has nothing to log out of."
           },
+          "hasAccount": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether this player has any credential at all, Spotify or email. False means an anonymous player whose progress lives on this device."
+          },
+          "email": {
+            "type": "string",
+            "description": "Email of the account, when it was created with one"
+          },
           "displayName": {
             "type": "string",
             "description": "John Doe"
@@ -2072,10 +2151,44 @@
         "required": [
           "userId",
           "hasLinkedAccount",
+          "hasAccount",
           "displayName",
           "avatarSource",
           "isTrusted",
           "isAdmin"
+        ]
+      },
+      "SignupDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address to sign up with"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address of the account"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
         ]
       },
       "PatchUserDto": {

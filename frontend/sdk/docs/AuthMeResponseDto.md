@@ -9,6 +9,8 @@ Name | Type
 `userId` | string
 `spotifyUserId` | string
 `hasLinkedAccount` | boolean
+`hasAccount` | boolean
+`email` | string
 `displayName` | string
 `avatarUrl` | string
 `customAvatarUrl` | string
@@ -28,6 +30,8 @@ const example = {
   "userId": null,
   "spotifyUserId": null,
   "hasLinkedAccount": false,
+  "hasAccount": false,
+  "email": null,
   "displayName": null,
   "avatarUrl": null,
   "customAvatarUrl": null,

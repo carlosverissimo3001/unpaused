@@ -41,7 +41,7 @@ export function ClaimNamePrompt() {
   const [name, setName] = useState('');
 
   // Someone with an account already has a name they chose.
-  if (!user || user.hasLinkedAccount) {
+  if (!user || user.hasAccount) {
     return null;
   }
 

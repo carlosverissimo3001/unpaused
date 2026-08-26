@@ -13,8 +13,10 @@ All URIs are relative to *http://localhost*
 | [**authControllerCallback**](ApiApi.md#authcontrollercallback) | **GET** /auth/callback | Handle Spotify OAuth callback |
 | [**authControllerEnsureSession**](ApiApi.md#authcontrollerensuresession) | **POST** /auth/session | Ensure the caller has an identity, minting one if they have none |
 | [**authControllerLogin**](ApiApi.md#authcontrollerlogin) | **GET** /auth/login | Start Spotify OAuth flow |
+| [**authControllerLoginWithPassword**](ApiApi.md#authcontrollerloginwithpassword) | **POST** /auth/signin | Sign in with an email and password |
 | [**authControllerLogout**](ApiApi.md#authcontrollerlogout) | **POST** /auth/logout | Logout and clear session |
 | [**authControllerMe**](ApiApi.md#authcontrollerme) | **GET** /auth/me | Get current authenticated user |
+| [**authControllerSignup**](ApiApi.md#authcontrollersignup) | **POST** /auth/signup | Create an account, keeping any guest progress |
 | [**authControllerUpdateMe**](ApiApi.md#authcontrollerupdateme) | **PATCH** /auth/me | Update current user profile |
 | [**gameControllerGetGameState**](ApiApi.md#gamecontrollergetgamestate) | **GET** /game/{id} | Get current game state |
 | [**gameControllerGetHistory**](ApiApi.md#gamecontrollergethistory) | **GET** /game/history | Get user\&#39;s game session history (paginated) |
@@ -647,6 +649,72 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## authControllerLoginWithPassword
+
+> AuthMeResponseDto authControllerLoginWithPassword(loginDto)
+
+Sign in with an email and password
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AuthControllerLoginWithPasswordRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // LoginDto
+    loginDto: ...,
+  } satisfies AuthControllerLoginWithPasswordRequest;
+
+  try {
+    const data = await api.authControllerLoginWithPassword(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **loginDto** | [LoginDto](LoginDto.md) |  | |
+
+### Return type
+
+[**AuthMeResponseDto**](AuthMeResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+| **401** | Email or password is incorrect |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## authControllerLogout
 
 > authControllerLogout()
@@ -765,6 +833,72 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## authControllerSignup
+
+> AuthMeResponseDto authControllerSignup(signupDto)
+
+Create an account, keeping any guest progress
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { AuthControllerSignupRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // SignupDto
+    signupDto: ...,
+  } satisfies AuthControllerSignupRequest;
+
+  try {
+    const data = await api.authControllerSignup(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **signupDto** | [SignupDto](SignupDto.md) |  | |
+
+### Return type
+
+[**AuthMeResponseDto**](AuthMeResponseDto.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** |  |  -  |
+| **409** | That email is already registered |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

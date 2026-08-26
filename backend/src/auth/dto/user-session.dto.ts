@@ -19,6 +19,13 @@ export class UserSessionDto {
   @IsString()
   spotifyUserId?: string;
 
+  @ApiPropertyOptional({
+    description: 'Email, present only when the account was made with one',
+  })
+  @IsOptional()
+  @IsString()
+  email?: string;
+
   @ApiProperty({ description: 'Display name of the Spotify user' })
   @IsString()
   displayName: string;

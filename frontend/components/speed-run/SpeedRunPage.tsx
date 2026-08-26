@@ -16,8 +16,9 @@ export function SpeedRunPage() {
   const logoutMutation = useLogout();
   const { volume, setVolume } = useVolume();
   const run = useGauntletRun();
-  const hasAccount = !!user?.hasLinkedAccount;
-  const { data: pbData } = usePersonalBest(hasAccount);
+  // A run is built on a Spotify playlist, so this asks for the library.
+  const hasSpotify = !!user?.hasLinkedAccount;
+  const { data: pbData } = usePersonalBest(hasSpotify);
   const personalBest = pbData?.personalBest ?? 0;
 
   return (
@@ -43,7 +44,7 @@ export function SpeedRunPage() {
 
       <div className="flex-1 px-4 sm:px-6 py-4 sm:py-8 relative z-10">
         <div className="max-w-xl mx-auto">
-          {!hasAccount ? (
+          {!hasSpotify ? (
             <AccountRequiredNotice mode="The speed-run" />
           ) : run.phase === 'IDLE' ? (
             <SpeedRunSetup

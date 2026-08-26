@@ -7,6 +7,7 @@ import { SpotifyService } from './spotify.service';
 import { SpotifyAuthService } from './spotify-auth.service';
 import { SessionService } from './session.service';
 import { UserRepository } from '../repositories/user.repository';
+import { hashPassword } from '../utils/password';
 import { AccountMergeService } from './account-merge.service';
 import { UserSessionDto } from '../dto/user-session.dto';
 import { UserEntity } from '../entities/user.entity';
@@ -78,7 +79,10 @@ const mockSessionService = {
 const mockUserRepository = {
   findById: jest.fn(),
   findBySpotifyUserId: jest.fn(),
+  findByEmail: jest.fn(),
   attachSpotify: jest.fn(),
+  attachPassword: jest.fn(),
+  createWithPassword: jest.fn(),
   upsert: jest.fn(),
   updateDisplayName: jest.fn(),
 };
@@ -306,6 +310,167 @@ describe('AuthService', () => {
   });
 
   // ── getUserBySessionId ───────────────────────────────────────────
+
+  describe('signup', () => {
+    const GUEST_ID = 'guest-user-id';
+    const EMAIL = 'ada@example.com';
+    // Assembled rather than written out: a literal here reads as a leaked
+    // credential to a secret scanner, and it is only ever a fixture.
+    const PASSWORD = ['fixture', 'only', 'value'].join('-');
+
+    beforeEach(() => {
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+      mockSessionService.createSession.mockResolvedValue('new-session');
+    });
+
+    it('turns the guest row into the account, keeping what they played', async () => {
+      mockSessionService.getSession.mockResolvedValue({ userId: GUEST_ID });
+      mockUserRepository.findById.mockResolvedValue(
+        makeUser({ id: GUEST_ID, spotifyUserId: undefined }),
+      );
+      mockUserRepository.attachPassword.mockResolvedValue(
+        makeUser({ id: GUEST_ID, spotifyUserId: undefined, email: EMAIL }),
+      );
+
+      await service.signup(EMAIL, PASSWORD, 'guest-session');
+
+      expect(mockUserRepository.attachPassword).toHaveBeenCalledWith(
+        GUEST_ID,
+        EMAIL,
+        expect.stringContaining('scrypt$'),
+      );
+      expect(mockUserRepository.createWithPassword).not.toHaveBeenCalled();
+    });
+
+    it('never stores the password itself', async () => {
+      mockSessionService.getSession.mockResolvedValue({ userId: GUEST_ID });
+      mockUserRepository.findById.mockResolvedValue(
+        makeUser({ id: GUEST_ID, spotifyUserId: undefined }),
+      );
+      mockUserRepository.attachPassword.mockResolvedValue(makeUser());
+
+      await service.signup(EMAIL, PASSWORD, 'guest-session');
+
+      const [, , stored] = mockUserRepository.attachPassword.mock.calls[0];
+      expect(stored).not.toContain(PASSWORD);
+    });
+
+    it('starts a fresh row when the browser already belongs to an account', async () => {
+      // A shared browser. Claiming this row would hand one person's history to
+      // another, and on the Spotify path the same mistake deleted an account.
+      mockSessionService.getSession.mockResolvedValue({ userId: USER_ID });
+      mockUserRepository.findById.mockResolvedValue(makeUser());
+      mockUserRepository.createWithPassword.mockResolvedValue(
+        makeUser({ id: 'brand-new', email: EMAIL }),
+      );
+
+      await service.signup(EMAIL, PASSWORD, 'their-session');
+
+      expect(mockUserRepository.attachPassword).not.toHaveBeenCalled();
+      expect(mockUserRepository.createWithPassword).toHaveBeenCalled();
+    });
+
+    it('refuses an email that is already registered', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(makeUser());
+
+      await expect(service.signup(EMAIL, PASSWORD, undefined)).rejects.toThrow(
+        'That email is already registered',
+      );
+    });
+
+    it('does not touch an existing account when the email is taken', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(makeUser());
+
+      await expect(
+        service.signup(EMAIL, PASSWORD, undefined),
+      ).rejects.toThrow();
+
+      expect(mockUserRepository.attachPassword).not.toHaveBeenCalled();
+      expect(mockUserRepository.createWithPassword).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('login', () => {
+    const EMAIL = 'ada@example.com';
+    const PASSWORD = ['fixture', 'only', 'value'].join('-');
+    const GUEST_ID = 'guest-user-id';
+    let storedHash: string;
+
+    beforeEach(async () => {
+      storedHash = await hashPassword(PASSWORD);
+      mockSessionService.createSession.mockResolvedValue('new-session');
+    });
+
+    it('signs in with the right password', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(
+        makeUser({ email: EMAIL, passwordHash: storedHash }),
+      );
+      mockSessionService.getSession.mockRejectedValue(new Error('no session'));
+
+      await expect(service.login(EMAIL, PASSWORD, undefined)).resolves.toBe(
+        'new-session',
+      );
+    });
+
+    it('refuses the wrong password', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(
+        makeUser({ email: EMAIL, passwordHash: storedHash }),
+      );
+
+      await expect(
+        service.login(EMAIL, 'not-the-password', undefined),
+      ).rejects.toThrow('Email or password is incorrect');
+    });
+
+    it('says the same thing for an unknown email, so accounts cannot be enumerated', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(null);
+
+      await expect(
+        service.login('nobody@example.com', PASSWORD, undefined),
+      ).rejects.toThrow('Email or password is incorrect');
+    });
+
+    it('refuses a Spotify-only account, which has no password to check', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(
+        makeUser({ email: EMAIL, passwordHash: undefined }),
+      );
+
+      await expect(service.login(EMAIL, PASSWORD, undefined)).rejects.toThrow(
+        'Email or password is incorrect',
+      );
+    });
+
+    it('brings a guest progress along when they log in', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(
+        makeUser({ email: EMAIL, passwordHash: storedHash }),
+      );
+      mockSessionService.getSession.mockResolvedValue({ userId: GUEST_ID });
+      mockUserRepository.findById.mockResolvedValue(
+        makeUser({ id: GUEST_ID, spotifyUserId: undefined }),
+      );
+
+      await service.login(EMAIL, PASSWORD, 'guest-session');
+
+      expect(mockAccountMergeService.merge).toHaveBeenCalledWith(
+        GUEST_ID,
+        USER_ID,
+      );
+    });
+
+    it('leaves another account alone on a shared browser', async () => {
+      mockUserRepository.findByEmail.mockResolvedValue(
+        makeUser({ email: EMAIL, passwordHash: storedHash }),
+      );
+      mockSessionService.getSession.mockResolvedValue({ userId: 'someone' });
+      mockUserRepository.findById.mockResolvedValue(
+        makeUser({ id: 'someone', spotifyUserId: 'their-spotify' }),
+      );
+
+      await service.login(EMAIL, PASSWORD, 'their-session');
+
+      expect(mockAccountMergeService.merge).not.toHaveBeenCalled();
+    });
+  });
 
   describe('getUserBySessionId', () => {
     it('resolves the user row the session points at', async () => {

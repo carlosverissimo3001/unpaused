@@ -21,7 +21,7 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
   // A guest gets the same header as anyone else — name, avatar, history,
   // preferences. Only logout is withheld: they have nothing to log out of,
   // and doing it would silently discard the row holding their progress.
-  const canLogOut = !!user?.hasLinkedAccount;
+  const canLogOut = !!user?.hasAccount;
 
   return (
     <header className="sticky top-0 z-50 px-4 sm:px-6 py-3 sm:py-4 bg-surface/60 backdrop-blur-xl border-t border-fg/10">
