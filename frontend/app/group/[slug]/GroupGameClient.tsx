@@ -1,0 +1,41 @@
+'use client';
+
+import { useParams } from 'next/navigation';
+import { GamePage } from '@/components/game/GamePage';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useTrackGroups } from '@/hooks/track-groups/useTrackGroups';
+import { GameStatsDtoModeEnum as GameMode } from '@/sdk';
+
+/**
+ * The slug is what is shareable; the id is what starts a round. Resolving one
+ * to the other here keeps the id out of the URL, so a link survives the pool
+ * being reseeded.
+ */
+export function GroupGameClient() {
+  const slug = useParams().slug as string;
+  const { data: groups, isPending } = useTrackGroups();
+  const group = groups?.find((candidate) => candidate.slug === slug);
+
+  if (isPending) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="md" />
+      </main>
+    );
+  }
+
+  if (!group) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center">
+        <h1 className="text-2xl font-black tracking-tight text-fg">
+          No such collection
+        </h1>
+        <p className="max-w-sm text-sm text-fg/50">
+          It may have been renamed since this link was made.
+        </p>
+      </main>
+    );
+  }
+
+  return <GamePage mode={GameMode.All} trackGroupId={group.id} />;
+}

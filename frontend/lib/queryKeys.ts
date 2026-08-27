@@ -15,6 +15,8 @@ export const queryKeys = {
     startedSessionForPlaylist: (playlistId: string) =>
       ['game', 'startedSession', 'playlist', playlistId] as const,
     startedSessionForDaily: ['game', 'startedSession', 'daily'] as const,
+    startedSessionForGroup: (trackGroupId: string) =>
+      ['game', 'startedSession', 'group', trackGroupId] as const,
     session: (sessionId: string) => ['game', 'session', sessionId] as const,
     state: (sessionId: string) =>
       ['game', 'session', sessionId, 'state'] as const,
@@ -46,6 +48,10 @@ export const queryKeys = {
     detail: (playlistId: string) => ['playlists', playlistId] as const,
   },
   // Auth-related queries
+  trackGroups: {
+    all: ['trackGroups'] as const,
+    byType: (type: string) => ['trackGroups', type] as const,
+  },
   auth: {
     all: ['auth'] as const,
     me: ['auth', 'me'] as const,

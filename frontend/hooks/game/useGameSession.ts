@@ -15,19 +15,26 @@ import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
  *     in useStartGame writes here, and the subscription triggers a re-render even if
  *     the mutation observer is orphaned by Strict Mode.
  */
-export function useGameSession(mode: GameMode, playlistId?: string) {
+export function useGameSession(
+  mode: GameMode,
+  playlistId?: string,
+  trackGroupId?: string,
+) {
   const startGameMutation = useStartGame();
   const hasStarted = useRef(false);
 
   const isPlaylist = mode === GameMode.All;
   const isDaily = mode === GameMode.Daily;
-  const shouldStart = (isPlaylist && !!playlistId) || isDaily;
+  const shouldStart =
+    (isPlaylist && (!!playlistId || !!trackGroupId)) || isDaily;
 
   // Predictable cache key — known before the mutation completes
   const sessionCacheKey =
-    isPlaylist && playlistId
-      ? queryKeys.game.startedSessionForPlaylist(playlistId)
-      : queryKeys.game.startedSessionForDaily;
+    isPlaylist && trackGroupId
+      ? queryKeys.game.startedSessionForGroup(trackGroupId)
+      : isPlaylist && playlistId
+        ? queryKeys.game.startedSessionForPlaylist(playlistId)
+        : queryKeys.game.startedSessionForDaily;
 
   // Subscribe to the cache key. `enabled: false` → never fetches, but the
   // observer still re-renders when setQueryData writes to this key.
@@ -49,7 +56,11 @@ export function useGameSession(mode: GameMode, playlistId?: string) {
     queryClient.setQueryData(sessionCacheKey, undefined);
 
     startGameMutation.mutate(
-      isPlaylist && playlistId ? { playlistId, mode } : { mode },
+      isPlaylist && trackGroupId
+        ? { trackGroupId, mode }
+        : isPlaylist && playlistId
+          ? { playlistId, mode }
+          : { mode },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldStart]);
