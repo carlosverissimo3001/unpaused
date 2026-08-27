@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import { TrackGroupCard } from '@/components/track-group/TrackGroupCard';
 import { PlaylistSkeleton } from '@/components/playlist/PlaylistSkeleton';
 import { useTrackGroups } from '@/hooks/track-groups/useTrackGroups';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+
+const TITLE = 'Curated playlists';
 
 /**
  * Everyone sees this, library or not. A linked player gets it under their own
@@ -14,20 +17,24 @@ import { useTrackGroups } from '@/hooks/track-groups/useTrackGroups';
  * between is worse than no control. `type` is already in the API, so the strip
  * goes above this grid when genres land.
  */
-function TrackGroupViewComponent() {
+function TrackGroupViewComponent({ defaultOpen }: { defaultOpen: boolean }) {
   const { data: groups, isPending, isError } = useTrackGroups();
 
   // Nothing is rendered from a guess while this loads: a grid that fills with
   // defaults and then rearranges is worse than one that arrives late.
   if (isPending) {
     return (
-      <Section>
+      <CollapsibleSection
+        title={TITLE}
+        titleLabel={TITLE}
+        defaultOpen={defaultOpen}
+      >
         <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <PlaylistSkeleton key={`group-skeleton-${i}`} />
           ))}
         </div>
-      </Section>
+      </CollapsibleSection>
     );
   }
 
@@ -38,7 +45,11 @@ function TrackGroupViewComponent() {
   }
 
   return (
-    <Section>
+    <CollapsibleSection
+      title={TITLE}
+      titleLabel={TITLE}
+      defaultOpen={defaultOpen}
+    >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -49,22 +60,7 @@ function TrackGroupViewComponent() {
           <TrackGroupCard key={group.id} group={group} />
         ))}
       </motion.div>
-    </Section>
-  );
-}
-
-function Section({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-1 sm:mt-2">
-      <div className="flex items-baseline gap-2 sm:gap-3 relative z-10">
-        <h2 className="text-2xl sm:text-4xl font-black tracking-tighter text-fg whitespace-nowrap">
-          Pick an era
-        </h2>
-      </div>
-
-      <div className="mt-4" />
-      {children}
-    </div>
+    </CollapsibleSection>
   );
 }
 
