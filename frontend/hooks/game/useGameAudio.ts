@@ -13,6 +13,9 @@ interface UseGameAudioOptions {
   volume: number;
 }
 
+/** readyState: enough decoded to play the current position. */
+const HAVE_CURRENT_DATA = 2;
+
 export function useGameAudio({
   previewUrl,
   isGameOver,
@@ -114,6 +117,14 @@ export function useGameAudio({
       return;
     }
 
+    // Only the fallback plays this element. On iOS the warmup is audible
+    // (volume is read-only) and can interrupt the context snippets use.
+    // Waits on the decode, not just its result: the two race.
+    if (snippet.status !== 'failed') {
+      isWarmedUp.current = snippet.isReady;
+      return;
+    }
+
     const runWarmup = () => {
       // Bail if the user already tapped (inline warmup will handle it) or if
       // the warmup was already completed for this track.
@@ -151,7 +162,7 @@ export function useGameAudio({
       audio.addEventListener('canplaythrough', runWarmup, { once: true });
       return () => audio.removeEventListener('canplaythrough', runWarmup);
     }
-  }, [previewUrl]);
+  }, [previewUrl, snippet.isReady, snippet.status]);
 
   // Held in a ref so stopAudioInternal keeps a stable identity — it is a
   // dependency of half the callbacks in here.
@@ -184,24 +195,23 @@ export function useGameAudio({
     setIsPlaying(false);
   }, []);
 
-  const playSnippet = useCallback(() => {
+  // Which path a track took, for debugging sound on a device with no console.
+  const loggedPathRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production' || !previewUrl) return;
+    if (snippet.status !== 'ready' && snippet.status !== 'failed') return;
+    if (loggedPathRef.current === previewUrl) return;
+    loggedPathRef.current = previewUrl;
+    console.log(
+      `[useGameAudio] snippets via ${
+        snippet.status === 'ready' ? 'web-audio' : 'audio-element (fallback)'
+      }`,
+    );
+  }, [previewUrl, snippet.status]);
+
+  /** The fallback, callable on its own: Web Audio can refuse at play time. */
+  const playViaElement = useCallback(() => {
     const audio = audioRef.current;
-    if (!previewUrl) return;
-
-    if (requestRef.current) cancelAnimationFrame(requestRef.current);
-
-    // Preferred path: decoded audio, so this starts on the next audio callback
-    // rather than after the element spins up, and lasts exactly as long as
-    // asked. Everything below only runs when decoding was unavailable.
-    if (snippet.isReady) {
-      void snippet.play(snippetDuration).then((started) => {
-        if (started) {
-          setIsPlaying(true);
-        }
-      });
-      return;
-    }
-
     if (!audio) return;
 
     const isMobile = navigator.maxTouchPoints > 0;
@@ -275,7 +285,28 @@ export function useGameAudio({
     } else {
       startPlayback();
     }
-  }, [snippetDuration, previewUrl, stopAudioInternal, snippet]);
+  }, [snippetDuration, stopAudioInternal]);
+
+  const playSnippet = useCallback(() => {
+    if (!previewUrl) return;
+
+    if (requestRef.current) cancelAnimationFrame(requestRef.current);
+
+    // Decoded: starts on the next audio callback, and lasts exactly as asked.
+    if (snippet.isReady) {
+      void snippet.play(snippetDuration).then((started) => {
+        if (started) {
+          setIsPlaying(true);
+          return;
+        }
+        // The context would not run; the element is unaffected by that.
+        playViaElement();
+      });
+      return;
+    }
+
+    playViaElement();
+  }, [snippetDuration, previewUrl, snippet, playViaElement]);
 
   const pauseSnippet = useCallback(() => {
     stopAudioInternal();
@@ -297,10 +328,10 @@ export function useGameAudio({
 
     if (fullAudioRef.current.paused) {
       fullAudioRef.current.volume = volumeRef.current;
-      void fullAudioRef.current.play().then(() => setIsFullSongPlaying(true));
+      // The element's own play event flips the icon, not this call.
+      void fullAudioRef.current.play().catch(() => {});
     } else {
       fullAudioRef.current.pause();
-      setIsFullSongPlaying(false);
     }
   }, []);
 
@@ -311,6 +342,27 @@ export function useGameAudio({
     }
     setIsFullSongPlaying(false);
   }, []);
+
+  // The icon follows the element: a resolved play() is not audible playback.
+  useEffect(() => {
+    const fullAudio = fullAudioRef.current;
+    if (!fullAudio) return;
+
+    const onPlaying = () => setIsFullSongPlaying(true);
+    const onStopped = () => setIsFullSongPlaying(false);
+
+    fullAudio.addEventListener('playing', onPlaying);
+    fullAudio.addEventListener('pause', onStopped);
+    fullAudio.addEventListener('ended', onStopped);
+    fullAudio.addEventListener('emptied', onStopped);
+
+    return () => {
+      fullAudio.removeEventListener('playing', onPlaying);
+      fullAudio.removeEventListener('pause', onStopped);
+      fullAudio.removeEventListener('ended', onStopped);
+      fullAudio.removeEventListener('emptied', onStopped);
+    };
+  }, [isGameOver, previewUrl]);
 
   // Intercept OS media keys so hardware play/pause can't bypass snippet timing
   const mediaSessionCallbacks = useMemo(
@@ -326,19 +378,23 @@ export function useGameAudio({
     ...mediaSessionCallbacks,
   });
 
-  // The reveal plays the full song once, when the round ends. Without the
-  // guard it replays on every re-minted preview link — which lands mid
-  // transition to the next round and leaks a second of audio.
-  const revealPlayedRef = useRef(false);
+  /**
+   * Which preview the reveal played, so a re-minted link cannot replay it.
+   * Marked on start, not on attempt: a guard set up front outlives the cleanup
+   * that removes the listener it waits on, and Strict Mode's second pass bails.
+   */
+  const revealPlayedForRef = useRef<string | null>(null);
   useEffect(() => {
     if (!isGameOver) {
-      revealPlayedRef.current = false;
+      revealPlayedForRef.current = null;
     }
   }, [isGameOver]);
 
   useEffect(() => {
-    if (!isGameOver || !previewUrl || revealPlayedRef.current) return;
-    revealPlayedRef.current = true;
+    if (!isGameOver || !previewUrl) return;
+    if (revealPlayedForRef.current === previewUrl) return;
+
+    let cleanupReveal: (() => void) | undefined;
 
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
@@ -352,17 +408,28 @@ export function useGameAudio({
 
     const fullAudio = fullAudioRef.current;
     if (fullAudio) {
-      fullAudio.currentTime = 0;
       fullAudio.volume = volumeRef.current;
-      fullAudio
-        .play()
-        .then(() => setIsFullSongPlaying(true))
-        .catch(() => {
+
+      const start = () => {
+        revealPlayedForRef.current = previewUrl;
+        fullAudio.currentTime = 0;
+        void fullAudio.play().catch(() => {
           /* Autoplay block on game-over auto-play — user can tap manually */
         });
+      };
+
+      // Mounted in the commit that ends the round, so its src has not loaded.
+      // Playing an empty element is undone when the source arrives.
+      if (fullAudio.readyState >= HAVE_CURRENT_DATA) {
+        start();
+      } else {
+        fullAudio.addEventListener('canplay', start, { once: true });
+        cleanupReveal = () => fullAudio.removeEventListener('canplay', start);
+      }
     }
 
     setTimeout(() => setIsPlaying(false), 0);
+    return () => cleanupReveal?.();
   }, [isGameOver, previewUrl]);
 
   return {

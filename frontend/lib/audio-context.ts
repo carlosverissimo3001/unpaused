@@ -7,6 +7,12 @@
  */
 let ctx: AudioContext | null = null;
 
+/** A resumed context's clock does not advance until something has played. */
+let unlocked = false;
+
+/** How long to let a resume settle before treating the context as unusable. */
+const RESUME_GRACE_MS = 400;
+
 type WindowWithWebkitAudio = Window & {
   webkitAudioContext?: typeof AudioContext;
 };
@@ -23,26 +29,98 @@ export function getAudioContext(): AudioContext | null {
       return null;
     }
     ctx = new Ctor();
+    unlocked = false;
   }
   return ctx;
 }
 
+/** Silent and one sample long; has to run inside the gesture. */
+function unlock(context: AudioContext): void {
+  if (unlocked) {
+    return;
+  }
+  try {
+    const source = context.createBufferSource();
+    source.buffer = context.createBuffer(1, 1, 22050);
+    source.connect(context.destination);
+    source.start(0);
+    unlocked = true;
+  } catch {
+    // Left locked, so the next gesture tries again.
+  }
+}
+
+/** Chrome flips the state a beat after resume() resolves. */
+function waitForRunning(context: AudioContext): Promise<boolean> {
+  if (context.state === 'running') {
+    return Promise.resolve(true);
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const finish = (value: boolean) => {
+      if (settled) return;
+      settled = true;
+      context.removeEventListener('statechange', onChange);
+      clearTimeout(timer);
+      resolve(value);
+    };
+
+    const onChange = () => {
+      if (context.state === 'running') {
+        finish(true);
+      }
+    };
+
+    const timer = setTimeout(() => finish(false), RESUME_GRACE_MS);
+    context.addEventListener('statechange', onChange);
+  });
+}
+
 /**
- * Autoplay policy starts the context suspended, and only a user gesture can
- * resume it — so this has to be called from inside the click handler, not from
- * an effect.
+ * A context that can be heard, or null so the caller can fall back. Must run
+ * inside the gesture. WebKit adds `interrupted`, where a context accepts
+ * everything scheduled against it and plays none of it.
  */
 export async function resumeAudioContext(): Promise<AudioContext | null> {
-  const context = getAudioContext();
+  let context = getAudioContext();
   if (!context) {
     return null;
   }
-  if (context.state === 'suspended') {
+
+  if (context.state !== 'running') {
     try {
       await context.resume();
     } catch {
-      return null;
+      // Handled by the rebuild below.
     }
   }
+
+  if (await waitForRunning(context)) {
+    unlock(context);
+    return context;
+  }
+
+  // Asked, waited for, still not running: WebKit parks one here for good.
+  void context.close().catch(() => {});
+  ctx = null;
+  unlocked = false;
+
+  context = getAudioContext();
+  if (!context) {
+    return null;
+  }
+  try {
+    await context.resume();
+  } catch {
+    return null;
+  }
+
+  if (!(await waitForRunning(context))) {
+    return null;
+  }
+
+  unlock(context);
   return context;
 }
