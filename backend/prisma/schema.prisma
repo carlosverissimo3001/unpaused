@@ -26,9 +26,6 @@ model User {
   isTrusted Boolean @default(false) @map("is_trusted")
   isAdmin   Boolean @default(false) @map("is_admin")
 
-  /// When the address was proved to belong to whoever holds this row. Null is
-  /// a claim on an address, not possession of it, and can be taken by whoever
-  /// verifies it first.
   emailVerifiedAt DateTime? @map("email_verified_at")
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -110,9 +107,10 @@ model Track {
   // Need the default since I added this field after the table already had data
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  gameSessions GameSession[]
-  gauntletRuns GauntletRun[]
-  dailyTracks  DailyTrack[]
+  gameSessions     GameSession[]
+  gauntletRuns     GauntletRun[]
+  dailyTracks      DailyTrack[]
+  trackGroupTracks TrackGroupTrack[]
 
   @@index([isrc])
   @@map("tracks")
@@ -159,8 +157,6 @@ model PoolTrack {
   @@map("pool_tracks")
 }
 
-/// Chart metadata for the public demo. Written by the same daily refresh that
-/// writes the tracks, so covers follow Spotify when it rotates them.
 model DemoPlaylist {
   slug        String  @id
   name        String
@@ -174,12 +170,7 @@ model DemoPlaylist {
   @@map("demo_playlists")
 }
 
-/// Chart tracks for the public demo used by carlosverissimo.com.
-/// Refreshed daily by a scheduled job, so the request path never touches
-/// Spotify and the last successful fetch survives an outage.
 model DemoTrack {
-  /// Spotify track id. Not unique on its own: charts overlap heavily, and the
-  /// same track legitimately appears in several of them.
   id            String
   playlistSlug  String @map("playlist_slug")
   name          String
@@ -296,8 +287,6 @@ model StreakFreezeUsage {
   @@map("streak_freeze_usages")
 }
 
-/// Where a room's songs come from. The host picks; it is not inferred from who
-/// is in the room, so it cannot change under them when someone joins.
 enum TrackSource {
   POOL
   LIBRARIES
@@ -369,23 +358,14 @@ enum AuthTokenType {
   PASSWORD_RESET
 }
 
-/// A single-use link sent to an address. Verification and password reset want
-/// exactly the same thing, so they share a table and differ by type rather
-/// than by having two of everything.
 model AuthToken {
-  id String @id @default(uuid())
-
-  /// SHA-256 of the token, never the token. The value is 256 bits of entropy,
-  /// so there is nothing to brute force and no reason to pay a password KDF —
-  /// but a leaked table must not hand out working links either.
+  id        String        @id @default(uuid())
   tokenHash String        @unique @map("token_hash")
   type      AuthTokenType
 
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  /// The address this was sent to, which is not always the one on the row: an
-  /// address can be changed while a link for the old one is still in flight.
   email String
 
   expiresAt DateTime @map("expires_at")
@@ -394,4 +374,42 @@ model AuthToken {
   @@index([userId, type])
   @@index([expiresAt])
   @@map("auth_tokens")
+}
+
+enum TrackGroupType {
+  DECADE
+  GENRE
+  FAME
+}
+
+model TrackGroup {
+  id String @id @default(uuid())
+
+  type TrackGroupType
+  name String
+  slug String         @unique
+
+  imageUrl String? @map("image_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tracks TrackGroupTrack[]
+
+  @@unique([type, name])
+  @@index([type])
+  @@map("track_groups")
+}
+
+model TrackGroupTrack {
+  trackId String @map("track_id")
+  track   Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  trackGroupId String     @map("track_group_id")
+  trackGroup   TrackGroup @relation(fields: [trackGroupId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([trackId, trackGroupId])
+  @@index([trackGroupId])
+  @@map("track_group_tracks")
 }

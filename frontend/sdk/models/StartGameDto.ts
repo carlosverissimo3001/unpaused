@@ -26,6 +26,12 @@ export interface StartGameDto {
      */
     playlistId?: string;
     /**
+     * A curated group to draw from, for a player with no library of their own. Takes precedence over playlistId.
+     * @type {string}
+     * @memberof StartGameDto
+     */
+    trackGroupId?: string;
+    /**
      * The game mode to start (all or daily)
      * @type {string}
      * @memberof StartGameDto
@@ -65,6 +71,7 @@ export function StartGameDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'playlistId': json['playlistId'] == null ? undefined : json['playlistId'],
+        'trackGroupId': json['trackGroupId'] == null ? undefined : json['trackGroupId'],
         'mode': json['mode'],
     };
 }
@@ -81,6 +88,7 @@ export function StartGameDtoToJSONTyped(value?: StartGameDto | null, ignoreDiscr
     return {
         
         'playlistId': value['playlistId'],
+        'trackGroupId': value['trackGroupId'],
         'mode': value['mode'],
     };
 }

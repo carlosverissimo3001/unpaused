@@ -1,26 +1,32 @@
 
-# StartGameDto
+# TrackGroupDto
 
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`playlistId` | string
-`trackGroupId` | string
-`mode` | string
+`id` | string
+`type` | string
+`name` | string
+`slug` | string
+`trackCount` | number
+`imageUrl` | string
 
 ## Example
 
 ```typescript
-import type { StartGameDto } from ''
+import type { TrackGroupDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "playlistId": null,
-  "trackGroupId": null,
-  "mode": null,
-} satisfies StartGameDto
+  "id": null,
+  "type": null,
+  "name": 1980s,
+  "slug": 1980s,
+  "trackCount": 490,
+  "imageUrl": null,
+} satisfies TrackGroupDto
 
 console.log(example)
 
@@ -29,7 +35,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as StartGameDto
+const exampleParsed = JSON.parse(exampleJSON) as TrackGroupDto
 console.log(exampleParsed)
 ```
 

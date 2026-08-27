@@ -1,0 +1,48 @@
+import { Injectable } from '@nestjs/common';
+import { TrackGroup, TrackGroupType } from '@prisma/client';
+import { PrismaService } from '@prisma/prisma.service';
+
+export interface TrackGroupSummary extends TrackGroup {
+  trackCount: number;
+}
+
+@Injectable()
+export class TrackGroupRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  findBySlug(slug: string): Promise<TrackGroup | null> {
+    return this.prisma.trackGroup.findUnique({ where: { slug } });
+  }
+
+  findById(id: string): Promise<TrackGroup | null> {
+    return this.prisma.trackGroup.findUnique({ where: { id } });
+  }
+
+  /**
+   * Empty groups are left out rather than rendered: a tile that cannot be
+   * played is worse than no tile.
+   */
+  async listWithCounts(type: TrackGroupType): Promise<TrackGroupSummary[]> {
+    const groups = await this.prisma.trackGroup.findMany({
+      where: { type },
+      orderBy: { name: 'asc' },
+      include: { _count: { select: { tracks: true } } },
+    });
+
+    return groups
+      .filter((group) => group._count.tracks > 0)
+      .map(({ _count, ...group }) => ({
+        ...group,
+        trackCount: _count.tracks,
+      }));
+  }
+
+  /** The ids in a group that are also in the pool, which is what guests play. */
+  async trackIdsInPool(groupId: string): Promise<string[]> {
+    const rows = await this.prisma.trackGroupTrack.findMany({
+      where: { trackGroupId: groupId },
+      select: { trackId: true },
+    });
+    return rows.map((row) => row.trackId);
+  }
+}

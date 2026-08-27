@@ -12,6 +12,15 @@ export class StartGameDto {
   @IsNotEmpty()
   playlistId?: string;
 
+  @ApiPropertyOptional({
+    description:
+      'A curated group to draw from, for a player with no library of their own. Takes precedence over playlistId.',
+  })
+  @IsNotNullableOptional()
+  @IsString()
+  @IsNotEmpty()
+  trackGroupId?: string;
+
   @ApiProperty({
     description: 'The game mode to start (all or daily)',
     enum: GameMode,

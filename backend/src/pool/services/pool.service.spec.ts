@@ -70,7 +70,40 @@ describe('PoolService', () => {
     await service.pickTrack(['dz:98']);
 
     expect(poolTracks.findCandidates).toHaveBeenCalledTimes(1);
-    expect(poolTracks.findCandidates).toHaveBeenCalledWith();
+    expect(poolTracks.findCandidates).toHaveBeenCalledWith([], undefined);
+  });
+
+  it('reads a group separately rather than reusing the whole pool', async () => {
+    await service.pickTrack([], 'group-eighties');
+    await service.pickTrack([], 'group-nineties');
+
+    expect(poolTracks.findCandidates).toHaveBeenCalledWith(
+      [],
+      'group-eighties',
+    );
+    expect(poolTracks.findCandidates).toHaveBeenCalledWith(
+      [],
+      'group-nineties',
+    );
+    expect(poolTracks.findCandidates).toHaveBeenCalledTimes(2);
+  });
+
+  it('caches each group on its own, so one does not answer for another', async () => {
+    await service.pickTrack([], 'group-eighties');
+    await service.pickTrack([], 'group-eighties');
+    await service.pickTrack();
+
+    // Twice, not three times: the second eighties round is cached, and the
+    // whole-pool round is a different list entirely.
+    expect(poolTracks.findCandidates).toHaveBeenCalledTimes(2);
+  });
+
+  it('says which group came up empty rather than blaming the pool', async () => {
+    poolTracks.findCandidates.mockResolvedValue([]);
+
+    await expect(service.pickTrack([], 'group-eighties')).rejects.toThrow(
+      'group-eighties',
+    );
   });
 
   it('throws when the pool has nothing left to offer', async () => {
