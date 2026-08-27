@@ -316,6 +316,48 @@ describe('SnippetPlayer', () => {
     expect(p.isReady).toBe(false);
     await expect(p.play(0.5)).resolves.toBe(false);
   });
+
+  it('decodes again when an interruption replaced the context', async () => {
+    // A buffer belongs to the context that decoded it. After iOS interrupts a
+    // session the context is rebuilt, and playing the old buffer is silence.
+    const first = harness;
+    const p = new SnippetPlayer({
+      get: () => harness.context as unknown as AudioContext,
+      resume: async () => {
+        await harness.context.resume();
+        return harness.context as unknown as AudioContext;
+      },
+    });
+
+    await p.load('https://cdn/preview.mp3');
+    expect(first.context.decodeAudioData).toHaveBeenCalledTimes(1);
+
+    // The rebuild: everything after this resolves to a different context.
+    harness = fakeContext();
+
+    await expect(p.play(1)).resolves.toBe(true);
+    expect(harness.context.decodeAudioData).toHaveBeenCalledTimes(1);
+    expect(harness.sources).toHaveLength(1);
+  });
+
+  it('gives up rather than playing into a context it cannot decode for', async () => {
+    const p = new SnippetPlayer({
+      get: () => harness.context as unknown as AudioContext,
+      resume: async () => {
+        await harness.context.resume();
+        return harness.context as unknown as AudioContext;
+      },
+    });
+
+    await p.load('https://cdn/preview.mp3');
+
+    harness = fakeContext();
+    harness.context.decodeAudioData.mockRejectedValue(new Error('gone'));
+
+    // False, so the caller falls back to the audio element rather than
+    // scheduling into a context that will play nothing.
+    await expect(p.play(1)).resolves.toBe(false);
+  });
 });
 
 describe('findOnset', () => {

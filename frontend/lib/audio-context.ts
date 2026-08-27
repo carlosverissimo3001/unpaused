@@ -13,6 +13,9 @@ let unlocked = false;
 /** How long to let a resume settle before treating the context as unusable. */
 const RESUME_GRACE_MS = 400;
 
+/** How long to wait for the hardware to start before scheduling anyway. */
+const CLOCK_START_TIMEOUT_MS = 250;
+
 type WindowWithWebkitAudio = Window & {
   webkitAudioContext?: typeof AudioContext;
 };
@@ -34,8 +37,32 @@ export function getAudioContext(): AudioContext | null {
   return ctx;
 }
 
+/**
+ * iOS does not start the clock until playback has actually begun, so a source
+ * scheduled straight after a resume can land entirely inside the hardware's
+ * startup — which is the whole of a 0.1s first round.
+ */
+function waitForClock(context: AudioContext): Promise<void> {
+  const started = context.currentTime;
+  if (started > 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const deadline = Date.now() + CLOCK_START_TIMEOUT_MS;
+    const check = () => {
+      if (context.currentTime > started || Date.now() > deadline) {
+        resolve();
+      } else {
+        setTimeout(check, 10);
+      }
+    };
+    check();
+  });
+}
+
 /** Silent and one sample long; has to run inside the gesture. */
-function unlock(context: AudioContext): void {
+async function unlock(context: AudioContext): Promise<void> {
   if (unlocked) {
     return;
   }
@@ -47,7 +74,10 @@ function unlock(context: AudioContext): void {
     unlocked = true;
   } catch {
     // Left locked, so the next gesture tries again.
+    return;
   }
+
+  await waitForClock(context);
 }
 
 /** Chrome flips the state a beat after resume() resolves. */
@@ -98,7 +128,7 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
   }
 
   if (await waitForRunning(context)) {
-    unlock(context);
+    await unlock(context);
     return context;
   }
 
@@ -121,6 +151,36 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
     return null;
   }
 
-  unlock(context);
+  await unlock(context);
   return context;
+}
+
+/**
+ * Starts the context on the first touch anywhere, rather than on the tap that
+ * asks for audio. `pointerdown` runs before `click`, so even when the play
+ * button is the first thing touched the hardware has a head start on the
+ * handler that schedules against it — which is the difference between hearing
+ * a 0.1s round and not.
+ */
+export function primeAudioContextOnFirstGesture(): () => void {
+  if (typeof document === 'undefined' || unlocked) {
+    return () => {};
+  }
+
+  const prime = () => {
+    void resumeAudioContext();
+    stop();
+  };
+
+  const stop = () => {
+    document.removeEventListener('pointerdown', prime);
+    document.removeEventListener('touchstart', prime);
+    document.removeEventListener('keydown', prime);
+  };
+
+  document.addEventListener('pointerdown', prime, { once: true });
+  document.addEventListener('touchstart', prime, { once: true });
+  document.addEventListener('keydown', prime, { once: true });
+
+  return stop;
 }
