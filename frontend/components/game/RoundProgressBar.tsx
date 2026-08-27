@@ -109,8 +109,7 @@ export function RoundProgressBar({
   return (
     // Same column as the content below, or it reads as a separate element.
     <div className="mx-auto w-full max-w-xl mb-4 sm:mb-6 md:mb-8">
-      {/* Hidden on phones, where the first two marks are ~25px apart. */}
-      <div className="relative mb-1 hidden h-3 sm:block">
+      <div className="relative mb-1 h-3">
         {steps.map((step, index) => {
           const spent = index < currentRound;
           const isCurrent = index === round;

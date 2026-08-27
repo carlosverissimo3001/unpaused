@@ -44,9 +44,14 @@ export function AlbumArtReveal({
           {(!albumImageUrl || !imageLoaded) && (
             <div className="absolute inset-0 animate-pulse bg-fg/10" />
           )}
+          {/* The blurred layer is larger than the box it sits in: a blur
+              samples beyond its own edges, so an image the size of the frame
+              fades to transparent at the border and the clip turns that fade
+              into a hard square. */}
           {albumImageUrl && (
             <motion.div
-              className="absolute inset-0"
+              className="absolute"
+              style={{ inset: `-${MAX_BLUR}px` }}
               animate={{ filter: `blur(${blur}px)` }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             >
@@ -54,8 +59,8 @@ export function AlbumArtReveal({
                 src={albumImageUrl}
                 alt="Album art"
                 fill
-                className={`object-cover scale-110 transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                sizes="112px"
+                className={`object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                sizes="224px"
                 onLoad={() => setImageLoaded(true)}
                 onError={() => setImageLoaded(true)}
               />
