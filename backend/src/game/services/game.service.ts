@@ -53,6 +53,7 @@ import { buildHintsForRound } from '../utils/hint-builder';
 import { buildShareText, guessToEmoji } from '../utils/share.utils';
 import { gameNumberFromDate, shuffleInPlace } from '../utils/utils';
 import { GameStatsService } from './game-stats.service';
+import { TrackGroupService } from '../../track-group/services/track-group.service';
 import { DailyTrackService } from '../../daily/services/daily-track.service';
 
 @Injectable()
@@ -71,6 +72,7 @@ export class GameService {
     private readonly lastfmService: LastfmService,
     private readonly poolService: PoolService,
     private readonly dailyTrackService: DailyTrackService,
+    private readonly trackGroupService: TrackGroupService,
     appLogger: AppLoggerService,
   ) {
     this.logger = appLogger.child(GameService.name);
@@ -81,7 +83,7 @@ export class GameService {
     sessionId: string,
     params: StartGameDto,
   ): Promise<GameStateDto> {
-    const { playlistId, mode } = params;
+    const { playlistId, trackGroupId, mode } = params;
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
 
     const userTimezone =
@@ -109,6 +111,13 @@ export class GameService {
     // library this is.
     if (mode === GameMode.DAILY) {
       return this.startDailyGame(userId);
+    }
+
+    // A group is the pool narrowed to a set someone chose, so it takes the
+    // same path and ends up indistinguishable from any other round.
+    if (trackGroupId) {
+      await this.trackGroupService.requireById(trackGroupId);
+      return this.startPoolGame(userId, mode, trackGroupId);
     }
 
     if (playlistId === POOL_PLAYLIST_ID) {
@@ -188,8 +197,10 @@ export class GameService {
   private async startPoolGame(
     userId: string,
     mode: GameMode,
+    trackGroupId?: string,
   ): Promise<GameStateDto> {
-    const { track, previewUrl } = await this.pickPoolTrackWithPreview();
+    const { track, previewUrl } =
+      await this.pickPoolTrackWithPreview(trackGroupId);
 
     const game = await this.gameSessionRepository.createSession({
       user: { connect: { id: userId } },
@@ -209,14 +220,14 @@ export class GameService {
    * is resolved per round. A track that resolves to nothing is set aside and
    * another drawn, rather than failing the round.
    */
-  private async pickPoolTrackWithPreview(): Promise<{
+  private async pickPoolTrackWithPreview(trackGroupId?: string): Promise<{
     track: TrackEntity;
     previewUrl: string;
   }> {
     const tried: string[] = [];
 
     for (let i = 0; i < POOL_MAX_PREVIEW_ATTEMPTS; i++) {
-      const track = await this.poolService.pickTrack(tried);
+      const track = await this.poolService.pickTrack(tried, trackGroupId);
       try {
         const previewUrl = await this.trackService.resolvePreview(track);
         if (previewUrl) {

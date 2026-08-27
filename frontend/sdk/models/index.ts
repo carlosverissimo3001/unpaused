@@ -65,6 +65,7 @@ export * from './StreakStatusDto';
 export * from './SubmitGauntletGuessDto';
 export * from './SubmitQuizAnswerDto';
 export * from './TrackEntity';
+export * from './TrackGroupDto';
 export * from './TrackMetadataVo';
 export * from './TrackOptionDto';
 export * from './UpdateAvatarSourceDto';

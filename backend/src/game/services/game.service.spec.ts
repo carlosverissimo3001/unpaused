@@ -16,6 +16,7 @@ import { UserPreferencesService } from '../../user-preferences/services/user-pre
 import { StreakService } from '../../streak/services/streak.service';
 import { LastfmService } from '@/track/services/lastfm.service';
 import { PoolService } from '../../pool/services/pool.service';
+import { TrackGroupService } from '../../track-group/services/track-group.service';
 import { DailyTrackService } from '../../daily/services/daily-track.service';
 import { TrackEntity } from '../../track/entities/track.entity';
 
@@ -95,6 +96,8 @@ describe('GameService', () => {
   const mockPrismaService = {};
   const mockPoolService = { pickTrack: jest.fn() };
   const mockDailyTrackService = { today: jest.fn() };
+
+  const mockTrackGroupService = { requireById: jest.fn(), list: jest.fn() };
   const mockUserPreferencesRepository = {
     findByUserId: jest.fn().mockResolvedValue({ timezone: 'UTC' }),
   };
@@ -114,6 +117,7 @@ describe('GameService', () => {
         { provide: TrackService, useValue: mockTrackService },
         { provide: PoolService, useValue: mockPoolService },
         { provide: DailyTrackService, useValue: mockDailyTrackService },
+        { provide: TrackGroupService, useValue: mockTrackGroupService },
         { provide: PrismaService, useValue: mockPrismaService },
         {
           provide: UserPreferencesRepository,
@@ -524,7 +528,10 @@ describe('GameService', () => {
       const picked = await service['pickPoolTrackWithPreview']();
 
       expect(picked.track.id).toBe('pool-2');
-      expect(mockPoolService.pickTrack).toHaveBeenLastCalledWith(['pool-1']);
+      expect(mockPoolService.pickTrack).toHaveBeenLastCalledWith(
+        ['pool-1'],
+        undefined,
+      );
     });
 
     it('gives up once every draw fails to resolve audio', async () => {
@@ -533,6 +540,20 @@ describe('GameService', () => {
 
       await expect(service['pickPoolTrackWithPreview']()).rejects.toThrow(
         BadRequestException,
+      );
+    });
+
+    it('draws from the chosen group when one is asked for', async () => {
+      mockPoolService.pickTrack.mockResolvedValue(poolTrack(1));
+      mockTrackService.resolvePreview.mockResolvedValue(
+        'https://preview/pool-1.mp3',
+      );
+
+      await service['pickPoolTrackWithPreview']('group-eighties');
+
+      expect(mockPoolService.pickTrack).toHaveBeenCalledWith(
+        [],
+        'group-eighties',
       );
     });
   });

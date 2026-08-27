@@ -55,6 +55,7 @@ All URIs are relative to *http://localhost*
 | [**streakControllerGetStatus**](ApiApi.md#streakcontrollergetstatus) | **GET** /streak/status | Get streak status including freeze info |
 | [**streakControllerSubmitAnswer**](ApiApi.md#streakcontrollersubmitanswer) | **POST** /streak/quiz/answer | Submit a quiz answer to earn a streak freeze |
 | [**streakControllerUseFreeze**](ApiApi.md#streakcontrollerusefreeze) | **POST** /streak/use-freeze | Apply streak freezes to bridge a gap |
+| [**trackGroupControllerList**](ApiApi.md#trackgroupcontrollerlist) | **GET** /track-groups | Curated sets of songs anyone can play, library or not |
 | [**userAvatarControllerUpdateSource**](ApiApi.md#useravatarcontrollerupdatesource) | **PATCH** /user-avatar/source | Switch between Spotify and custom avatar |
 | [**userAvatarControllerUpload**](ApiApi.md#useravatarcontrollerupload) | **POST** /user-avatar/upload | Upload a custom avatar image |
 | [**userPreferencesControllerGet**](ApiApi.md#userpreferencescontrollerget) | **GET** /user-preferences | Get user preferences |
@@ -3514,6 +3515,71 @@ This endpoint does not need any parameter.
 ### Authorization
 
 [cookie](../README.md#cookie)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## trackGroupControllerList
+
+> Array&lt;TrackGroupDto&gt; trackGroupControllerList(type)
+
+Curated sets of songs anyone can play, library or not
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ApiApi,
+} from '';
+import type { TrackGroupControllerListRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new ApiApi();
+
+  const body = {
+    // 'DECADE' | 'GENRE' | 'FAME' | Which axis to list. Only DECADE is populated today. (optional)
+    type: type_example,
+  } satisfies TrackGroupControllerListRequest;
+
+  try {
+    const data = await api.trackGroupControllerList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **type** | `DECADE`, `GENRE`, `FAME` | Which axis to list. Only DECADE is populated today. | [Optional] [Defaults to `undefined`] [Enum: DECADE, GENRE, FAME] |
+
+### Return type
+
+[**Array&lt;TrackGroupDto&gt;**](TrackGroupDto.md)
+
+### Authorization
+
+No authorization required
 
 ### HTTP request headers
 

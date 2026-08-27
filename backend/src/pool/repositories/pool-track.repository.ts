@@ -16,9 +16,28 @@ export class PoolTrackRepository {
    * columns of a few thousand rows, so this is cheap enough to
    * read per round and lets the weighting live in code rather than in SQL.
    */
-  async findCandidates(excludeIds: string[] = []): Promise<PoolCandidate[]> {
+  async findCandidates(
+    excludeIds: string[] = [],
+    trackGroupId?: string,
+  ): Promise<PoolCandidate[]> {
+    // Both narrow the same column, so they go in one filter: as separate keys
+    // the second would silently replace the first.
+    const id: { in?: string[]; notIn?: string[] } = {};
+
+    if (excludeIds.length > 0) {
+      id.notIn = excludeIds;
+    }
+
+    if (trackGroupId) {
+      const members = await this.prisma.trackGroupTrack.findMany({
+        where: { trackGroupId },
+        select: { trackId: true },
+      });
+      id.in = members.map((member) => member.trackId);
+    }
+
     return this.prisma.poolTrack.findMany({
-      where: excludeIds.length > 0 ? { id: { notIn: excludeIds } } : undefined,
+      where: Object.keys(id).length > 0 ? { id } : undefined,
       select: { id: true, fame: true, year: true },
     });
   }

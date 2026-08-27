@@ -1023,6 +1023,46 @@
         ]
       }
     },
+    "/track-groups": {
+      "get": {
+        "operationId": "TrackGroupController_list",
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Which axis to list. Only DECADE is populated today.",
+            "schema": {
+              "enum": [
+                "DECADE",
+                "GENRE",
+                "FAME"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackGroupDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Curated sets of songs anyone can play, library or not",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/search/tracks": {
       "get": {
         "operationId": "SearchController_searchTracks",
@@ -2520,6 +2560,10 @@
             "type": "string",
             "description": "The ID of the playlist to start the game with"
           },
+          "trackGroupId": {
+            "type": "string",
+            "description": "A curated group to draw from, for a player with no library of their own. Takes precedence over playlistId."
+          },
           "mode": {
             "type": "string",
             "description": "The game mode to start (all or daily)",
@@ -3349,6 +3393,49 @@
           "freezeEarned",
           "freezesAvailable",
           "correctAnswerIndex"
+        ]
+      },
+      "TrackGroupDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable id, used to start a round"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DECADE",
+              "GENRE",
+              "FAME"
+            ],
+            "description": "Which axis this groups by"
+          },
+          "name": {
+            "type": "string",
+            "example": "1980s",
+            "description": "What the tile is called"
+          },
+          "slug": {
+            "type": "string",
+            "example": "1980s",
+            "description": "In the URL, so a shared link survives a rename"
+          },
+          "trackCount": {
+            "type": "number",
+            "example": 490
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "Album art of the best known song in the group, absent if none of them has any"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "slug",
+          "trackCount"
         ]
       },
       "StreakQuestionDto": {

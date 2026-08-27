@@ -55,6 +55,7 @@ import type {
   StreakStatusDto,
   SubmitGauntletGuessDto,
   SubmitQuizAnswerDto,
+  TrackGroupDto,
   TrackOptionDto,
   UpdateAvatarSourceDto,
   UpdateStreakQuestionDto,
@@ -144,6 +145,8 @@ import {
     SubmitGauntletGuessDtoToJSON,
     SubmitQuizAnswerDtoFromJSON,
     SubmitQuizAnswerDtoToJSON,
+    TrackGroupDtoFromJSON,
+    TrackGroupDtoToJSON,
     TrackOptionDtoFromJSON,
     TrackOptionDtoToJSON,
     UpdateAvatarSourceDtoFromJSON,
@@ -338,6 +341,10 @@ export interface SearchControllerSearchTracksRequest {
 
 export interface StreakControllerSubmitAnswerRequest {
     submitQuizAnswerDto: SubmitQuizAnswerDto;
+}
+
+export interface TrackGroupControllerListRequest {
+    type?: TrackGroupControllerListTypeEnum;
 }
 
 export interface UserAvatarControllerUpdateSourceRequest {
@@ -2303,6 +2310,39 @@ export class ApiApi extends runtime.BaseAPI {
     }
 
     /**
+     * Curated sets of songs anyone can play, library or not
+     */
+    async trackGroupControllerListRaw(requestParameters: TrackGroupControllerListRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<TrackGroupDto>>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['type'] != null) {
+            queryParameters['type'] = requestParameters['type'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/track-groups`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(TrackGroupDtoFromJSON));
+    }
+
+    /**
+     * Curated sets of songs anyone can play, library or not
+     */
+    async trackGroupControllerList(requestParameters: TrackGroupControllerListRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<TrackGroupDto>> {
+        const response = await this.trackGroupControllerListRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Switch between Spotify and custom avatar
      */
     async userAvatarControllerUpdateSourceRaw(requestParameters: UserAvatarControllerUpdateSourceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UploadAvatarResponseDto>> {
@@ -2526,3 +2566,12 @@ export const PlaylistControllerGetMyPlaylistsSortByEnum = {
     Tracks: 'tracks'
 } as const;
 export type PlaylistControllerGetMyPlaylistsSortByEnum = typeof PlaylistControllerGetMyPlaylistsSortByEnum[keyof typeof PlaylistControllerGetMyPlaylistsSortByEnum];
+/**
+ * @export
+ */
+export const TrackGroupControllerListTypeEnum = {
+    Decade: 'DECADE',
+    Genre: 'GENRE',
+    Fame: 'FAME'
+} as const;
+export type TrackGroupControllerListTypeEnum = typeof TrackGroupControllerListTypeEnum[keyof typeof TrackGroupControllerListTypeEnum];
