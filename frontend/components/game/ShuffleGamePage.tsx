@@ -11,6 +11,7 @@ import { useWarnOnLeave } from '@/hooks/useWarnOnLeave';
 import { useImageColor } from '@/hooks/misc/useImageColor';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { AudioDebugPanel } from './AudioDebugPanel';
 import { RoundProgressBar } from './RoundProgressBar';
 import { VolumeSlider } from './VolumeSlider';
 import { PlaySnippetButton } from './PlaySnippetButton';
@@ -193,6 +194,8 @@ export function ShuffleGamePage({ canSignIn }: { canSignIn: boolean }) {
               maxRounds={gameState.maxRounds}
             />
           )}
+
+          <AudioDebugPanel />
 
           <audio
             ref={audioRef}
