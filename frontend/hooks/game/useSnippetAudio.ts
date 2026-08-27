@@ -10,6 +10,9 @@ import { SnippetPlayer } from '@/lib/snippet-player';
  */
 const WAVEFORM_SLICES = 96;
 
+/** `idle` covers "no track yet"; `failed` means the element must take over. */
+export type SnippetStatus = 'idle' | 'decoding' | 'ready' | 'failed';
+
 interface UseSnippetAudioOptions {
   previewUrl: string | null | undefined;
   volume: number;
@@ -34,7 +37,13 @@ export function useSnippetAudio({
   }
   const player = playerRef.current;
 
-  const [isReady, setIsReady] = useState(false);
+  /**
+   * One value rather than a pair of booleans, because callers need to tell
+   * "not ready yet" from "never will be". The element and the decoder race,
+   * and acting on the loser costs iOS its audio session.
+   */
+  const [status, setStatus] = useState<SnippetStatus>('idle');
+  const isReady = status === 'ready';
   /** Peaks of the decoded track, for drawing the waveform. */
   const [peaks, setPeaks] = useState<number[]>([]);
   /**
@@ -62,17 +71,18 @@ export function useSnippetAudio({
 
   // Decoded during round load, so the first press has nothing to wait for.
   useEffect(() => {
-    setIsReady(false);
     setPeaks([]);
     if (!previewUrl) {
+      setStatus('idle');
       player.unload();
       return;
     }
 
+    setStatus('decoding');
     let cancelled = false;
     void player.load(previewUrl).then((loaded) => {
       if (!cancelled) {
-        setIsReady(loaded);
+        setStatus(loaded ? 'ready' : 'failed');
         setPeaks(loaded ? player.peaks(WAVEFORM_SLICES) : []);
       }
     });
@@ -124,5 +134,5 @@ export function useSnippetAudio({
 
   useEffect(() => stopTracking, [stopTracking]);
 
-  return { play, stop, isReady, progress, peaks };
+  return { play, stop, isReady, status, progress, peaks };
 }

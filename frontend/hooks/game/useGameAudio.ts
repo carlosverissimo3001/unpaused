@@ -114,6 +114,20 @@ export function useGameAudio({
       return;
     }
 
+    // Only the fallback path plays this element, and only that path pays the
+    // startup cost this hides. Warming it up when snippets come from Web Audio
+    // is worse than useless on iOS: volume is read-only there, so the "silent"
+    // warmup is audible, and starting an element can interrupt the very
+    // AudioContext the snippets need.
+    //
+    // Waiting on the decode too, not just its result: the element and the
+    // decoder race, and warming up because the decoder has not answered yet
+    // is how this fires on a device that was never going to need it.
+    if (snippet.status !== 'failed') {
+      isWarmedUp.current = snippet.isReady;
+      return;
+    }
+
     const runWarmup = () => {
       // Bail if the user already tapped (inline warmup will handle it) or if
       // the warmup was already completed for this track.
@@ -151,7 +165,7 @@ export function useGameAudio({
       audio.addEventListener('canplaythrough', runWarmup, { once: true });
       return () => audio.removeEventListener('canplaythrough', runWarmup);
     }
-  }, [previewUrl]);
+  }, [previewUrl, snippet.isReady, snippet.status]);
 
   // Held in a ref so stopAudioInternal keeps a stable identity — it is a
   // dependency of half the callbacks in here.
@@ -183,6 +197,22 @@ export function useGameAudio({
     }
     setIsPlaying(false);
   }, []);
+
+  // Which path a track ended up on is the first thing worth knowing when
+  // sound misbehaves on a device that cannot be attached to a debugger.
+  const loggedPathRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production' || !previewUrl) return;
+    // Only once the decode has answered.
+    if (snippet.status !== 'ready' && snippet.status !== 'failed') return;
+    if (loggedPathRef.current === previewUrl) return;
+    loggedPathRef.current = previewUrl;
+    console.log(
+      `[useGameAudio] snippets via ${
+        snippet.status === 'ready' ? 'web-audio' : 'audio-element (fallback)'
+      }`,
+    );
+  }, [previewUrl, snippet.status]);
 
   const playSnippet = useCallback(() => {
     const audio = audioRef.current;
