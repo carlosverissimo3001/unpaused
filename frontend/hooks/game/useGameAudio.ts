@@ -214,24 +214,13 @@ export function useGameAudio({
     );
   }, [previewUrl, snippet.status]);
 
-  const playSnippet = useCallback(() => {
+  /**
+   * The fallback. Kept callable on its own because Web Audio can refuse at the
+   * moment of playing -- an interrupted session on iOS being the reason -- and
+   * a tap that quietly does nothing is worse than one that sounds late.
+   */
+  const playViaElement = useCallback(() => {
     const audio = audioRef.current;
-    if (!previewUrl) return;
-
-    if (requestRef.current) cancelAnimationFrame(requestRef.current);
-
-    // Preferred path: decoded audio, so this starts on the next audio callback
-    // rather than after the element spins up, and lasts exactly as long as
-    // asked. Everything below only runs when decoding was unavailable.
-    if (snippet.isReady) {
-      void snippet.play(snippetDuration).then((started) => {
-        if (started) {
-          setIsPlaying(true);
-        }
-      });
-      return;
-    }
-
     if (!audio) return;
 
     const isMobile = navigator.maxTouchPoints > 0;
@@ -305,7 +294,32 @@ export function useGameAudio({
     } else {
       startPlayback();
     }
-  }, [snippetDuration, previewUrl, stopAudioInternal, snippet]);
+  }, [snippetDuration, stopAudioInternal]);
+
+  const playSnippet = useCallback(() => {
+    if (!previewUrl) return;
+
+    if (requestRef.current) cancelAnimationFrame(requestRef.current);
+
+    // Preferred path: decoded audio, so this starts on the next audio callback
+    // rather than after the element spins up, and lasts exactly as long as
+    // asked.
+    if (snippet.isReady) {
+      void snippet.play(snippetDuration).then((started) => {
+        if (started) {
+          setIsPlaying(true);
+          return;
+        }
+        // The context could not be made to run -- on iOS it can be parked at
+        // `interrupted` for good. The element is unaffected by that, so the
+        // tap still produces sound.
+        playViaElement();
+      });
+      return;
+    }
+
+    playViaElement();
+  }, [snippetDuration, previewUrl, snippet, playViaElement]);
 
   const pauseSnippet = useCallback(() => {
     stopAudioInternal();

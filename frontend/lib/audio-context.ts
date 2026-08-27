@@ -28,21 +28,50 @@ export function getAudioContext(): AudioContext | null {
 }
 
 /**
- * Autoplay policy starts the context suspended, and only a user gesture can
- * resume it — so this has to be called from inside the click handler, not from
- * an effect.
+ * A context that can actually be heard, or null so the caller can fall back to
+ * an audio element rather than schedule into silence.
+ *
+ * Autoplay policy starts the context suspended and only a user gesture can
+ * resume it, so this has to be called from inside the click handler rather
+ * than from an effect.
+ *
+ * WebKit adds a state the spec does not have: `interrupted`, which is where a
+ * context lands after a phone call, a lock screen, or another app taking the
+ * audio session. Checking for `suspended` alone misses it, and an interrupted
+ * context accepts everything scheduled against it and plays none of it — which
+ * is silence that never recovers, however many times the player taps.
  */
 export async function resumeAudioContext(): Promise<AudioContext | null> {
-  const context = getAudioContext();
+  let context = getAudioContext();
   if (!context) {
     return null;
   }
-  if (context.state === 'suspended') {
+
+  if (context.state !== 'running') {
+    try {
+      await context.resume();
+    } catch {
+      // Handled by the rebuild below.
+    }
+  }
+
+  // resume() can resolve on an interrupted context without it ever reaching
+  // running, and WebKit is known to park one there for good. A fresh context
+  // is the only way back.
+  if (context.state !== 'running') {
+    void context.close().catch(() => {});
+    ctx = null;
+
+    context = getAudioContext();
+    if (!context) {
+      return null;
+    }
     try {
       await context.resume();
     } catch {
       return null;
     }
   }
-  return context;
+
+  return context.state === 'running' ? context : null;
 }
