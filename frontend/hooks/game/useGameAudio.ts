@@ -13,6 +13,9 @@ interface UseGameAudioOptions {
   volume: number;
 }
 
+/** readyState: enough decoded to play the current position. */
+const HAVE_CURRENT_DATA = 2;
+
 export function useGameAudio({
   previewUrl,
   isGameOver,
@@ -341,10 +344,11 @@ export function useGameAudio({
 
     if (fullAudioRef.current.paused) {
       fullAudioRef.current.volume = volumeRef.current;
-      void fullAudioRef.current.play().then(() => setIsFullSongPlaying(true));
+      // No setState here: the element's own play event is what flips the icon,
+      // so it cannot claim to be playing something nobody can hear.
+      void fullAudioRef.current.play().catch(() => {});
     } else {
       fullAudioRef.current.pause();
-      setIsFullSongPlaying(false);
     }
   }, []);
 
@@ -355,6 +359,31 @@ export function useGameAudio({
     }
     setIsFullSongPlaying(false);
   }, []);
+
+  /**
+   * The reveal button reflects the element rather than what we asked it to do.
+   * A play() that resolves is not the same as audio anybody can hear, and an
+   * icon that says otherwise is worse than one that says nothing.
+   */
+  useEffect(() => {
+    const fullAudio = fullAudioRef.current;
+    if (!fullAudio) return;
+
+    const onPlaying = () => setIsFullSongPlaying(true);
+    const onStopped = () => setIsFullSongPlaying(false);
+
+    fullAudio.addEventListener('playing', onPlaying);
+    fullAudio.addEventListener('pause', onStopped);
+    fullAudio.addEventListener('ended', onStopped);
+    fullAudio.addEventListener('emptied', onStopped);
+
+    return () => {
+      fullAudio.removeEventListener('playing', onPlaying);
+      fullAudio.removeEventListener('pause', onStopped);
+      fullAudio.removeEventListener('ended', onStopped);
+      fullAudio.removeEventListener('emptied', onStopped);
+    };
+  }, [isGameOver, previewUrl]);
 
   // Intercept OS media keys so hardware play/pause can't bypass snippet timing
   const mediaSessionCallbacks = useMemo(
@@ -370,19 +399,26 @@ export function useGameAudio({
     ...mediaSessionCallbacks,
   });
 
-  // The reveal plays the full song once, when the round ends. Without the
-  // guard it replays on every re-minted preview link — which lands mid
-  // transition to the next round and leaks a second of audio.
-  const revealPlayedRef = useRef(false);
+  /**
+   * Which preview the reveal has actually played, so a re-minted link does not
+   * replay it mid transition to the next round.
+   *
+   * Marked when playback starts rather than when it is asked for: a guard set
+   * up front survives the cleanup that removes the listener it was waiting on,
+   * so under Strict Mode the second pass bails and nothing ever plays.
+   */
+  const revealPlayedForRef = useRef<string | null>(null);
   useEffect(() => {
     if (!isGameOver) {
-      revealPlayedRef.current = false;
+      revealPlayedForRef.current = null;
     }
   }, [isGameOver]);
 
   useEffect(() => {
-    if (!isGameOver || !previewUrl || revealPlayedRef.current) return;
-    revealPlayedRef.current = true;
+    if (!isGameOver || !previewUrl) return;
+    if (revealPlayedForRef.current === previewUrl) return;
+
+    let cleanupReveal: (() => void) | undefined;
 
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
@@ -396,17 +432,31 @@ export function useGameAudio({
 
     const fullAudio = fullAudioRef.current;
     if (fullAudio) {
-      fullAudio.currentTime = 0;
       fullAudio.volume = volumeRef.current;
-      fullAudio
-        .play()
-        .then(() => setIsFullSongPlaying(true))
-        .catch(() => {
+
+      const start = () => {
+        revealPlayedForRef.current = previewUrl;
+        fullAudio.currentTime = 0;
+        // Nothing sets the icon here either; the element's play event does.
+        void fullAudio.play().catch(() => {
           /* Autoplay block on game-over auto-play — user can tap manually */
         });
+      };
+
+      // The element mounts in the same commit that ends the round, so its src
+      // has not begun loading. Playing an element with nothing in it starts
+      // nominally and is then reset the moment the source arrives, which is
+      // silence with a pause icon over it.
+      if (fullAudio.readyState >= HAVE_CURRENT_DATA) {
+        start();
+      } else {
+        fullAudio.addEventListener('canplay', start, { once: true });
+        cleanupReveal = () => fullAudio.removeEventListener('canplay', start);
+      }
     }
 
     setTimeout(() => setIsPlaying(false), 0);
+    return () => cleanupReveal?.();
   }, [isGameOver, previewUrl]);
 
   return {
