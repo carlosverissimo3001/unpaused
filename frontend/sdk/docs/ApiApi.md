@@ -3550,7 +3550,7 @@ async function example() {
   const api = new ApiApi();
 
   const body = {
-    // 'DECADE' | 'GENRE' | 'FAME' | Which axis to list. Only DECADE is populated today. (optional)
+    // 'DECADE' | 'GENRE' | 'FAME' | 'SPECIAL' | Which axis to list. Only DECADE is populated today. (optional)
     type: type_example,
   } satisfies TrackGroupControllerListRequest;
 
@@ -3571,7 +3571,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **type** | `DECADE`, `GENRE`, `FAME` | Which axis to list. Only DECADE is populated today. | [Optional] [Defaults to `undefined`] [Enum: DECADE, GENRE, FAME] |
+| **type** | `DECADE`, `GENRE`, `FAME`, `SPECIAL` | Which axis to list. Only DECADE is populated today. | [Optional] [Defaults to `undefined`] [Enum: DECADE, GENRE, FAME, SPECIAL] |
 
 ### Return type
 

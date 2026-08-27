@@ -37,7 +37,10 @@ export class PoolTrackRepository {
     }
 
     return this.prisma.poolTrack.findMany({
-      where: Object.keys(id).length > 0 ? { id } : undefined,
+      where: {
+        ...(Object.keys(id).length > 0 && { id }),
+        ...(trackGroupId ? {} : { special: false }),
+      },
       select: { id: true, fame: true, year: true },
     });
   }

@@ -1036,7 +1036,8 @@
               "enum": [
                 "DECADE",
                 "GENRE",
-                "FAME"
+                "FAME",
+                "SPECIAL"
               ],
               "type": "string"
             }
@@ -3407,7 +3408,8 @@
             "enum": [
               "DECADE",
               "GENRE",
-              "FAME"
+              "FAME",
+              "SPECIAL"
             ],
             "description": "Which axis this groups by"
           },

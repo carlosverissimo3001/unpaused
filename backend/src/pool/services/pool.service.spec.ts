@@ -73,6 +73,14 @@ describe('PoolService', () => {
     expect(poolTracks.findCandidates).toHaveBeenCalledWith([], undefined);
   });
 
+  it('leaves special tracks out of an untargeted draw', async () => {
+    // They belong to one group. Arriving in the shuffle or the daily, they are
+    // a surprise nobody asked for.
+    await service.pickTrack();
+
+    expect(poolTracks.findCandidates).toHaveBeenCalledWith([], undefined);
+  });
+
   it('reads a group separately rather than reusing the whole pool', async () => {
     await service.pickTrack([], 'group-eighties');
     await service.pickTrack([], 'group-nineties');
