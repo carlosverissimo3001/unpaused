@@ -58,21 +58,17 @@ export function CollapsibleSection({
 
   return (
     <section className="overflow-hidden rounded-2xl border border-fg/10">
-      {/* The fill stops at the header: behind the cards it would tint them,
-          and a card that changes shade on expand reads as a bug. */}
-      <div className="bg-fg/[0.03] px-4 py-4 sm:px-6 sm:py-5">
+      <div className="px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* The chevron rides with the title on a phone and with the controls
-              on a wider screen, so the title never has to share its line. */}
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 sm:flex-1">
             <button
               type="button"
               onClick={toggle}
               aria-expanded={open}
               aria-controls={contentId}
-              className="group flex cursor-pointer items-baseline gap-2 text-left sm:gap-3"
+              className="group flex flex-1 cursor-pointer items-baseline gap-2 text-left sm:gap-3"
             >
-              <span className="text-xl font-black tracking-tighter text-fg transition-colors group-hover:text-spotify-green sm:text-3xl">
+              <span className="text-xl font-black tracking-tighter text-fg transition-colors sm:text-3xl">
                 {title}
               </span>
               {badge}
@@ -107,19 +103,15 @@ export function CollapsibleSection({
         </div>
       </div>
 
-      {/* Grid rows rather than an animated height: `auto` is not a length, so
-          animating to it means measuring first. */}
-      <div
-        id={contentId}
-        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
-          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        {/* min-h-0 or the row will not shrink below its content. */}
-        <div className="min-h-0 overflow-hidden">
-          <div className="px-4 pb-5 sm:px-6 sm:pb-6">{children}</div>
+      {/* Rendered or not, rather than animated to a height. Collapsing by
+          grid row needs the track to shrink below its content, which it would
+          not do here whatever the minimum was set to — and a section that
+          silently refuses to close is worse than one that closes instantly. */}
+      {open && (
+        <div id={contentId} className="px-4 pb-5 pt-1 sm:px-6 sm:pb-6 sm:pt-2">
+          {children}
         </div>
-      </div>
+      )}
     </section>
   );
 }
