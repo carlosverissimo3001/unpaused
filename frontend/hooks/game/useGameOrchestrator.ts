@@ -24,7 +24,10 @@ const ShouldShakeResult: GuessResult[] = [
 export function useGameOrchestrator(
   mode: GameMode,
   playlistId?: string,
-  { volume = 0.8 }: { volume?: number } = {},
+  {
+    volume = 0.8,
+    trackGroupId,
+  }: { volume?: number; trackGroupId?: string } = {},
 ) {
   const queryClient = useQueryClient();
   const [lastGuessResult, setLastGuessResult] = useState<string | null>(null);
@@ -39,7 +42,7 @@ export function useGameOrchestrator(
     isLoading: sessionLoading,
     error: sessionError,
     startGameMutation,
-  } = useGameSession(mode, playlistId);
+  } = useGameSession(mode, playlistId, trackGroupId);
   const {
     data: gameState,
     isLoading: loadingState,
@@ -130,23 +133,37 @@ export function useGameOrchestrator(
         queryKey: queryKeys.game.state(gameState.sessionId),
       });
     }
-    if (playlistId) {
-      queryClient.setQueryData(
-        queryKeys.game.startedSessionForPlaylist(playlistId),
-        null,
-      );
+    // Whichever key this round was started under, so "play again" does not
+    // read back the session it is replacing.
+    const sessionKey = trackGroupId
+      ? queryKeys.game.startedSessionForGroup(trackGroupId)
+      : playlistId
+        ? queryKeys.game.startedSessionForPlaylist(playlistId)
+        : null;
+
+    if (sessionKey) {
+      queryClient.setQueryData(sessionKey, null);
     }
 
     startGameMutation.reset();
-    if (playlistId) {
+    if (trackGroupId || playlistId) {
       startGameMutation.mutate(
-        { playlistId, mode: GameMode.All },
+        trackGroupId
+          ? { trackGroupId, mode: GameMode.All }
+          : { playlistId, mode: GameMode.All },
         { onSettled: () => setIsResetting(false) },
       );
     } else {
       setIsResetting(false);
     }
-  }, [gameAudio, gameState, queryClient, startGameMutation, playlistId]);
+  }, [
+    gameAudio,
+    gameState,
+    queryClient,
+    startGameMutation,
+    playlistId,
+    trackGroupId,
+  ]);
 
   const lastGuess = gameState?.guesses?.[gameState.guesses.length - 1];
   const shouldShake = lastGuess

@@ -31,9 +31,10 @@ const SHAKE_VARIANTS: Variants = {
 interface GamePageProps {
   mode: GameMode;
   playlistId?: string;
+  trackGroupId?: string;
 }
 
-export function GamePage({ mode, playlistId }: GamePageProps) {
+export function GamePage({ mode, playlistId, trackGroupId }: GamePageProps) {
   const { volume, setVolume } = useVolume();
   const { data: preferences } = useUserPreferences();
   const showAlbumHint = preferences?.showAlbumHint ?? true;
@@ -57,7 +58,7 @@ export function GamePage({ mode, playlistId }: GamePageProps) {
     handleSubmit,
     handleSkip,
     handlePlayAgain,
-  } = useGameOrchestrator(mode, playlistId, { volume });
+  } = useGameOrchestrator(mode, playlistId, { volume, trackGroupId });
 
   // Destructure gameAudio to avoid ref access warnings
   const {

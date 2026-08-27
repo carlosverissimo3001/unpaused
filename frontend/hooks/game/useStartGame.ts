@@ -18,6 +18,7 @@ export function useStartGame() {
       try {
         const startGameDto: StartGameDto = {
           playlistId: params.playlistId,
+          trackGroupId: params.trackGroupId,
           mode: params.mode,
         };
         return await api.gameControllerStartGame({ startGameDto });
@@ -34,9 +35,11 @@ export function useStartGame() {
       );
       // Persist sessionId under a predictable key so it survives
       // Strict Mode double-fires and component remounts
-      const sessionKey = variables.playlistId
-        ? queryKeys.game.startedSessionForPlaylist(variables.playlistId)
-        : queryKeys.game.startedSessionForDaily;
+      const sessionKey = variables.trackGroupId
+        ? queryKeys.game.startedSessionForGroup(variables.trackGroupId)
+        : variables.playlistId
+          ? queryKeys.game.startedSessionForPlaylist(variables.playlistId)
+          : queryKeys.game.startedSessionForDaily;
       queryClient.setQueryData(sessionKey, data.sessionId);
       // Invalidate related queries
       void queryClient.invalidateQueries({

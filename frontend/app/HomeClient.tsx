@@ -20,6 +20,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTimezoneSync } from '@/hooks/user-preferences/useTimezoneSync';
 import { useSpotifyReturnMark } from '@/hooks/auth/useSpotifyReturnMark';
 import { UnverifiedEmailBanner } from '@/components/auth/UnverifiedEmailBanner';
+import { TrackGroupView } from '@/components/features/track-group/TrackGroupView';
 
 export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   const playlistFilters = usePlaylistFilters();
@@ -159,6 +160,10 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
                   />
                 </>
               )}
+
+              {/* Below the playlists for someone who has them, and the only
+                  thing to browse for someone who does not. */}
+              <TrackGroupView />
             </motion.div>
           ) : (
             <UnauthenticatedView canSignIn={canSignIn} />
