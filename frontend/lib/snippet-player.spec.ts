@@ -29,7 +29,7 @@ function fakeContext() {
   const gain = { gain: { value: 0 }, connect: jest.fn() };
 
   const context = {
-    state: 'suspended' as AudioContextState,
+    state: 'running' as AudioContextState,
     currentTime: 0,
     destination: {},
     resume: jest.fn(function (this: { state: AudioContextState }) {
@@ -112,6 +112,19 @@ describe('SnippetPlayer', () => {
     expect(player().play(0.1)).toBe(false);
   });
 
+  it('leaves a tap to the element while the context is still suspended', async () => {
+    // Resuming is async and the gesture is spent by the time it resolves, so
+    // scheduling here would be silence. The element covers this tap and the
+    // resume makes the next one Web Audio.
+    const p = player();
+    await p.load('https://cdn/preview.mp3');
+    harness.context.state = 'suspended';
+
+    expect(p.play(1)).toBe(false);
+    expect(harness.sources).toHaveLength(0);
+    expect(harness.context.resume).toHaveBeenCalled();
+  });
+
   it('schedules exactly the requested duration', async () => {
     const p = player();
     await p.load('https://cdn/preview.mp3');
@@ -130,16 +143,6 @@ describe('SnippetPlayer', () => {
     p.play(60);
 
     expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 30);
-  });
-
-  it('resumes the context, which autoplay policy leaves suspended', async () => {
-    const p = player();
-    await p.load('https://cdn/preview.mp3');
-    expect(harness.context.state).toBe('suspended');
-
-    p.play(0.5);
-
-    expect(harness.context.resume).toHaveBeenCalled();
   });
 
   it('stops the previous snippet when a new one starts', async () => {

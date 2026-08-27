@@ -245,8 +245,16 @@ export class SnippetPlayer {
       return false;
     }
 
-    // Unawaited: the gesture is spent by the time a promise would resolve.
-    void this.audio.resume();
+    // A suspended context cannot be started from here: resuming is async, and
+    // the gesture is spent by the time it resolves. Scheduling anyway is
+    // silence -- start() is a no-op on iOS outside a gesture, and the window
+    // has passed by the time the clock starts. So this tap goes to the
+    // element, and the resume makes the next one Web Audio.
+    if (context.state !== 'running') {
+      logAudio(`context ${context.state}; this tap goes to the element`);
+      void this.audio.resume();
+      return false;
+    }
 
     this.stop();
 
