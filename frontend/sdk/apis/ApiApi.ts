@@ -343,6 +343,10 @@ export interface StreakControllerSubmitAnswerRequest {
     submitQuizAnswerDto: SubmitQuizAnswerDto;
 }
 
+export interface TrackGroupControllerBySlugRequest {
+    slug: string;
+}
+
 export interface TrackGroupControllerListRequest {
     type?: TrackGroupControllerListTypeEnum;
 }
@@ -2306,6 +2310,43 @@ export class ApiApi extends runtime.BaseAPI {
      */
     async streakControllerUseFreeze(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreakStatusDto> {
         const response = await this.streakControllerUseFreezeRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * One group, by the name in its URL
+     */
+    async trackGroupControllerBySlugRaw(requestParameters: TrackGroupControllerBySlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackGroupDto>> {
+        if (requestParameters['slug'] == null) {
+            throw new runtime.RequiredError(
+                'slug',
+                'Required parameter "slug" was null or undefined when calling trackGroupControllerBySlug().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/track-groups/{slug}`;
+        urlPath = urlPath.replace(`{${"slug"}}`, encodeURIComponent(String(requestParameters['slug'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackGroupDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * One group, by the name in its URL
+     */
+    async trackGroupControllerBySlug(requestParameters: TrackGroupControllerBySlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackGroupDto> {
+        const response = await this.trackGroupControllerBySlugRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

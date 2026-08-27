@@ -20,3 +20,17 @@ export function useTrackGroups(
     staleTime: 30 * 60 * 1000,
   });
 }
+
+/**
+ * One group by the name in its URL, so a shared link resolves without knowing
+ * which kind of group it is.
+ */
+export function useTrackGroupBySlug(slug: string) {
+  return useQuery<TrackGroupDto>({
+    queryKey: queryKeys.trackGroups.bySlug(slug),
+    queryFn: () => api.trackGroupControllerBySlug({ slug }),
+    enabled: !!slug,
+    retry: false,
+    staleTime: 30 * 60 * 1000,
+  });
+}

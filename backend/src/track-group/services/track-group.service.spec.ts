@@ -7,7 +7,7 @@ import { TrackGroupService } from './track-group.service';
 const mockRepository = {
   listWithCounts: jest.fn(),
   findById: jest.fn(),
-  findBySlug: jest.fn(),
+  findBySlugWithCount: jest.fn(),
 };
 
 const EIGHTIES = {
@@ -60,6 +60,57 @@ describe('TrackGroupService', () => {
     const [group] = await service.list(TrackGroupType.DECADE);
 
     expect(group.imageUrl).toBeUndefined();
+  });
+
+  describe('by slug', () => {
+    const eighties = { ...EIGHTIES, type: TrackGroupType.DECADE };
+
+    it('finds the group a shared link names', async () => {
+      mockRepository.findBySlugWithCount.mockResolvedValue(eighties);
+      const service = await build();
+
+      await expect(service.bySlug('1980s', null)).resolves.toMatchObject({
+        slug: '1980s',
+        trackCount: 490,
+      });
+    });
+
+    it('answers the same for a special group as for one that is not there', async () => {
+      // Otherwise a slug is a way to find out that a group exists.
+      mockRepository.findBySlugWithCount.mockResolvedValue({
+        ...EIGHTIES,
+        type: TrackGroupType.SPECIAL,
+      });
+      const service = await build();
+
+      await expect(service.bySlug('anything', null)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('gives a special group to the account it is for', async () => {
+      mockRepository.findBySlugWithCount.mockResolvedValue({
+        ...EIGHTIES,
+        type: TrackGroupType.SPECIAL,
+      });
+      const service = await build();
+
+      await expect(
+        service.bySlug('anything', {
+          spotifyUserId: 'spotify-1',
+          isTrusted: true,
+        } as never),
+      ).resolves.toMatchObject({ trackCount: 490 });
+    });
+
+    it('refuses a slug nobody has', async () => {
+      mockRepository.findBySlugWithCount.mockResolvedValue(null);
+      const service = await build();
+
+      await expect(service.bySlug('made-up', null)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
   });
 
   it('refuses a group nobody has, rather than starting an empty round', async () => {

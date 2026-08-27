@@ -10,8 +10,17 @@ export interface TrackGroupSummary extends TrackGroup {
 export class TrackGroupRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findBySlug(slug: string): Promise<TrackGroup | null> {
-    return this.prisma.trackGroup.findUnique({ where: { slug } });
+  async findBySlugWithCount(slug: string): Promise<TrackGroupSummary | null> {
+    const group = await this.prisma.trackGroup.findUnique({
+      where: { slug },
+      include: { _count: { select: { tracks: true } } },
+    });
+    if (!group) {
+      return null;
+    }
+
+    const { _count, ...rest } = group;
+    return { ...rest, trackCount: _count.tracks };
   }
 
   findById(id: string): Promise<TrackGroup | null> {
