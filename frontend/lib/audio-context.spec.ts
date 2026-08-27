@@ -63,8 +63,19 @@ async function load(contexts: FakeContext[]) {
   return import('./audio-context');
 }
 
+/** Enough of document for the priming listeners. */
+function fakeDocument() {
+  const handlers = new Map<string, () => void>();
+  (globalThis as unknown as { document: unknown }).document = {
+    addEventListener: (type: string, fn: () => void) => handlers.set(type, fn),
+    removeEventListener: (type: string) => handlers.delete(type),
+  };
+  return handlers;
+}
+
 afterAll(() => {
   delete (globalThis as unknown as { window?: unknown }).window;
+  delete (globalThis as unknown as { document?: unknown }).document;
 });
 
 describe('resumeAudioContext', () => {
@@ -177,5 +188,32 @@ describe('resumeAudioContext', () => {
 
     expect(stuck.starts).toBe(0);
     expect(alsoStuck.starts).toBe(0);
+  });
+
+  it('starts the context on the first touch, before anything asks to play', async () => {
+    // pointerdown runs ahead of click, so the hardware is already going by the
+    // time the play handler schedules against it.
+    const running = makeContext('running');
+    const handlers = fakeDocument();
+    const { primeAudioContextOnFirstGesture } = await load([running]);
+
+    primeAudioContextOnFirstGesture();
+    handlers.get('pointerdown')?.();
+    await Promise.resolve();
+
+    expect(running.starts).toBe(1);
+  });
+
+  it('stops listening once it has primed', async () => {
+    const running = makeContext('running');
+    const handlers = fakeDocument();
+    const { primeAudioContextOnFirstGesture } = await load([running]);
+
+    primeAudioContextOnFirstGesture();
+    handlers.get('pointerdown')?.();
+    await Promise.resolve();
+
+    expect(handlers.has('pointerdown')).toBe(false);
+    expect(handlers.has('touchstart')).toBe(false);
   });
 });

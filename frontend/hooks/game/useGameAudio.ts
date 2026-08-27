@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { primeAudioContextOnFirstGesture } from '@/lib/audio-context';
 import { useMediaSession } from '../useMediaSession';
 import { useSnippetAudio } from './useSnippetAudio';
 
@@ -65,6 +66,10 @@ export function useGameAudio({
     if (audioRef.current) audioRef.current.volume = volume;
     if (fullAudioRef.current) fullAudioRef.current.volume = volume;
   }, [volume]);
+
+  // Started on the first touch of the page, not on the tap that wants audio:
+  // by then the hardware is already running.
+  useEffect(() => primeAudioContextOnFirstGesture(), []);
 
   // ─── Reset warmup whenever the track changes (new game) ───────────────────
   // The iOS audio session is scoped to the current playback context. When the

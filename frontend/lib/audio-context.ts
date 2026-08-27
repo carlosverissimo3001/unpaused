@@ -154,3 +154,33 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
   await unlock(context);
   return context;
 }
+
+/**
+ * Starts the context on the first touch anywhere, rather than on the tap that
+ * asks for audio. `pointerdown` runs before `click`, so even when the play
+ * button is the first thing touched the hardware has a head start on the
+ * handler that schedules against it — which is the difference between hearing
+ * a 0.1s round and not.
+ */
+export function primeAudioContextOnFirstGesture(): () => void {
+  if (typeof document === 'undefined' || unlocked) {
+    return () => {};
+  }
+
+  const prime = () => {
+    void resumeAudioContext();
+    stop();
+  };
+
+  const stop = () => {
+    document.removeEventListener('pointerdown', prime);
+    document.removeEventListener('touchstart', prime);
+    document.removeEventListener('keydown', prime);
+  };
+
+  document.addEventListener('pointerdown', prime, { once: true });
+  document.addEventListener('touchstart', prime, { once: true });
+  document.addEventListener('keydown', prime, { once: true });
+
+  return stop;
+}
