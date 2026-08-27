@@ -22,6 +22,7 @@ import { useSpotifyReturnMark } from '@/hooks/auth/useSpotifyReturnMark';
 import { UnverifiedEmailBanner } from '@/components/auth/UnverifiedEmailBanner';
 import { TrackGroupView } from '@/components/features/track-group/TrackGroupView';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { TrackGroupDtoTypeEnum } from '@/sdk';
 
 export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
   const playlistFilters = usePlaylistFilters();
@@ -162,6 +163,13 @@ export function HomeClient({ canSignIn }: { canSignIn: boolean }) {
               {/* Open for someone with no library of their own, since it is all
                   they have to browse; folded away for someone whose own
                   playlists are already on screen. */}
+              {/* Rendered for everyone: the server answers with nothing for
+                  anyone it is not for, and nothing renders nothing. */}
+              <TrackGroupView
+                type={TrackGroupDtoTypeEnum.Special}
+                defaultOpen
+              />
+
               <TrackGroupView defaultOpen={!hasSpotify} />
             </motion.div>
           ) : (

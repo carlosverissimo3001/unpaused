@@ -211,4 +211,72 @@ describe('PreviewLookupService', () => {
       PREVIEW_NOT_FOUND_TTL_SECONDS,
     );
   });
+
+  describe('details', () => {
+    it('reads the album off the record the preview comes from', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        text: async () =>
+          JSON.stringify({
+            id: DEEZER_ID,
+            isrc: 'USUM71200206',
+            release_date: '2007-05-15',
+            album: {
+              title: 'Good Girl Gone Bad',
+              cover_xl: 'https://cdn/cover-xl.jpg',
+              link: 'https://deezer/album/1',
+            },
+          }),
+      });
+
+      await expect(
+        service.details({ source: 'deezer', value: String(DEEZER_ID) }),
+      ).resolves.toEqual({
+        albumName: 'Good Girl Gone Bad',
+        albumImageUrl: 'https://cdn/cover-xl.jpg',
+        albumUrl: 'https://deezer/album/1',
+        releaseYear: 2007,
+        isrc: 'USUM71200206',
+      });
+    });
+
+    it('falls back to the smaller cover when there is no extra large one', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        text: async () =>
+          JSON.stringify({
+            id: DEEZER_ID,
+            album: { title: 'B', cover_big: 'https://cdn/cover-big.jpg' },
+          }),
+      });
+
+      const details = await service.details({
+        source: 'deezer',
+        value: String(DEEZER_ID),
+      });
+
+      expect(details?.albumImageUrl).toBe('https://cdn/cover-big.jpg');
+    });
+
+    it('asks nothing of a source that cannot answer', async () => {
+      await expect(
+        service.details({ source: 'itunes', value: 'https://itunes/preview' }),
+      ).resolves.toBeNull();
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('leaves the year out rather than guessing when there is no date', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify({ id: DEEZER_ID, album: {} }),
+      });
+
+      const details = await service.details({
+        source: 'deezer',
+        value: String(DEEZER_ID),
+      });
+
+      expect(details?.releaseYear).toBeUndefined();
+    });
+  });
 });

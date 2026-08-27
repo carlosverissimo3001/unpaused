@@ -35,6 +35,16 @@ export class TrackService {
    * The ref is persisted on first use, so later rounds only re-mint rather than
    * running the whole cascade again.
    */
+  /** Seeded from a name and an artist alone, with the rest still to find. */
+  private isThin(track: TrackEntity): boolean {
+    return (
+      !track.albumImageUrl ||
+      !track.albumName ||
+      !track.releaseYear ||
+      !track.isrc
+    );
+  }
+
   async resolvePreview(track: TrackEntity): Promise<string | null> {
     const existing = await this.playableUrl(track);
     if (existing) {
@@ -51,14 +61,23 @@ export class TrackService {
     }
 
     const url = await this.previewLookup.mint(ref);
+
+    // A track can arrive with nothing but a title and an artist — a special
+    // group is seeded that way on purpose. Whatever it is missing is on the
+    // record the preview was just minted from, so it is filled in once here
+    // rather than being a step somebody has to remember at seed time.
+    const details = this.isThin(track)
+      ? await this.previewLookup.details(ref)
+      : null;
+
     await this.trackRepository.upsertTrack(track.id, {
       name: track.name,
       artistName: track.artistName,
-      albumImageUrl: track.albumImageUrl,
-      albumName: track.albumName,
-      albumUrl: track.albumUrl,
-      releaseYear: track.releaseYear,
-      isrc: track.isrc,
+      albumImageUrl: track.albumImageUrl ?? details?.albumImageUrl,
+      albumName: track.albumName ?? details?.albumName,
+      albumUrl: track.albumUrl ?? details?.albumUrl,
+      releaseYear: track.releaseYear ?? details?.releaseYear,
+      isrc: track.isrc ?? details?.isrc,
       previewUrl: url ?? undefined,
       previewRef: serializeRef(ref),
       allArtists: track.allArtists,

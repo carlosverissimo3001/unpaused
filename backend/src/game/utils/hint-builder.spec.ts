@@ -88,6 +88,17 @@ describe('buildHintsForRound', () => {
       expect(genreValue(['pop', 'dance'])).toBe('pop, dance');
     });
 
+    it('leaves out a tag that is an id rather than a genre', () => {
+      // Reported from a real round: "-1001760493747, Hip-Hop, rnb".
+      expect(genreValue(['-1001760493747', 'Hip-Hop', 'rnb'])).toBe(
+        'Hip-Hop, rnb',
+      );
+    });
+
+    it('leaves out a year, which the era hint is for', () => {
+      expect(genreValue(['1984', 'synthpop'])).toBe('synthpop');
+    });
+
     it('drops a tag that is the artist', () => {
       expect(genreValue(['pop', 'Rihanna'])).toBe('pop');
     });

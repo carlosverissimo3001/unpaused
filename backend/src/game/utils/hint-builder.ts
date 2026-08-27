@@ -4,6 +4,7 @@ import { getDecade } from 'date-fns';
 import { normalizeTrackNameForMatch } from '../../utils/text';
 import { HintDto } from '../dto/hint/hint.dto';
 import { HintType } from '../types';
+import { isDescriptiveTag } from '../../track/utils/lastfm-tags';
 
 type HintProducer = (
   track: TrackEntity,
@@ -24,8 +25,12 @@ const genreHint: HintProducer = (track, metadata) => {
       normalizeTrackNameForMatch(v).toLowerCase(),
     ),
   );
+  // Filtered here as well as on the way in, because tags are cached on the
+  // track and the ones already stored were never checked.
   const tags = rawTags.filter(
-    (t) => !forbidden.has(normalizeTrackNameForMatch(t).toLowerCase()),
+    (t) =>
+      isDescriptiveTag(t) &&
+      !forbidden.has(normalizeTrackNameForMatch(t).toLowerCase()),
   );
 
   // Every tag was a giveaway, so there is no hint to give.

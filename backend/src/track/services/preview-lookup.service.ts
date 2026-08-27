@@ -32,6 +32,27 @@ interface DeezerTrack {
   title?: string;
   artist?: { name?: string };
   preview?: string;
+  isrc?: string;
+  link?: string;
+  release_date?: string;
+  album?: {
+    title?: string;
+    cover_xl?: string;
+    cover_big?: string;
+    link?: string;
+  };
+}
+
+/**
+ * What a track seeded from nothing but a title and an artist is missing. The
+ * same call that mints a preview already carries it.
+ */
+export interface TrackDetails {
+  albumName?: string;
+  albumImageUrl?: string;
+  albumUrl?: string;
+  releaseYear?: number;
+  isrc?: string;
 }
 
 type Source = 'isrc' | 'itunes' | 'deezer' | 'scrape';
@@ -90,6 +111,30 @@ export class PreviewLookupService {
       `${DEEZER_TRACK_URL}${encodeURIComponent(ref.value)}`,
     );
     return track?.preview ?? null;
+  }
+
+  /** Null for a source that is not Deezer, which is the only one that has this. */
+  async details(ref: PreviewRef): Promise<TrackDetails | null> {
+    if (!DEEZER_SOURCES.includes(ref.source)) {
+      return null;
+    }
+
+    const track = await this.getJson<DeezerTrack>(
+      `${DEEZER_TRACK_URL}${encodeURIComponent(ref.value)}`,
+    );
+    if (!track) {
+      return null;
+    }
+
+    const year = Number.parseInt(track.release_date?.slice(0, 4) ?? '', 10);
+
+    return {
+      albumName: track.album?.title,
+      albumImageUrl: track.album?.cover_xl ?? track.album?.cover_big,
+      albumUrl: track.album?.link,
+      releaseYear: Number.isFinite(year) ? year : undefined,
+      isrc: track.isrc,
+    };
   }
 
   async getPreviewRef(

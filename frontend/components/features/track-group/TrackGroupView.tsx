@@ -6,27 +6,40 @@ import { TrackGroupCard } from '@/components/track-group/TrackGroupCard';
 import { PlaylistSkeleton } from '@/components/playlist/PlaylistSkeleton';
 import { useTrackGroups } from '@/hooks/track-groups/useTrackGroups';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { TrackGroupDtoTypeEnum } from '@/sdk';
 
-const TITLE = 'Curated playlists';
+interface TrackGroupViewProps {
+  defaultOpen: boolean;
+  type?: TrackGroupDtoTypeEnum;
+  /** Falls back to the group's own name, which is where a special one gets it. */
+  title?: string;
+}
 
 /**
- * Everyone sees this, library or not. A linked player gets it under their own
- * playlists; an unlinked one gets it instead of an empty page.
+ * Everyone sees the ordinary groups, library or not. A linked player gets them
+ * under their own playlists; an unlinked one gets them instead of an empty
+ * page.
  *
- * There is one axis today, so no tabs: a control with nothing to switch
- * between is worse than no control. `type` is already in the API, so the strip
- * goes above this grid when genres land.
+ * Which groups a type returns is the server's call — a special one comes back
+ * empty for anyone it is not for, and an empty list renders nothing, so the
+ * rule does not have to be repeated here.
  */
-function TrackGroupViewComponent({ defaultOpen }: { defaultOpen: boolean }) {
-  const { data: groups, isPending, isError } = useTrackGroups();
+function TrackGroupViewComponent({
+  defaultOpen,
+  type = TrackGroupDtoTypeEnum.Decade,
+  title = 'Curated playlists',
+}: TrackGroupViewProps) {
+  const { data: groups, isPending, isError } = useTrackGroups(type);
+  // A special group is its own section, so it names it.
+  const heading = groups?.length === 1 ? groups[0].name : title;
 
   // Nothing is rendered from a guess while this loads: a grid that fills with
   // defaults and then rearranges is worse than one that arrives late.
   if (isPending) {
     return (
       <CollapsibleSection
-        title={TITLE}
-        titleLabel={TITLE}
+        title={title}
+        titleLabel={title}
         defaultOpen={defaultOpen}
       >
         <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6">
@@ -46,8 +59,8 @@ function TrackGroupViewComponent({ defaultOpen }: { defaultOpen: boolean }) {
 
   return (
     <CollapsibleSection
-      title={TITLE}
-      titleLabel={TITLE}
+      title={heading}
+      titleLabel={heading}
       defaultOpen={defaultOpen}
     >
       <motion.div
