@@ -10,8 +10,12 @@ let lines: string[] = [];
 let listeners = new Set<() => void>();
 
 export function audioDebugEnabled(): boolean {
-  if (typeof window === 'undefined') return false;
-  return new URLSearchParams(window.location.search).get('debug') === 'audio';
+  // Never throws: a switch for reading a log is not worth an exception.
+  try {
+    return new URLSearchParams(window.location.search).get('debug') === 'audio';
+  } catch {
+    return false;
+  }
 }
 
 export function logAudio(message: string): void {

@@ -6,6 +6,7 @@
  * exists to remove.
  */
 import { logAudio } from './audio-debug';
+import { holdAudioSession } from './audio-session';
 
 let ctx: AudioContext | null = null;
 
@@ -177,6 +178,9 @@ export function primeAudioContextOnFirstGesture(): () => void {
 
   const prime = () => {
     logAudio('priming on first gesture');
+    // Before the resume: this is the gesture, and holding the session is what
+    // makes anything audible with the ringer switch off.
+    holdAudioSession();
     void resumeAudioContext();
     stop();
   };

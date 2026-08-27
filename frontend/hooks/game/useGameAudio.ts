@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { primeAudioContextOnFirstGesture } from '@/lib/audio-context';
 import { logAudio } from '@/lib/audio-debug';
+import { holdAudioSession } from '@/lib/audio-session';
 import { useMediaSession } from '../useMediaSession';
 import { useSnippetAudio } from './useSnippetAudio';
 
@@ -304,6 +305,9 @@ export function useGameAudio({
 
     // Decoded: starts on the next audio callback, and lasts exactly as asked.
     if (snippet.isReady) {
+      // Every tap, not only the first: the session is dropped by an
+      // interruption the same way the context is.
+      holdAudioSession();
       logAudio(`tap: web-audio, ${snippetDuration}s`);
       if (snippet.play(snippetDuration)) {
         setIsPlaying(true);
