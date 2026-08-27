@@ -1064,6 +1064,40 @@
         ]
       }
     },
+    "/track-groups/{slug}": {
+      "get": {
+        "operationId": "TrackGroupController_bySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackGroupDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such group, or not for you"
+          }
+        },
+        "summary": "One group, by the name in its URL",
+        "tags": [
+          "Api"
+        ]
+      }
+    },
     "/search/tracks": {
       "get": {
         "operationId": "SearchController_searchTracks",

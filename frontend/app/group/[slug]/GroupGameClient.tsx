@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { GamePage } from '@/components/game/GamePage';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useTrackGroups } from '@/hooks/track-groups/useTrackGroups';
+import { useTrackGroupBySlug } from '@/hooks/track-groups/useTrackGroups';
 import { GameStatsDtoModeEnum as GameMode } from '@/sdk';
 
 /**
@@ -13,8 +13,10 @@ import { GameStatsDtoModeEnum as GameMode } from '@/sdk';
  */
 export function GroupGameClient() {
   const slug = useParams().slug as string;
-  const { data: groups, isPending } = useTrackGroups();
-  const group = groups?.find((candidate) => candidate.slug === slug);
+  // By slug rather than by searching a list: the list is one kind of group at
+  // a time, so a special one was never in the one this page happened to ask
+  // for.
+  const { data: group, isPending } = useTrackGroupBySlug(slug);
 
   if (isPending) {
     return (
