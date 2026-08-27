@@ -7,6 +7,19 @@
  */
 let ctx: AudioContext | null = null;
 
+/**
+ * Whether the hardware has actually been started for this context.
+ *
+ * `running` is not the same as ready: the clock does not advance until
+ * something has been played, so the first source scheduled against a freshly
+ * resumed context can be dropped and its `ended` never arrive. A one-sample
+ * silent buffer is the long-standing way to start it.
+ */
+let unlocked = false;
+
+/** How long to let a resume settle before treating the context as unusable. */
+const RESUME_GRACE_MS = 400;
+
 type WindowWithWebkitAudio = Window & {
   webkitAudioContext?: typeof AudioContext;
 };
@@ -23,8 +36,60 @@ export function getAudioContext(): AudioContext | null {
       return null;
     }
     ctx = new Ctor();
+    unlocked = false;
   }
   return ctx;
+}
+
+/**
+ * Has to run inside the gesture, like the resume it follows. Silent, so there
+ * is nothing to hear, and one sample long, so there is nothing to wait for.
+ */
+function unlock(context: AudioContext): void {
+  if (unlocked) {
+    return;
+  }
+  try {
+    const source = context.createBufferSource();
+    source.buffer = context.createBuffer(1, 1, 22050);
+    source.connect(context.destination);
+    source.start(0);
+    unlocked = true;
+  } catch {
+    // Left locked, so the next gesture tries again.
+  }
+}
+
+/**
+ * `resume()` resolving does not mean the state has caught up — Chrome flips it
+ * a beat later. Sampling once and acting on the answer throws away contexts
+ * that were about to work perfectly well.
+ */
+function waitForRunning(context: AudioContext): Promise<boolean> {
+  if (context.state === 'running') {
+    return Promise.resolve(true);
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const finish = (value: boolean) => {
+      if (settled) return;
+      settled = true;
+      context.removeEventListener('statechange', onChange);
+      clearTimeout(timer);
+      resolve(value);
+    };
+
+    const onChange = () => {
+      if (context.state === 'running') {
+        finish(true);
+      }
+    };
+
+    const timer = setTimeout(() => finish(false), RESUME_GRACE_MS);
+    context.addEventListener('statechange', onChange);
+  });
 }
 
 /**
@@ -51,27 +116,36 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
     try {
       await context.resume();
     } catch {
-      // Handled by the rebuild below.
+      // Handled by the wait and rebuild below.
     }
   }
 
-  // resume() can resolve on an interrupted context without it ever reaching
-  // running, and WebKit is known to park one there for good. A fresh context
-  // is the only way back.
-  if (context.state !== 'running') {
-    void context.close().catch(() => {});
-    ctx = null;
-
-    context = getAudioContext();
-    if (!context) {
-      return null;
-    }
-    try {
-      await context.resume();
-    } catch {
-      return null;
-    }
+  if (await waitForRunning(context)) {
+    unlock(context);
+    return context;
   }
 
-  return context.state === 'running' ? context : null;
+  // Only now: it was asked to resume, given time to, and never got there.
+  // WebKit is known to park a context at `interrupted` for good, and a fresh
+  // one is the only way back.
+  void context.close().catch(() => {});
+  ctx = null;
+  unlocked = false;
+
+  context = getAudioContext();
+  if (!context) {
+    return null;
+  }
+  try {
+    await context.resume();
+  } catch {
+    return null;
+  }
+
+  if (!(await waitForRunning(context))) {
+    return null;
+  }
+
+  unlock(context);
+  return context;
 }
