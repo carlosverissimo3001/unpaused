@@ -77,6 +77,9 @@ const sharedAudio: AudioAccess = {
 
 export class SnippetPlayer {
   private buffer: AudioBuffer | null = null;
+  /** What the buffer was decoded against, and where it was fetched from. */
+  private decodedWith: AudioContext | null = null;
+  private url: string | null = null;
   private source: AudioBufferSourceNode | null = null;
   private gain: GainNode | null = null;
   private volume = 1;
@@ -173,6 +176,7 @@ export class SnippetPlayer {
   async load(url: string): Promise<boolean> {
     const generation = ++this.generation;
     this.buffer = null;
+    this.url = url;
 
     const context = this.audio.get();
     if (!context) {
@@ -192,6 +196,7 @@ export class SnippetPlayer {
         return false;
       }
       this.buffer = decoded;
+      this.decodedWith = context;
       this.offset = findOnset(decoded, this.window);
       return true;
     } catch {
@@ -204,17 +209,32 @@ export class SnippetPlayer {
     this.generation++;
     this.stop();
     this.buffer = null;
+    this.decodedWith = null;
+    this.url = null;
   }
 
   /** Resolves false when it could not play, so the caller can fall back. */
   async play(durationSeconds: number): Promise<boolean> {
-    const buffer = this.buffer;
-    if (!buffer) {
+    if (!this.buffer) {
       return false;
     }
     // Must run inside the gesture, or autoplay policy leaves it suspended.
     const context = await this.audio.resume();
     if (!context) {
+      return false;
+    }
+
+    // An interruption can leave the context beyond saving, and the one handed
+    // back is then a new one. A buffer decoded against the old one plays
+    // silence, so it is decoded again before anything is scheduled.
+    if (this.decodedWith !== context) {
+      if (!this.url || !(await this.load(this.url))) {
+        return false;
+      }
+    }
+
+    const buffer = this.buffer;
+    if (!buffer) {
       return false;
     }
 
