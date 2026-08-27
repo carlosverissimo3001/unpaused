@@ -70,4 +70,49 @@ describe('TrackGroupService', () => {
       NotFoundException,
     );
   });
+
+  describe('who a special group is for', () => {
+    const spotifyTrusted = {
+      spotifyUserId: 'spotify-1',
+      isTrusted: true,
+    } as never;
+    const spotifyUntrusted = {
+      spotifyUserId: 'spotify-1',
+      isTrusted: false,
+    } as never;
+    const trustedNoSpotify = {
+      spotifyUserId: null,
+      isTrusted: true,
+    } as never;
+
+    it('shows an ordinary group to anyone, signed in or not', () => {
+      expect(TrackGroupService.isVisible(TrackGroupType.DECADE, null)).toBe(
+        true,
+      );
+    });
+
+    it('shows a special group to a trusted Spotify account', () => {
+      expect(
+        TrackGroupService.isVisible(TrackGroupType.SPECIAL, spotifyTrusted),
+      ).toBe(true);
+    });
+
+    it('hides it from an untrusted Spotify account', () => {
+      expect(
+        TrackGroupService.isVisible(TrackGroupType.SPECIAL, spotifyUntrusted),
+      ).toBe(false);
+    });
+
+    it('hides it from a trusted account with no Spotify', () => {
+      expect(
+        TrackGroupService.isVisible(TrackGroupType.SPECIAL, trustedNoSpotify),
+      ).toBe(false);
+    });
+
+    it('hides it from a visitor with no session at all', () => {
+      expect(TrackGroupService.isVisible(TrackGroupType.SPECIAL, null)).toBe(
+        false,
+      );
+    });
+  });
 });

@@ -149,6 +149,10 @@ model PoolTrack {
   /// we picked — a remaster and its clean upload differ by orders of magnitude.
   fame Int
 
+  /// Kept out of the shuffle, the daily and the decades: these belong to one
+  /// group and would be a surprise anywhere else.
+  special Boolean @default(false)
+
   refreshedAt DateTime @default(now()) @map("refreshed_at")
   createdAt   DateTime @default(now()) @map("created_at")
 
@@ -380,6 +384,7 @@ enum TrackGroupType {
   DECADE
   GENRE
   FAME
+  SPECIAL
 }
 
 model TrackGroup {

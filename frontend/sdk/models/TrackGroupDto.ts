@@ -64,7 +64,8 @@ export interface TrackGroupDto {
 export const TrackGroupDtoTypeEnum = {
     Decade: 'DECADE',
     Genre: 'GENRE',
-    Fame: 'FAME'
+    Fame: 'FAME',
+    Special: 'SPECIAL'
 } as const;
 export type TrackGroupDtoTypeEnum = typeof TrackGroupDtoTypeEnum[keyof typeof TrackGroupDtoTypeEnum];
 

@@ -2572,6 +2572,7 @@ export type PlaylistControllerGetMyPlaylistsSortByEnum = typeof PlaylistControll
 export const TrackGroupControllerListTypeEnum = {
     Decade: 'DECADE',
     Genre: 'GENRE',
-    Fame: 'FAME'
+    Fame: 'FAME',
+    Special: 'SPECIAL'
 } as const;
 export type TrackGroupControllerListTypeEnum = typeof TrackGroupControllerListTypeEnum[keyof typeof TrackGroupControllerListTypeEnum];
