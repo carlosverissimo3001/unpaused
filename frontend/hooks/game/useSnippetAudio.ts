@@ -10,7 +10,6 @@ import { SnippetPlayer } from '@/lib/snippet-player';
  */
 const WAVEFORM_SLICES = 96;
 
-/** `idle` covers "no track yet"; `failed` means the element must take over. */
 export type SnippetStatus = 'idle' | 'decoding' | 'ready' | 'failed';
 
 interface UseSnippetAudioOptions {
@@ -37,11 +36,7 @@ export function useSnippetAudio({
   }
   const player = playerRef.current;
 
-  /**
-   * One value rather than a pair of booleans, because callers need to tell
-   * "not ready yet" from "never will be". The element and the decoder race,
-   * and acting on the loser costs iOS its audio session.
-   */
+  // One value, so callers can tell "not ready yet" from "never will be".
   const [status, setStatus] = useState<SnippetStatus>('idle');
   const isReady = status === 'ready';
   /** Peaks of the decoded track, for drawing the waveform. */

@@ -117,15 +117,9 @@ export function useGameAudio({
       return;
     }
 
-    // Only the fallback path plays this element, and only that path pays the
-    // startup cost this hides. Warming it up when snippets come from Web Audio
-    // is worse than useless on iOS: volume is read-only there, so the "silent"
-    // warmup is audible, and starting an element can interrupt the very
-    // AudioContext the snippets need.
-    //
-    // Waiting on the decode too, not just its result: the element and the
-    // decoder race, and warming up because the decoder has not answered yet
-    // is how this fires on a device that was never going to need it.
+    // Only the fallback plays this element. On iOS the warmup is audible
+    // (volume is read-only) and can interrupt the context snippets use.
+    // Waits on the decode, not just its result: the two race.
     if (snippet.status !== 'failed') {
       isWarmedUp.current = snippet.isReady;
       return;
@@ -201,12 +195,10 @@ export function useGameAudio({
     setIsPlaying(false);
   }, []);
 
-  // Which path a track ended up on is the first thing worth knowing when
-  // sound misbehaves on a device that cannot be attached to a debugger.
+  // Which path a track took, for debugging sound on a device with no console.
   const loggedPathRef = useRef<string | null>(null);
   useEffect(() => {
     if (process.env.NODE_ENV === 'production' || !previewUrl) return;
-    // Only once the decode has answered.
     if (snippet.status !== 'ready' && snippet.status !== 'failed') return;
     if (loggedPathRef.current === previewUrl) return;
     loggedPathRef.current = previewUrl;
@@ -217,11 +209,7 @@ export function useGameAudio({
     );
   }, [previewUrl, snippet.status]);
 
-  /**
-   * The fallback. Kept callable on its own because Web Audio can refuse at the
-   * moment of playing -- an interrupted session on iOS being the reason -- and
-   * a tap that quietly does nothing is worse than one that sounds late.
-   */
+  /** The fallback, callable on its own: Web Audio can refuse at play time. */
   const playViaElement = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -304,18 +292,14 @@ export function useGameAudio({
 
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
-    // Preferred path: decoded audio, so this starts on the next audio callback
-    // rather than after the element spins up, and lasts exactly as long as
-    // asked.
+    // Decoded: starts on the next audio callback, and lasts exactly as asked.
     if (snippet.isReady) {
       void snippet.play(snippetDuration).then((started) => {
         if (started) {
           setIsPlaying(true);
           return;
         }
-        // The context could not be made to run -- on iOS it can be parked at
-        // `interrupted` for good. The element is unaffected by that, so the
-        // tap still produces sound.
+        // The context would not run; the element is unaffected by that.
         playViaElement();
       });
       return;
@@ -344,8 +328,7 @@ export function useGameAudio({
 
     if (fullAudioRef.current.paused) {
       fullAudioRef.current.volume = volumeRef.current;
-      // No setState here: the element's own play event is what flips the icon,
-      // so it cannot claim to be playing something nobody can hear.
+      // The element's own play event flips the icon, not this call.
       void fullAudioRef.current.play().catch(() => {});
     } else {
       fullAudioRef.current.pause();
@@ -360,11 +343,7 @@ export function useGameAudio({
     setIsFullSongPlaying(false);
   }, []);
 
-  /**
-   * The reveal button reflects the element rather than what we asked it to do.
-   * A play() that resolves is not the same as audio anybody can hear, and an
-   * icon that says otherwise is worse than one that says nothing.
-   */
+  // The icon follows the element: a resolved play() is not audible playback.
   useEffect(() => {
     const fullAudio = fullAudioRef.current;
     if (!fullAudio) return;
@@ -400,12 +379,9 @@ export function useGameAudio({
   });
 
   /**
-   * Which preview the reveal has actually played, so a re-minted link does not
-   * replay it mid transition to the next round.
-   *
-   * Marked when playback starts rather than when it is asked for: a guard set
-   * up front survives the cleanup that removes the listener it was waiting on,
-   * so under Strict Mode the second pass bails and nothing ever plays.
+   * Which preview the reveal played, so a re-minted link cannot replay it.
+   * Marked on start, not on attempt: a guard set up front outlives the cleanup
+   * that removes the listener it waits on, and Strict Mode's second pass bails.
    */
   const revealPlayedForRef = useRef<string | null>(null);
   useEffect(() => {
@@ -437,16 +413,13 @@ export function useGameAudio({
       const start = () => {
         revealPlayedForRef.current = previewUrl;
         fullAudio.currentTime = 0;
-        // Nothing sets the icon here either; the element's play event does.
         void fullAudio.play().catch(() => {
           /* Autoplay block on game-over auto-play — user can tap manually */
         });
       };
 
-      // The element mounts in the same commit that ends the round, so its src
-      // has not begun loading. Playing an element with nothing in it starts
-      // nominally and is then reset the moment the source arrives, which is
-      // silence with a pause icon over it.
+      // Mounted in the commit that ends the round, so its src has not loaded.
+      // Playing an empty element is undone when the source arrives.
       if (fullAudio.readyState >= HAVE_CURRENT_DATA) {
         start();
       } else {

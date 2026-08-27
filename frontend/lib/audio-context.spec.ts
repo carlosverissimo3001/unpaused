@@ -1,9 +1,6 @@
 /**
- * The states that matter are the ones a single sample gets wrong. `resume()`
- * resolving does not mean the context is running yet, and a context parked at
- * WebKit's `interrupted` accepts everything scheduled against it and plays
- * none of it — so both "still settling" and "never will" look identical for a
- * moment, and only one of them is worth throwing a context away over.
+ * The states a single sample gets wrong: "still settling" and "never will"
+ * look identical for a moment, and only one is worth discarding a context for.
  */
 
 interface FakeContext {
@@ -17,7 +14,6 @@ interface FakeContext {
   destination: unknown;
   /** Silent unlock buffers started against this context. */
   starts: number;
-  /** Fires the statechange listeners, as the browser would. */
   emit: () => void;
 }
 
@@ -53,13 +49,7 @@ function makeContext(
   return context;
 }
 
-/**
- * Fresh module registry per test: the context is a module-level singleton, and
- * most of these are about what happens to the one already cached.
- *
- * The suite runs under the node environment, so `window` is stood up by hand
- * rather than pulling in jsdom for one global.
- */
+/** The context is a module-level singleton, and `window` is not in scope. */
 async function load(contexts: FakeContext[]) {
   jest.resetModules();
   const made: FakeContext[] = [];
@@ -97,9 +87,7 @@ describe('resumeAudioContext', () => {
   });
 
   it('waits for a context that is still settling rather than replacing it', async () => {
-    // Chrome resolves resume() a beat before the state catches up. Acting on
-    // that first reading throws away a context that was about to work, and the
-    // replacement's first snippet is the one nobody hears.
+    // Chrome resolves resume() a beat before the state catches up.
     const slow = makeContext('suspended');
     slow.resume.mockImplementation(() => {
       setTimeout(() => {
@@ -157,9 +145,7 @@ describe('resumeAudioContext', () => {
   });
 
   it('starts the hardware once, not on every play', async () => {
-    // The clock does not advance until something has played, so the first real
-    // snippet is dropped and its `ended` never arrives — which is what leaves
-    // the button stuck showing pause.
+    // The clock does not advance until something has played.
     const running = makeContext('running');
     const { resumeAudioContext } = await load([running]);
 

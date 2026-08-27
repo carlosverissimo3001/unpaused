@@ -7,14 +7,7 @@
  */
 let ctx: AudioContext | null = null;
 
-/**
- * Whether the hardware has actually been started for this context.
- *
- * `running` is not the same as ready: the clock does not advance until
- * something has been played, so the first source scheduled against a freshly
- * resumed context can be dropped and its `ended` never arrive. A one-sample
- * silent buffer is the long-standing way to start it.
- */
+/** A resumed context's clock does not advance until something has played. */
 let unlocked = false;
 
 /** How long to let a resume settle before treating the context as unusable. */
@@ -41,10 +34,7 @@ export function getAudioContext(): AudioContext | null {
   return ctx;
 }
 
-/**
- * Has to run inside the gesture, like the resume it follows. Silent, so there
- * is nothing to hear, and one sample long, so there is nothing to wait for.
- */
+/** Silent and one sample long; has to run inside the gesture. */
 function unlock(context: AudioContext): void {
   if (unlocked) {
     return;
@@ -60,11 +50,7 @@ function unlock(context: AudioContext): void {
   }
 }
 
-/**
- * `resume()` resolving does not mean the state has caught up — Chrome flips it
- * a beat later. Sampling once and acting on the answer throws away contexts
- * that were about to work perfectly well.
- */
+/** Chrome flips the state a beat after resume() resolves. */
 function waitForRunning(context: AudioContext): Promise<boolean> {
   if (context.state === 'running') {
     return Promise.resolve(true);
@@ -93,18 +79,9 @@ function waitForRunning(context: AudioContext): Promise<boolean> {
 }
 
 /**
- * A context that can actually be heard, or null so the caller can fall back to
- * an audio element rather than schedule into silence.
- *
- * Autoplay policy starts the context suspended and only a user gesture can
- * resume it, so this has to be called from inside the click handler rather
- * than from an effect.
- *
- * WebKit adds a state the spec does not have: `interrupted`, which is where a
- * context lands after a phone call, a lock screen, or another app taking the
- * audio session. Checking for `suspended` alone misses it, and an interrupted
- * context accepts everything scheduled against it and plays none of it — which
- * is silence that never recovers, however many times the player taps.
+ * A context that can be heard, or null so the caller can fall back. Must run
+ * inside the gesture. WebKit adds `interrupted`, where a context accepts
+ * everything scheduled against it and plays none of it.
  */
 export async function resumeAudioContext(): Promise<AudioContext | null> {
   let context = getAudioContext();
@@ -116,7 +93,7 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
     try {
       await context.resume();
     } catch {
-      // Handled by the wait and rebuild below.
+      // Handled by the rebuild below.
     }
   }
 
@@ -125,9 +102,7 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
     return context;
   }
 
-  // Only now: it was asked to resume, given time to, and never got there.
-  // WebKit is known to park a context at `interrupted` for good, and a fresh
-  // one is the only way back.
+  // Asked, waited for, still not running: WebKit parks one here for good.
   void context.close().catch(() => {});
   ctx = null;
   unlocked = false;
