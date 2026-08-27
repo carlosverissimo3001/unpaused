@@ -1,4 +1,5 @@
 import { getAudioContext, resumeAudioContext } from './audio-context';
+import { logAudio } from './audio-debug';
 
 /**
  * Snippets through Web Audio, not an <audio> element: play() costs 100–300ms
@@ -213,30 +214,39 @@ export class SnippetPlayer {
     this.url = null;
   }
 
-  /** Resolves false when it could not play, so the caller can fall back. */
-  async play(durationSeconds: number): Promise<boolean> {
-    if (!this.buffer) {
-      return false;
-    }
-    // Must run inside the gesture, or autoplay policy leaves it suspended.
-    const context = await this.audio.resume();
-    if (!context) {
-      return false;
-    }
-
-    // An interruption can leave the context beyond saving, and the one handed
-    // back is then a new one. A buffer decoded against the old one plays
-    // silence, so it is decoded again before anything is scheduled.
-    if (this.decodedWith !== context) {
-      if (!this.url || !(await this.load(this.url))) {
-        return false;
-      }
-    }
-
+  /**
+   * False when it could not play, so the caller can fall back.
+   *
+   * Synchronous on purpose. start() is a no-op on iOS unless it happens in the
+   * gesture's own turn of the event loop, so nothing here may await: the resume
+   * is kicked off unawaited, and a source scheduled against a context that is
+   * still suspended plays as soon as it resumes.
+   */
+  play(durationSeconds: number): boolean {
     const buffer = this.buffer;
     if (!buffer) {
       return false;
     }
+
+    const context = this.audio.get();
+    if (!context) {
+      return false;
+    }
+
+    // An interruption can leave a context beyond saving, and the one that
+    // replaces it cannot play a buffer decoded against the old one. Decoding
+    // again cannot happen in this turn, so this tap goes to the element and
+    // the next one has a buffer that matches.
+    if (this.decodedWith !== context) {
+      logAudio('context changed under the buffer; decoding again');
+      if (this.url) {
+        void this.load(this.url);
+      }
+      return false;
+    }
+
+    // Unawaited: the gesture is spent by the time a promise would resolve.
+    void this.audio.resume();
 
     this.stop();
 
@@ -261,6 +271,9 @@ export class SnippetPlayer {
     this.playingFor = seconds;
     // The third argument is enforced by the hardware, so the length is exact.
     source.start(0, this.offset, seconds);
+    logAudio(
+      `snippet ${seconds.toFixed(2)}s at clock ${context.currentTime.toFixed(3)}, state=${context.state}`,
+    );
     return true;
   }
 

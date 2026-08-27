@@ -5,6 +5,7 @@
 
 interface FakeContext {
   state: string;
+  currentTime: number;
   resume: jest.Mock;
   close: jest.Mock;
   createBuffer: jest.Mock;
@@ -25,6 +26,7 @@ function makeContext(
 
   const context: FakeContext = {
     state,
+    currentTime: 0,
     resume: jest.fn(() => {
       onResume?.(context);
       return Promise.resolve();
@@ -54,6 +56,8 @@ async function load(contexts: FakeContext[]) {
   jest.resetModules();
   const made: FakeContext[] = [];
   (globalThis as unknown as { window: unknown }).window = {
+    // The debug log reads this to decide whether it is switched on.
+    location: { search: '' },
     AudioContext: jest.fn(() => {
       const next = contexts[made.length];
       made.push(next);

@@ -108,15 +108,15 @@ describe('SnippetPlayer', () => {
     await expect(player().load('https://cdn/gone.mp3')).resolves.toBe(false);
   });
 
-  it('will not play before anything is loaded', async () => {
-    await expect(player().play(0.1)).resolves.toBe(false);
+  it('will not play before anything is loaded', () => {
+    expect(player().play(0.1)).toBe(false);
   });
 
   it('schedules exactly the requested duration', async () => {
     const p = player();
     await p.load('https://cdn/preview.mp3');
 
-    await expect(p.play(0.1)).resolves.toBe(true);
+    expect(p.play(0.1)).toBe(true);
 
     // start(when, offset, duration) — the third argument is what the audio
     // hardware enforces, and is the whole reason 0.1s is achievable.
@@ -127,7 +127,7 @@ describe('SnippetPlayer', () => {
     const p = player();
     await p.load('https://cdn/preview.mp3');
 
-    await p.play(60);
+    p.play(60);
 
     expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 30);
   });
@@ -137,7 +137,7 @@ describe('SnippetPlayer', () => {
     await p.load('https://cdn/preview.mp3');
     expect(harness.context.state).toBe('suspended');
 
-    await p.play(0.5);
+    p.play(0.5);
 
     expect(harness.context.resume).toHaveBeenCalled();
   });
@@ -146,8 +146,8 @@ describe('SnippetPlayer', () => {
     const p = player();
     await p.load('https://cdn/preview.mp3');
 
-    await p.play(0.5);
-    await p.play(0.5);
+    p.play(0.5);
+    p.play(0.5);
 
     expect(harness.sources[0].stop).toHaveBeenCalled();
     expect(harness.sources).toHaveLength(2);
@@ -158,7 +158,7 @@ describe('SnippetPlayer', () => {
     p.setVolume(0.3);
     await p.load('https://cdn/preview.mp3');
 
-    await p.play(0.5);
+    p.play(0.5);
 
     expect(harness.gain.gain.value).toBe(0.3);
   });
@@ -168,7 +168,7 @@ describe('SnippetPlayer', () => {
     const onEnded = jest.fn();
     p.onEnded = onEnded;
     await p.load('https://cdn/preview.mp3');
-    await p.play(0.5);
+    p.play(0.5);
 
     harness.sources[0].onended?.();
 
@@ -180,7 +180,7 @@ describe('SnippetPlayer', () => {
     const onEnded = jest.fn();
     p.onEnded = onEnded;
     await p.load('https://cdn/preview.mp3');
-    await p.play(0.5);
+    p.play(0.5);
 
     p.stop();
 
@@ -205,7 +205,7 @@ describe('SnippetPlayer', () => {
 
     await expect(stale).resolves.toBe(false);
     // The newer track's audio survives; the late one is thrown away.
-    await p.play(60);
+    p.play(60);
     expect(harness.sources[0].start).toHaveBeenCalledWith(0, 0, 12);
   });
 
@@ -275,7 +275,7 @@ describe('SnippetPlayer', () => {
       await p.load('https://cdn/preview.mp3');
       harness.context.currentTime = 10;
 
-      await p.play(4);
+      p.play(4);
       expect(p.progress()).toBe(0);
 
       harness.context.currentTime = 11;
@@ -288,7 +288,7 @@ describe('SnippetPlayer', () => {
     it('never exceeds one, even if the clock runs past the snippet', async () => {
       const p = player();
       await p.load('https://cdn/preview.mp3');
-      await p.play(1);
+      p.play(1);
 
       harness.context.currentTime = 99;
 
@@ -298,7 +298,7 @@ describe('SnippetPlayer', () => {
     it('returns to zero once stopped', async () => {
       const p = player();
       await p.load('https://cdn/preview.mp3');
-      await p.play(4);
+      p.play(4);
       harness.context.currentTime = 2;
 
       p.stop();
@@ -314,13 +314,13 @@ describe('SnippetPlayer', () => {
     p.unload();
 
     expect(p.isReady).toBe(false);
-    await expect(p.play(0.5)).resolves.toBe(false);
+    expect(p.play(0.5)).toBe(false);
   });
 
-  it('decodes again when an interruption replaced the context', async () => {
-    // A buffer belongs to the context that decoded it. After iOS interrupts a
-    // session the context is rebuilt, and playing the old buffer is silence.
-    const first = harness;
+  it('refuses this tap and re-decodes when the context was replaced', async () => {
+    // A buffer belongs to the context that decoded it. Decoding again cannot
+    // happen inside the gesture, so the caller falls back to the element for
+    // this tap and the next one has a buffer that matches.
     const p = new SnippetPlayer({
       get: () => harness.context as unknown as AudioContext,
       resume: async () => {
@@ -330,33 +330,15 @@ describe('SnippetPlayer', () => {
     });
 
     await p.load('https://cdn/preview.mp3');
-    expect(first.context.decodeAudioData).toHaveBeenCalledTimes(1);
-
-    // The rebuild: everything after this resolves to a different context.
     harness = fakeContext();
 
-    await expect(p.play(1)).resolves.toBe(true);
+    expect(p.play(1)).toBe(false);
+    expect(harness.sources).toHaveLength(0);
+
+    // The re-decode was started, so a second tap plays.
+    await Promise.resolve();
+    await Promise.resolve();
     expect(harness.context.decodeAudioData).toHaveBeenCalledTimes(1);
-    expect(harness.sources).toHaveLength(1);
-  });
-
-  it('gives up rather than playing into a context it cannot decode for', async () => {
-    const p = new SnippetPlayer({
-      get: () => harness.context as unknown as AudioContext,
-      resume: async () => {
-        await harness.context.resume();
-        return harness.context as unknown as AudioContext;
-      },
-    });
-
-    await p.load('https://cdn/preview.mp3');
-
-    harness = fakeContext();
-    harness.context.decodeAudioData.mockRejectedValue(new Error('gone'));
-
-    // False, so the caller falls back to the audio element rather than
-    // scheduling into a context that will play nothing.
-    await expect(p.play(1)).resolves.toBe(false);
   });
 });
 

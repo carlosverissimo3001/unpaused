@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { primeAudioContextOnFirstGesture } from '@/lib/audio-context';
+import { logAudio } from '@/lib/audio-debug';
 import { useMediaSession } from '../useMediaSession';
 import { useSnippetAudio } from './useSnippetAudio';
 
@@ -207,6 +208,9 @@ export function useGameAudio({
     if (snippet.status !== 'ready' && snippet.status !== 'failed') return;
     if (loggedPathRef.current === previewUrl) return;
     loggedPathRef.current = previewUrl;
+    logAudio(
+      `decode ${snippet.status} -> ${snippet.status === 'ready' ? 'web-audio' : 'element'}`,
+    );
     console.log(
       `[useGameAudio] snippets via ${
         snippet.status === 'ready' ? 'web-audio' : 'audio-element (fallback)'
@@ -218,6 +222,7 @@ export function useGameAudio({
   const playViaElement = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
+    logAudio(`element play, readyState=${audio.readyState}`);
 
     const isMobile = navigator.maxTouchPoints > 0;
     const durationMs = snippetDuration * 1000 + 100;
@@ -299,14 +304,14 @@ export function useGameAudio({
 
     // Decoded: starts on the next audio callback, and lasts exactly as asked.
     if (snippet.isReady) {
-      void snippet.play(snippetDuration).then((started) => {
-        if (started) {
-          setIsPlaying(true);
-          return;
-        }
-        // The context would not run; the element is unaffected by that.
-        playViaElement();
-      });
+      logAudio(`tap: web-audio, ${snippetDuration}s`);
+      if (snippet.play(snippetDuration)) {
+        setIsPlaying(true);
+        return;
+      }
+      logAudio('web-audio refused; falling back to element');
+      // The context would not run; the element is unaffected by that.
+      playViaElement();
       return;
     }
 

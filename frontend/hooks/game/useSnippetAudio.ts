@@ -97,9 +97,11 @@ export function useSnippetAudio({
     }
   }, []);
 
+  // Synchronous all the way to source.start(): iOS ignores it outside the
+  // gesture's own turn of the event loop.
   const play = useCallback(
-    async (durationSeconds: number) => {
-      const started = await player.play(durationSeconds);
+    (durationSeconds: number) => {
+      const started = player.play(durationSeconds);
       if (!started) {
         return false;
       }

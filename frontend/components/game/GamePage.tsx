@@ -13,6 +13,7 @@ import { RoundProgressBar } from './RoundProgressBar';
 import { PlaySnippetButton } from './PlaySnippetButton';
 import { SongRevealCard } from './SongRevealCard';
 import { GuessHistoryList } from './GuessHistoryList';
+import { AudioDebugPanel } from './AudioDebugPanel';
 import { GameHeader } from './GameHeader';
 import { GameTitle } from './GameTitle';
 import { GuessInput } from './GuessInput';
@@ -166,6 +167,8 @@ export function GamePage({ mode, playlistId, trackGroupId }: GamePageProps) {
               maxRounds={gameState.maxRounds}
             />
           )}
+
+          <AudioDebugPanel />
 
           <audio
             ref={audioRef}

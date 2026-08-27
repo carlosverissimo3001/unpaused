@@ -5,6 +5,8 @@
  * latency, so a per-round context would reintroduce exactly the delay this
  * exists to remove.
  */
+import { logAudio } from './audio-debug';
+
 let ctx: AudioContext | null = null;
 
 /** A resumed context's clock does not advance until something has played. */
@@ -33,6 +35,7 @@ export function getAudioContext(): AudioContext | null {
     }
     ctx = new Ctor();
     unlocked = false;
+    logAudio(`context created, state=${ctx.state}`);
   }
   return ctx;
 }
@@ -72,12 +75,15 @@ async function unlock(context: AudioContext): Promise<void> {
     source.connect(context.destination);
     source.start(0);
     unlocked = true;
+    logAudio('unlock buffer started');
   } catch {
     // Left locked, so the next gesture tries again.
     return;
   }
 
+  const before = context.currentTime;
   await waitForClock(context);
+  logAudio(`clock ${before.toFixed(3)} -> ${context.currentTime.toFixed(3)}`);
 }
 
 /** Chrome flips the state a beat after resume() resolves. */
@@ -132,6 +138,8 @@ export async function resumeAudioContext(): Promise<AudioContext | null> {
     return context;
   }
 
+  logAudio(`resume failed, state=${context.state}; rebuilding`);
+
   // Asked, waited for, still not running: WebKit parks one here for good.
   void context.close().catch(() => {});
   ctx = null;
@@ -168,6 +176,7 @@ export function primeAudioContextOnFirstGesture(): () => void {
   }
 
   const prime = () => {
+    logAudio('priming on first gesture');
     void resumeAudioContext();
     stop();
   };
