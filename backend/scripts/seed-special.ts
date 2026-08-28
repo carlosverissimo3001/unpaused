@@ -23,6 +23,7 @@
  * Safe to re-run: every write is an upsert or does nothing on conflict.
  */
 import 'dotenv/config';
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Pool } from 'pg';
@@ -52,6 +53,20 @@ interface Details {
 }
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Derived from the song rather than its position in the file. A positional id
+ * renumbers everything after a track that gets removed, which hands one song's
+ * album art to the next one along.
+ */
+function trackId(slug: string, name: string, artistName: string): string {
+  const digest = crypto
+    .createHash('sha1')
+    .update(`${artistName.trim().toLowerCase()}|${name.trim().toLowerCase()}`)
+    .digest('hex')
+    .slice(0, 10);
+  return `special:${slug}:${digest}`;
+}
 
 async function getJson<T>(url: string): Promise<T | null> {
   try {
@@ -138,10 +153,8 @@ async function main() {
 
     let found = 0;
 
-    for (const [index, track] of group.tracks.entries()) {
-      // Stable and derived from position, so re-running rewrites rather than
-      // duplicating.
-      const id = `special:${group.slug}:${String(index + 1).padStart(3, '0')}`;
+    for (const track of group.tracks) {
+      const id = trackId(group.slug, track.name, track.artistName);
 
       const details = await lookup(track.name, track.artistName);
       if (details) {
