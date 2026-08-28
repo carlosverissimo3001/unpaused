@@ -84,7 +84,8 @@ export class GameService {
     params: StartGameDto,
   ): Promise<GameStateDto> {
     const { playlistId, trackGroupId, mode } = params;
-    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const user = await this.authService.getUserBySessionId(sessionId);
+    const userId = user.id;
 
     const userTimezone =
       await this.userPreferencesService.getUserTimezone(userId);
@@ -116,7 +117,14 @@ export class GameService {
     // A group is the pool narrowed to a set someone chose, so it takes the
     // same path and ends up indistinguishable from any other round.
     if (trackGroupId) {
-      await this.trackGroupService.requireById(trackGroupId);
+      const group = await this.trackGroupService.requireById(trackGroupId);
+
+      // Listing hides a group this player is not meant to have; starting one
+      // has to say so too, or the id is the only thing keeping them out.
+      if (!TrackGroupService.isVisible(group.type, user)) {
+        throw new NotFoundException(`No track group ${trackGroupId}`);
+      }
+
       return this.startPoolGame(userId, mode, trackGroupId);
     }
 

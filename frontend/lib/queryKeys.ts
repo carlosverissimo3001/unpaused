@@ -51,6 +51,7 @@ export const queryKeys = {
   trackGroups: {
     all: ['trackGroups'] as const,
     byType: (type: string) => ['trackGroups', type] as const,
+    bySlug: (slug: string) => ['trackGroups', 'slug', slug] as const,
   },
   auth: {
     all: ['auth'] as const,

@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TrackGroupType } from '@prisma/client';
@@ -34,6 +34,17 @@ export class TrackGroupController {
     }
 
     return this.trackGroupService.list(type);
+  }
+
+  @Get(':slug')
+  @ApiOperation({ summary: 'One group, by the name in its URL' })
+  @ApiResponse({ status: 200, type: TrackGroupDto })
+  @ApiResponse({ status: 404, description: 'No such group, or not for you' })
+  async bySlug(
+    @Param('slug') slug: string,
+    @Req() req: Request,
+  ): Promise<TrackGroupDto> {
+    return this.trackGroupService.bySlug(slug, await this.currentUser(req));
   }
 
   /** Null for a visitor with no session, rather than refusing the request. */

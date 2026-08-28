@@ -1,3 +1,4 @@
+import { isDescriptiveTag } from '../utils/lastfm-tags';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LastfmDataVo } from '../vo/track-metadata.vo';
@@ -64,7 +65,7 @@ export class LastfmService {
 
     const tags = (track.toptags?.tag ?? [])
       .map((t) => t.name)
-      .filter(Boolean)
+      .filter((name) => isDescriptiveTag(name ?? ''))
       .slice(0, 5);
 
     const playcount = track.playcount

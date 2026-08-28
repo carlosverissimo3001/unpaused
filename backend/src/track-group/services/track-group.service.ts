@@ -33,6 +33,28 @@ export class TrackGroupService {
     );
   }
 
+  /**
+   * By the name in the URL, which is how a shared link arrives. Absent and
+   * not-for-you are the same answer here, so a slug cannot be used to find out
+   * that a group exists.
+   */
+  async bySlug(slug: string, user: User | null): Promise<TrackGroupDto> {
+    const group = await this.repository.findBySlugWithCount(slug);
+
+    if (!group || !TrackGroupService.isVisible(group.type, user)) {
+      throw new NotFoundException(`No track group ${slug}`);
+    }
+
+    return {
+      id: group.id,
+      type: group.type,
+      name: group.name,
+      slug: group.slug,
+      trackCount: group.trackCount,
+      imageUrl: group.imageUrl ?? undefined,
+    };
+  }
+
   /** Throws rather than returning null: a round cannot start without one. */
   async requireById(id: string): Promise<TrackGroup> {
     const group = await this.repository.findById(id);

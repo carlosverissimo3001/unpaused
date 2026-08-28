@@ -32,6 +32,15 @@ interface DeezerTrack {
   title?: string;
   artist?: { name?: string };
   preview?: string;
+  isrc?: string;
+  link?: string;
+  release_date?: string;
+  album?: {
+    title?: string;
+    cover_xl?: string;
+    cover_big?: string;
+    link?: string;
+  };
 }
 
 type Source = 'isrc' | 'itunes' | 'deezer' | 'scrape';
