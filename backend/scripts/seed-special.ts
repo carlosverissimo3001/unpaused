@@ -125,9 +125,12 @@ async function main() {
     await client.query('BEGIN');
 
     const { rows } = await client.query<{ id: string }>(
+      // The name is left alone on a re-run: it and the cover are set by hand
+      // once the group exists, and a seed should not undo that. The update is
+      // a no-op that exists only so there is a row to return.
       `INSERT INTO track_groups (id, type, name, slug)
        VALUES (gen_random_uuid(), 'SPECIAL', $1, $2)
-       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+       ON CONFLICT (slug) DO UPDATE SET name = track_groups.name
        RETURNING id`,
       [group.name, group.slug],
     );
