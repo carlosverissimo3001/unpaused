@@ -4,7 +4,7 @@ import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { LogOut, History, Zap, Sun, Moon } from 'lucide-react';
+import { LogIn, LogOut, History, Zap, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import type { AuthMeResponseDto } from '@/sdk';
@@ -21,6 +21,11 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
   // A guest gets the same header as anyone else — name, avatar, history,
   // preferences. Only logout is withheld: they have nothing to log out of,
   // and doing it would silently discard the row holding their progress.
+  //
+  // They get a way in instead. Once a guest session exists the home page never
+  // shows the landing screen again, so somebody who tapped "Play now" with an
+  // account already had no way back to it short of clearing a cookie. Signing
+  // in keeps what they played, which logging out would not.
   const canLogOut = !!user?.hasAccount;
 
   return (
@@ -107,6 +112,21 @@ function AppHeaderComponent({ user, onLogout, isLoggingOut }: AppHeaderProps) {
                   <Moon className="w-4 h-4" />
                 )}
               </motion.button>
+
+              {!canLogOut && (
+                <motion.div whileTap={{ scale: 0.9 }}>
+                  <Link href="/signin">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Sign in"
+                      className="rounded-xl text-fg/30 transition-all hover:bg-spotify-green/10 hover:text-spotify-green"
+                    >
+                      <LogIn className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </motion.div>
+              )}
 
               {canLogOut && (
                 <motion.div whileTap={{ scale: 0.9 }}>
