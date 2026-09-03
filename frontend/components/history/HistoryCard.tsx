@@ -14,6 +14,7 @@ import {
 import { formatDate } from '@/utils/date-utils';
 import { toOrdinal } from '../../utils/text-utils';
 import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
+import { cardVariants } from './card-motion';
 
 const GUESS_LABEL: Record<string, string> = {
   [GuessHistoryDtoResultEnum.Correct]: 'Correct',
@@ -54,15 +55,6 @@ interface HistoryCardProps {
   showWinnerGlow?: boolean;
   staggerIndex?: number;
 }
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: 'easeOut' as const },
-  }),
-};
 
 const getPointsInfo = (entry: GameHistoryEntryDto, guessesUsed: number) => {
   if (entry.status === GameHistoryEntryDtoStatusEnum.Won) {

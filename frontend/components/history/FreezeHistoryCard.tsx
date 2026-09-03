@@ -4,20 +4,12 @@ import { motion } from 'framer-motion';
 import { Snowflake } from 'lucide-react';
 import type { StreakFreezeUsageDto } from '@/sdk/models/StreakFreezeUsageDto';
 import { formatDateRange } from '@/utils/date-utils';
+import { cardVariants } from './card-motion';
 
 interface FreezeHistoryCardProps {
   usage: StreakFreezeUsageDto;
   staggerIndex?: number;
 }
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: 'easeOut' as const },
-  }),
-};
 
 export function FreezeHistoryCard({
   usage,

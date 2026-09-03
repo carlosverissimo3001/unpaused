@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Flame } from 'lucide-react';
 import { formatDateRange } from '@/utils/date-utils';
+import { cardVariants } from './card-motion';
 
 interface StreakLostCardProps {
   from: string;
@@ -10,15 +11,6 @@ interface StreakLostCardProps {
   gapDays: number;
   staggerIndex?: number;
 }
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: 'easeOut' as const },
-  }),
-};
 
 export function StreakLostCard({
   from,

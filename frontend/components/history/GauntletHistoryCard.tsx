@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, Music2, TimerReset, Zap } from 'lucide-react';
 import type { GauntletHistoryEntryDto } from '@/sdk/models/GauntletHistoryEntryDto';
 import { GauntletHistoryEntryDtoDifficultyEnum as Difficulty } from '@/sdk/models/GauntletHistoryEntryDto';
 import { formatDate } from '@/utils/date-utils';
+import { cardVariants } from './card-motion';
 
 const DIFFICULTY_BADGE: Record<string, { label: string; classes: string }> = {
   [Difficulty.Easy]: {
@@ -28,15 +29,6 @@ const DIFFICULTY_BADGE: Record<string, { label: string; classes: string }> = {
 };
 
 const MAX_TRACK_AVATARS = 5;
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: 'easeOut' as const },
-  }),
-};
 
 interface GauntletHistoryCardProps {
   entry: GauntletHistoryEntryDto;
