@@ -1,16 +1,19 @@
 import { differenceInCalendarDays, format } from 'date-fns';
 import { TZDate } from '@date-fns/tz';
 
-const EPOCH = new Date('2025-01-01T00:00:00Z');
+/** Launch day, which is #1. Rounds played while building it number below that. */
+const EPOCH = new Date('2026-09-01T00:00:00Z');
 
 /**
  * The number has to name the same song for everyone who shares it, and the
  * daily is drawn per UTC day, so this counts UTC days too — never the server's.
  */
 export function gameNumberFromDate(date: Date): number {
-  return differenceInCalendarDays(
-    new TZDate(date, 'UTC'),
-    new TZDate(EPOCH, 'UTC'),
+  return (
+    differenceInCalendarDays(
+      new TZDate(date, 'UTC'),
+      new TZDate(EPOCH, 'UTC'),
+    ) + 1
   );
 }
 
