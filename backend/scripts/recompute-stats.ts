@@ -92,6 +92,21 @@ async function main(): Promise<void> {
         DAILY: tallyDaily(inMode('DAILY'), freezes, user.timezone),
       };
 
+      // A daily's best is a record someone actually set, under whichever
+      // timezone their account had at the time — which was never stored, so a
+      // replay under today's one can land a day or two short. It cannot prove
+      // the record was never reached, so it does not take it away.
+      //
+      // ALL's best gets no such benefit: it counted dailies, so whatever it
+      // says was never a run of free-play wins at all.
+      const { rows: stored } = await pool.query<{ best_streak: number }>(
+        `SELECT best_streak FROM stats WHERE user_id = $1 AND mode = 'DAILY'`,
+        [user.id],
+      );
+      if (stored.length > 0) {
+        byMode.DAILY.best = Math.max(byMode.DAILY.best, stored[0].best_streak);
+      }
+
       for (const [mode, tally] of Object.entries(byMode)) {
         if (tally.totalGames === 0) continue;
         rewritten += 1;
