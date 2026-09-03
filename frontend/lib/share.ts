@@ -40,6 +40,10 @@ export async function shareResult(text: string): Promise<ShareOutcome> {
     }
   }
 
+  if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+    return 'failed';
+  }
+
   try {
     await navigator.clipboard.writeText(text);
     return 'copied';
