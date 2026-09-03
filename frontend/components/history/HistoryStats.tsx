@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { GameStatsDto } from '../../sdk';
+import { GameStatsDto, GameStatsDtoUnitEnum } from '../../sdk';
 
 const SIZE = 64;
 const STROKE = 6;
@@ -99,7 +99,7 @@ export interface HistoryStatsProps {
 export function HistoryStats({ stats }: HistoryStatsProps) {
   const total = stats.totalGames;
   const wins = stats.totalWins;
-  const streak = stats.currentStreak;
+  const tally = stats.current;
   const perfectScores = stats.roundDistribution[0] || 0; // 0th index === wins on 1st round
 
   return (
@@ -124,17 +124,19 @@ export function HistoryStats({ stats }: HistoryStatsProps) {
       >
         <div className="flex flex-col items-center justify-center h-[64px] gap-0.5">
           <motion.div
-            animate={streak > 3 ? { scale: [1, 1.2, 1] } : {}}
+            animate={tally > 3 ? { scale: [1, 1.2, 1] } : {}}
             transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.5 }}
           >
             <Flame className="w-8 h-8 text-spotify-green" strokeWidth={2} />
           </motion.div>
           <span className="text-lg font-bold text-fg/90 tabular-nums">
-            {streak}
+            {tally}
           </span>
         </div>
         <span className="font-black text-[10px] uppercase tracking-widest text-fg/40">
-          Current streak
+          {stats.unit === GameStatsDtoUnitEnum.Days
+            ? 'Current streak'
+            : 'Current run'}
         </span>
       </motion.div>
 

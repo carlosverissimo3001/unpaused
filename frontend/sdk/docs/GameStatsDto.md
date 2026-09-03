@@ -6,8 +6,9 @@
 
 Name | Type
 ------------ | -------------
-`currentStreak` | number
-`bestStreak` | number
+`current` | number
+`best` | number
+`unit` | string
 `totalGames` | number
 `totalWins` | number
 `roundDistribution` | Array&lt;number&gt;
@@ -22,8 +23,9 @@ import type { GameStatsDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "currentStreak": null,
-  "bestStreak": null,
+  "current": null,
+  "best": null,
+  "unit": null,
   "totalGames": null,
   "totalWins": null,
   "roundDistribution": [0,0,0,0,0,0,0],

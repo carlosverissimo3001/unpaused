@@ -2,12 +2,25 @@ import { ApiProperty } from '@nestjs/swagger';
 import { GameMode } from '@prisma/client';
 import { GameStatsEntity } from '../../entities/game-stats.entity';
 
-export class GameStatsDto {
-  @ApiProperty({ description: 'The current streak' })
-  currentStreak: number;
+/**
+ * What the tally counts. The daily counts days, so a second win today adds
+ * nothing; free play counts wins, so it does. Same column, different meaning,
+ * and the client needs to know which it is holding before it labels it.
+ */
+export enum StatsUnit {
+  DAYS = 'DAYS',
+  WINS = 'WINS',
+}
 
-  @ApiProperty({ description: 'The best streak' })
-  bestStreak: number;
+export class GameStatsDto {
+  @ApiProperty({ description: 'The tally in progress: a streak or a run' })
+  current: number;
+
+  @ApiProperty({ description: 'The longest this tally has ever been' })
+  best: number;
+
+  @ApiProperty({ description: 'What the tally counts', enum: StatsUnit })
+  unit: StatsUnit;
 
   @ApiProperty({ description: 'The total games' })
   totalGames: number;
@@ -42,8 +55,9 @@ export class GameStatsDto {
     }, 0);
 
     return {
-      currentStreak: entity.currentStreak,
-      bestStreak: entity.bestStreak,
+      current: entity.currentStreak,
+      best: entity.bestStreak,
+      unit: entity.mode === GameMode.DAILY ? StatsUnit.DAYS : StatsUnit.WINS,
       totalGames: entity.totalGames,
       totalWins: entity.totalWins,
       roundDistribution: entity.roundDistribution,

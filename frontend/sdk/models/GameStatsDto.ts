@@ -20,17 +20,23 @@ import { mapValues } from '../runtime';
  */
 export interface GameStatsDto {
     /**
-     * The current streak
+     * The tally in progress: a streak or a run
      * @type {number}
      * @memberof GameStatsDto
      */
-    currentStreak: number;
+    current: number;
     /**
-     * The best streak
+     * The longest this tally has ever been
      * @type {number}
      * @memberof GameStatsDto
      */
-    bestStreak: number;
+    best: number;
+    /**
+     * What the tally counts
+     * @type {string}
+     * @memberof GameStatsDto
+     */
+    unit: GameStatsDtoUnitEnum;
     /**
      * The total games
      * @type {number}
@@ -73,6 +79,15 @@ export interface GameStatsDto {
 /**
  * @export
  */
+export const GameStatsDtoUnitEnum = {
+    Days: 'DAYS',
+    Wins: 'WINS'
+} as const;
+export type GameStatsDtoUnitEnum = typeof GameStatsDtoUnitEnum[keyof typeof GameStatsDtoUnitEnum];
+
+/**
+ * @export
+ */
 export const GameStatsDtoModeEnum = {
     Daily: 'DAILY',
     All: 'ALL',
@@ -86,8 +101,9 @@ export type GameStatsDtoModeEnum = typeof GameStatsDtoModeEnum[keyof typeof Game
  * Check if a given object implements the GameStatsDto interface.
  */
 export function instanceOfGameStatsDto(value: object): value is GameStatsDto {
-    if (!('currentStreak' in value) || value['currentStreak'] === undefined) return false;
-    if (!('bestStreak' in value) || value['bestStreak'] === undefined) return false;
+    if (!('current' in value) || value['current'] === undefined) return false;
+    if (!('best' in value) || value['best'] === undefined) return false;
+    if (!('unit' in value) || value['unit'] === undefined) return false;
     if (!('totalGames' in value) || value['totalGames'] === undefined) return false;
     if (!('totalWins' in value) || value['totalWins'] === undefined) return false;
     if (!('roundDistribution' in value) || value['roundDistribution'] === undefined) return false;
@@ -107,8 +123,9 @@ export function GameStatsDtoFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'currentStreak': json['currentStreak'],
-        'bestStreak': json['bestStreak'],
+        'current': json['current'],
+        'best': json['best'],
+        'unit': json['unit'],
         'totalGames': json['totalGames'],
         'totalWins': json['totalWins'],
         'roundDistribution': json['roundDistribution'],
@@ -129,8 +146,9 @@ export function GameStatsDtoToJSONTyped(value?: GameStatsDto | null, ignoreDiscr
 
     return {
         
-        'currentStreak': value['currentStreak'],
-        'bestStreak': value['bestStreak'],
+        'current': value['current'],
+        'best': value['best'],
+        'unit': value['unit'],
         'totalGames': value['totalGames'],
         'totalWins': value['totalWins'],
         'roundDistribution': value['roundDistribution'],

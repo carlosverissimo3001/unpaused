@@ -2995,13 +2995,21 @@
       "GameStatsDto": {
         "type": "object",
         "properties": {
-          "currentStreak": {
+          "current": {
             "type": "number",
-            "description": "The current streak"
+            "description": "The tally in progress: a streak or a run"
           },
-          "bestStreak": {
+          "best": {
             "type": "number",
-            "description": "The best streak"
+            "description": "The longest this tally has ever been"
+          },
+          "unit": {
+            "type": "string",
+            "description": "What the tally counts",
+            "enum": [
+              "DAYS",
+              "WINS"
+            ]
           },
           "totalGames": {
             "type": "number",
@@ -3049,8 +3057,9 @@
           }
         },
         "required": [
-          "currentStreak",
-          "bestStreak",
+          "current",
+          "best",
+          "unit",
           "totalGames",
           "totalWins",
           "roundDistribution",

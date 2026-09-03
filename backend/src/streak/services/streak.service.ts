@@ -2,11 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { AuthService } from '@auth/services/auth.service';
 import { GameMode, StreakFreezeUsage } from '@prisma/client';
-import { GameStatsRepository } from '../../game/repositories/game-stats.repository';
-import { GameStatsEntity } from '../../game/entities/game-stats.entity';
+import { GameStatsService } from '../../game/services/game-stats.service';
 import { UserPreferencesService } from '../../user-preferences/services/user-preferences.service';
 import { StreakStatusDto } from '../dto/streak-status.dto';
-import { GAME_MAX_ROUNDS } from '../../consts';
 import {
   startOfDay,
   differenceInCalendarDays,
@@ -20,17 +18,13 @@ export class StreakService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
-    // TODO: We should use a gameStatsService instead of directly depending on the repository, to encapsulate stats logic better
-    private readonly gameStatsRepository: GameStatsRepository,
+    private readonly gameStatsService: GameStatsService,
     private readonly userPreferencesService: UserPreferencesService,
   ) {}
 
   async getStreakStatus(sessionId: string): Promise<StreakStatusDto> {
     const user = await this.authService.getUserBySessionId(sessionId);
-    const stats = await this.gameStatsRepository.findByUserId(
-      user.id,
-      GameMode.DAILY,
-    );
+    const stats = await this.gameStatsService.getDailyStats(user.id);
 
     const timezone = await this.userPreferencesService.getUserTimezone(user.id);
     const today = startOfDay(new TZDate(new Date(), timezone));
@@ -95,132 +89,11 @@ export class StreakService {
     });
   }
 
-  /**
-   * Updates daily streak after a game ends.
-   * Must be called within a @Transactional() boundary.
-   */
-  async updateDailyStreak(
-    userId: string,
-    lastGameRound: number,
-  ): Promise<void> {
-    const dailyStats = await this.gameStatsRepository.upsert(
-      userId,
-      GameMode.DAILY,
-    );
-    const won = lastGameRound < GAME_MAX_ROUNDS;
-    const timezone = await this.userPreferencesService.getUserTimezone(userId);
-
-    const dailyDist = this.updateRoundDistribution(
-      dailyStats.roundDistribution ?? [0, 0, 0, 0, 0, 0, 0],
-      lastGameRound,
-    );
-
-    return won
-      ? this.updateDailyStatsForWin({ userId, dailyStats, dailyDist, timezone })
-      : this.updateDailyStatsForLoss({ userId, dailyStats, dailyDist });
-  }
-
-  private async updateDailyStatsForWin(params: {
-    userId: string;
-    dailyStats: GameStatsEntity;
-    dailyDist: number[];
-    timezone: string;
-  }): Promise<void> {
-    const { userId, dailyStats, dailyDist, timezone } = params;
-
-    const today = startOfDay(new TZDate(new Date(), timezone));
-    const lastWin = dailyStats.lastWinDate
-      ? startOfDay(new TZDate(dailyStats.lastWinDate, timezone))
-      : undefined;
-
-    const newDailyStreak = this.calculateDailyStreak(
-      dailyStats.currentStreak,
-      timezone,
-      lastWin,
-    );
-
-    await this.gameStatsRepository.update(
-      userId,
-      {
-        currentStreak: newDailyStreak,
-        bestStreak: Math.max(dailyStats.bestStreak, newDailyStreak),
-        roundDistribution: dailyDist,
-        won: true,
-        lastWinDate: today,
-      },
-      GameMode.DAILY,
-    );
-  }
-
-  private async updateDailyStatsForLoss(params: {
-    userId: string;
-    dailyStats: GameStatsEntity;
-    dailyDist: number[];
-  }): Promise<void> {
-    const { userId, dailyStats, dailyDist } = params;
-
-    await this.gameStatsRepository.update(
-      userId,
-      {
-        currentStreak: 0,
-        bestStreak: dailyStats.bestStreak,
-        roundDistribution: dailyDist,
-        won: false,
-      },
-      GameMode.DAILY,
-    );
-  }
-
-  /**
-   * Calculates the new daily streak based on last win date.
-   * 1. Already won today → don't double-count
-   * 2. Won yesterday → consecutive day, increment streak
-   * 3. Gap exists → reset to 1 (unless freeze was applied by useFreeze())
-   */
-  private calculateDailyStreak(
-    currentStreak: number,
-    timezone: string,
-    lastWin?: Date,
-  ): number {
-    const today = startOfDay(new TZDate(new Date(), timezone));
-
-    if (!lastWin) {
-      return 1;
-    }
-
-    const daysDiff = differenceInCalendarDays(
-      today,
-      startOfDay(new TZDate(lastWin, timezone)),
-    );
-
-    if (daysDiff === 0) {
-      return currentStreak;
-    }
-
-    if (daysDiff === 1) {
-      return currentStreak + 1;
-    }
-
-    return 1;
-  }
-
-  private updateRoundDistribution(
-    distribution: number[],
-    lastGameRound: number,
-  ): number[] {
-    const dist = [...distribution];
-    dist[lastGameRound] = (dist[lastGameRound] ?? 0) + 1;
-    return dist;
-  }
-
   async useFreeze(sessionId: string): Promise<StreakStatusDto> {
     // Note: Controller already validates user is trusted via TrustedUserGuard
     const user = await this.authService.getUserBySessionId(sessionId);
 
-    const stats = await this.gameStatsRepository.findByUserId(
-      user.id,
-      GameMode.DAILY,
-    );
+    const stats = await this.gameStatsService.getDailyStats(user.id);
 
     const timezone = await this.userPreferencesService.getUserTimezone(user.id);
     const today = startOfDay(new TZDate(new Date(), timezone));
