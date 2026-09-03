@@ -12,7 +12,6 @@ import {
   type GameHistoryEntryDto,
 } from '@/sdk/models/GameHistoryEntryDto';
 import { formatDate } from '@/utils/date-utils';
-import { GameStatsDtoModeEnum as GameMode } from '../../sdk';
 import { cardVariants } from './card-motion';
 
 const GUESS_LABEL: Record<string, string> = {
@@ -143,11 +142,6 @@ export function HistoryCard({
                 <span className="text-xs text-fg/40">
                   {formatDate(entry.date)}
                 </span>
-                {entry.mode === GameMode.Daily && (
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-spotify-green/70">
-                    Daily
-                  </span>
-                )}
               </div>
 
               <h3 className="font-bold text-fg truncate text-sm sm:text-base">

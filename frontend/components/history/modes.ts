@@ -34,9 +34,11 @@ export interface ModeDescriptor {
 export const MODES: Record<HistoryTab, ModeDescriptor> = {
   all: {
     tab: 'all',
-    label: 'All',
+    label: 'Free play',
     statsMode: GameMode.All,
-    historyMode: undefined,
+    // The same mode the panel counts. Left open, this tab also listed dailies
+    // and multiplayer rounds, so its list and its numbers disagreed.
+    historyMode: GameMode.All,
     accent: {
       text: 'text-fg',
       pill: 'bg-fg/15 text-fg shadow-sm',
