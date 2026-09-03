@@ -28,6 +28,11 @@ export function FloatingPaginationPill({
       transition={{ duration: 0.25, ease: 'easeOut' }}
       className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 px-4"
     >
+      {/* Cards used to run straight into the pill mid-scroll; they fade under it now. */}
+      <div
+        className="pointer-events-none absolute -inset-x-16 -bottom-6 -top-8 -z-10 bg-gradient-to-t from-bg via-bg/80 to-transparent"
+        aria-hidden
+      />
       <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1.5 rounded-full bg-black/70 backdrop-blur-3xl border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.7),_0_0_0_1px_rgba(29,185,84,0.06)]">
         <motion.button
           whileTap={{ scale: 0.85 }}

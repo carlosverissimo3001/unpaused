@@ -68,7 +68,7 @@ export function GuessDistribution({
               />
             </div>
             <span className="w-6 text-right text-[11px] tabular-nums text-fg/40">
-              {value || ''}
+              {value || <span className="text-fg/20">0</span>}
             </span>
           </div>
         );

@@ -30,9 +30,7 @@ export function HistoryFilter({
         <ArrowLeft className="w-5 h-5" />
         Back
       </Link>
-      <h1 className="font-black italic uppercase text-xl text-fg tracking-tight">
-        Vault
-      </h1>
+      <h1 className="sr-only">Your history</h1>
       {modes.length > 1 && (
         <div className="ml-auto flex items-center gap-1.5 p-1 rounded-xl bg-fg/[0.03] border border-fg/10 backdrop-blur-sm">
           {modes.map((mode) => (

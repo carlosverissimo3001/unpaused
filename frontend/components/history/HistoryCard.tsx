@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, ChevronDown, ChevronUp, Check, Music2 } from 'lucide-react';
-import { ListeningRuler } from '@/components/history/ListeningRuler';
+import { SnippetMeter } from '@/components/history/SnippetMeter';
 import { Button } from '@/components/ui/button';
 import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 import {
@@ -108,9 +108,7 @@ export function HistoryCard({
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span
-                  className={`text-[10px] font-black uppercase tracking-widest ${entry.mode === GameMode.Daily ? 'text-spotify-green' : 'text-fg/40'}`}
-                >
+                <span className="text-xs text-fg/40">
                   {formatDate(entry.date)}
                 </span>
                 {entry.mode === GameMode.Daily && (
@@ -128,7 +126,7 @@ export function HistoryCard({
               </p>
 
               <div className="flex items-center justify-between gap-3">
-                <ListeningRuler
+                <SnippetMeter
                   round={guessesUsed}
                   won={entry.status === GameHistoryEntryDtoStatusEnum.Won}
                 />

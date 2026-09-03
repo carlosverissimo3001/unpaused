@@ -95,12 +95,12 @@ export function SearchHeader({
 
   return (
     <div className="relative mb-6 lg:mb-8 select-none">
-      <div className="flex items-center justify-between mb-2 lg:mb-2 px-1">
-        <div className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-fg/20">
-          Showing <span className="text-fg/60 tabular-nums">{totalItems}</span>{' '}
-          Sessions
+      {isFiltered && (
+        <div className="mb-2 px-1 text-xs text-fg/40">
+          <span className="tabular-nums text-fg/70">{totalItems}</span>{' '}
+          {totalItems === 1 ? 'match' : 'matches'}
         </div>
-      </div>
+      )}
 
       <div className="group relative">
         <div
@@ -121,8 +121,8 @@ export function SearchHeader({
             onChange={(e) => handleSearchChange(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="FILTER BY TRACK, ARTIST..."
-            className="w-full bg-transparent py-3 sm:py-4 pr-3 text-xs sm:text-sm font-medium tracking-wide sm:tracking-wider uppercase text-fg placeholder:text-fg/10 outline-none"
+            placeholder="Filter by track or artist"
+            className="w-full bg-transparent py-3 sm:py-4 pr-3 text-sm text-fg placeholder:text-fg/30 outline-none"
           />
 
           <div className="flex items-center gap-2 mr-4">
@@ -186,7 +186,7 @@ export function SearchHeader({
               />
 
               <span
-                className={`text-[10px] sm:text-[11px] font-black uppercase tracking-wide sm:tracking-widest transition-colors ${isActive ? 'text-fg' : 'text-fg/30 group-hover:text-fg/50'}`}
+                className={`text-xs font-semibold transition-colors ${isActive ? 'text-fg' : 'text-fg/40 group-hover:text-fg/60'}`}
               >
                 {chip.label}
               </span>
@@ -208,7 +208,7 @@ export function SearchHeader({
         {isFiltered && (
           <button
             onClick={onClearFilters}
-            className="ml-auto group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-[9px] sm:text-[10px] font-black uppercase tracking-tight sm:tracking-tighter text-red-500/60 hover:text-red-500 transition-colors touch-manipulation"
+            className="ml-auto group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs font-semibold text-red-500/60 hover:text-red-500 transition-colors touch-manipulation"
           >
             <X className="w-4 h-4" />
             <span className="hidden xs:inline">Reset</span>
