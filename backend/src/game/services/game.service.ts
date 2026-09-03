@@ -51,7 +51,11 @@ import {
 } from '../utils/guess-evaluator';
 import { buildHintsForRound } from '../utils/hint-builder';
 import { buildShareText, guessToEmoji } from '../utils/share.utils';
-import { gameNumberFromDate, shuffleInPlace } from '../utils/utils';
+import {
+  formatUtcDay,
+  gameNumberFromDate,
+  shuffleInPlace,
+} from '../utils/utils';
 import { GameStatsService } from './game-stats.service';
 import { TrackGroupService } from '../../track-group/services/track-group.service';
 import { DailyTrackService } from '../../daily/services/daily-track.service';
@@ -598,14 +602,17 @@ export class GameService {
 
     const guesses = game.guesses;
     const guessPattern = guesses.map((g) => guessToEmoji(g.result)).join('');
+    const isWin = game.status === GameStatus.WON;
 
     const dateSource = game.completedAt ?? game.createdAt;
     const gameNum = gameNumberFromDate(dateSource);
-    const appUrl = process.env.APP_URL || 'https://unpaused.example.com';
+    // FRONTEND_URL, not an APP_URL of its own: CORS already refuses every
+    // request unless it is set, so it cannot be missing in a deployment that
+    // works, and a share link is worthless if it points somewhere else.
+    const appUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const shareText = buildShareText({
       gameNumber: gameNum,
-      isWin: game.status === GameStatus.WON,
-      score: game.score ?? 0,
+      isWin,
       guesses,
       appUrl,
     });
@@ -613,8 +620,8 @@ export class GameService {
     const track = await this.trackRepository.findById(game.trackId);
 
     return {
-      date: dateSource.toISOString().slice(0, 10),
-      score: game.score ?? 0,
+      date: formatUtcDay(dateSource),
+      attempts: isWin ? guesses.length : MAX_ROUNDS,
       guessPattern,
       trackName: track?.name ?? '',
       artistName: track?.artistName ?? '',

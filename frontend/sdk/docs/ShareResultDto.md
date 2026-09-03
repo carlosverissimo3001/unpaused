@@ -7,7 +7,7 @@
 Name | Type
 ------------ | -------------
 `date` | string
-`score` | number
+`attempts` | number
 `guessPattern` | string
 `trackName` | string
 `artistName` | string
@@ -22,7 +22,7 @@ import type { ShareResultDto } from ''
 // TODO: Update the object below with actual values
 const example = {
   "date": null,
-  "score": null,
+  "attempts": null,
   "guessPattern": null,
   "trackName": null,
   "artistName": null,

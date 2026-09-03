@@ -4,10 +4,10 @@ export class ShareResultDto {
   @ApiProperty({ description: 'Date (YYYY-MM-DD)' })
   date: string;
 
-  @ApiProperty({ description: 'Score 0-6' })
-  score: number;
+  @ApiProperty({ description: 'Guesses used, or MAX_ROUNDS on a loss' })
+  attempts: number;
 
-  @ApiProperty({ description: 'Guess pattern e.g. 🟥🟨🟩' })
+  @ApiProperty({ description: 'Guess pattern e.g. 🔇🟨🟩' })
   guessPattern: string;
 
   @ApiProperty({ description: 'Track name' })

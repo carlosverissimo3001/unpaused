@@ -3078,13 +3078,13 @@
             "type": "string",
             "description": "Date (YYYY-MM-DD)"
           },
-          "score": {
+          "attempts": {
             "type": "number",
-            "description": "Score 0-6"
+            "description": "Guesses used, or MAX_ROUNDS on a loss"
           },
           "guessPattern": {
             "type": "string",
-            "description": "Guess pattern e.g. 🟥🟨🟩"
+            "description": "Guess pattern e.g. 🔇🟨🟩"
           },
           "trackName": {
             "type": "string",
@@ -3105,7 +3105,7 @@
         },
         "required": [
           "date",
-          "score",
+          "attempts",
           "guessPattern",
           "trackName",
           "artistName",
