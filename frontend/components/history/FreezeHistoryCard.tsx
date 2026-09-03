@@ -17,12 +17,11 @@ export function FreezeHistoryCard({
 }: FreezeHistoryCardProps) {
   return (
     <motion.article
-      layout
       variants={cardVariants}
       initial="hidden"
       animate="visible"
       custom={staggerIndex}
-      className="group relative rounded-xl overflow-hidden border border-cyan-400/[0.12] backdrop-blur-sm"
+      className="group relative rounded-xl overflow-hidden border border-cyan-400/[0.12]"
     >
       <div className="absolute inset-0 bg-surface dark:bg-gradient-to-r dark:from-[#091520] dark:via-[#0b1a28] dark:to-[#060d14]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_20%_-10%,rgba(34,211,238,0.06),transparent)]" />

@@ -26,14 +26,6 @@ export function GuessDistribution({
   const total = distribution.reduce((sum, n) => sum + n, 0);
   const max = Math.max(1, ...distribution);
 
-  if (total === 0) {
-    return (
-      <p className="text-sm text-fg/40 leading-relaxed">
-        Finish a round and this fills in — a bar for each guess you won on.
-      </p>
-    );
-  }
-
   return (
     <div className="space-y-1.5">
       {LABELS.map((label, i) => {
@@ -68,7 +60,11 @@ export function GuessDistribution({
               />
             </div>
             <span className="w-6 text-right text-[11px] tabular-nums text-fg/40">
-              {value || <span className="text-fg/20">0</span>}
+              {total === 0 ? (
+                <span className="text-fg/20">—</span>
+              ) : (
+                value || <span className="text-fg/20">0</span>
+              )}
             </span>
           </div>
         );

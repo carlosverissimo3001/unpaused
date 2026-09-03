@@ -94,21 +94,19 @@ export function StatsPanel({
     ? runSummary.totalRuns === 0
     : !stats || stats.totalGames === 0;
 
-  const hero = isEmpty
-    ? null
-    : runSummary
-      ? runHero(runSummary)
-      : stats
-        ? gameHero(stats)
-        : null;
+  const hero = runSummary
+    ? runHero(runSummary)
+    : stats
+      ? gameHero(stats)
+      : null;
 
-  const supporting = isEmpty
-    ? []
-    : runSummary
-      ? runSupporting(runSummary)
-      : stats
-        ? gameSupporting(stats)
-        : [];
+  const supporting = runSummary
+    ? runSupporting(runSummary)
+    : stats
+      ? gameSupporting(stats)
+      : [];
+
+  const dash = (value: string | number) => (isEmpty ? '—' : value);
 
   return (
     <motion.div
@@ -118,25 +116,19 @@ export function StatsPanel({
       className="rounded-2xl bg-fg/[0.03] border border-fg/10 backdrop-blur-sm overflow-hidden"
     >
       <div className="p-5">
-        {isEmpty && (
-          <p className="text-sm text-fg/40 leading-relaxed">
-            {mode.emptyStats}
-          </p>
-        )}
-
         {hero && (
           <>
             <div className="flex items-baseline gap-2.5">
               <span
                 className={`text-5xl font-black tabular-nums leading-none ${mode.accent.text}`}
               >
-                {hero.value}
+                {dash(hero.value)}
               </span>
               <span className="text-[11px] font-black uppercase tracking-widest text-fg/40">
                 {hero.label}
               </span>
             </div>
-            <p className="mt-1.5 text-xs text-fg/35">{hero.caption}</p>
+            <p className="mt-1.5 text-xs text-fg/35">{dash(hero.caption)}</p>
           </>
         )}
 
@@ -148,14 +140,14 @@ export function StatsPanel({
                   {item.label}
                 </dt>
                 <dd className="mt-0.5 text-base font-semibold tabular-nums text-fg/80">
-                  {item.value}
+                  {dash(item.value)}
                 </dd>
               </div>
             ))}
           </dl>
         )}
 
-        {stats && !isEmpty && (
+        {stats && (
           <>
             <button
               type="button"

@@ -16,8 +16,6 @@ export interface ModeDescriptor {
     readonly pill: string;
     readonly bar: string;
   };
-  /** Shown in the stats panel before there is anything to count. */
-  readonly emptyStats: string;
   readonly empty: {
     readonly message: string;
     readonly href: string;
@@ -44,8 +42,6 @@ export const MODES: Record<HistoryTab, ModeDescriptor> = {
       pill: 'bg-fg/15 text-fg shadow-sm',
       bar: 'bg-fg/60',
     },
-    emptyStats:
-      'Play a round and your win run, totals and guess spread land here.',
     empty: {
       message: 'No games yet.',
       href: '/',
@@ -62,7 +58,6 @@ export const MODES: Record<HistoryTab, ModeDescriptor> = {
       pill: 'bg-spotify-green/30 text-spotify-green shadow-sm',
       bar: 'bg-spotify-green',
     },
-    emptyStats: 'Win a daily and your streak starts here.',
     empty: {
       message: 'No dailies yet.',
       href: '/daily',
@@ -81,7 +76,6 @@ export const MODES: Record<HistoryTab, ModeDescriptor> = {
       pill: 'bg-amber-500/20 text-amber-400 shadow-sm',
       bar: 'bg-amber-400',
     },
-    emptyStats: 'Finish a speed run and your best score lands here.',
     empty: {
       message: 'No speed runs yet.',
       href: '/speed-run',

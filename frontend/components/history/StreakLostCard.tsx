@@ -20,12 +20,11 @@ export function StreakLostCard({
 }: StreakLostCardProps) {
   return (
     <motion.article
-      layout
       variants={cardVariants}
       initial="hidden"
       animate="visible"
       custom={staggerIndex}
-      className="group relative rounded-xl overflow-hidden border border-fg/[0.06] backdrop-blur-sm"
+      className="group relative rounded-xl overflow-hidden border border-fg/[0.06]"
     >
       <div className="absolute inset-0 bg-surface dark:bg-gradient-to-r dark:from-[#1a1115] dark:via-[#161014] dark:to-[#110d10]" />
 

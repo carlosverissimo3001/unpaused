@@ -4,11 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, ChevronDown, ChevronUp, Check, Music2 } from 'lucide-react';
-import {
-  FULL_SNIPPET,
-  formatSeconds,
-  snippetSeconds,
-} from '@/lib/snippet-timeline';
+import { formatSeconds, snippetSeconds } from '@/lib/snippet-timeline';
 import { Button } from '@/components/ui/button';
 import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 import {
@@ -64,18 +60,17 @@ function Outcome({
 }) {
   if (status !== GameHistoryEntryDtoStatusEnum.Won) {
     return (
-      <span className="text-xs text-fg/35">
+      <span className="text-xs text-fg/40">
         {status === GameHistoryEntryDtoStatusEnum.Abandoned
           ? 'Abandoned'
-          : `Lost after ${formatSeconds(FULL_SNIPPET)}`}
+          : 'Lost'}
       </span>
     );
   }
 
   return (
-    <span className="text-xs text-fg/35">
-      Guess <span className="font-semibold text-fg/60">{round}</span>
-      <span className="px-1.5 text-fg/20">/</span>
+    <span className="text-xs text-fg/40">
+      Guessed in{' '}
       <span className="font-semibold text-spotify-green">
         {formatSeconds(snippetSeconds(round))}
       </span>
@@ -105,13 +100,14 @@ export function HistoryCard({
 
   return (
     <motion.article
-      layout
       variants={cardVariants}
       initial="hidden"
       animate="visible"
-      whileTap={{ scale: 0.97 }}
       custom={staggerIndex}
-      className={`group rounded-2xl bg-fg/[0.03] border overflow-hidden backdrop-blur-sm transition-all duration-300 cursor-pointer ${
+      onClick={() => actualGuesses.length > 0 && setExpanded(!expanded)}
+      className={`group rounded-2xl bg-fg/[0.03] border overflow-hidden transition-colors duration-200 ${
+        actualGuesses.length > 0 ? 'cursor-pointer' : ''
+      } ${
         showWinnerGlow
           ? 'border-spotify-green/40 shadow-[0_0_20px_rgba(29,185,84,0.12)]'
           : 'border-fg/10'
@@ -169,8 +165,11 @@ export function HistoryCard({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setExpanded(!expanded)}
-                      className="h-8 px-2 text-xs text-fg/40 hover:text-fg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpanded(!expanded);
+                      }}
+                      className="h-8 rounded-full px-3 text-xs text-fg/40 hover:text-fg"
                     >
                       {expanded ? (
                         <ChevronUp className="w-3 h-3 mr-1" />
@@ -183,8 +182,11 @@ export function HistoryCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-8 w-8 transition-colors ${copied ? 'text-spotify-green' : 'text-fg/40'}`}
-                    onClick={() => onShare(entry.id)}
+                    className={`h-8 w-8 rounded-full transition-colors ${copied ? 'text-spotify-green' : 'text-fg/40'}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShare(entry.id);
+                    }}
                   >
                     {copied ? (
                       <Check className="w-4 h-4" />

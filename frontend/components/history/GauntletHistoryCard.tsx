@@ -55,12 +55,11 @@ export function GauntletHistoryCard({
 
   return (
     <motion.article
-      layout
       variants={cardVariants}
       initial="hidden"
       animate="visible"
       custom={staggerIndex}
-      className={`group overflow-hidden rounded-[22px] border backdrop-blur-sm transition-all duration-300 ${
+      className={`group overflow-hidden rounded-[22px] border transition-colors duration-200 ${
         highlightBest
           ? 'border-amber-400/20 bg-[linear-gradient(135deg,rgba(245,158,11,0.08),rgba(255,255,255,0.02)_35%,rgba(34,197,94,0.05)_100%)] shadow-[0_0_32px_rgba(245,158,11,0.08)]'
           : 'border-fg/10 bg-fg/[0.03]'
