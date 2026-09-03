@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { visibleModes, type HistoryTab } from './modes';
 
 export type { HistoryTab };
@@ -22,15 +21,15 @@ export function HistoryFilter({
 
   return (
     <div className="flex items-center gap-4 mb-6 flex-wrap">
-      <Button variant="ghost" size="default" asChild>
-        <Link
-          href="/"
-          className="flex items-center gap-2 rounded-full text-fg/60 hover:text-fg transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back
-        </Link>
-      </Button>
+      {/* Not the Button component: its variant sets its own radius, and which
+          of the two rounded-* classes wins is down to stylesheet order. */}
+      <Link
+        href="/"
+        className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-fg/60 transition-colors hover:bg-fg/[0.07] hover:text-fg"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        Back
+      </Link>
       <h1 className="font-black italic uppercase text-xl text-fg tracking-tight">
         Vault
       </h1>
