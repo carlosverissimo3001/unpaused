@@ -606,7 +606,10 @@ export class GameService {
 
     const dateSource = game.completedAt ?? game.createdAt;
     const gameNum = gameNumberFromDate(dateSource);
-    const appUrl = process.env.APP_URL || 'https://unpaused.example.com';
+    // FRONTEND_URL, not an APP_URL of its own: CORS already refuses every
+    // request unless it is set, so it cannot be missing in a deployment that
+    // works, and a share link is worthless if it points somewhere else.
+    const appUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const shareText = buildShareText({
       gameNumber: gameNum,
       isWin,
