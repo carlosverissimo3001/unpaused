@@ -184,14 +184,14 @@ export function GauntletHistoryCard({
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-4 pt-4 border-t border-fg/5 space-y-1.5">
+                <div className="mt-4 max-h-[340px] overflow-y-auto border-t border-fg/5 pt-4 pr-1 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                   {entry.tracks.map((track, index) => {
                     const isEndingTrack = index === endingTrackIndex;
 
                     return (
                       <div
                         key={`${entry.id}-${track.id}-${index}`}
-                        className={`flex items-center justify-between gap-3 py-2 px-3 rounded-xl bg-fg/[0.02] border-l-2 ${
+                        className={`flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-lg bg-fg/[0.02] border-l-2 ${
                           isEndingTrack
                             ? 'border-l-red-500'
                             : 'border-l-green-500'
@@ -201,13 +201,13 @@ export function GauntletHistoryCard({
                           <span className="text-[10px] font-black tabular-nums text-fg/30 w-4 shrink-0 text-center">
                             {index + 1}
                           </span>
-                          <div className="w-7 h-7 rounded-md overflow-hidden bg-fg/[0.06] shrink-0">
+                          <div className="w-6 h-6 rounded overflow-hidden bg-fg/[0.06] shrink-0">
                             {track.albumImageUrl ? (
                               <Image
                                 src={track.albumImageUrl}
                                 alt=""
-                                width={28}
-                                height={28}
+                                width={24}
+                                height={24}
                                 className="object-cover w-full h-full"
                               />
                             ) : (
@@ -217,17 +217,17 @@ export function GauntletHistoryCard({
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs text-fg/90 truncate font-medium">
+                            <p className="text-[11px] text-fg/85 truncate font-medium leading-tight">
                               {track.name}
                             </p>
-                            <p className="text-[10px] text-fg/40 truncate">
-                              by {track.artistName}
+                            <p className="text-[10px] text-fg/40 truncate leading-tight">
+                              {track.artistName}
                             </p>
                           </div>
                         </div>
                         {isEndingTrack && (
-                          <span className="text-[9px] font-black uppercase tracking-tighter text-red-400/60 whitespace-nowrap">
-                            Lost here
+                          <span className="text-[9px] font-bold text-red-400/70 whitespace-nowrap">
+                            Lost
                           </span>
                         )}
                       </div>
