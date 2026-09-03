@@ -34,7 +34,7 @@ export async function shareResult(text: string): Promise<ShareOutcome> {
     } catch (err) {
       // A cancelled sheet is a decision, not a failure — don't fall through
       // and put it on their clipboard behind their back.
-      if (err instanceof DOMException && err.name === 'AbortError') {
+      if ((err as { name?: string } | null)?.name === 'AbortError') {
         return 'dismissed';
       }
     }
