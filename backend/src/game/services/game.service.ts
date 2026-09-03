@@ -437,15 +437,11 @@ export class GameService {
       const lastGameRound =
         result === GuessResult.Correct ? game.currentRound : nextRound;
 
-      await this.gameStatsService.updateGameStats({
+      await this.gameStatsService.recordFinishedGame({
         userId: game.userId,
         lastGameRound,
         mode: game.mode,
       });
-
-      if (game.mode === GameMode.DAILY) {
-        await this.streakService.updateDailyStreak(game.userId, lastGameRound);
-      }
     }
 
     await this.gameSessionRepository.updateSessionProgress(gameSessionId, {

@@ -183,9 +183,9 @@ function DailyStatsContent() {
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="flex items-center gap-1.5 font-semibold text-3xl text-fg">
-                {stats.currentStreak > 0 && <span aria-hidden>🔥</span>}
+                {stats.current > 0 && <span aria-hidden>🔥</span>}
                 <AnimatedCounter
-                  value={stats.currentStreak}
+                  value={stats.current}
                   duration={1.4}
                   className="tabular-nums"
                 />
@@ -193,10 +193,8 @@ function DailyStatsContent() {
                   day streak
                 </span>
               </span>
-              {stats.bestStreak != null && stats.bestStreak > 0 && (
-                <span className="text-fg/50 text-sm">
-                  Best: {stats.bestStreak}
-                </span>
+              {stats.best != null && stats.best > 0 && (
+                <span className="text-fg/50 text-sm">Best: {stats.best}</span>
               )}
             </div>
           </div>
@@ -217,7 +215,7 @@ function DailyStatsContent() {
             <div className="min-w-0">
               <p className="text-fg/50 text-xs">Best streak</p>
               <p className="text-xl font-bold tabular-nums text-fg">
-                {stats.bestStreak}
+                {stats.best}
               </p>
             </div>
           </motion.div>

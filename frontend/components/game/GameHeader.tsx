@@ -66,8 +66,8 @@ export function GameHeader({
         <div className="flex items-center gap-4">
           {stats && (
             <StreakBadge
-              currentStreak={stats.currentStreak}
-              bestStreak={stats.bestStreak}
+              currentStreak={stats.current}
+              bestStreak={stats.best}
             />
           )}
           <Link
