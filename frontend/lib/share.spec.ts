@@ -2,9 +2,14 @@ import { shareResult } from './share';
 
 const TEXT = 'unpaused #142 · 3/6\n🔇🔇🟩\nunpause.vercel.app/daily';
 
-const stub = (share: unknown, writeText: unknown) => {
+const stub = (share: unknown, writeText: unknown, coarsePointer = true) => {
   Object.defineProperty(globalThis, 'navigator', {
     value: { share, clipboard: { writeText } },
+    configurable: true,
+    writable: true,
+  });
+  Object.defineProperty(globalThis, 'window', {
+    value: { matchMedia: () => ({ matches: coarsePointer }) },
     configurable: true,
     writable: true,
   });
@@ -28,6 +33,16 @@ describe('shareResult', () => {
     await shareResult(TEXT);
 
     expect(share.mock.calls[0][0]).not.toHaveProperty('url');
+  });
+
+  it('copies on a mouse device, even where the sheet exists', async () => {
+    const share = jest.fn();
+    const writeText = jest.fn().mockResolvedValue(undefined);
+    stub(share, writeText, false);
+
+    await expect(shareResult(TEXT)).resolves.toBe('copied');
+    expect(share).not.toHaveBeenCalled();
+    expect(writeText).toHaveBeenCalledWith(TEXT);
   });
 
   it('copies where there is no share sheet', async () => {

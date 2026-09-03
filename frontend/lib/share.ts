@@ -1,7 +1,21 @@
 export type ShareOutcome = 'shared' | 'copied' | 'dismissed' | 'failed';
 
 /**
- * Hands the result to the native share sheet where there is one, and to the
+ * Desktop Chrome implements `navigator.share` and answers it with an OS sheet
+ * offering Teams and Outlook — more steps than a copy, to reach a worse set of
+ * targets. The sheet only earns its place on a touch device, where the
+ * alternative is copy, leave, find the app, paste.
+ */
+function prefersShareSheet(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(pointer: coarse)').matches
+  );
+}
+
+/**
+ * Hands the result to the native share sheet on a touch device, and to the
  * clipboard everywhere else.
  *
  * Everything goes in `text` and nothing in `url`: several targets keep the url
@@ -9,7 +23,11 @@ export type ShareOutcome = 'shared' | 'copied' | 'dismissed' | 'failed';
  * the part worth sending.
  */
 export async function shareResult(text: string): Promise<ShareOutcome> {
-  if (typeof navigator !== 'undefined' && navigator.share) {
+  if (
+    typeof navigator !== 'undefined' &&
+    navigator.share &&
+    prefersShareSheet()
+  ) {
     try {
       await navigator.share({ text });
       return 'shared';
