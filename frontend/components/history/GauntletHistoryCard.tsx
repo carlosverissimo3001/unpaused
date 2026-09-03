@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, Music2, TimerReset, Zap } from 'lucide-react';
 import type { GauntletHistoryEntryDto } from '@/sdk/models/GauntletHistoryEntryDto';
 import { GauntletHistoryEntryDtoDifficultyEnum as Difficulty } from '@/sdk/models/GauntletHistoryEntryDto';
 import { formatDate } from '@/utils/date-utils';
+import { cardVariants } from './card-motion';
 
 const DIFFICULTY_BADGE: Record<string, { label: string; classes: string }> = {
   [Difficulty.Easy]: {
@@ -28,15 +29,6 @@ const DIFFICULTY_BADGE: Record<string, { label: string; classes: string }> = {
 };
 
 const MAX_TRACK_AVATARS = 5;
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: 'easeOut' as const },
-  }),
-};
 
 interface GauntletHistoryCardProps {
   entry: GauntletHistoryEntryDto;
@@ -63,12 +55,11 @@ export function GauntletHistoryCard({
 
   return (
     <motion.article
-      layout
       variants={cardVariants}
       initial="hidden"
       animate="visible"
       custom={staggerIndex}
-      className={`group overflow-hidden rounded-[22px] border backdrop-blur-sm transition-all duration-300 ${
+      className={`group overflow-hidden rounded-[22px] border transition-colors duration-200 ${
         highlightBest
           ? 'border-amber-400/20 bg-[linear-gradient(135deg,rgba(245,158,11,0.08),rgba(255,255,255,0.02)_35%,rgba(34,197,94,0.05)_100%)] shadow-[0_0_32px_rgba(245,158,11,0.08)]'
           : 'border-fg/10 bg-fg/[0.03]'
@@ -193,14 +184,14 @@ export function GauntletHistoryCard({
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-4 pt-4 border-t border-fg/5 space-y-1.5">
+                <div className="mt-4 max-h-[340px] overflow-y-auto border-t border-fg/5 pt-4 pr-1 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                   {entry.tracks.map((track, index) => {
                     const isEndingTrack = index === endingTrackIndex;
 
                     return (
                       <div
                         key={`${entry.id}-${track.id}-${index}`}
-                        className={`flex items-center justify-between gap-3 py-2 px-3 rounded-xl bg-fg/[0.02] border-l-2 ${
+                        className={`flex items-center justify-between gap-2 py-1.5 px-2.5 rounded-lg bg-fg/[0.02] border-l-2 ${
                           isEndingTrack
                             ? 'border-l-red-500'
                             : 'border-l-green-500'
@@ -210,13 +201,13 @@ export function GauntletHistoryCard({
                           <span className="text-[10px] font-black tabular-nums text-fg/30 w-4 shrink-0 text-center">
                             {index + 1}
                           </span>
-                          <div className="w-7 h-7 rounded-md overflow-hidden bg-fg/[0.06] shrink-0">
+                          <div className="w-6 h-6 rounded overflow-hidden bg-fg/[0.06] shrink-0">
                             {track.albumImageUrl ? (
                               <Image
                                 src={track.albumImageUrl}
                                 alt=""
-                                width={28}
-                                height={28}
+                                width={24}
+                                height={24}
                                 className="object-cover w-full h-full"
                               />
                             ) : (
@@ -226,17 +217,17 @@ export function GauntletHistoryCard({
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs text-fg/90 truncate font-medium">
+                            <p className="text-[11px] text-fg/85 truncate font-medium leading-tight">
                               {track.name}
                             </p>
-                            <p className="text-[10px] text-fg/40 truncate">
-                              by {track.artistName}
+                            <p className="text-[10px] text-fg/40 truncate leading-tight">
+                              {track.artistName}
                             </p>
                           </div>
                         </div>
                         {isEndingTrack && (
-                          <span className="text-[9px] font-black uppercase tracking-tighter text-red-400/60 whitespace-nowrap">
-                            Lost here
+                          <span className="text-[9px] font-bold text-red-400/70 whitespace-nowrap">
+                            Lost
                           </span>
                         )}
                       </div>

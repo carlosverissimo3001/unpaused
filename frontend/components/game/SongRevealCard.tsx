@@ -172,7 +172,7 @@ export function SongRevealCard({
             <ShareButton gameId={shareGameId} variant="default" />
           )}
           {showViewStats && (
-            <Link href="/daily/stats">
+            <Link href="/history?filter=daily">
               <motion.span
                 className="inline-block px-4 py-2 rounded-full bg-fg/10 hover:bg-fg/20 text-sm font-medium text-fg border border-fg/10 transition-colors"
                 whileHover={{ scale: 1.02 }}

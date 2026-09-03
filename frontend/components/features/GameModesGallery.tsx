@@ -88,7 +88,7 @@ function DailyCardContent() {
 
       <div className="w-full">
         <Link
-          href={showAsPlayed ? '/daily/stats' : '/daily'}
+          href={showAsPlayed ? '/history?filter=daily' : '/daily'}
           className={cn(
             'flex items-center justify-center gap-2 h-10 sm:h-12 px-6 rounded-2xl text-xs sm:text-sm font-black transition-all hover:brightness-110 active:scale-90 w-fit',
             showAsPlayed

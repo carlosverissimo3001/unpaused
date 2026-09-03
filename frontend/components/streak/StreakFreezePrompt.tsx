@@ -258,7 +258,7 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
 
               {status.freezesAvailable < 5 && (
                 <Link
-                  href="/daily/stats?earnFreezes=1"
+                  href="/history?filter=daily&earnFreezes=1"
                   onClick={onResolved}
                   className="block text-center text-[12px] text-cyan-400/50 hover:text-cyan-400/80 transition-colors pt-1"
                 >
@@ -361,7 +361,7 @@ export function StreakFreezePrompt({ onResolved }: StreakFreezePromptProps) {
 
             {status.isTrusted && (
               <Link
-                href="/daily/stats?earnFreezes=1"
+                href="/history?filter=daily&earnFreezes=1"
                 onClick={onResolved}
                 className="block text-center text-[12px] text-cyan-400/50 hover:text-cyan-400/80 transition-colors"
               >

@@ -71,7 +71,7 @@ export function GameHeader({
             />
           )}
           <Link
-            href="/daily/stats"
+            href="/history?filter=daily"
             className="flex items-center gap-2 text-fg/60 hover:text-fg text-sm"
           >
             <BarChart3 className="w-4 h-4" />

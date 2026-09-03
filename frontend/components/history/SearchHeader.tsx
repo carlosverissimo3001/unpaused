@@ -11,22 +11,19 @@ const STATUS_CHIPS = [
     value: GameStatusFilter.Won,
     label: 'Victory',
     icon: Trophy,
-    activeColor: 'text-[#1DB954]',
-    activeBg: 'bg-[#1DB954]',
+    activeClass: 'bg-spotify-green/15 text-spotify-green ring-spotify-green/30',
   },
   {
     value: GameStatusFilter.Lost,
     label: 'Defeat',
     icon: Frown,
-    activeColor: 'text-red-500',
-    activeBg: 'bg-red-500',
+    activeClass: 'bg-red-500/15 text-red-400 ring-red-500/30',
   },
   {
     value: GameStatusFilter.Abandoned,
     label: 'Forfeit',
     icon: Ban,
-    activeColor: 'text-zinc-400',
-    activeBg: 'bg-zinc-400',
+    activeClass: 'bg-fg/10 text-fg/80 ring-fg/20',
   },
 ] as const;
 
@@ -95,12 +92,12 @@ export function SearchHeader({
 
   return (
     <div className="relative mb-6 lg:mb-8 select-none">
-      <div className="flex items-center justify-between mb-2 lg:mb-2 px-1">
-        <div className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-fg/20">
-          Showing <span className="text-fg/60 tabular-nums">{totalItems}</span>{' '}
-          Sessions
+      {isFiltered && (
+        <div className="mb-2 px-1 text-xs text-fg/40">
+          <span className="tabular-nums text-fg/70">{totalItems}</span>{' '}
+          {totalItems === 1 ? 'match' : 'matches'}
         </div>
-      </div>
+      )}
 
       <div className="group relative">
         <div
@@ -121,8 +118,8 @@ export function SearchHeader({
             onChange={(e) => handleSearchChange(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="FILTER BY TRACK, ARTIST..."
-            className="w-full bg-transparent py-3 sm:py-4 pr-3 text-xs sm:text-sm font-medium tracking-wide sm:tracking-wider uppercase text-fg placeholder:text-fg/10 outline-none"
+            placeholder="Filter by track or artist"
+            className="w-full bg-transparent py-3 sm:py-4 pr-3 text-sm text-fg placeholder:text-fg/30 outline-none"
           />
 
           <div className="flex items-center gap-2 mr-4">
@@ -174,33 +171,15 @@ export function SearchHeader({
             <button
               key={chip.value}
               onClick={handleClick}
-              className="group relative flex items-center gap-2 sm:gap-3 pl-2.5 sm:pl-3 pr-3 sm:pr-4 py-2 bg-fg/[0.02] border border-fg/5 rounded-lg transition-all active:scale-95 hover:border-fg/10 touch-manipulation"
+              aria-pressed={isActive}
+              className={`group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 transition-colors touch-manipulation ${
+                isActive
+                  ? chip.activeClass
+                  : 'bg-fg/[0.03] text-fg/50 ring-fg/10 hover:bg-fg/[0.06] hover:text-fg/80 hover:ring-fg/20'
+              }`}
             >
-              {/* Active Indicator Strip */}
-              <div
-                className={`absolute left-0 top-1/4 bottom-1/4 w-[2px] rounded-full transition-all duration-300 ${isActive ? chip.activeBg : 'bg-transparent opacity-0'}`}
-              />
-
-              <Icon
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${isActive ? chip.activeColor : 'text-fg/20 group-hover:text-fg/40'}`}
-              />
-
-              <span
-                className={`text-[10px] sm:text-[11px] font-black uppercase tracking-wide sm:tracking-widest transition-colors ${isActive ? 'text-fg' : 'text-fg/30 group-hover:text-fg/50'}`}
-              >
-                {chip.label}
-              </span>
-
-              <AnimatePresence>
-                {isActive && (
-                  <motion.div
-                    className="absolute inset-0 border border-fg/20 rounded-lg pointer-events-none"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  />
-                )}
-              </AnimatePresence>
+              <Icon className="h-3.5 w-3.5" />
+              {chip.label}
             </button>
           );
         })}
@@ -208,7 +187,7 @@ export function SearchHeader({
         {isFiltered && (
           <button
             onClick={onClearFilters}
-            className="ml-auto group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-[9px] sm:text-[10px] font-black uppercase tracking-tight sm:tracking-tighter text-red-500/60 hover:text-red-500 transition-colors touch-manipulation"
+            className="ml-auto group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs font-semibold text-red-500/60 hover:text-red-500 transition-colors touch-manipulation"
           >
             <X className="w-4 h-4" />
             <span className="hidden xs:inline">Reset</span>
