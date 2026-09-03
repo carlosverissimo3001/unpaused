@@ -57,10 +57,10 @@ export function DifficultyFilter({
               type="button"
               onClick={() => onChange(option.value)}
               aria-pressed={active}
-              className={`px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider transition-all ${
+              className={`px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider transition-all ring-1 ${
                 active
-                  ? `ring-1 ${option.active}`
-                  : 'text-fg/40 hover:text-fg/70 hover:bg-fg/[0.05]'
+                  ? option.active
+                  : 'bg-fg/[0.03] text-fg/50 ring-fg/10 hover:bg-fg/[0.06] hover:text-fg/80 hover:ring-fg/20'
               }`}
             >
               {option.label}
