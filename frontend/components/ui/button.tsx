@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'default' | 'ghost' | 'outline' | 'spotify';
 type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
@@ -39,12 +40,23 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses =
       'inline-flex items-center justify-center rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-spotify-green disabled:pointer-events-none disabled:opacity-50 active:scale-95';
 
-    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+    // cn, not concatenation: a caller passing rounded-full has to beat the
+    // base rounded-lg, and with both in the list the stylesheet order decides.
+    const classes = cn(
+      baseClasses,
+      variantClasses[variant],
+      sizeClasses[size],
+      className,
+    );
 
     if (asChild && React.isValidElement(children)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, react-hooks/refs -- cloneElement requires any for arbitrary child props; ref forwarding is intentional
       return React.cloneElement(children as React.ReactElement<any>, {
-        className: `${classes} ${(children as React.ReactElement<{ className?: string }>).props.className || ''}`,
+        className: cn(
+          classes,
+          (children as React.ReactElement<{ className?: string }>).props
+            .className,
+        ),
         ref,
       });
     }
