@@ -35,6 +35,57 @@ interface SessionRow {
   completed_at: Date;
 }
 
+interface StoredStats {
+  current_streak: number;
+  best_streak: number;
+  total_games: number;
+  total_wins: number;
+}
+
+async function findFreezes(pool: Pool, userId: string): Promise<Freeze[]> {
+  const { rows } = await pool.query<{ covered_from: Date; covered_to: Date }>(
+    `SELECT covered_from, covered_to FROM streak_freeze_usages WHERE user_id = $1`,
+    [userId],
+  );
+  return rows.map((row) => ({
+    coveredFrom: row.covered_from,
+    coveredTo: row.covered_to,
+  }));
+}
+
+async function findStoredStats(
+  pool: Pool,
+  userId: string,
+): Promise<Map<string, StoredStats>> {
+  const { rows } = await pool.query<StoredStats & { mode: string }>(
+    `SELECT mode, current_streak, best_streak, total_games, total_wins
+       FROM stats WHERE user_id = $1`,
+    [userId],
+  );
+  return new Map(rows.map((row) => [row.mode, row]));
+}
+
+/**
+ * A dry run has to show the change, not the destination — the point of
+ * reading one is to see what a write would take away.
+ */
+function describeChange(stored: StoredStats | undefined, tally: Tally): string {
+  const fields: [string, number | undefined, number][] = [
+    ['games', stored?.total_games, tally.totalGames],
+    ['wins', stored?.total_wins, tally.totalWins],
+    ['current', stored?.current_streak, tally.current],
+    ['best', stored?.best_streak, tally.best],
+  ];
+
+  return fields
+    .map(([name, before, after]) => {
+      if (before === undefined) return `  ${name}: (new) ${after}`;
+      if (before === after) return `  ${name}: ${after}`;
+      return `  ${name}: ${before} -> ${after}  ${after < before ? '(down)' : '(up)'}`;
+    })
+    .join('\n');
+}
+
 async function main(): Promise<void> {
   const dryRun = process.argv.includes('--dry');
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -72,25 +123,21 @@ async function main(): Promise<void> {
         };
       });
 
-      const { rows: freezeRows } = await pool.query<{
-        covered_from: Date;
-        covered_to: Date;
-      }>(
-        `SELECT covered_from, covered_to FROM streak_freeze_usages WHERE user_id = $1`,
-        [user.id],
-      );
-      const freezes: Freeze[] = freezeRows.map((row) => ({
-        coveredFrom: row.covered_from,
-        coveredTo: row.covered_to,
-      }));
-
       const inMode = (mode: 'ALL' | 'DAILY'): FinishedGame[] =>
         games.filter((game) => game.mode === mode);
 
+      const dailies = inMode('DAILY');
+      // Freezes can only move a daily streak, so a player without dailies
+      // never needs the query.
+      const freezes: Freeze[] =
+        dailies.length > 0 ? await findFreezes(pool, user.id) : [];
+
       const byMode: Record<string, Tally> = {
         ALL: tallyFreePlay(inMode('ALL')),
-        DAILY: tallyDaily(inMode('DAILY'), freezes, user.timezone),
+        DAILY: tallyDaily(dailies, freezes, user.timezone),
       };
+
+      const stored = await findStoredStats(pool, user.id);
 
       // A daily's best is a record someone actually set, under whichever
       // timezone their account had at the time — which was never stored, so a
@@ -99,12 +146,9 @@ async function main(): Promise<void> {
       //
       // ALL's best gets no such benefit: it counted dailies, so whatever it
       // says was never a run of free-play wins at all.
-      const { rows: stored } = await pool.query<{ best_streak: number }>(
-        `SELECT best_streak FROM stats WHERE user_id = $1 AND mode = 'DAILY'`,
-        [user.id],
-      );
-      if (stored.length > 0) {
-        byMode.DAILY.best = Math.max(byMode.DAILY.best, stored[0].best_streak);
+      const storedDailyBest = stored.get('DAILY')?.best_streak;
+      if (storedDailyBest !== undefined) {
+        byMode.DAILY.best = Math.max(byMode.DAILY.best, storedDailyBest);
       }
 
       for (const [mode, tally] of Object.entries(byMode)) {
@@ -112,8 +156,7 @@ async function main(): Promise<void> {
         rewritten += 1;
 
         console.log(
-          `${user.id} ${mode}: ${tally.totalGames} games, ${tally.totalWins} wins, ` +
-            `current ${tally.current}, best ${tally.best}`,
+          `${user.id} ${mode}\n${describeChange(stored.get(mode), tally)}`,
         );
 
         if (dryRun) continue;

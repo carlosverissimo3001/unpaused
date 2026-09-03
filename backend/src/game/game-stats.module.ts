@@ -11,6 +11,8 @@ import { GameStatsService } from './services/game-stats.service';
 @Module({
   imports: [UserPreferencesModule],
   providers: [GameStatsService, GameStatsRepository],
-  exports: [GameStatsService, GameStatsRepository],
+  // The service only: exporting the repository would leave the door open to
+  // the reach-through this module exists to close.
+  exports: [GameStatsService],
 })
 export class GameStatsModule {}
