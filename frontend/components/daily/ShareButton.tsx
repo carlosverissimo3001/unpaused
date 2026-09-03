@@ -5,6 +5,7 @@ import { Share2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useGameShare } from '@/hooks/game/useGameShare';
+import { shareResult } from '@/lib/share';
 
 interface ShareButtonProps {
   gameId: string;
@@ -21,13 +22,13 @@ export function ShareButton({
   const { data, isLoading } = useGameShare(gameId);
 
   const handleShare = async () => {
-    try {
-      if (data?.shareText) {
-        await navigator.clipboard.writeText(data.shareText);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch {
+    if (!data?.shareText) return;
+
+    const outcome = await shareResult(data.shareText);
+    if (outcome === 'copied') {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else if (outcome === 'failed') {
       toast.error('Failed to copy share text');
     }
   };
@@ -39,7 +40,7 @@ export function ShareButton({
       onClick={handleShare}
       disabled={isLoading || !data}
       className={className}
-      aria-label={copied ? 'Copied!' : 'Copy share text'}
+      aria-label={copied ? 'Copied!' : 'Share result'}
     >
       {copied ? (
         <>

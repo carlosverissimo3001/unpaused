@@ -1,11 +1,22 @@
-import { startOfDay } from 'date-fns';
+import { differenceInCalendarDays, format } from 'date-fns';
+import { TZDate } from '@date-fns/tz';
 
+const EPOCH = new Date('2025-01-01T00:00:00Z');
+
+/**
+ * The number has to name the same song for everyone who shares it, and the
+ * daily is drawn per UTC day, so this counts UTC days too — never the server's.
+ */
 export function gameNumberFromDate(date: Date): number {
-  const epoch = new Date('2025-01-01');
-  return Math.floor(
-    (startOfDay(date).getTime() - startOfDay(epoch).getTime()) /
-      (24 * 60 * 60 * 1000),
+  return differenceInCalendarDays(
+    new TZDate(date, 'UTC'),
+    new TZDate(EPOCH, 'UTC'),
   );
+}
+
+/** The UTC day, for the same reason the number is one. */
+export function formatUtcDay(date: Date): string {
+  return format(new TZDate(date, 'UTC'), 'yyyy-MM-dd');
 }
 
 /**

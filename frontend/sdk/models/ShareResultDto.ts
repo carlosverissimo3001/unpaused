@@ -26,13 +26,13 @@ export interface ShareResultDto {
      */
     date: string;
     /**
-     * Score 0-6
+     * Guesses used, or MAX_ROUNDS on a loss
      * @type {number}
      * @memberof ShareResultDto
      */
-    score: number;
+    attempts: number;
     /**
-     * Guess pattern e.g. 🟥🟨🟩
+     * Guess pattern e.g. 🔇🟨🟩
      * @type {string}
      * @memberof ShareResultDto
      */
@@ -68,7 +68,7 @@ export interface ShareResultDto {
  */
 export function instanceOfShareResultDto(value: object): value is ShareResultDto {
     if (!('date' in value) || value['date'] === undefined) return false;
-    if (!('score' in value) || value['score'] === undefined) return false;
+    if (!('attempts' in value) || value['attempts'] === undefined) return false;
     if (!('guessPattern' in value) || value['guessPattern'] === undefined) return false;
     if (!('trackName' in value) || value['trackName'] === undefined) return false;
     if (!('artistName' in value) || value['artistName'] === undefined) return false;
@@ -88,7 +88,7 @@ export function ShareResultDtoFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'date': json['date'],
-        'score': json['score'],
+        'attempts': json['attempts'],
         'guessPattern': json['guessPattern'],
         'trackName': json['trackName'],
         'artistName': json['artistName'],
@@ -109,7 +109,7 @@ export function ShareResultDtoToJSONTyped(value?: ShareResultDto | null, ignoreD
     return {
         
         'date': value['date'],
-        'score': value['score'],
+        'attempts': value['attempts'],
         'guessPattern': value['guessPattern'],
         'trackName': value['trackName'],
         'artistName': value['artistName'],
