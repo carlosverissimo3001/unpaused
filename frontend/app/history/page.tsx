@@ -308,11 +308,12 @@ function HistoryPageContent() {
                         entry={entry.data}
                         onShare={handleShare}
                         copied={copiedId === entry.data.id}
+                        // Six points is a win on the first guess. Anything
+                        // looser lit most of the list and singled out nothing.
                         showWinnerGlow={
                           entry.data.status ===
                             GameHistoryEntryDtoStatusEnum.Won &&
-                          entry.data.score != null &&
-                          (entry.data.score === 6 || entry.data.score === 5)
+                          entry.data.score === 6
                         }
                         staggerIndex={index}
                       />

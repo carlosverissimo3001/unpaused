@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { GameStatsDtoUnitEnum } from '@/sdk';
 import type { GameStatsDto } from '@/sdk';
 import type { GauntletHistorySummaryDto } from '@/sdk/models/GauntletHistorySummaryDto';
@@ -85,6 +87,7 @@ export function StatsPanel({
   runSummary,
   children,
 }: StatsPanelProps) {
+  const [chartOpen, setChartOpen] = useState(false);
   // Nothing played yet: a 5xl zero over three more zeroes reads as broken
   // rather than empty, so the panel says what would fill it instead.
   const isEmpty = runSummary
@@ -138,7 +141,7 @@ export function StatsPanel({
         )}
 
         {supporting.length > 0 && (
-          <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-fg/[0.07] pt-4">
+          <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-fg/[0.07] pt-4 lg:mt-5">
             {supporting.map((item) => (
               <div key={item.label}>
                 <dt className="text-[10px] font-bold uppercase tracking-widest text-fg/30">
@@ -153,15 +156,25 @@ export function StatsPanel({
         )}
 
         {stats && !isEmpty && (
-          <div className="mt-5 border-t border-fg/[0.07] pt-4">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-fg/30">
+          <>
+            <button
+              type="button"
+              onClick={() => setChartOpen(!chartOpen)}
+              aria-expanded={chartOpen}
+              className="mt-4 flex w-full items-center justify-between border-t border-fg/[0.07] pt-4 text-[10px] font-bold uppercase tracking-widest text-fg/30 transition-colors hover:text-fg/50 lg:pointer-events-none lg:mt-5"
+            >
               Won on guess
-            </p>
-            <GuessDistribution
-              distribution={stats.roundDistribution}
-              barClass={mode.accent.bar}
-            />
-          </div>
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform lg:hidden ${chartOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+            <div className={`mt-3 ${chartOpen ? '' : 'hidden lg:block'}`}>
+              <GuessDistribution
+                distribution={stats.roundDistribution}
+                barClass={mode.accent.bar}
+              />
+            </div>
+          </>
         )}
       </div>
 
