@@ -4,7 +4,11 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, ChevronDown, ChevronUp, Check, Music2 } from 'lucide-react';
-import { SnippetMeter } from '@/components/history/SnippetMeter';
+import {
+  FULL_SNIPPET,
+  formatSeconds,
+  snippetSeconds,
+} from '@/lib/snippet-timeline';
 import { Button } from '@/components/ui/button';
 import { GuessHistoryDtoResultEnum } from '@/sdk/models/GuessHistoryDto';
 import {
@@ -45,6 +49,38 @@ interface HistoryCardProps {
   copied: boolean;
   showWinnerGlow?: boolean;
   staggerIndex?: number;
+}
+
+/**
+ * Which guess it took, and how much of the song that gave you. The seconds are
+ * the part worth knowing: a win on guess two is a track named off one second.
+ */
+function Outcome({
+  round,
+  status,
+}: {
+  round: number;
+  status: GameHistoryEntryDto['status'];
+}) {
+  if (status !== GameHistoryEntryDtoStatusEnum.Won) {
+    return (
+      <span className="text-xs text-fg/35">
+        {status === GameHistoryEntryDtoStatusEnum.Abandoned
+          ? 'Abandoned'
+          : `Lost after ${formatSeconds(FULL_SNIPPET)}`}
+      </span>
+    );
+  }
+
+  return (
+    <span className="text-xs text-fg/35">
+      Guess <span className="font-semibold text-fg/60">{round}</span>
+      <span className="px-1.5 text-fg/20">/</span>
+      <span className="font-semibold text-spotify-green">
+        {formatSeconds(snippetSeconds(round))}
+      </span>
+    </span>
+  );
 }
 
 export function HistoryCard({
@@ -126,10 +162,7 @@ export function HistoryCard({
               </p>
 
               <div className="flex items-center justify-between gap-3">
-                <SnippetMeter
-                  round={guessesUsed}
-                  won={entry.status === GameHistoryEntryDtoStatusEnum.Won}
-                />
+                <Outcome round={guessesUsed} status={entry.status} />
 
                 <div className="flex shrink-0 items-center gap-1">
                   {actualGuesses.length > 0 && (
