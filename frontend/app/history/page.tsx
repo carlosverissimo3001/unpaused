@@ -1,6 +1,5 @@
 'use client';
 
-import { EmptyHistory } from '@/components/history/EmptyHistory';
 import { FloatingPaginationPill } from '@/components/history/FloatingPaginationPill';
 import { FreezeHistoryCard } from '@/components/history/FreezeHistoryCard';
 import { GauntletHistoryCard } from '@/components/history/GauntletHistoryCard';
@@ -54,7 +53,7 @@ function HistoryPageContent() {
     GauntletDifficultyFilter | undefined
   >(undefined);
 
-  const isFiltered = !!search || statusFilter.length > 0;
+  const isFiltered = !!search || statusFilter.length > 0 || !!difficulty;
 
   const { data: stats } = useGameStats({
     mode: mode.statsMode ?? GameStatsDtoModeEnum.All,
@@ -119,6 +118,7 @@ function HistoryPageContent() {
   const handleClearFilters = useCallback(() => {
     setSearch('');
     setStatusFilter([]);
+    setDifficulty(undefined);
     setPage(1);
   }, []);
 
@@ -242,7 +242,18 @@ function HistoryPageContent() {
 
           {hasNoResults && !history.isPlaceholderData ? (
             isFiltered ? (
-              <EmptyHistory dailyOnly={mode.tab === 'daily'} />
+              <div className="text-center py-16">
+                <p className="text-fg/40 text-sm">
+                  Nothing here matches those filters.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="mt-4 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm text-fg/60 transition-colors hover:bg-fg/[0.06] hover:text-fg"
+                >
+                  Clear filters
+                </button>
+              </div>
             ) : (
               <div className="text-center py-16">
                 <p className="text-fg/40 text-sm">{mode.empty.message}</p>

@@ -12,6 +12,20 @@ export function entryDate(entry: TimelineEntry): string {
   return entry.data.to;
 }
 
+/**
+ * The first day an entry stands for. A freeze covers a span, so the gap above
+ * it starts where the cover starts — measuring from coveredTo would mark the
+ * days it paid for as missed.
+ */
+function firstDay(entry: TimelineEntry): string {
+  return entry.type === 'freeze' ? entry.data.coveredFrom : entryDate(entry);
+}
+
+/** The last day an entry stands for; for a freeze, the end of its cover. */
+function lastDay(entry: TimelineEntry): string {
+  return entryDate(entry);
+}
+
 interface BuildTimelineOptions {
   /** Only the daily has a notion of a day missed, so only it grows markers. */
   markMissedDays: boolean;
@@ -42,8 +56,8 @@ export function buildTimeline(
 
   for (let i = 1; i < entries.length; i++) {
     const gap = differenceInCalendarDays(
-      parseISO(entryDate(entries[i - 1])),
-      parseISO(entryDate(entries[i])),
+      parseISO(firstDay(entries[i - 1])),
+      parseISO(lastDay(entries[i])),
     );
 
     if (gap > 1) {
@@ -60,8 +74,8 @@ function missedDays(
   index: number,
   gap: number,
 ): StreakLostEntry {
-  const newer = parseISO(entryDate(entries[index - 1]));
-  const older = parseISO(entryDate(entries[index]));
+  const newer = parseISO(firstDay(entries[index - 1]));
+  const older = parseISO(lastDay(entries[index]));
 
   return {
     from: format(addDays(older, 1), 'yyyy-MM-dd'),

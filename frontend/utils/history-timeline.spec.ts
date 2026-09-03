@@ -84,6 +84,32 @@ describe('buildTimeline', () => {
     expect(timeline.map((e) => e.type)).toEqual(['game', 'freeze', 'game']);
   });
 
+  it('does not mark the days a multi-day freeze paid for', () => {
+    // Won the 1st, froze the 2nd and 3rd, won the 4th: nothing was missed.
+    const timeline = buildTimeline(
+      [game('2026-03-01'), game('2026-03-04')],
+      [freeze('2026-03-02', '2026-03-03')],
+      dailyOptions,
+    );
+
+    expect(timeline.map((e) => e.type)).toEqual(['game', 'freeze', 'game']);
+  });
+
+  it('still marks a day left uncovered beside a freeze', () => {
+    // The 2nd and 3rd were frozen, the 5th was not, so the 5th is a gap.
+    const timeline = buildTimeline(
+      [game('2026-03-01'), game('2026-03-06')],
+      [freeze('2026-03-02', '2026-03-03')],
+      dailyOptions,
+    );
+
+    const lost = timeline.filter((e) => e.type === 'streak-lost');
+    expect(lost).toHaveLength(1);
+    expect(lost[0]).toMatchObject({
+      data: { from: '2026-03-04', to: '2026-03-05', gapDays: 2 },
+    });
+  });
+
   it('is empty for an empty history', () => {
     expect(buildTimeline([], [], dailyOptions)).toEqual([]);
   });
