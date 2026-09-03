@@ -93,19 +93,15 @@ export function HistoryCard({
       ? 7 - entry.score
       : (entry.score ?? 0);
 
-  const actualGuesses = entry.guesses.filter(
-    (g) => g.result !== GuessHistoryDtoResultEnum.Skip,
-  );
-
   return (
     <motion.article
       variants={cardVariants}
       initial="hidden"
       animate="visible"
       custom={staggerIndex}
-      onClick={() => actualGuesses.length > 0 && setExpanded(!expanded)}
+      onClick={() => entry.guesses.length > 0 && setExpanded(!expanded)}
       className={`group rounded-2xl bg-fg/[0.03] border overflow-hidden transition-colors duration-200 ${
-        actualGuesses.length > 0 ? 'cursor-pointer' : ''
+        entry.guesses.length > 0 ? 'cursor-pointer' : ''
       } ${
         showWinnerGlow
           ? 'border-spotify-green/40 shadow-[0_0_20px_rgba(29,185,84,0.12)]'
@@ -155,7 +151,7 @@ export function HistoryCard({
                 <Outcome round={guessesUsed} status={entry.status} />
 
                 <div className="flex shrink-0 items-center gap-1">
-                  {actualGuesses.length > 0 && (
+                  {entry.guesses.length > 0 && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -203,24 +199,49 @@ export function HistoryCard({
                 className="overflow-hidden"
               >
                 <div className="mt-4 pt-4 border-t border-fg/5 space-y-1.5">
-                  {actualGuesses.map((g, i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center justify-between gap-3 py-2 px-3 rounded-xl bg-fg/[0.02] border-l-2 ${GUESS_BORDER[g.result]}`}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-fg/90 truncate font-medium">
-                          {g.trackName}
-                        </p>
-                        <p className="text-[10px] text-fg/40 truncate">
-                          by {g.artistName}
-                        </p>
+                  {entry.guesses.map((g, i) => {
+                    const round = i + 1;
+
+                    // A skipped round is a gap in the sequence, not an entry.
+                    // Without it a win on round two shows a single row and the
+                    // header's timing looks wrong.
+                    if (g.result === GuessHistoryDtoResultEnum.Skip) {
+                      return (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 px-3 py-1 text-[10px] text-fg/25"
+                        >
+                          <span className="w-3 shrink-0 tabular-nums">
+                            {round}
+                          </span>
+                          <span className="h-px flex-1 bg-fg/[0.07]" />
+                          <span>Skipped</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={i}
+                        className={`flex items-center justify-between gap-3 py-2 px-3 rounded-xl bg-fg/[0.02] border-l-2 ${GUESS_BORDER[g.result]}`}
+                      >
+                        <span className="w-3 shrink-0 text-[10px] tabular-nums text-fg/25">
+                          {round}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-fg/90 truncate font-medium">
+                            {g.trackName}
+                          </p>
+                          <p className="text-[10px] text-fg/40 truncate">
+                            by {g.artistName}
+                          </p>
+                        </div>
+                        <span className="text-[9px] font-black uppercase tracking-tighter text-fg/30 whitespace-nowrap">
+                          {GUESS_LABEL[g.result]}
+                        </span>
                       </div>
-                      <span className="text-[9px] font-black uppercase tracking-tighter text-fg/30 whitespace-nowrap">
-                        {GUESS_LABEL[g.result]}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
