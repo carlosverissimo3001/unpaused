@@ -115,37 +115,41 @@ export function StatsPanel({
       transition={{ duration: 0.3 }}
       className="rounded-2xl bg-fg/[0.03] border border-fg/10 backdrop-blur-sm overflow-hidden"
     >
-      <div className="p-5">
-        {hero && (
-          <>
-            <div className="flex items-baseline gap-2.5">
-              <span
-                className={`text-5xl font-black tabular-nums leading-none ${mode.accent.text}`}
-              >
-                {dash(hero.value)}
-              </span>
-              <span className="text-[11px] font-black uppercase tracking-widest text-fg/40">
-                {hero.label}
-              </span>
-            </div>
-            <p className="mt-1.5 text-xs text-fg/35">{dash(hero.caption)}</p>
-          </>
-        )}
-
-        {supporting.length > 0 && (
-          <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-fg/[0.07] pt-4 lg:mt-5">
-            {supporting.map((item) => (
-              <div key={item.label}>
-                <dt className="text-[10px] font-bold uppercase tracking-widest text-fg/30">
-                  {item.label}
-                </dt>
-                <dd className="mt-0.5 text-base font-semibold tabular-nums text-fg/80">
-                  {dash(item.value)}
-                </dd>
+      <div className="p-4 lg:p-5">
+        {/* One row on a phone, so the history is not pushed off the screen by
+            the numbers above it; the column layout returns on a wide screen. */}
+        <div className="flex flex-wrap items-end justify-between gap-x-5 gap-y-3 lg:block">
+          {hero && (
+            <div>
+              <div className="flex items-baseline gap-2.5">
+                <span
+                  className={`text-4xl font-black tabular-nums leading-none lg:text-5xl ${mode.accent.text}`}
+                >
+                  {dash(hero.value)}
+                </span>
+                <span className="text-[11px] font-black uppercase tracking-widest text-fg/40">
+                  {hero.label}
+                </span>
               </div>
-            ))}
-          </dl>
-        )}
+              <p className="mt-1.5 text-xs text-fg/35">{dash(hero.caption)}</p>
+            </div>
+          )}
+
+          {supporting.length > 0 && (
+            <dl className="flex gap-5 lg:mt-5 lg:grid lg:grid-cols-3 lg:gap-3 lg:border-t lg:border-fg/[0.07] lg:pt-4">
+              {supporting.map((item) => (
+                <div key={item.label}>
+                  <dt className="text-[10px] font-bold uppercase tracking-widest text-fg/30">
+                    {item.label}
+                  </dt>
+                  <dd className="mt-0.5 text-base font-semibold tabular-nums text-fg/80">
+                    {dash(item.value)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
 
         {stats && (
           <>
