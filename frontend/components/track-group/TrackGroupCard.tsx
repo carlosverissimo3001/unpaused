@@ -75,9 +75,7 @@ function TrackGroupCardComponent({ group, onHover }: TrackGroupCardProps) {
               {group.name}
             </h3>
 
-            {/* No public/private here: the idea does not apply to a set
-                everybody can play. */}
-            <div className="mt-auto pt-2 sm:pt-4 flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-fg/30">
+            <div className="mt-1.5 flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-fg/30">
               <div className="flex items-center gap-1.5">
                 <ListMusic className="w-3 h-3 opacity-60" />
                 <span>{group.trackCount} tracks</span>

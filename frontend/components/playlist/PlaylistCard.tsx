@@ -4,7 +4,7 @@ import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Lock, Globe, ListMusic, Pin } from 'lucide-react';
+import { Play, ListMusic, Pin } from 'lucide-react';
 import type { PlaylistDto } from '@/sdk';
 import { useImageColor } from '@/hooks/misc/useImageColor';
 
@@ -82,25 +82,13 @@ function PlaylistCardComponent({ playlist, onHover }: PlaylistCardProps) {
               {playlist.name}
             </h3>
 
-            <div className="mt-auto pt-2 sm:pt-4 flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-fg/30">
-              <div className="flex items-center gap-1.5">
+            <div className="mt-1.5 flex items-center flex-nowrap overflow-hidden gap-2 sm:gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.15em] text-fg/30">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <ListMusic className="w-3 h-3 opacity-60" />
-                <span>{playlist.totalTracks} tracks</span>
+                <span className="whitespace-nowrap">
+                  {playlist.totalTracks} tracks
+                </span>
               </div>
-
-              {!isLikedSongs && (
-                <>
-                  <span className="text-fg/15">·</span>
-                  <div className="flex items-center gap-1.5">
-                    {playlist.isPublic ? (
-                      <Globe className="w-3 h-3 opacity-60" />
-                    ) : (
-                      <Lock className="w-3 h-3 opacity-60" />
-                    )}
-                    <span>{playlist.isPublic ? 'Public' : 'Private'}</span>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
