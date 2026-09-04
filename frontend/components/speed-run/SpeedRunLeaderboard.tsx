@@ -83,8 +83,8 @@ function LeaderboardRow({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -12 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.25, delay: staggerIndex * 0.03 }}
       className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all ${
         isCurrentUser
