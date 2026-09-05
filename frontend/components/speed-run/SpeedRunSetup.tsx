@@ -11,6 +11,7 @@ import { SNIPPET_STEPS } from '@/lib/snippet-timeline';
 import {
   StartRunDtoDifficultyEnum as GauntletDifficulty,
   StartRunDtoSourceEnum,
+  TrackGroupDtoTypeEnum,
 } from '@/sdk';
 import type { StartRunDto } from '@/sdk';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -53,6 +54,10 @@ const DIFFICULTIES: {
     color: 'from-red-500/20 to-red-500/5 border-red-500/30',
   },
 ];
+
+/** Three rows before it scrolls: a handful of sets should never get a bar. */
+const GRID =
+  'grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[24rem] overflow-y-auto';
 
 /** What the run will be played against. `id` is absent for the whole pool. */
 interface Selection {
@@ -135,7 +140,17 @@ export function SpeedRunSetup({
     { limit: 50 },
   );
   const playlists = playlistsData?.items ?? [];
-  const { data: groups } = useTrackGroups();
+  // One kind per query, since that is what the endpoint takes. A kind with no
+  // groups drops out, so genres cost nothing until the pool has any and the
+  // picker needs no change when it does — a new kind is one line here.
+  const { data: decades } = useTrackGroups(TrackGroupDtoTypeEnum.Decade);
+  const { data: genres } = useTrackGroups(TrackGroupDtoTypeEnum.Genre);
+  const kinds = [
+    { label: 'Decades', groups: decades },
+    { label: 'Genres', groups: genres },
+  ].filter((kind) => kind.groups?.length);
+  const [kindLabel, setKindLabel] = useState<string | null>(null);
+  const kind = kinds.find((k) => k.label === kindLabel) ?? kinds[0];
 
   const isRanked = selected?.source === StartRunDtoSourceEnum.Curated;
   const canStart = !!selected && !isStarting;
@@ -285,7 +300,7 @@ export function SpeedRunSetup({
 
         <p className="text-[10px] font-semibold text-fg/40">
           {tab === StartRunDtoSourceEnum.Curated
-            ? 'Everyone plays the same pool — these runs make the leaderboard.'
+            ? 'Everyone plays the same pool - these runs make the leaderboard.'
             : 'Practice runs. Your history keeps them; the leaderboard does not.'}
         </p>
 
@@ -294,31 +309,50 @@ export function SpeedRunSetup({
             <LoadingSpinner size="md" />
           </div>
         ) : tab === StartRunDtoSourceEnum.Curated ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-            <SourceTile
-              name="Everything"
-              isSelected={!!selected && !selected.id}
-              onSelect={() =>
-                setSelected({ source: StartRunDtoSourceEnum.Curated })
-              }
-            />
-            {groups?.map((group) => (
+          <div className="space-y-2">
+            {kinds.length > 1 && (
+              <div className="flex gap-1.5">
+                {kinds.map((k) => (
+                  <button
+                    key={k.label}
+                    onClick={() => setKindLabel(k.label)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition-colors ${
+                      kind?.label === k.label
+                        ? 'bg-orange-500/15 text-orange-300'
+                        : 'text-fg/40 hover:text-fg/70'
+                    }`}
+                  >
+                    {k.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className={GRID}>
               <SourceTile
-                key={group.id}
-                name={group.name}
-                imageUrl={group.imageUrl}
-                isSelected={selected?.id === group.id}
+                name="Everything"
+                isSelected={!!selected && !selected.id}
                 onSelect={() =>
-                  setSelected({
-                    source: StartRunDtoSourceEnum.Curated,
-                    id: group.id,
-                  })
+                  setSelected({ source: StartRunDtoSourceEnum.Curated })
                 }
               />
-            ))}
+              {kind?.groups?.map((group) => (
+                <SourceTile
+                  key={group.id}
+                  name={group.name}
+                  imageUrl={group.imageUrl}
+                  isSelected={selected?.id === group.id}
+                  onSelect={() =>
+                    setSelected({
+                      source: StartRunDtoSourceEnum.Curated,
+                      id: group.id,
+                    })
+                  }
+                />
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-1">
+          <div className={GRID}>
             {playlists.map((playlist) => (
               <SourceTile
                 key={playlist.id}
