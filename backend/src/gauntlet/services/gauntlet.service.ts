@@ -7,6 +7,7 @@ import {
   GauntletDifficulty,
   GauntletEndReason,
   GauntletRunStatus,
+  GauntletSource,
 } from '@prisma/client';
 import { Transactional } from '@transaction/transactional.decorator';
 import { AuthService } from '@auth/services/auth.service';
@@ -17,6 +18,7 @@ import { TrackDto } from '../../track/dto/track.dto';
 import { evaluateGuess } from '../../game/utils/guess-evaluator';
 import { GuessResult } from '../../game/consts';
 import { GauntletRunRepository } from '../repositories/gauntlet-run.repository';
+import { GauntletRunEntity } from '../entities/gauntlet-run.entity';
 import {
   GAUNTLET_SNIPPET_DURATIONS,
   GAUNTLET_MAX_SAMPLING_BATCHES,
@@ -75,12 +77,17 @@ export class GauntletService {
       };
     }
 
-    const run = await this.gauntletRunRepository.create(userId, difficulty);
+    const run = await this.gauntletRunRepository.create({
+      userId,
+      difficulty,
+      source: GauntletSource.PLAYLIST,
+      sourceId: playlistId,
+    });
     const snippetDuration = GAUNTLET_SNIPPET_DURATIONS[difficulty];
 
     const { trackId, previewUrl } = await this.pickNextTrack(
       sessionId,
-      playlistId,
+      run,
       [],
     );
 
@@ -105,7 +112,6 @@ export class GauntletService {
     sessionId: string,
     runId: string,
     guess: SubmitGauntletGuessDto,
-    playlistId: string,
   ): Promise<GauntletGuessResultDto> {
     const { id: userId } = await this.authService.getUserBySessionId(sessionId);
 
@@ -174,11 +180,7 @@ export class GauntletService {
     const snippetDuration = GAUNTLET_SNIPPET_DURATIONS[run.difficulty];
 
     try {
-      const next = await this.pickNextTrack(
-        sessionId,
-        playlistId,
-        run.trackIds,
-      );
+      const next = await this.pickNextTrack(sessionId, run, run.trackIds);
 
       await this.gauntletRunRepository.setCurrentTrack(run.id, next.trackId, [
         ...run.trackIds,
@@ -424,7 +426,7 @@ export class GauntletService {
   }
 
   /**
-   * Picks a random track from the playlist that hasn't been used yet
+   * Picks a random track from the run's source that hasn't been used yet
    * and has a valid preview URL. Persists it in the DB for guess evaluation.
    * Tries up to maxBatches random batches before giving up, so a single
    * batch that happens to contain only already-used tracks doesn't prematurely
@@ -432,9 +434,10 @@ export class GauntletService {
    */
   private async pickNextTrack(
     sessionId: string,
-    playlistId: string,
+    run: GauntletRunEntity,
     usedTrackIds: string[],
   ): Promise<{ trackId: string; previewUrl: string }> {
+    const playlistId = this.sourcePlaylistId(run);
     const usedSet = new Set(usedTrackIds);
     let sawAnyTracks = false;
     let sawAnyUnusedTracks = false;
@@ -515,6 +518,17 @@ export class GauntletService {
     throw new BadRequestException(
       'No tracks with preview audio available for gauntlet',
     );
+  }
+
+  /**
+   * The run says what it draws from, so a guess cannot quietly move it to
+   * another playlist mid-run.
+   */
+  private sourcePlaylistId(run: GauntletRunEntity): string {
+    if (run.source !== GauntletSource.PLAYLIST || !run.sourceId) {
+      throw new BadRequestException('This run has no playlist to draw from');
+    }
+    return run.sourceId;
   }
 
   private async fetchPlaylistTracks(

@@ -3,6 +3,7 @@ import {
   GauntletDifficulty,
   GauntletEndReason,
   GauntletRunStatus,
+  GauntletSource,
 } from '@prisma/client';
 import { TrackEntity } from '../../track/entities/track.entity';
 
@@ -34,6 +35,19 @@ export class GauntletRunEntity {
     type: String,
   })
   endReason?: GauntletEndReason;
+
+  @ApiProperty({
+    description: 'What the run was played against',
+    enum: GauntletSource,
+  })
+  source: GauntletSource;
+
+  @ApiPropertyOptional({
+    description:
+      'The playlist or group the run drew from. Null on runs from before the source was recorded.',
+    type: String,
+  })
+  sourceId?: string;
 
   @ApiProperty({
     description: 'IDs of tracks already used in this run',

@@ -4103,10 +4103,6 @@
       "SubmitGauntletGuessDto": {
         "type": "object",
         "properties": {
-          "playlistId": {
-            "type": "string",
-            "description": "The playlist ID (needed to pick the next track)"
-          },
           "trackId": {
             "type": "string",
             "description": "The ID of the track to guess"
@@ -4131,10 +4127,7 @@
             "type": "string",
             "description": "Album name"
           }
-        },
-        "required": [
-          "playlistId"
-        ]
+        }
       },
       "ActualTrackDto": {
         "type": "object",

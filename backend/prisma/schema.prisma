@@ -217,6 +217,11 @@ enum GauntletDifficulty {
   EXPERT
 }
 
+enum GauntletSource {
+  PLAYLIST
+  CURATED
+}
+
 model GauntletRun {
   id     String @id @default(uuid())
   userId String @map("user_id")
@@ -226,6 +231,9 @@ model GauntletRun {
   status     GauntletRunStatus  @default(PLAYING)
   endReason  GauntletEndReason? @map("end_reason")
   difficulty GauntletDifficulty
+
+  source   GauntletSource
+  sourceId String?        @map("source_id")
 
   trackIds String[] @default([]) @map("track_ids")
 

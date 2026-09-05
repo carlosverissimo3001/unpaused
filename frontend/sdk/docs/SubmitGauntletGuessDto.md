@@ -6,7 +6,6 @@
 
 Name | Type
 ------------ | -------------
-`playlistId` | string
 `trackId` | string
 `skip` | boolean
 `trackName` | string
@@ -21,7 +20,6 @@ import type { SubmitGauntletGuessDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "playlistId": null,
   "trackId": null,
   "skip": null,
   "trackName": null,
