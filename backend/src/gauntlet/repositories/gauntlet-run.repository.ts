@@ -79,7 +79,7 @@ export class GauntletRunRepository {
     userId: string;
     difficulty: GauntletDifficulty;
     source: GauntletSource;
-    sourceId: string;
+    sourceId: string | null;
   }): Promise<GauntletRunEntity> {
     const run = await this.prisma.gauntletRun.create({
       data: {

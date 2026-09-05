@@ -6,8 +6,14 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, ListMusic, Trophy, Zap, Check, ArrowLeft } from 'lucide-react';
 import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
+import { useTrackGroups } from '@/hooks/track-groups/useTrackGroups';
 import { SNIPPET_STEPS } from '@/lib/snippet-timeline';
-import { StartRunDtoDifficultyEnum as GauntletDifficulty } from '@/sdk';
+import {
+  StartRunDtoDifficultyEnum as GauntletDifficulty,
+  StartRunDtoSourceEnum,
+  TrackGroupDtoTypeEnum,
+} from '@/sdk';
+import type { StartRunDto } from '@/sdk';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Rungs of the same ladder the game uses, so a length here reads the way it
@@ -16,44 +22,96 @@ const DIFFICULTIES: {
   value: GauntletDifficulty;
   label: string;
   duration: string;
-  description: string;
-  color: string;
+  accent: string;
 }[] = [
   {
     value: GauntletDifficulty.Easy,
     label: 'Easy',
     duration: `${SNIPPET_STEPS[4]}s`,
-    description: 'Plenty of time',
-    color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30',
+    accent: 'bg-emerald-500/15 text-emerald-300',
   },
   {
     value: GauntletDifficulty.Medium,
     label: 'Medium',
     duration: `${SNIPPET_STEPS[3]}s`,
-    description: 'Standard',
-    color: 'from-blue-500/20 to-blue-500/5 border-blue-500/30',
+    accent: 'bg-blue-500/15 text-blue-300',
   },
   {
     value: GauntletDifficulty.Hard,
     label: 'Hard',
     duration: `${SNIPPET_STEPS[2]}s`,
-    description: 'Think fast',
-    color: 'from-orange-500/20 to-orange-500/5 border-orange-500/30',
+    accent: 'bg-orange-500/15 text-orange-300',
   },
   {
     value: GauntletDifficulty.Expert,
     label: 'Expert',
     duration: `${SNIPPET_STEPS[1]}s`,
-    description: 'One second',
-    color: 'from-red-500/20 to-red-500/5 border-red-500/30',
+    accent: 'bg-red-500/15 text-red-300',
   },
 ];
 
+/** Three rows before it scrolls: a handful of sets should never get a bar. */
+const GRID =
+  'grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[24rem] overflow-y-auto';
+
+/** What the run will be played against. `id` is absent for the whole pool. */
+interface Selection {
+  source: StartRunDtoSourceEnum;
+  id?: string;
+}
+
 interface SpeedRunSetupProps {
-  onStart: (playlistId: string, difficulty: GauntletDifficulty) => void;
+  onStart: (dto: StartRunDto) => void;
   isStarting: boolean;
   startError?: string;
   personalBest: number;
+}
+
+/** Curated and playlist tiles are the same thing to a player: somewhere to run from. */
+function SourceTile({
+  name,
+  imageUrl,
+  isSelected,
+  onSelect,
+}: {
+  name: string;
+  imageUrl?: string;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <motion.button
+      onClick={onSelect}
+      whileTap={{ scale: 0.96 }}
+      className={`relative flex flex-col rounded-xl overflow-hidden border transition-all ${
+        isSelected
+          ? 'border-orange-500/60 ring-2 ring-orange-500/40'
+          : 'border-fg/10 hover:border-fg/20'
+      }`}
+    >
+      <div className="relative aspect-square w-full bg-fg/5">
+        {imageUrl ? (
+          <Image src={imageUrl} alt="" fill className="object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <ListMusic className="w-6 h-6 text-fg/20" />
+          </div>
+        )}
+        {isSelected && (
+          <div className="absolute inset-0 bg-orange-500/20 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center shadow-lg">
+              <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="px-1.5 py-1 bg-surface/60">
+        <p className="text-[10px] font-semibold text-fg/80 truncate leading-tight">
+          {name}
+        </p>
+      </div>
+    </motion.button>
+  );
 }
 
 export function SpeedRunSetup({
@@ -62,9 +120,13 @@ export function SpeedRunSetup({
   startError,
   personalBest,
 }: SpeedRunSetupProps) {
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
-    null,
+  // One selection across both tabs: two ids would leave Start with no way to
+  // say which of them it meant. Ranked is where a player lands, so the pool is
+  // never the tab nobody opens.
+  const [tab, setTab] = useState<StartRunDtoSourceEnum>(
+    StartRunDtoSourceEnum.Curated,
   );
+  const [selected, setSelected] = useState<Selection | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] =
     useState<GauntletDifficulty>(GauntletDifficulty.Medium);
 
@@ -72,8 +134,36 @@ export function SpeedRunSetup({
     { limit: 50 },
   );
   const playlists = playlistsData?.items ?? [];
+  // One kind per query, since that is what the endpoint takes. A kind with no
+  // groups drops out, so genres cost nothing until the pool has any and the
+  // picker needs no change when it does — a new kind is one line here.
+  const { data: decades } = useTrackGroups(TrackGroupDtoTypeEnum.Decade);
+  const { data: genres } = useTrackGroups(TrackGroupDtoTypeEnum.Genre);
+  const kinds = [
+    { label: 'Decades', groups: decades },
+    { label: 'Genres', groups: genres },
+  ].filter((kind) => kind.groups?.length);
+  const [kindLabel, setKindLabel] = useState<string | null>(null);
+  const kind = kinds.find((k) => k.label === kindLabel) ?? kinds[0];
 
-  const canStart = !!selectedPlaylistId && !isStarting;
+  const isRanked = selected?.source === StartRunDtoSourceEnum.Curated;
+  const canStart = !!selected && !isStarting;
+
+  const start = () => {
+    if (!selected) return;
+    onStart({
+      source: selected.source,
+      playlistId:
+        selected.source === StartRunDtoSourceEnum.Playlist
+          ? selected.id
+          : undefined,
+      trackGroupId:
+        selected.source === StartRunDtoSourceEnum.Curated
+          ? selected.id
+          : undefined,
+      difficulty: selectedDifficulty,
+    });
+  };
 
   return (
     <motion.div
@@ -126,101 +216,142 @@ export function SpeedRunSetup({
         </Link>
       </div>
 
-      {/* Difficulty */}
-      <div className="space-y-3">
+      {/* Difficulty. The same pill control as the tabs below: four lengths
+          do not need four cards. */}
+      <div className="space-y-2">
         <h2 className="text-xs font-bold uppercase tracking-widest text-fg/40">
-          Snippet Duration
+          Snippet duration
         </h2>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="flex gap-1 p-1 rounded-full bg-fg/5 w-fit">
           {DIFFICULTIES.map((d) => (
-            <motion.button
+            <button
               key={d.value}
               onClick={() => setSelectedDifficulty(d.value)}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className={`relative flex flex-col items-center gap-1 p-3 rounded-xl border bg-gradient-to-b transition-all ${d.color} ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold tabular-nums transition-colors ${
                 selectedDifficulty === d.value
-                  ? 'ring-2 ring-offset-1 ring-offset-transparent'
-                  : 'opacity-60 hover:opacity-80'
+                  ? d.accent
+                  : 'text-fg/40 hover:text-fg/70'
               }`}
-              style={{}}
             >
-              {selectedDifficulty === d.value && (
-                <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-orange-500 flex items-center justify-center">
-                  <Check className="w-2 h-2 text-white" strokeWidth={3} />
-                </span>
-              )}
-              <span className="text-base sm:text-lg font-black tabular-nums">
-                {d.duration}
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-fg/50">
+              {d.duration}
+              <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide opacity-60">
                 {d.label}
               </span>
-            </motion.button>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Playlist selection */}
+      {/* Where the run draws from. Ranked is the default tab: it is the only
+          thing a player without a library can pick, and the only thing that
+          ranks, so it must not be the half that stays hidden. */}
       <div className="space-y-3">
         <h2 className="text-xs font-bold uppercase tracking-widest text-fg/40">
-          Choose a Playlist
+          Choose your tracks
         </h2>
+
+        {playlists.length > 0 && (
+          <div className="flex gap-1 p-1 rounded-full bg-fg/5 w-fit">
+            {[
+              {
+                value: StartRunDtoSourceEnum.Curated,
+                label: 'Ranked',
+                hint: 'everyone plays the same pool',
+              },
+              {
+                value: StartRunDtoSourceEnum.Playlist,
+                label: 'Your playlists',
+                hint: 'practice, not ranked',
+              },
+            ].map((t) => (
+              <button
+                key={t.value}
+                onClick={() => {
+                  setTab(t.value);
+                  // A selection you cannot see is a selection you cannot check.
+                  setSelected(null);
+                }}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                  tab === t.value
+                    ? 'bg-fg/10 text-fg'
+                    : 'text-fg/40 hover:text-fg/70'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <p className="text-[10px] font-semibold text-fg/40">
+          {tab === StartRunDtoSourceEnum.Curated
+            ? 'Everyone plays the same pool - these runs make the leaderboard.'
+            : 'Practice runs. Your history keeps them; the leaderboard does not.'}
+        </p>
 
         {isLoadingPlaylists ? (
           <div className="flex justify-center py-8">
             <LoadingSpinner size="md" />
           </div>
+        ) : tab === StartRunDtoSourceEnum.Curated ? (
+          <div className="space-y-2">
+            {kinds.length > 1 && (
+              <div className="flex gap-1.5">
+                {kinds.map((k) => (
+                  <button
+                    key={k.label}
+                    onClick={() => setKindLabel(k.label)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition-colors ${
+                      kind?.label === k.label
+                        ? 'bg-orange-500/15 text-orange-300'
+                        : 'text-fg/40 hover:text-fg/70'
+                    }`}
+                  >
+                    {k.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className={GRID}>
+              <SourceTile
+                name="Everything"
+                isSelected={!!selected && !selected.id}
+                onSelect={() =>
+                  setSelected({ source: StartRunDtoSourceEnum.Curated })
+                }
+              />
+              {kind?.groups?.map((group) => (
+                <SourceTile
+                  key={group.id}
+                  name={group.name}
+                  imageUrl={group.imageUrl}
+                  isSelected={selected?.id === group.id}
+                  onSelect={() =>
+                    setSelected({
+                      source: StartRunDtoSourceEnum.Curated,
+                      id: group.id,
+                    })
+                  }
+                />
+              ))}
+            </div>
+          </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-1">
-            {playlists.map((playlist) => {
-              const isSelected = selectedPlaylistId === playlist.id;
-              return (
-                <motion.button
-                  key={playlist.id}
-                  onClick={() => setSelectedPlaylistId(playlist.id)}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  className={`relative flex flex-col rounded-xl overflow-hidden border transition-all ${
-                    isSelected
-                      ? 'border-orange-500/60 ring-2 ring-orange-500/40'
-                      : 'border-fg/10 hover:border-fg/20'
-                  }`}
-                >
-                  {/* Album art */}
-                  <div className="relative aspect-square w-full bg-fg/5">
-                    {playlist.imageUrl ? (
-                      <Image
-                        src={playlist.imageUrl}
-                        alt=""
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ListMusic className="w-6 h-6 text-fg/20" />
-                      </div>
-                    )}
-                    {isSelected && (
-                      <div className="absolute inset-0 bg-orange-500/20 flex items-center justify-center">
-                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center shadow-lg">
-                          <Check
-                            className="w-3.5 h-3.5 text-white"
-                            strokeWidth={3}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {/* Name */}
-                  <div className="px-1.5 py-1 bg-surface/60">
-                    <p className="text-[10px] font-semibold text-fg/80 truncate leading-tight">
-                      {playlist.name}
-                    </p>
-                  </div>
-                </motion.button>
-              );
-            })}
+          <div className={GRID}>
+            {playlists.map((playlist) => (
+              <SourceTile
+                key={playlist.id}
+                name={playlist.name}
+                imageUrl={playlist.imageUrl}
+                isSelected={selected?.id === playlist.id}
+                onSelect={() =>
+                  setSelected({
+                    source: StartRunDtoSourceEnum.Playlist,
+                    id: playlist.id,
+                  })
+                }
+              />
+            ))}
           </div>
         )}
       </div>
@@ -242,7 +373,7 @@ export function SpeedRunSetup({
       {/* Start CTA */}
       <motion.button
         onClick={() => {
-          if (canStart) onStart(selectedPlaylistId!, selectedDifficulty);
+          if (canStart) start();
         }}
         disabled={!canStart}
         whileHover={canStart ? { scale: 1.02 } : {}}
@@ -266,7 +397,11 @@ export function SpeedRunSetup({
         ) : (
           <span className="flex items-center justify-center gap-2">
             <Zap className="w-5 h-5 fill-current" />
-            Start Speed Run
+            {!selected
+              ? 'Start Speed Run'
+              : isRanked
+                ? 'Start ranked run'
+                : 'Start practice run'}
           </span>
         )}
       </motion.button>

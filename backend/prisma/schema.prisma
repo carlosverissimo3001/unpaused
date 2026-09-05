@@ -158,6 +158,7 @@ model PoolTrack {
 
   @@index([fame])
   @@index([year])
+  @@index([special])
   @@map("pool_tracks")
 }
 

@@ -1,10 +1,10 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import {
-  GauntletDifficulty,
   GauntletEndReason,
   GauntletRunStatus,
   GauntletSource,
@@ -12,6 +12,8 @@ import {
 import { Transactional } from '@transaction/transactional.decorator';
 import { AuthService } from '@auth/services/auth.service';
 import { PlaylistService } from '@/playlist/services/playlist.service';
+import { PoolService } from '@/pool/services/pool.service';
+import { TrackGroupService } from '@/track-group/services/track-group.service';
 import { TrackService } from '@/track/services/track.service';
 import { AppLoggerService } from '../../logger/logger.service';
 import { TrackDto } from '../../track/dto/track.dto';
@@ -24,6 +26,7 @@ import {
   GAUNTLET_MAX_SAMPLING_BATCHES,
   GAUNTLET_MAX_PREVIEW_ATTEMPTS,
 } from '../consts';
+import { StartRunDto } from '../dto/start-run.dto';
 import { GauntletRunStateDto } from '../dto/gauntlet-run-state.dto';
 import { GauntletGuessResultDto } from '../dto/gauntlet-guess-result.dto';
 import { GauntletLeaderboardDto } from '../dto/gauntlet-leaderboard.dto';
@@ -47,6 +50,8 @@ export class GauntletService {
     private readonly gauntletRunRepository: GauntletRunRepository,
     private readonly authService: AuthService,
     private readonly playlistService: PlaylistService,
+    private readonly poolService: PoolService,
+    private readonly trackGroupService: TrackGroupService,
     private readonly trackService: TrackService,
     appLogger: AppLoggerService,
   ) {
@@ -56,10 +61,25 @@ export class GauntletService {
   @Transactional()
   async startRun(
     sessionId: string,
-    playlistId: string,
-    difficulty: GauntletDifficulty,
+    dto: StartRunDto,
   ): Promise<GauntletRunStateDto> {
-    const { id: userId } = await this.authService.getUserBySessionId(sessionId);
+    const { source, playlistId, trackGroupId, difficulty } = dto;
+    const user = await this.authService.getUserBySessionId(sessionId);
+    const userId = user.id;
+
+    // The route cannot express this: only a playlist run needs a library.
+    if (source === GauntletSource.PLAYLIST && !user.spotifyUserId) {
+      throw new ForbiddenException('Playing your own playlists needs Spotify');
+    }
+
+    // Listing hides a group this player is not meant to have; starting one has
+    // to say so too, or the id is the only thing keeping them out.
+    if (trackGroupId) {
+      const group = await this.trackGroupService.requireById(trackGroupId);
+      if (!TrackGroupService.isVisible(group.type, user)) {
+        throw new NotFoundException(`No track group ${trackGroupId}`);
+      }
+    }
 
     // Resume existing active run if one exists
     const existing = await this.gauntletRunRepository.findActiveRun(userId);
@@ -80,8 +100,8 @@ export class GauntletService {
     const run = await this.gauntletRunRepository.create({
       userId,
       difficulty,
-      source: GauntletSource.PLAYLIST,
-      sourceId: playlistId,
+      source,
+      sourceId: trackGroupId ?? playlistId ?? null,
     });
     const snippetDuration = GAUNTLET_SNIPPET_DURATIONS[difficulty];
 
@@ -437,6 +457,10 @@ export class GauntletService {
     run: GauntletRunEntity,
     usedTrackIds: string[],
   ): Promise<{ trackId: string; previewUrl: string }> {
+    if (run.source === GauntletSource.CURATED) {
+      return this.pickPoolTrack(run.sourceId, usedTrackIds);
+    }
+
     const playlistId = this.sourcePlaylistId(run);
     const usedSet = new Set(usedTrackIds);
     let sawAnyTracks = false;
@@ -517,6 +541,37 @@ export class GauntletService {
 
     throw new BadRequestException(
       'No tracks with preview audio available for gauntlet',
+    );
+  }
+
+  /**
+   * Pool rows carry no preview: Deezer's links expire within minutes, so audio
+   * is resolved per draw. A track that resolves to nothing is set aside and
+   * another drawn, rather than ending the run on a dead link.
+   */
+  private async pickPoolTrack(
+    trackGroupId: string | undefined,
+    usedTrackIds: string[],
+  ): Promise<{ trackId: string; previewUrl: string }> {
+    const tried = [...usedTrackIds];
+
+    for (let i = 0; i < GAUNTLET_MAX_PREVIEW_ATTEMPTS; i++) {
+      const track = await this.poolService.pickTrack(tried, trackGroupId);
+      try {
+        const previewUrl = await this.trackService.resolvePreview(track);
+        if (previewUrl) {
+          return { trackId: track.id, previewUrl };
+        }
+      } catch (err) {
+        this.logger.warn(
+          `Preview failed for ${track.id}: ${(err as Error).message}`,
+        );
+      }
+      tried.push(track.id);
+    }
+
+    throw new BadRequestException(
+      'No tracks with preview audio in the pool right now',
     );
   }
 

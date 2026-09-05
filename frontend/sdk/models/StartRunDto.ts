@@ -20,11 +20,23 @@ import { mapValues } from '../runtime';
  */
 export interface StartRunDto {
     /**
-     * The playlist ID to pick tracks from
+     * Where the run draws its tracks from
      * @type {string}
      * @memberof StartRunDto
      */
-    playlistId: string;
+    source: StartRunDtoSourceEnum;
+    /**
+     * The playlist to draw from. Required when the source is a playlist.
+     * @type {string}
+     * @memberof StartRunDto
+     */
+    playlistId?: string;
+    /**
+     * Narrows a curated run to one group. Without it the run draws from the whole pool.
+     * @type {string}
+     * @memberof StartRunDto
+     */
+    trackGroupId?: string;
     /**
      * Difficulty level (controls snippet duration)
      * @type {string}
@@ -33,6 +45,15 @@ export interface StartRunDto {
     difficulty: StartRunDtoDifficultyEnum;
 }
 
+
+/**
+ * @export
+ */
+export const StartRunDtoSourceEnum = {
+    Playlist: 'PLAYLIST',
+    Curated: 'CURATED'
+} as const;
+export type StartRunDtoSourceEnum = typeof StartRunDtoSourceEnum[keyof typeof StartRunDtoSourceEnum];
 
 /**
  * @export
@@ -50,7 +71,7 @@ export type StartRunDtoDifficultyEnum = typeof StartRunDtoDifficultyEnum[keyof t
  * Check if a given object implements the StartRunDto interface.
  */
 export function instanceOfStartRunDto(value: object): value is StartRunDto {
-    if (!('playlistId' in value) || value['playlistId'] === undefined) return false;
+    if (!('source' in value) || value['source'] === undefined) return false;
     if (!('difficulty' in value) || value['difficulty'] === undefined) return false;
     return true;
 }
@@ -65,7 +86,9 @@ export function StartRunDtoFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'playlistId': json['playlistId'],
+        'source': json['source'],
+        'playlistId': json['playlistId'] == null ? undefined : json['playlistId'],
+        'trackGroupId': json['trackGroupId'] == null ? undefined : json['trackGroupId'],
         'difficulty': json['difficulty'],
     };
 }
@@ -81,7 +104,9 @@ export function StartRunDtoToJSONTyped(value?: StartRunDto | null, ignoreDiscrim
 
     return {
         
+        'source': value['source'],
         'playlistId': value['playlistId'],
+        'trackGroupId': value['trackGroupId'],
         'difficulty': value['difficulty'],
     };
 }

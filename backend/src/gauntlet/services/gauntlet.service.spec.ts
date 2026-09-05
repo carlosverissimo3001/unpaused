@@ -1,15 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import {
   GauntletDifficulty,
   GauntletRunStatus,
   GauntletSource,
+  TrackGroupType,
 } from '@prisma/client';
+import { StartRunDto } from '../dto/start-run.dto';
 import type { PrismaClient } from '@prisma/client';
 import { setBasePrismaClient } from '@transaction/transaction.store';
 import { GauntletService } from './gauntlet.service';
 import { GauntletRunRepository } from '../repositories/gauntlet-run.repository';
 import { AuthService } from '@auth/services/auth.service';
 import { PlaylistService } from '../../playlist/services/playlist.service';
+import { PoolService } from '../../pool/services/pool.service';
+import { TrackGroupService } from '../../track-group/services/track-group.service';
 import { TrackService } from '../../track/services/track.service';
 import { AppLoggerService } from '../../logger/logger.service';
 
@@ -53,6 +58,8 @@ describe('GauntletService.getLeaderboard', () => {
         { provide: GauntletRunRepository, useValue: mockRepo },
         { provide: AuthService, useValue: mockAuthService },
         { provide: PlaylistService, useValue: {} },
+        { provide: PoolService, useValue: {} },
+        { provide: TrackGroupService, useValue: {} },
         { provide: TrackService, useValue: {} },
         { provide: AppLoggerService, useValue: mockLogger },
       ],
@@ -153,6 +160,16 @@ describe('GauntletService.getLeaderboard', () => {
 
 const RUN_ID = 'run-1';
 const PLAYLIST = 'playlist-a';
+const GROUP = 'group-90s';
+
+function startDto(overrides: Record<string, unknown> = {}) {
+  return {
+    source: GauntletSource.PLAYLIST,
+    playlistId: PLAYLIST,
+    difficulty: GauntletDifficulty.MEDIUM,
+    ...overrides,
+  } as StartRunDto;
+}
 
 function run(overrides: Record<string, unknown> = {}) {
   return {
@@ -200,10 +217,13 @@ describe('GauntletService and the source a run draws from', () => {
     findDailyBest: jest.fn(),
   };
   const playlistService = { getPlaylistFirstTracks: jest.fn() };
+  const poolService = { pickTrack: jest.fn() };
+  const trackGroupService = { requireById: jest.fn() };
   const trackService = {
     playableUrl: jest.fn(),
     getTrackWithPreview: jest.fn(),
     upsertTrack: jest.fn(),
+    resolvePreview: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -212,7 +232,10 @@ describe('GauntletService and the source a run draws from', () => {
     setBasePrismaClient({
       $transaction: (fn: (tx: unknown) => Promise<unknown>) => fn({}),
     } as unknown as PrismaClient);
-    mockAuthService.getUserBySessionId.mockResolvedValue({ id: ME });
+    mockAuthService.getUserBySessionId.mockResolvedValue({
+      id: ME,
+      spotifyUserId: 'spotify-me',
+    });
     repo.findActiveRun.mockResolvedValue(null);
     repo.create.mockImplementation((params) =>
       Promise.resolve(run({ ...params, id: RUN_ID })),
@@ -226,6 +249,16 @@ describe('GauntletService and the source a run draws from', () => {
       previewUrl: 'https://example.test/p.mp3',
     });
     trackService.upsertTrack.mockResolvedValue(undefined);
+    trackService.resolvePreview.mockResolvedValue('https://example.test/p.mp3');
+    poolService.pickTrack.mockResolvedValue({
+      id: 'pool-track-1',
+      name: 'Pool Song',
+      artistName: 'Artist',
+    });
+    trackGroupService.requireById.mockResolvedValue({
+      id: GROUP,
+      type: TrackGroupType.DECADE,
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -233,6 +266,8 @@ describe('GauntletService and the source a run draws from', () => {
         { provide: GauntletRunRepository, useValue: repo },
         { provide: AuthService, useValue: mockAuthService },
         { provide: PlaylistService, useValue: playlistService },
+        { provide: PoolService, useValue: poolService },
+        { provide: TrackGroupService, useValue: trackGroupService },
         { provide: TrackService, useValue: trackService },
         { provide: AppLoggerService, useValue: mockLogger },
       ],
@@ -241,7 +276,7 @@ describe('GauntletService and the source a run draws from', () => {
   });
 
   it('records what the run was started against', async () => {
-    await service.startRun(SESSION_ID, PLAYLIST, GauntletDifficulty.MEDIUM);
+    await service.startRun(SESSION_ID, startDto());
 
     expect(repo.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -249,6 +284,92 @@ describe('GauntletService and the source a run draws from', () => {
         sourceId: PLAYLIST,
       }),
     );
+  });
+
+  it('starts a curated run for a player with no Spotify account', async () => {
+    mockAuthService.getUserBySessionId.mockResolvedValue({
+      id: ME,
+      spotifyUserId: null,
+    });
+
+    await service.startRun(
+      SESSION_ID,
+      startDto({
+        source: GauntletSource.CURATED,
+        playlistId: undefined,
+        trackGroupId: GROUP,
+      }),
+    );
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: GauntletSource.CURATED,
+        sourceId: GROUP,
+      }),
+    );
+    expect(poolService.pickTrack).toHaveBeenCalled();
+  });
+
+  it('records a whole-pool run with no id to narrow it', async () => {
+    await service.startRun(
+      SESSION_ID,
+      startDto({ source: GauntletSource.CURATED, playlistId: undefined }),
+    );
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: GauntletSource.CURATED,
+        sourceId: null,
+      }),
+    );
+  });
+
+  it('refuses a playlist run from a player who never linked Spotify', async () => {
+    mockAuthService.getUserBySessionId.mockResolvedValue({
+      id: ME,
+      spotifyUserId: null,
+    });
+
+    await expect(service.startRun(SESSION_ID, startDto())).rejects.toThrow(
+      ForbiddenException,
+    );
+  });
+
+  it('hides a group this player is not meant to have, rather than refusing it', async () => {
+    mockAuthService.getUserBySessionId.mockResolvedValue({
+      id: ME,
+      spotifyUserId: 'spotify-me',
+      isTrusted: false,
+    });
+    trackGroupService.requireById.mockResolvedValue({
+      id: GROUP,
+      type: TrackGroupType.SPECIAL,
+    });
+
+    await expect(
+      service.startRun(
+        SESSION_ID,
+        startDto({
+          source: GauntletSource.CURATED,
+          playlistId: undefined,
+          trackGroupId: GROUP,
+        }),
+      ),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('draws a curated run from the pool, never from a playlist', async () => {
+    repo.findById.mockResolvedValue(
+      run({ source: GauntletSource.CURATED, sourceId: GROUP }),
+    );
+
+    await service.submitGuess(SESSION_ID, RUN_ID, { trackId: 'track-1' });
+
+    expect(poolService.pickTrack).toHaveBeenCalledWith(
+      expect.arrayContaining([]),
+      GROUP,
+    );
+    expect(playlistService.getPlaylistFirstTracks).not.toHaveBeenCalled();
   });
 
   it('draws the next track from the run, not from the request', async () => {
