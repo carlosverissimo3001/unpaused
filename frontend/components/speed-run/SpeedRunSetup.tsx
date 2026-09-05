@@ -6,9 +6,12 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, ListMusic, Trophy, Zap, Check, ArrowLeft } from 'lucide-react';
 import { useMyPlaylists } from '@/hooks/playlists/useMyPlaylists';
+import { SNIPPET_STEPS } from '@/lib/snippet-timeline';
 import { StartRunDtoDifficultyEnum as GauntletDifficulty } from '@/sdk';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
+// Rungs of the same ladder the game uses, so a length here reads the way it
+// does anywhere else. Mirrors GAUNTLET_SNIPPET_DURATIONS on the backend.
 const DIFFICULTIES: {
   value: GauntletDifficulty;
   label: string;
@@ -19,28 +22,28 @@ const DIFFICULTIES: {
   {
     value: GauntletDifficulty.Easy,
     label: 'Easy',
-    duration: '5s',
+    duration: `${SNIPPET_STEPS[4]}s`,
     description: 'Plenty of time',
     color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30',
   },
   {
     value: GauntletDifficulty.Medium,
     label: 'Medium',
-    duration: '3s',
+    duration: `${SNIPPET_STEPS[3]}s`,
     description: 'Standard',
     color: 'from-blue-500/20 to-blue-500/5 border-blue-500/30',
   },
   {
     value: GauntletDifficulty.Hard,
     label: 'Hard',
-    duration: '2s',
+    duration: `${SNIPPET_STEPS[2]}s`,
     description: 'Think fast',
     color: 'from-orange-500/20 to-orange-500/5 border-orange-500/30',
   },
   {
     value: GauntletDifficulty.Expert,
     label: 'Expert',
-    duration: '1s',
+    duration: `${SNIPPET_STEPS[1]}s`,
     description: 'One second',
     color: 'from-red-500/20 to-red-500/5 border-red-500/30',
   },
