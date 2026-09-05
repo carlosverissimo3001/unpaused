@@ -27,7 +27,6 @@ interface GauntletRunState {
   isNewDailyBest: boolean;
   recentTracks: RecentTrack[];
   gameOverTrack: { name: string; artistName: string; albumArt?: string } | null;
-  playlistId: string | null;
 }
 
 const INITIAL_STATE: GauntletRunState = {
@@ -41,7 +40,6 @@ const INITIAL_STATE: GauntletRunState = {
   isNewDailyBest: false,
   recentTracks: [],
   gameOverTrack: null,
-  playlistId: null,
 };
 
 export function useGauntletRun() {
@@ -64,7 +62,7 @@ export function useGauntletRun() {
         throw new Error(await getApiErrorMessage(e));
       }
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       setState({
         ...INITIAL_STATE,
         phase: 'PLAYING',
@@ -73,7 +71,6 @@ export function useGauntletRun() {
         difficulty: data.difficulty as StartRunDtoDifficultyEnum,
         previewUrl: data.previewUrl || null,
         snippetDuration: data.snippetDuration,
-        playlistId: variables.playlistId,
       });
     },
   });
@@ -87,12 +84,11 @@ export function useGauntletRun() {
       albumName?: string;
       isrc?: string;
     }) => {
-      if (!state.runId || !state.playlistId) throw new Error('No active run');
+      if (!state.runId) throw new Error('No active run');
       try {
         return await api.gauntletControllerSubmitGuess({
           id: state.runId,
           submitGauntletGuessDto: {
-            playlistId: state.playlistId,
             trackId: params.trackId,
             skip: params.skip,
             trackName: params.trackName,

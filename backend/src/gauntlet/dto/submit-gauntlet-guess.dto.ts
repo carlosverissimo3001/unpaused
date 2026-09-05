@@ -1,16 +1,10 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { IsNotNullableOptional } from '@utils/decorators/notNullableOptional.decorator';
 import { Transform } from 'class-transformer';
 import { toBoolean } from '@utils/transformers/toBoolean.transform';
 
 export class SubmitGauntletGuessDto {
-  @ApiProperty({
-    description: 'The playlist ID (needed to pick the next track)',
-  })
-  @IsString()
-  playlistId: string;
-
   @ApiPropertyOptional({
     description: 'The ID of the track to guess',
     type: String,

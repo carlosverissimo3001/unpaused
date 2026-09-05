@@ -72,7 +72,7 @@ export class GauntletController {
     @Param('id') id: string,
     @Body() dto: SubmitGauntletGuessDto,
   ): Promise<GauntletGuessResultDto> {
-    return this.gauntletService.submitGuess(sessionId, id, dto, dto.playlistId);
+    return this.gauntletService.submitGuess(sessionId, id, dto);
   }
 
   @Post(':id/end')

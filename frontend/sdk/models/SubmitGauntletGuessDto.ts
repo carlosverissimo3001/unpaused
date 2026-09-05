@@ -20,12 +20,6 @@ import { mapValues } from '../runtime';
  */
 export interface SubmitGauntletGuessDto {
     /**
-     * The playlist ID (needed to pick the next track)
-     * @type {string}
-     * @memberof SubmitGauntletGuessDto
-     */
-    playlistId: string;
-    /**
      * The ID of the track to guess
      * @type {string}
      * @memberof SubmitGauntletGuessDto
@@ -67,7 +61,6 @@ export interface SubmitGauntletGuessDto {
  * Check if a given object implements the SubmitGauntletGuessDto interface.
  */
 export function instanceOfSubmitGauntletGuessDto(value: object): value is SubmitGauntletGuessDto {
-    if (!('playlistId' in value) || value['playlistId'] === undefined) return false;
     return true;
 }
 
@@ -81,7 +74,6 @@ export function SubmitGauntletGuessDtoFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
-        'playlistId': json['playlistId'],
         'trackId': json['trackId'] == null ? undefined : json['trackId'],
         'skip': json['skip'] == null ? undefined : json['skip'],
         'trackName': json['trackName'] == null ? undefined : json['trackName'],
@@ -102,7 +94,6 @@ export function SubmitGauntletGuessDtoToJSONTyped(value?: SubmitGauntletGuessDto
 
     return {
         
-        'playlistId': value['playlistId'],
         'trackId': value['trackId'],
         'skip': value['skip'],
         'trackName': value['trackName'],

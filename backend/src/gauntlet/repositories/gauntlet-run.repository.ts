@@ -5,6 +5,7 @@ import {
   GauntletDifficulty,
   GauntletEndReason,
   GauntletRunStatus,
+  GauntletSource,
   Prisma,
 } from '@prisma/client';
 import { GauntletRunEntity } from '../entities/gauntlet-run.entity';
@@ -41,6 +42,8 @@ function fromPrisma(data: PrismaGauntletRunResult): GauntletRunEntity {
     status: data.status,
     difficulty: data.difficulty,
     endReason: toUndefinedIfNull(data.endReason),
+    source: data.source,
+    sourceId: toUndefinedIfNull(data.sourceId),
     trackIds: data.trackIds,
     currentTrackId: toUndefinedIfNull(data.currentTrackId),
     currentTrack: data.currentTrack ? mapTrack(data.currentTrack) : undefined,
@@ -59,6 +62,8 @@ function fromPrismaBasic(
     status: data.status,
     difficulty: data.difficulty,
     endReason: toUndefinedIfNull(data.endReason),
+    source: data.source,
+    sourceId: toUndefinedIfNull(data.sourceId),
     trackIds: data.trackIds,
     currentTrackId: toUndefinedIfNull(data.currentTrackId),
     createdAt: data.createdAt,
@@ -70,16 +75,20 @@ function fromPrismaBasic(
 export class GauntletRunRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    userId: string,
-    difficulty: GauntletDifficulty,
-  ): Promise<GauntletRunEntity> {
+  async create(params: {
+    userId: string;
+    difficulty: GauntletDifficulty;
+    source: GauntletSource;
+    sourceId: string;
+  }): Promise<GauntletRunEntity> {
     const run = await this.prisma.gauntletRun.create({
       data: {
-        user: { connect: { id: userId } },
+        user: { connect: { id: params.userId } },
         score: 0,
         status: GauntletRunStatus.PLAYING,
-        difficulty,
+        difficulty: params.difficulty,
+        source: params.source,
+        sourceId: params.sourceId,
         trackIds: [],
       },
       include: { currentTrack: true },
