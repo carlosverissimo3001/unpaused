@@ -6,6 +6,7 @@ import { api } from '@/sdk/client';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { queryKeys } from '@/lib/queryKeys';
 import type { StartRunDtoDifficultyEnum } from '@/sdk';
+import { SNIPPET_STEPS } from '@/lib/snippet-timeline';
 
 export type GauntletPhase = 'IDLE' | 'PLAYING' | 'ENDED';
 
@@ -35,7 +36,7 @@ const INITIAL_STATE: GauntletRunState = {
   score: 0,
   difficulty: null,
   previewUrl: null,
-  snippetDuration: 1.5,
+  snippetDuration: SNIPPET_STEPS[3],
   isNewPersonalBest: false,
   isNewDailyBest: false,
   recentTracks: [],
