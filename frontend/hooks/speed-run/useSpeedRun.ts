@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/sdk/client';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { queryKeys } from '@/lib/queryKeys';
-import type { StartRunDtoDifficultyEnum } from '@/sdk';
+import type { StartRunDto, StartRunDtoDifficultyEnum } from '@/sdk';
 import { SNIPPET_STEPS } from '@/lib/snippet-timeline';
 
 export type GauntletPhase = 'IDLE' | 'PLAYING' | 'ENDED';
@@ -48,17 +48,9 @@ export function useGauntletRun() {
   const queryClient = useQueryClient();
 
   const startMutation = useMutation({
-    mutationFn: async ({
-      playlistId,
-      difficulty,
-    }: {
-      playlistId: string;
-      difficulty: StartRunDtoDifficultyEnum;
-    }) => {
+    mutationFn: async (startRunDto: StartRunDto) => {
       try {
-        return await api.gauntletControllerStartRun({
-          startRunDto: { playlistId, difficulty },
-        });
+        return await api.gauntletControllerStartRun({ startRunDto });
       } catch (e) {
         throw new Error(await getApiErrorMessage(e));
       }
@@ -160,8 +152,7 @@ export function useGauntletRun() {
   });
 
   const startRun = useCallback(
-    (playlistId: string, difficulty: StartRunDtoDifficultyEnum) =>
-      startMutation.mutate({ playlistId, difficulty }),
+    (startRunDto: StartRunDto) => startMutation.mutate(startRunDto),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [startMutation.mutate],
   );

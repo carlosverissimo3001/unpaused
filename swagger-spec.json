@@ -4033,9 +4033,21 @@
       "StartRunDto": {
         "type": "object",
         "properties": {
+          "source": {
+            "type": "string",
+            "description": "Where the run draws its tracks from",
+            "enum": [
+              "PLAYLIST",
+              "CURATED"
+            ]
+          },
           "playlistId": {
             "type": "string",
-            "description": "The playlist ID to pick tracks from"
+            "description": "The playlist to draw from. Required when the source is a playlist."
+          },
+          "trackGroupId": {
+            "type": "string",
+            "description": "Narrows a curated run to one group. Without it the run draws from the whole pool."
           },
           "difficulty": {
             "type": "string",
@@ -4049,7 +4061,7 @@
           }
         },
         "required": [
-          "playlistId",
+          "source",
           "difficulty"
         ]
       },

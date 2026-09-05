@@ -6,7 +6,9 @@
 
 Name | Type
 ------------ | -------------
+`source` | string
 `playlistId` | string
+`trackGroupId` | string
 `difficulty` | string
 
 ## Example
@@ -16,7 +18,9 @@ import type { StartRunDto } from ''
 
 // TODO: Update the object below with actual values
 const example = {
+  "source": null,
   "playlistId": null,
+  "trackGroupId": null,
   "difficulty": null,
 } satisfies StartRunDto
 

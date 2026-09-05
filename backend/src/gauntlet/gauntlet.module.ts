@@ -4,12 +4,19 @@ import { GauntletService } from './services/gauntlet.service';
 import { GauntletRunRepository } from './repositories/gauntlet-run.repository';
 import { AuthModule } from '../auth/auth.module';
 import { PlaylistModule } from '../playlist/playlist.module';
+import { PoolModule } from '../pool/pool.module';
+import { TrackGroupModule } from '../track-group/track-group.module';
 import { TrackModule } from '../track/track.module';
-import { LinkedAccountGuard } from '@utils/guards/linked-account.guard';
 
 @Module({
-  imports: [AuthModule, PlaylistModule, TrackModule],
+  imports: [
+    AuthModule,
+    PlaylistModule,
+    PoolModule,
+    TrackGroupModule,
+    TrackModule,
+  ],
   controllers: [GauntletController],
-  providers: [GauntletService, GauntletRunRepository, LinkedAccountGuard],
+  providers: [GauntletService, GauntletRunRepository],
 })
 export class GauntletModule {}
