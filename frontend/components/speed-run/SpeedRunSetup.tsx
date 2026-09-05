@@ -22,36 +22,31 @@ const DIFFICULTIES: {
   value: GauntletDifficulty;
   label: string;
   duration: string;
-  description: string;
-  color: string;
+  accent: string;
 }[] = [
   {
     value: GauntletDifficulty.Easy,
     label: 'Easy',
     duration: `${SNIPPET_STEPS[4]}s`,
-    description: 'Plenty of time',
-    color: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/30',
+    accent: 'bg-emerald-500/15 text-emerald-300',
   },
   {
     value: GauntletDifficulty.Medium,
     label: 'Medium',
     duration: `${SNIPPET_STEPS[3]}s`,
-    description: 'Standard',
-    color: 'from-blue-500/20 to-blue-500/5 border-blue-500/30',
+    accent: 'bg-blue-500/15 text-blue-300',
   },
   {
     value: GauntletDifficulty.Hard,
     label: 'Hard',
     duration: `${SNIPPET_STEPS[2]}s`,
-    description: 'Think fast',
-    color: 'from-orange-500/20 to-orange-500/5 border-orange-500/30',
+    accent: 'bg-orange-500/15 text-orange-300',
   },
   {
     value: GauntletDifficulty.Expert,
     label: 'Expert',
     duration: `${SNIPPET_STEPS[1]}s`,
-    description: 'One second',
-    color: 'from-red-500/20 to-red-500/5 border-red-500/30',
+    accent: 'bg-red-500/15 text-red-300',
   },
 ];
 
@@ -87,7 +82,6 @@ function SourceTile({
   return (
     <motion.button
       onClick={onSelect}
-      whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.96 }}
       className={`relative flex flex-col rounded-xl overflow-hidden border transition-all ${
         isSelected
@@ -222,37 +216,28 @@ export function SpeedRunSetup({
         </Link>
       </div>
 
-      {/* Difficulty */}
-      <div className="space-y-3">
+      {/* Difficulty. The same pill control as the tabs below: four lengths
+          do not need four cards. */}
+      <div className="space-y-2">
         <h2 className="text-xs font-bold uppercase tracking-widest text-fg/40">
-          Snippet Duration
+          Snippet duration
         </h2>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="flex gap-1 p-1 rounded-full bg-fg/5 w-fit">
           {DIFFICULTIES.map((d) => (
-            <motion.button
+            <button
               key={d.value}
               onClick={() => setSelectedDifficulty(d.value)}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className={`relative flex flex-col items-center gap-1 p-3 rounded-xl border bg-gradient-to-b transition-all ${d.color} ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold tabular-nums transition-colors ${
                 selectedDifficulty === d.value
-                  ? 'ring-2 ring-offset-1 ring-offset-transparent'
-                  : 'opacity-60 hover:opacity-80'
+                  ? d.accent
+                  : 'text-fg/40 hover:text-fg/70'
               }`}
-              style={{}}
             >
-              {selectedDifficulty === d.value && (
-                <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-orange-500 flex items-center justify-center">
-                  <Check className="w-2 h-2 text-white" strokeWidth={3} />
-                </span>
-              )}
-              <span className="text-base sm:text-lg font-black tabular-nums">
-                {d.duration}
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-fg/50">
+              {d.duration}
+              <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide opacity-60">
                 {d.label}
               </span>
-            </motion.button>
+            </button>
           ))}
         </div>
       </div>
